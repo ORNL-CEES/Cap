@@ -6,12 +6,19 @@
 //#include <deal.II/dofs/dof_handler.h>
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/dofs/dof_accessor.h>
+#include <boost/property_tree/ptree.hpp>
 
 //////////////////////// MP VALUES PARAMETERS ////////////////////////////
 template <int dim, int spacedim=dim>
 class MPValuesParameters {
 public:
-    virtual ~MPValuesParameters() { }
+    MPValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
+        : database(d)
+    { }
+    virtual ~MPValuesParameters() 
+    { }
+// keep public for now
+    std::shared_ptr<boost::property_tree::ptree> database;
 
 };
 
@@ -35,27 +42,9 @@ public:
 template <int dim, int spacedim=dim>
 class SuperCapacitorMPValuesParameters : public MPValuesParameters<dim, spacedim> {
 public:
-    double separator_thermal_conductivity;
-    double electrode_thermal_conductivity;
-    double collector_thermal_conductivity;
-    double separator_density;
-    double electrode_density;
-    double collector_density;
-    double separator_heat_capacity;
-    double electrode_heat_capacity;
-    double collector_heat_capacity;
-
-    double specific_capacitance;
-    double electrode_void_volume_fraction;
-    double separator_void_volume_fraction;
-    double electrolyte_conductivity;
-    double solid_phase_conductivity;
-
-    dealii::types::material_id anode_collector_material_id;
-    dealii::types::material_id cathode_collector_material_id;
-    dealii::types::material_id separator_material_id;
-    dealii::types::material_id anode_material_id;
-    dealii::types::material_id cathode_material_id;
+    SuperCapacitorMPValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
+        : MPValuesParameters<dim, spacedim>(d)
+    { }
 };
 
 template <int dim, int spacedim=dim>
@@ -67,11 +56,11 @@ public:
                     active_cell_iterator const & cell,
                     std::vector<double> &        values) const;
 protected:
-    dealii::types::material_id anode_collector_material_id;
-    dealii::types::material_id cathode_collector_material_id;
     dealii::types::material_id separator_material_id;
-    dealii::types::material_id anode_material_id;
-    dealii::types::material_id cathode_material_id;
+    dealii::types::material_id anode_electrode_material_id;
+    dealii::types::material_id anode_collector_material_id;
+    dealii::types::material_id cathode_electrode_material_id;
+    dealii::types::material_id cathode_collector_material_id;
 
     double separator_thermal_conductivity;
     double electrode_thermal_conductivity;

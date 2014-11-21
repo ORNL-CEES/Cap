@@ -40,7 +40,7 @@ private:
     void build_triangulation();
     void set_cell_material_ids_and_face_boundary_ids();
     void initialize_system();
-    void reset();
+    void reset(std::shared_ptr<boost::property_tree::ptree const> params);
 
     void electrochemical_setup_system(double const time_step);
     void electrochemical_evolve_one_time_step(double const time_step);

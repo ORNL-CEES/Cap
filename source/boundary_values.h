@@ -6,12 +6,18 @@
 //#include <deal.II/dofs/dof_handler.h>
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/dofs/dof_accessor.h>
+#include <boost/property_tree/ptree.hpp>
 
 //////////////////////// BOUNDARY VALUES PARAMETERS ////////////////////////////
 template <int dim, int spacedim=dim>
 class BoundaryValuesParameters {
 public:
+    BoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d) 
+        : database(d)
+    { }
     virtual ~BoundaryValuesParameters() { }
+// keep public for now
+    std::shared_ptr<boost::property_tree::ptree> database;
 
 };
 
@@ -37,28 +43,9 @@ public:
 template <int dim, int spacedim=dim>
 class SuperCapacitorBoundaryValuesParameters : public BoundaryValuesParameters<dim, spacedim> {
 public:
-    dealii::types::material_id anode_collector_material_id;
-    dealii::types::material_id cathode_collector_material_id;
-    dealii::types::material_id separator_material_id;
-    dealii::types::material_id anode_material_id;
-    dealii::types::material_id cathode_material_id;
-
-    dealii::types::boundary_id anode_boundary_id;
-    dealii::types::boundary_id cathode_boundary_id; 
-    dealii::types::boundary_id upper_boundary_id;
-    dealii::types::boundary_id lower_boundary_id;
-    dealii::types::boundary_id other_boundary_id;
-
-    double charge_potential; 
-    double discharge_potential; 
-    double charge_current_density; 
-    double discharge_current_density;
-    double initial_potential;
-
-    double upper_ambient_temperature;
-    double lower_ambient_temperature;
-    double upper_heat_transfer_coefficient;
-    double lower_heat_transfer_coefficient;
+    SuperCapacitorBoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
+        : BoundaryValuesParameters<dim, spacedim>(d)
+    { }
 };
 
 template <int dim, int spacedim=dim>
@@ -71,11 +58,11 @@ public:
                     unsigned int const           face,
                     std::vector<double> &        values) const;
 protected:
-    dealii::types::material_id anode_collector_material_id;
-    dealii::types::material_id cathode_collector_material_id;
     dealii::types::material_id separator_material_id;
-    dealii::types::material_id anode_material_id;
-    dealii::types::material_id cathode_material_id;
+    dealii::types::material_id anode_electrode_material_id;
+    dealii::types::material_id anode_collector_material_id;
+    dealii::types::material_id cathode_electrode_material_id;
+    dealii::types::material_id cathode_collector_material_id;
 
     dealii::types::boundary_id anode_boundary_id;
     dealii::types::boundary_id cathode_boundary_id; 

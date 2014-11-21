@@ -1,5 +1,4 @@
 #include <cache/boundary_values.h>
-
 #include <stdexcept>
 
 template <int dim, int spacedim>
@@ -32,31 +31,33 @@ SuperCapacitorBoundaryValues<dim, spacedim>::
 SuperCapacitorBoundaryValues(BoundaryValuesParameters<dim, spacedim> const & parameters)
     : BoundaryValues<dim, spacedim>(parameters)
 {
+    std::shared_ptr<boost::property_tree::ptree> database = parameters.database;
+
     SuperCapacitorBoundaryValuesParameters<dim, spacedim> const * super_capacitor_parameters = 
         dynamic_cast<SuperCapacitorBoundaryValuesParameters<dim, spacedim> const *>(&parameters);
 
-    this->anode_material_id             = super_capacitor_parameters->anode_material_id;
-    this->cathode_material_id           = super_capacitor_parameters->cathode_material_id;
-    this->separator_material_id         = super_capacitor_parameters->separator_material_id;
-    this->anode_collector_material_id   = super_capacitor_parameters->anode_collector_material_id;
-    this->cathode_collector_material_id = super_capacitor_parameters->cathode_collector_material_id;
+    this->separator_material_id          = database->get<dealii::types::material_id>("separator_material_id"        );
+    this->anode_electrode_material_id    = database->get<dealii::types::material_id>("anode_electrode_material_id"  );
+    this->anode_collector_material_id    = database->get<dealii::types::material_id>("anode_collector_material_id"  );
+    this->cathode_electrode_material_id  = database->get<dealii::types::material_id>("cathode_electrode_material_id");
+    this->cathode_collector_material_id  = database->get<dealii::types::material_id>("cathode_collector_material_id");
 
-    this->charge_potential          = super_capacitor_parameters->charge_potential;        
-    this->discharge_potential       = super_capacitor_parameters->discharge_potential;     
-    this->charge_current_density    = super_capacitor_parameters->charge_current_density;  
-    this->discharge_current_density = super_capacitor_parameters->discharge_current_density;
-    this->initial_potential         = super_capacitor_parameters->initial_potential;   
+    this->cathode_boundary_id            = database->get<dealii::types::boundary_id>("cathode_boundary_id"          );
+    this->anode_boundary_id              = database->get<dealii::types::boundary_id>("anode_boundary_id"            );          
+    this->upper_boundary_id              = database->get<dealii::types::boundary_id>("upper_boundary_id"            );
+    this->lower_boundary_id              = database->get<dealii::types::boundary_id>("lower_boundary_id"            );      
+    this->other_boundary_id              = database->get<dealii::types::boundary_id>("other_boundary_id"            );      
 
-    this->upper_ambient_temperature       = super_capacitor_parameters->upper_ambient_temperature; 
-    this->lower_ambient_temperature       = super_capacitor_parameters->lower_ambient_temperature; 
-    this->upper_heat_transfer_coefficient = super_capacitor_parameters->upper_heat_transfer_coefficient; 
-    this->lower_heat_transfer_coefficient = super_capacitor_parameters->lower_heat_transfer_coefficient; 
+    this->charge_potential          = database->get<double>("charge_potential"         );        
+    this->discharge_potential       = database->get<double>("discharge_potential"      );     
+    this->charge_current_density    = database->get<double>("charge_current_density"   );  
+    this->discharge_current_density = database->get<double>("discharge_current_density");
+    this->initial_potential         = database->get<double>("initial_potential"        );   
 
-    this->cathode_boundary_id = super_capacitor_parameters->cathode_boundary_id;
-    this->anode_boundary_id   = super_capacitor_parameters->anode_boundary_id;          
-    this->upper_boundary_id   = super_capacitor_parameters->upper_boundary_id;
-    this->lower_boundary_id   = super_capacitor_parameters->lower_boundary_id;      
-    this->other_boundary_id   = super_capacitor_parameters->other_boundary_id;      
+    this->upper_ambient_temperature       = database->get<double>("upper_ambient_temperature"      ); 
+    this->lower_ambient_temperature       = database->get<double>("lower_ambient_temperature"      ); 
+    this->upper_heat_transfer_coefficient = database->get<double>("upper_heat_transfer_coefficient"); 
+    this->lower_heat_transfer_coefficient = database->get<double>("lower_heat_transfer_coefficient"); 
 
 }
 

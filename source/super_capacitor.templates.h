@@ -6,6 +6,8 @@
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <string>
+#include <iostream>
+#include <iomanip>
 #include <fstream>
 
 namespace cache {
@@ -29,67 +31,6 @@ void ugly_helpers_electrochemical_operator(cache::ElectrochemicalOperatorParamet
     params.alpha = 0.0;
 }
 
-template <int dim>
-SuperCapacitorBoundaryValuesParameters<dim> ugly_helpers_boundary_values(boost::property_tree::ptree const & database)
-{
-    SuperCapacitorBoundaryValuesParameters<dim> params;
-
-    params.anode_collector_material_id   = 4;
-    params.cathode_collector_material_id = 5;
-    params.separator_material_id         = 2;
-    params.anode_material_id             = 1;
-    params.cathode_material_id           = 3;
-
-    params.cathode_boundary_id = 1;
-    params.anode_boundary_id   = 2;
-    params.upper_boundary_id   = 3;
-    params.lower_boundary_id   = 4;
-    params.other_boundary_id   = 5;
-
-    params.charge_potential                = database.get<double>("charge_potential");
-    params.discharge_potential             = database.get<double>("discharge_potential");
-    params.charge_current_density          = database.get<double>("charge_current_density");
-    params.discharge_current_density       = database.get<double>("discharge_current_density");
-    params.initial_potential               = database.get<double>("initial_potential");
-                                                                                                  
-    params.upper_ambient_temperature       = database.get<double>("upper_ambient_temperature");
-    params.lower_ambient_temperature       = database.get<double>("lower_ambient_temperature");
-    params.upper_heat_transfer_coefficient = database.get<double>("upper_heat_transfer_coefficient");
-    params.lower_heat_transfer_coefficient = database.get<double>("lower_heat_transfer_coefficient");
-
-    return params;
-}
-
-template <int dim>
-SuperCapacitorMPValuesParameters<dim> ugly_helpers_mp_values(boost::property_tree::ptree const & database)
-{
-    SuperCapacitorMPValuesParameters<dim> params;
-
-    params.anode_collector_material_id   = 4;
-    params.cathode_collector_material_id = 5;
-    params.separator_material_id         = 2;
-    params.anode_material_id             = 1;
-    params.cathode_material_id           = 3;
-
-    params.separator_thermal_conductivity = database.get<double>("separator_thermal_conductivity");
-    params.electrode_thermal_conductivity = database.get<double>("electrode_thermal_conductivity");
-    params.collector_thermal_conductivity = database.get<double>("collector_thermal_conductivity");
-    params.separator_density              = database.get<double>("separator_density");
-    params.electrode_density              = database.get<double>("electrode_density");
-    params.collector_density              = database.get<double>("collector_density");
-    params.separator_heat_capacity        = database.get<double>("separator_heat_capacity");
-    params.electrode_heat_capacity        = database.get<double>("electrode_heat_capacity");
-    params.collector_heat_capacity        = database.get<double>("collector_heat_capacity");
-
-    params.specific_capacitance           = database.get<double>("specific_capacitance");
-    params.electrode_void_volume_fraction = database.get<double>("electrode_void_volume_fraction");
-    params.separator_void_volume_fraction = database.get<double>("separator_void_volume_fraction");
-    params.electrolyte_conductivity       = database.get<double>("electrolyte_conductivity");
-    params.solid_phase_conductivity       = database.get<double>("solid_phase_conductivity");
-
-    return params;
-}                                          
-                                           
 template <int dim>                         
 SuperCapacitorProblem<dim>::               
 SuperCapacitorProblem(SuperCapacitorProblemParameters problem_params)
@@ -117,16 +58,10 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
     std::shared_ptr<boost::property_tree::ptree>       output_params)
 {                                               
     std::cout<<"run...\n";                      
-    this->reset();
-
-//    this->mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
-//       (new SuperCapacitorMPValues<dim>(ugly_helpers_mp_values<dim>(input_params->get_child("material_properties"))));
-//    this->bp_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
-//       (new SuperCapacitorBoundaryValues<dim>(ugly_helpers_boundary_values<dim>(input_params->get_child("boundary_values"))));
+    this->reset(input_params);
 
     this->solution.block(0) = 0.0;
     this->solution.block(1) = 0.0; // TODO: initialize to ambient temperature
-
 
 {
     double const dummy_time_step = 1.0;
@@ -162,7 +97,7 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
         time += time_step;
         this->electrochemical_evolve_one_time_step(time_step);
         double voltage = this->solution.block(0).linfty_norm();
-        std::cout<<time<<"  "<<voltage<<"\n";
+        std::cout<<std::setprecision(5)<<time<<"  "<<voltage<<"\n";
         if (voltage >= 2.2) {
             break;
         } //
@@ -176,7 +111,7 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
         time += time_step;
         this->electrochemical_evolve_one_time_step(time_step);
         double voltage = this->solution.block(0).linfty_norm();
-        std::cout<<time<<"  "<<voltage<<"\n";
+        std::cout<<std::setprecision(5)<<time<<"  "<<voltage<<"\n";
     } // end while
 
     std::vector<double> max_temperature(10, 1.0);          
@@ -354,13 +289,17 @@ initialize_system()
 template <int dim>
 void 
 SuperCapacitorProblem<dim>::
-reset() 
+reset(std::shared_ptr<boost::property_tree::ptree const> params) 
 {
-    // TODO: change this...
+    std::shared_ptr<boost::property_tree::ptree> material_properties_database = std::shared_ptr<boost::property_tree::ptree>
+        (new boost::property_tree::ptree(params->get_child("material_properties")));
     this->mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
-       (new SuperCapacitorMPValues<dim>(ugly_helpers_mp_values<dim>(database->get_child("material_properties"))));
+        (new SuperCapacitorMPValues<dim>(SuperCapacitorMPValuesParameters<dim>(material_properties_database)));
+
+    std::shared_ptr<boost::property_tree::ptree> boundary_values_database = std::shared_ptr<boost::property_tree::ptree>
+        (new boost::property_tree::ptree(params->get_child("boundary_values")));
     this->bp_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
-       (new SuperCapacitorBoundaryValues<dim>(ugly_helpers_boundary_values<dim>(database->get_child("boundary_values"))));
+        (new SuperCapacitorBoundaryValues<dim>(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database)));
 
     // initialize operators
     this->electrochemical_operator_params = std::shared_ptr<cache::ElectrochemicalOperatorParameters<dim> >
@@ -374,7 +313,7 @@ reset()
     this->electrochemical_operator_params->solid_potential_component  = this->solid_potential_component;
     this->electrochemical_operator_params->liquid_potential_component = this->liquid_potential_component;
     this->electrochemical_operator_params->temperature_component      = this->temperature_component;
-    ugly_helpers_electrochemical_operator(*this->electrochemical_operator_params, database->get_child("boundary_values"));
+    ugly_helpers_electrochemical_operator(*this->electrochemical_operator_params, params->get_child("boundary_values"));
     this->electrochemical_operator = std::shared_ptr<cache::ElectrochemicalOperator<dim> >
         (new cache::ElectrochemicalOperator<dim>(*this->electrochemical_operator_params));
     dealii::types::material_id const separator_material_id = 2;
