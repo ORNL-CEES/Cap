@@ -1,0 +1,6 @@
+ADD_EXECUTABLE( test_drivers test_drivers.cc )
+DEAL_II_SETUP_TARGET( test_drivers )
+TARGET_LINK_LIBRARIES( test_drivers cache )
+ADD_TEST( "drivers" test_drivers )
+FILE( COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+FILE( RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd )
