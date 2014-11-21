@@ -14,9 +14,10 @@ ThermalOperator<dim>::
 ThermalOperator(OperatorParameters<dim> const & parameters)
   : Operator<dim>(parameters)
 {
-    ThermalOperatorParameters<dim> const * thermal_parameters = dynamic_cast<ThermalOperatorParameters<dim> const *>(&parameters);
+    std::shared_ptr<boost::property_tree::ptree const> database = parameters.database;
+    this->temperature_component = database->get<unsigned int>("temperature_component");
 
-    this->temperature_component     = thermal_parameters->temperature_component;
+    ThermalOperatorParameters<dim> const * thermal_parameters = dynamic_cast<ThermalOperatorParameters<dim> const *>(&parameters);
 }
 
 template <int dim>
@@ -71,8 +72,8 @@ std::cout<<"dof_shift = "<<dof_shift<<"\n";
         cell_stiffness_matrix = 0.0;
         cell_mass_matrix = 0.0;
         fe_values.reinit(cell);
-        (this->mp_values).get_values("thermal_conductivity", cell, thermal_conductivity_values);
-        (this->mp_values).get_values("density_times_heat_capacity", cell, density_times_heat_capacity_values);
+        (this->mp_values)->get_values("thermal_conductivity", cell, thermal_conductivity_values);
+        (this->mp_values)->get_values("density_times_heat_capacity", cell, density_times_heat_capacity_values);
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
             for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j) {
@@ -140,8 +141,8 @@ std::cout<<"dof_shift = "<<dof_shift<<"\n";
 //                    } else {
 //                        std::fill(heat_transfer_coefficient_values.begin(), heat_transfer_coefficient_values.end(), 0.0);
 //                    } // end if
-                    (this->bp_values).get_values("heat_transfer_coefficient", cell, face, heat_transfer_coefficient_values);
-                    (this->bp_values).get_values("ambient_temperature",       cell, face, ambient_temperature_values);
+                    (this->b_values)->get_values("heat_transfer_coefficient", cell, face, heat_transfer_coefficient_values);
+                    (this->b_values)->get_values("ambient_temperature",       cell, face, ambient_temperature_values);
                     fe_face_values.reinit(cell, face);
                     for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
                         for (unsigned int i = 0; i < dofs_per_cell; ++i) {

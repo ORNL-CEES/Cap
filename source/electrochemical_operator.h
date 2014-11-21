@@ -10,21 +10,10 @@ enum CapacitorState { GalvanostaticCharge, GalvanostaticDischarge, Potentiostati
 template <int dim>
 class ElectrochemicalOperatorParameters : public OperatorParameters<dim> {
 public:
-    unsigned int solid_potential_component;
-    unsigned int liquid_potential_component;
-    unsigned int temperature_component;
-
-    // Boundary conditions
-    dealii::types::boundary_id anode_boundary_id;
-    dealii::types::boundary_id cathode_boundary_id; 
+    ElectrochemicalOperatorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
+        : OperatorParameters<dim>(d)
+    { }
     CapacitorState capacitor_state;
-    double charge_potential; 
-    double discharge_potential; 
-    double charge_current_density; 
-    double discharge_current_density;
-    double initial_potential;
-
-    double alpha;
 };
 
 //////////////////////// ELECTROCHEMICAL OPERATOR ////////////////////////////

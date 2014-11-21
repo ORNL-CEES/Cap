@@ -13,22 +13,24 @@ ElectrochemicalOperator<dim>::
 ElectrochemicalOperator(OperatorParameters<dim> const & parameters)
   : Operator<dim>(parameters) 
 {
-    ElectrochemicalOperatorParameters<dim> const * electrical_parameters = dynamic_cast<ElectrochemicalOperatorParameters<dim> const *>(&parameters);
+    std::shared_ptr<boost::property_tree::ptree const> database = parameters.database;
 
-    this->solid_potential_component  = electrical_parameters->solid_potential_component;
-    this->liquid_potential_component = electrical_parameters->liquid_potential_component;
-    this->temperature_component      = electrical_parameters->temperature_component;
+    this->solid_potential_component  = database->get<unsigned int>("solid_potential_component" );
+    this->liquid_potential_component = database->get<unsigned int>("liquid_potential_component");
+    this->temperature_component      = database->get<unsigned int>("temperature_component"     );
+                                              
+    this->charge_potential           = database->get<double>("boundary_values.charge_potential"         );
+    this->discharge_potential        = database->get<double>("boundary_values.discharge_potential"      );
+    this->charge_current_density     = database->get<double>("boundary_values.charge_current_density"   );
+    this->discharge_current_density  = database->get<double>("boundary_values.discharge_current_density");
+    this->initial_potential          = database->get<double>("boundary_values.initial_potential"        );
+                                              
+    this->alpha                      = database->get<double>("material_properties.alpha");
+                                              
+    this->anode_boundary_id          = database->get<dealii::types::boundary_id>("boundary_values.anode_boundary_id"  );
+    this->cathode_boundary_id        = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id");
 
-    this->charge_potential           = electrical_parameters->charge_potential;
-    this->discharge_potential        = electrical_parameters->discharge_potential;
-    this->charge_current_density     = electrical_parameters->charge_current_density;
-    this->discharge_current_density  = electrical_parameters->discharge_current_density;
-    this->initial_potential          = electrical_parameters->initial_potential;
-
-    this->alpha                      = electrical_parameters->alpha;
-
-    this->anode_boundary_id          = electrical_parameters->anode_boundary_id;
-    this->cathode_boundary_id        = electrical_parameters->cathode_boundary_id;
+    ElectrochemicalOperatorParameters<dim> const * electrochemical_parameters = dynamic_cast<ElectrochemicalOperatorParameters<dim> const *>(&parameters);
 }
 
 template <int dim>
@@ -141,7 +143,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
             for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
                 if (cell->face(face)->at_boundary()) {
                     fe_face_values.reinit(cell, face);
-                    (this->bp_values).get_values(current_density, cell, face, current_density_values);
+                    (this->b_values)->get_values(current_density, cell, face, current_density_values);
                     for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
                         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                             cell_load_vector(i) += (
@@ -192,9 +194,9 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
         cell_stiffness_matrix = 0.0;
         cell_mass_matrix = 0.0;
         fe_values.reinit(cell);
-        (this->mp_values).get_values("specific_capacitance", cell, specific_capacitance_values);
-        (this->mp_values).get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
-        (this->mp_values).get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
+        (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
             for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j) {
@@ -275,8 +277,8 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
     for ( ; cell != end_cell; ++cell) {
         cell_load_vector = 0.0;
         fe_values.reinit(cell);
-        (this->mp_values).get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
-        (this->mp_values).get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
         fe_values[solid_potential].get_function_gradients(potential_solution_vector, solid_potential_gradients);
         fe_values[liquid_potential].get_function_gradients(potential_solution_vector, liquid_potential_gradients);
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {

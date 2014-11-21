@@ -12,43 +12,18 @@
 
 namespace cache {
 
-template <int dim>
-void ugly_helpers_electrochemical_operator(cache::ElectrochemicalOperatorParameters<dim> & params, boost::property_tree::ptree const & database)
-{
-    params.cathode_boundary_id = 1;
-    params.anode_boundary_id   = 2;
-
-    params.solid_potential_component  = 0;
-    params.liquid_potential_component = 1;
-    params.temperature_component      = 2;
-
-    params.charge_potential                = database.get<double>("charge_potential");
-    params.discharge_potential             = database.get<double>("discharge_potential");
-    params.charge_current_density          = database.get<double>("charge_current_density");
-    params.discharge_current_density       = database.get<double>("discharge_current_density");
-    params.initial_potential               = database.get<double>("initial_potential");
-
-    params.alpha = 0.0;
-}
-
 template <int dim>                         
 SuperCapacitorProblem<dim>::               
-SuperCapacitorProblem(SuperCapacitorProblemParameters problem_params)
-    : n_components(3)
-    , solid_potential_component(0)
-    , liquid_potential_component(1)
-    , temperature_component(2)
-    , degree_p(1)
-    , fe(dealii::FE_Q<dim>(degree_p), n_components)
+SuperCapacitorProblem(std::shared_ptr<boost::property_tree::ptree const> database)
+    : degree_p(1)
+    , fe(dealii::FE_Q<dim>(degree_p), 3)
     , dof_handler(triangulation)
     , symmetric_correction(true)
-    , database(problem_params.database)
 { 
     std::cout<<"initialize...\n";
-    this->build_triangulation();
-    this->set_cell_material_ids_and_face_boundary_ids();
-    this->initialize_system();
-
+    this->build_triangulation(database);
+    this->set_cell_material_ids_and_face_boundary_ids(database);
+    this->initialize_system(database);
 }
 
 template <int dim>
@@ -134,7 +109,7 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
 template <int dim>
 void 
 SuperCapacitorProblem<dim>::
-build_triangulation() 
+build_triangulation(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
     dealii::GridIn<dim> mesh_reader;
     std::fstream fin;
@@ -149,7 +124,7 @@ build_triangulation()
 }
 
 template <int dim>
-void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids() {
+void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids(std::shared_ptr<boost::property_tree::ptree const> database) {
     double const electrode_width = 50.0e-6;
     double const separator_width = 25.0e-6;
     double const collector_width = 5.0e-6;
@@ -160,17 +135,17 @@ void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids() {
     double const y_top = 25.0e-6;
     double const y_bottom = 0.0e-6;
   
-    dealii::types::material_id const anode_collector_material_id   = 4;
-    dealii::types::material_id const cathode_collector_material_id = 5;
-    dealii::types::material_id const separator_material_id         = 2;
-    dealii::types::material_id const anode_material_id             = 1;
-    dealii::types::material_id const cathode_material_id           = 3;
+    dealii::types::material_id const separator_material_id         = database->get<dealii::types::material_id>("separator_material_id"        );
+    dealii::types::material_id const anode_electrode_material_id   = database->get<dealii::types::material_id>("anode_electrode_material_id"  );
+    dealii::types::material_id const anode_collector_material_id   = database->get<dealii::types::material_id>("anode_collector_material_id"  );
+    dealii::types::material_id const cathode_electrode_material_id = database->get<dealii::types::material_id>("cathode_electrode_material_id");
+    dealii::types::material_id const cathode_collector_material_id = database->get<dealii::types::material_id>("cathode_collector_material_id");
 
-    dealii::types::boundary_id const cathode_boundary_id = 1;
-    dealii::types::boundary_id const anode_boundary_id   = 2;
-    dealii::types::boundary_id const upper_boundary_id   = 3;
-    dealii::types::boundary_id const lower_boundary_id   = 4;
-    dealii::types::boundary_id const other_boundary_id   = 5;
+    dealii::types::boundary_id const cathode_boundary_id = database->get<dealii::types::boundary_id>("cathode_boundary_id");
+    dealii::types::boundary_id const anode_boundary_id   = database->get<dealii::types::boundary_id>("anode_boundary_id"  );
+    dealii::types::boundary_id const upper_boundary_id   = database->get<dealii::types::boundary_id>("upper_boundary_id"  );
+    dealii::types::boundary_id const lower_boundary_id   = database->get<dealii::types::boundary_id>("lower_boundary_id"  );
+    dealii::types::boundary_id const other_boundary_id   = database->get<dealii::types::boundary_id>("other_boundary_id"  );
 
     typename dealii::Triangulation<dim>::active_cell_iterator cell = this->triangulation.begin_active();
     typename dealii::Triangulation<dim>::active_cell_iterator end_cell = this->triangulation.end();
@@ -180,13 +155,13 @@ void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids() {
             cell->set_material_id(anode_collector_material_id);
         } else if ((cell->center()[0] > x_min + collector_width)
             && (cell->center()[0] < x_min + collector_width + electrode_width)) {
-            cell->set_material_id(anode_material_id);
+            cell->set_material_id(anode_electrode_material_id);
         } else if ((cell->center()[0] > x_min + collector_width + electrode_width)
             && (cell->center()[0] < x_min + collector_width + electrode_width + separator_width)) {
             cell->set_material_id(separator_material_id);
         } else if ((cell->center()[0] > x_min + collector_width + electrode_width + separator_width)
             && (cell->center()[0] < x_min + collector_width + 2.0*electrode_width + separator_width)) {
-            cell->set_material_id(cathode_material_id);
+            cell->set_material_id(cathode_electrode_material_id);
         } else if ((cell->center()[0] > x_min + collector_width + 2.0*electrode_width + separator_width)
             && (cell->center()[0] < x_max)) {
             cell->set_material_id(cathode_collector_material_id);
@@ -202,14 +177,14 @@ void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids() {
                     && (cell->material_id() == cathode_collector_material_id)) {
                     cell->face(face)->set_boundary_indicator(cathode_boundary_id);
                 } else if ((std::abs(cell->face(face)->center()[1] - y_top) < 1.0e-10)
-                    && ((cell->material_id() == cathode_material_id)
-                        || (cell->material_id() == anode_material_id)
+                    && ((cell->material_id() == cathode_electrode_material_id)
+                        || (cell->material_id() == anode_electrode_material_id)
                         || (cell->material_id() == separator_material_id))
                     ) {
                     cell->face(face)->set_boundary_indicator(upper_boundary_id);
                 } else if ((std::abs(cell->face(face)->center()[1] - y_bottom) < 1.0e-10)
-                    && ((cell->material_id() == cathode_material_id)
-                        || (cell->material_id() == anode_material_id)
+                    && ((cell->material_id() == cathode_electrode_material_id)
+                        || (cell->material_id() == anode_electrode_material_id)
                         || (cell->material_id() == separator_material_id))
                     ) {
                     cell->face(face)->set_boundary_indicator(lower_boundary_id);
@@ -226,37 +201,31 @@ void SuperCapacitorProblem<dim>::set_cell_material_ids_and_face_boundary_ids() {
 template <int dim>
 void 
 SuperCapacitorProblem<dim>::
-initialize_system() 
+initialize_system(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
     // distribute degrees of freedom
     this->dof_handler.distribute_dofs(this->fe);
     dealii::DoFRenumbering::component_wise(this->dof_handler);
-    std::vector<dealii::types::global_dof_index> dofs_per_component(this->n_components);
+    unsigned int const n_components = dealii::DoFTools::n_components(this->dof_handler);
+    std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
     dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
+
+    unsigned int const temperature_component      = database->get<unsigned int>("temperature_component"     );
+    unsigned int const solid_potential_component  = database->get<unsigned int>("solid_potential_component" );
+    unsigned int const liquid_potential_component = database->get<unsigned int>("liquid_potential_component");
+    unsigned int const thermal_block              = database->get<unsigned int>("thermal_block"             );
+    unsigned int const electrochemical_block      = database->get<unsigned int>("electrochemical_block"     );
+    dealii::types::global_dof_index const n_thermal_dofs         = dofs_per_component[temperature_component];
+    dealii::types::global_dof_index const n_electrochemical_dofs = 
+        dofs_per_component[solid_potential_component] + dofs_per_component[liquid_potential_component];
 
     // make sparsity pattern
     unsigned int const max_couplings = this->dof_handler.max_couplings_between_dofs();
     this->sparsity_pattern.reinit(2, 2);
-    this->sparsity_pattern.block(0, 0).reinit(
-        dofs_per_component[this->solid_potential_component]+dofs_per_component[this->liquid_potential_component],
-        dofs_per_component[this->solid_potential_component]+dofs_per_component[this->liquid_potential_component],
-        2*max_couplings
-        );
-    this->sparsity_pattern.block(0, 1).reinit(
-        dofs_per_component[this->solid_potential_component]+dofs_per_component[this->liquid_potential_component],
-        dofs_per_component[this->temperature_component],
-        max_couplings
-        );
-    this->sparsity_pattern.block(1, 0).reinit(
-        dofs_per_component[this->temperature_component],
-        dofs_per_component[this->solid_potential_component]+dofs_per_component[this->liquid_potential_component],
-        2*max_couplings
-        );
-    this->sparsity_pattern.block(1, 1).reinit(
-        dofs_per_component[this->temperature_component],
-        dofs_per_component[this->temperature_component],
-        max_couplings
-        );
+    this->sparsity_pattern.block(electrochemical_block, electrochemical_block).reinit(n_electrochemical_dofs, n_electrochemical_dofs, 2*max_couplings);
+    this->sparsity_pattern.block(electrochemical_block, thermal_block        ).reinit(n_electrochemical_dofs, n_thermal_dofs,           max_couplings);
+    this->sparsity_pattern.block(thermal_block        , electrochemical_block).reinit(n_thermal_dofs,         n_electrochemical_dofs, 2*max_couplings);
+    this->sparsity_pattern.block(thermal_block        , thermal_block        ).reinit(n_thermal_dofs,         n_thermal_dofs,           max_couplings);
     this->sparsity_pattern.collect_sizes();
 
     dealii::DoFTools::make_sparsity_pattern(this->dof_handler, this->sparsity_pattern, this->constraint_matrix);
@@ -265,77 +234,70 @@ initialize_system()
     // initialize matrices and vectors
     this->system_matrix.reinit(this->sparsity_pattern);
     this->system_rhs.reinit(2);
-    this->system_rhs.block(0).reinit(dofs_per_component[this->solid_potential_component]+dofs_per_component[this->liquid_potential_component]);
-    this->system_rhs.block(1).reinit(dofs_per_component[this->temperature_component]);
+    this->system_rhs.block(electrochemical_block).reinit(n_electrochemical_dofs);
+    this->system_rhs.block(thermal_block        ).reinit(n_thermal_dofs        );
     this->system_rhs.collect_sizes();
+
     this->solution.reinit(this->system_rhs);
 
     // TODO: add const ref thermal_solution and elctrochemical_solution for
     // readibility
-    this->thermal_load_vector.reinit(this->system_rhs.block(1));
+    this->thermal_load_vector.reinit(this->system_rhs.block(thermal_block));
 
 
     std::cout
         <<"total degrees of freedom : "<<this->dof_handler.n_dofs()<<"\n"
         <<"    electrochemical : "
-        <<"solid_potential "<<dofs_per_component[this->solid_potential_component]
-        <<" + liquid_potential "<<dofs_per_component[this->liquid_potential_component]
+        <<"solid_potential "<<dofs_per_component[solid_potential_component]
+        <<" + liquid_potential "<<dofs_per_component[liquid_potential_component]
         <<"\n"
         <<"    thermal         : "
-        <<"temperature "<<dofs_per_component[this->temperature_component]
+        <<"temperature "<<dofs_per_component[temperature_component]
         <<"\n";
 }
 
 template <int dim>
 void 
 SuperCapacitorProblem<dim>::
-reset(std::shared_ptr<boost::property_tree::ptree const> params) 
+reset(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
     std::shared_ptr<boost::property_tree::ptree> material_properties_database = std::shared_ptr<boost::property_tree::ptree>
-        (new boost::property_tree::ptree(params->get_child("material_properties")));
-    this->mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
+        (new boost::property_tree::ptree(database->get_child("material_properties")));
+    std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
         (new SuperCapacitorMPValues<dim>(SuperCapacitorMPValuesParameters<dim>(material_properties_database)));
 
     std::shared_ptr<boost::property_tree::ptree> boundary_values_database = std::shared_ptr<boost::property_tree::ptree>
-        (new boost::property_tree::ptree(params->get_child("boundary_values")));
-    this->bp_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
+        (new boost::property_tree::ptree(database->get_child("boundary_values")));
+    std::shared_ptr<SuperCapacitorBoundaryValues<dim> > boundary_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
         (new SuperCapacitorBoundaryValues<dim>(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database)));
 
     // initialize operators
     this->electrochemical_operator_params = std::shared_ptr<cache::ElectrochemicalOperatorParameters<dim> >
-        (new cache::ElectrochemicalOperatorParameters<dim>());
+        (new cache::ElectrochemicalOperatorParameters<dim>(database));
     this->electrochemical_operator_params->dof_handler       = &(this->dof_handler);
     this->electrochemical_operator_params->constraint_matrix = &(this->constraint_matrix);
     this->electrochemical_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(0, 0));
     this->electrochemical_operator_params->some_vector       = &(this->solution.block(0));
-    this->electrochemical_operator_params->mp_values         = dynamic_cast<MPValues<dim>       const *>(this->mp_values.get());
-    this->electrochemical_operator_params->bp_values         = dynamic_cast<BoundaryValues<dim> const *>(this->bp_values.get());
-    this->electrochemical_operator_params->solid_potential_component  = this->solid_potential_component;
-    this->electrochemical_operator_params->liquid_potential_component = this->liquid_potential_component;
-    this->electrochemical_operator_params->temperature_component      = this->temperature_component;
-    ugly_helpers_electrochemical_operator(*this->electrochemical_operator_params, params->get_child("boundary_values"));
+    this->electrochemical_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
+    this->electrochemical_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->electrochemical_operator = std::shared_ptr<cache::ElectrochemicalOperator<dim> >
         (new cache::ElectrochemicalOperator<dim>(*this->electrochemical_operator_params));
-    dealii::types::material_id const separator_material_id = 2;
-    dealii::types::material_id const anode_collector_material_id = 4;
-    dealii::types::material_id const cathode_collector_material_id = 5;
 
     // set null space
-    this->electrochemical_operator->set_null_space(this->solid_potential_component, separator_material_id);
-    this->electrochemical_operator->set_null_space(this->liquid_potential_component, anode_collector_material_id);
-    this->electrochemical_operator->set_null_space(this->liquid_potential_component, cathode_collector_material_id);
+    this->electrochemical_operator->set_null_space(database->get<unsigned int>("solid_potential_component" ), database->get<dealii::types::material_id>("material_properties.separator_material_id"        ));
+    this->electrochemical_operator->set_null_space(database->get<unsigned int>("liquid_potential_component"), database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  ));
+    this->electrochemical_operator->set_null_space(database->get<unsigned int>("liquid_potential_component"), database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id"));
     std::vector<dealii::types::global_dof_index> const & null_space = this->electrochemical_operator->get_null_space();
     std::cout<<"null space size : "<<null_space.size()<<"\n";
 
     this->thermal_operator_params = std::shared_ptr<cache::ThermalOperatorParameters<dim> >
-        (new cache::ThermalOperatorParameters<dim>());
+        (new cache::ThermalOperatorParameters<dim>(database));
     this->thermal_operator_params->dof_handler       = &(this->dof_handler);
     this->thermal_operator_params->constraint_matrix = &(this->constraint_matrix);
     this->thermal_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(1, 1));
     this->thermal_operator_params->some_vector       = &(this->solution.block(1));
-    this->thermal_operator_params->mp_values         = dynamic_cast<MPValues<dim>       const *>(this->mp_values.get());
-    this->thermal_operator_params->bp_values         = dynamic_cast<BoundaryValues<dim> const *>(this->bp_values.get());
-    this->thermal_operator_params->temperature_component = this->temperature_component;
+    this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
+    this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->thermal_operator = std::shared_ptr<cache::ThermalOperator<dim> >
         (new ThermalOperator<dim>(*this->thermal_operator_params));
 
@@ -351,6 +313,12 @@ thermal_setup_system(double time_step)
     // TODO: won't work because of dof shift
     AssertThrow((this->thermal_operator)->get_boundary_values().size() == 0,
         dealii::StandardExceptions::ExcMessage("Under construction"));
+
+    unsigned int const thermal_block = 1; // TODO: ...
+    dealii::SparseMatrix<double> & thermal_matrix     = this->system_matrix.block(thermal_block, thermal_block);
+    dealii::Vector<double> &       thermal_solution   = this->solution     .block(thermal_block);
+    dealii::Vector<double> &       thermal_rhs_vector = this->system_rhs   .block(thermal_block);
+
     this->system_matrix.block(1, 1).copy_from(this->thermal_operator->get_mass_matrix());
     this->system_matrix.block(1, 1).add(time_step, this->thermal_operator->get_stiffness_matrix());
 
@@ -447,9 +415,8 @@ electrochemical_setup_system(double const time_step)
             } // end if entry is non zero
         } // end for all entries
     } // end if symetric correction
-std::cout<<"rhs set size is "<<rhs_set.size()<<"\n"
-    "rhs add size is "<<rhs_add.size()<<"\n";
+    std::cout<<"rhs set size is "<<rhs_set.size()<<"\n"
+        "rhs add size is "<<rhs_add.size()<<"\n";
 }
-
 
 } // end namespace cache

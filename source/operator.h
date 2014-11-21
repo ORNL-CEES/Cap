@@ -10,19 +10,27 @@
 //#include <deal.II/lac/sparsity_pattern.h>
 #include <deal.II/lac/sparse_matrix.h>
 //#include <deal.II/lac/vector.h>
+#include <boost/property_tree/ptree.hpp>
+#include <memory>
 
 //////////////////////// OPERATOR PARAMETERS ////////////////////////////
 template <int dim>
 class OperatorParameters { 
 public:
+    OperatorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
+        : database(d)
+    {  }
     virtual ~OperatorParameters() { }
 
     dealii::DoFHandler<dim> const * dof_handler;
     dealii::ConstraintMatrix const * constraint_matrix;
     dealii::SparsityPattern const * sparsity_pattern;
     dealii::Vector<double> const * some_vector;
-    MPValues<dim> const * mp_values;
-    BoundaryValues<dim> const * bp_values;
+
+    std::shared_ptr<MPValues<dim> const>       mp_values;
+    std::shared_ptr<BoundaryValues<dim> const> boundary_values;
+
+    std::shared_ptr<boost::property_tree::ptree const> database;
 };
 
 //////////////////////// OPERATOR ////////////////////////////
@@ -44,8 +52,9 @@ public:
 protected:
     dealii::DoFHandler<dim> const & dof_handler;
     dealii::ConstraintMatrix const & constraint_matrix;
-    MPValues<dim> const & mp_values;
-    BoundaryValues<dim> const & bp_values;
+
+    std::shared_ptr<MPValues<dim> const>       mp_values;
+    std::shared_ptr<BoundaryValues<dim> const> b_values;
 
     dealii::SparseMatrix<double> mass_matrix;
     dealii::SparseMatrix<double> stiffness_matrix;

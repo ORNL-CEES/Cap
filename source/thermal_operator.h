@@ -9,7 +9,9 @@ namespace cache {
 template <int dim>
 class ThermalOperatorParameters : public OperatorParameters<dim> {
 public:
-    unsigned int temperature_component;
+    ThermalOperatorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
+        : OperatorParameters<dim>(d)
+    { }
 };
 
 //////////////////////// THERMAL OPERATOR ////////////////////////////

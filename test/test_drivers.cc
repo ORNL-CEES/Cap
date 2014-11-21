@@ -17,6 +17,8 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("material_properties.separator_heat_capacity",        0.0019e2);       
     params.put("material_properties.electrode_heat_capacity",        0.0011e2);       
     params.put("material_properties.collector_heat_capacity",        2.37e2);       
+
+    params.put("material_properties.alpha",                          0.0);       
                                                                      
     params.put("material_properties.specific_capacitance",           86.0e6);          
     params.put("material_properties.separator_void_volume_fraction", 0.6);
@@ -56,6 +58,11 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("time_step",     "0.1");
     params.put("initial_time",  "0.0");
     params.put("final_time",   "30.0");
+
+    params.put("solid_potential_component",  0);
+    params.put("liquid_potential_component", 1);
+    params.put("temperature_component",      2);
+
 }
 
 int main(int argc, char *argv[])
@@ -63,9 +70,22 @@ int main(int argc, char *argv[])
     std::cout<<"hello world\n";
 
     std::shared_ptr<boost::property_tree::ptree> database(new boost::property_tree::ptree);
-    put_default_parameters(*database); // TODO: only temporary
-    cache::SuperCapacitorProblemParameters params(database);
-    cache::SuperCapacitorProblem<2> super_capacitor(params);
+    database->put("solid_potential_component",     0);
+    database->put("liquid_potential_component",    1);
+    database->put("temperature_component",         2);
+    database->put("electrochemical_block",         0);
+    database->put("thermal_block",                 1);
+    database->put("separator_material_id",         2);          
+    database->put("anode_electrode_material_id",   1);
+    database->put("anode_collector_material_id",   4);
+    database->put("cathode_electrode_material_id", 3);      
+    database->put("cathode_collector_material_id", 5);      
+    database->put("cathode_boundary_id",           1);
+    database->put("anode_boundary_id",             2);
+    database->put("upper_boundary_id",             3);
+    database->put("lower_boundary_id",             4);
+    database->put("other_boundary_id",             5);
+    cache::SuperCapacitorProblem<2> super_capacitor(database);
 
     // SETTING PROBLEM PARAMETERS
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
