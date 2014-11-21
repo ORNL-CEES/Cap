@@ -4,3 +4,8 @@ TARGET_LINK_LIBRARIES( test_drivers cache )
 ADD_TEST( "drivers" test_drivers )
 FILE( COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 FILE( RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd )
+
+ADD_EXECUTABLE( test_cap_parse_params test_cap_parse_params.cc )
+DEAL_II_SETUP_TARGET( test_cap_parse_params )
+TARGET_LINK_LIBRARIES( test_cap_parse_params cache )
+ADD_TEST( "cap_parse_params" test_cap_parse_params )
