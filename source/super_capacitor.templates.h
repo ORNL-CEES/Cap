@@ -15,9 +15,7 @@ namespace cache {
 template <int dim>                         
 SuperCapacitorProblem<dim>::               
 SuperCapacitorProblem(std::shared_ptr<boost::property_tree::ptree const> database)
-    : degree_p(1)
-    , fe(dealii::FE_Q<dim>(degree_p), 3)
-    , dof_handler(triangulation)
+    : dof_handler(triangulation)
     , symmetric_correction(true)
 { 
     std::cout<<"initialize...\n";
@@ -204,7 +202,9 @@ SuperCapacitorProblem<dim>::
 initialize_system(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
     // distribute degrees of freedom
-    this->dof_handler.distribute_dofs(this->fe);
+    this->fe = std::make_shared<typename dealii::FESystem<dim> >
+        (typename dealii::FE_Q<dim>(1), 3); // TODO: read degree p from database
+    this->dof_handler.distribute_dofs(*this->fe);
     dealii::DoFRenumbering::component_wise(this->dof_handler);
     unsigned int const n_components = dealii::DoFTools::n_components(this->dof_handler);
     std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
@@ -261,13 +261,13 @@ void
 SuperCapacitorProblem<dim>::
 reset(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
-    std::shared_ptr<boost::property_tree::ptree> material_properties_database = std::shared_ptr<boost::property_tree::ptree>
-        (new boost::property_tree::ptree(database->get_child("material_properties")));
+    std::shared_ptr<boost::property_tree::ptree> material_properties_database = 
+        std::make_shared<boost::property_tree::ptree>(database->get_child("material_properties"));
     std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
         (new SuperCapacitorMPValues<dim>(SuperCapacitorMPValuesParameters<dim>(material_properties_database)));
 
-    std::shared_ptr<boost::property_tree::ptree> boundary_values_database = std::shared_ptr<boost::property_tree::ptree>
-        (new boost::property_tree::ptree(database->get_child("boundary_values")));
+    std::shared_ptr<boost::property_tree::ptree> boundary_values_database = 
+        std::make_shared<boost::property_tree::ptree>(database->get_child("boundary_values"));
     std::shared_ptr<SuperCapacitorBoundaryValues<dim> > boundary_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
         (new SuperCapacitorBoundaryValues<dim>(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database)));
 
@@ -281,7 +281,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     this->electrochemical_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
     this->electrochemical_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->electrochemical_operator = std::shared_ptr<cache::ElectrochemicalOperator<dim> >
-        (new cache::ElectrochemicalOperator<dim>(*this->electrochemical_operator_params));
+        (new cache::ElectrochemicalOperator<dim>(this->electrochemical_operator_params));
 
     // set null space
     this->electrochemical_operator->set_null_space(database->get<unsigned int>("solid_potential_component" ), database->get<dealii::types::material_id>("material_properties.separator_material_id"        ));
@@ -299,7 +299,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
     this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->thermal_operator = std::shared_ptr<cache::ThermalOperator<dim> >
-        (new ThermalOperator<dim>(*this->thermal_operator_params));
+        (new ThermalOperator<dim>(this->thermal_operator_params));
 
 
 }
@@ -309,7 +309,7 @@ void
 SuperCapacitorProblem<dim>::
 thermal_setup_system(double time_step)
 {
-    this->thermal_operator->reset(*this->thermal_operator_params);
+    this->thermal_operator->reset(this->thermal_operator_params);
     // TODO: won't work because of dof shift
     AssertThrow((this->thermal_operator)->get_boundary_values().size() == 0,
         dealii::StandardExceptions::ExcMessage("Under construction"));
@@ -383,7 +383,7 @@ void
 SuperCapacitorProblem<dim>::
 electrochemical_setup_system(double const time_step) 
 {   
-    this->electrochemical_operator->reset(*this->electrochemical_operator_params);
+    this->electrochemical_operator->reset(this->electrochemical_operator_params);
         
     this->system_matrix.block(0, 0).copy_from(this->electrochemical_operator->get_mass_matrix());
     this->system_matrix.block(0, 0).add(time_step, (this->electrochemical_operator)->get_stiffness_matrix());

@@ -43,8 +43,7 @@ private:
 
     typename dealii::Triangulation<dim> triangulation;
 
-    unsigned int const degree_p;
-    typename dealii::FESystem<dim>      fe; // TODO: probably can get rid of this one
+    std::shared_ptr<typename dealii::FESystem<dim> > fe; // TODO: would be nice to get rid of this guy
     typename dealii::DoFHandler<dim>    dof_handler;
     dealii::ConstraintMatrix            constraint_matrix;
     dealii::BlockSparsityPattern        sparsity_pattern;

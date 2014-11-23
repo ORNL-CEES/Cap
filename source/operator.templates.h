@@ -5,15 +5,15 @@
 //////////////////////// OPERATOR ////////////////////////////
 template <int dim>
 Operator<dim>::
-Operator(OperatorParameters<dim> const & parameters) 
-  : dof_handler(*(parameters.dof_handler))
-  , constraint_matrix(*(parameters.constraint_matrix))
-  , mp_values(parameters.mp_values)
-  , b_values(parameters.boundary_values)
+Operator(std::shared_ptr<OperatorParameters<dim> const> parameters) 
+  : dof_handler(*(parameters->dof_handler))
+  , constraint_matrix(*(parameters->constraint_matrix))
+  , mp_values(parameters->mp_values)
+  , b_values(parameters->boundary_values)
 {
-    this->stiffness_matrix.reinit(*(parameters.sparsity_pattern));
-    this->mass_matrix.reinit(*(parameters.sparsity_pattern));
-    this->load_vector.reinit(*(parameters.some_vector));
+    this->stiffness_matrix.reinit(*(parameters->sparsity_pattern));
+    this->mass_matrix.reinit(*(parameters->sparsity_pattern));
+    this->load_vector.reinit(*(parameters->some_vector));
 }
 
 template <int dim>

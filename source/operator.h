@@ -37,9 +37,9 @@ public:
 template <int dim>
 class Operator {
 public:
-    Operator(OperatorParameters<dim> const & parameters);
+    Operator(std::shared_ptr<OperatorParameters<dim> const> parameters);
     virtual ~Operator() { }
-    virtual void reset(OperatorParameters<dim> const & ) { }
+    virtual void reset(std::shared_ptr<OperatorParameters<dim> const> parameters) { }
 
     inline dealii::SparseMatrix<double> const & get_mass_matrix() const { return this->mass_matrix; }
     inline dealii::SparseMatrix<double> const & get_stiffness_matrix() const { return this->stiffness_matrix; }

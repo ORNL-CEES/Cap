@@ -19,8 +19,8 @@ public:
 template <int dim>
 class ThermalOperator : public Operator<dim> {
 public:
-    ThermalOperator(OperatorParameters<dim> const & parameters);
-    void reset(OperatorParameters<dim> const & parameters);
+    ThermalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters);
+    void reset(std::shared_ptr<OperatorParameters<dim> const> parameters);
     
 protected:
     void compute_thermal_operator_contribution();

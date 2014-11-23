@@ -11,19 +11,20 @@ namespace cache {
 
 template <int dim>
 ThermalOperator<dim>::
-ThermalOperator(OperatorParameters<dim> const & parameters)
+ThermalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters)
   : Operator<dim>(parameters)
 {
-    std::shared_ptr<boost::property_tree::ptree const> database = parameters.database;
+    std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
     this->temperature_component = database->get<unsigned int>("temperature_component");
 
-    ThermalOperatorParameters<dim> const * thermal_parameters = dynamic_cast<ThermalOperatorParameters<dim> const *>(&parameters);
+    std::shared_ptr<ThermalOperatorParameters<dim> const> thermal_parameters = 
+        std::dynamic_pointer_cast<ThermalOperatorParameters<dim> const>(parameters);
 }
 
 template <int dim>
 void
 ThermalOperator<dim>::
-reset(OperatorParameters<dim> const & parameters)
+reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 {
 std::cout<<"### reset thermal ###\n";
     this->stiffness_matrix = 0.0;

@@ -10,10 +10,10 @@ namespace cache {
 
 template <int dim>
 ElectrochemicalOperator<dim>::
-ElectrochemicalOperator(OperatorParameters<dim> const & parameters)
+ElectrochemicalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters)
   : Operator<dim>(parameters) 
 {
-    std::shared_ptr<boost::property_tree::ptree const> database = parameters.database;
+    std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
 
     this->solid_potential_component  = database->get<unsigned int>("solid_potential_component" );
     this->liquid_potential_component = database->get<unsigned int>("liquid_potential_component");
@@ -30,17 +30,20 @@ ElectrochemicalOperator(OperatorParameters<dim> const & parameters)
     this->anode_boundary_id          = database->get<dealii::types::boundary_id>("boundary_values.anode_boundary_id"  );
     this->cathode_boundary_id        = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id");
 
-    ElectrochemicalOperatorParameters<dim> const * electrochemical_parameters = dynamic_cast<ElectrochemicalOperatorParameters<dim> const *>(&parameters);
+    std::shared_ptr<ElectrochemicalOperatorParameters<dim> const> electrochemical_parameters = 
+        std::dynamic_pointer_cast<ElectrochemicalOperatorParameters<dim> const>(parameters);
 }
 
 template <int dim>
 void
 ElectrochemicalOperator<dim>::
-reset(OperatorParameters<dim> const & parameters)
+reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 {
 std::cout<<"### reset electrical ###\n";
-    ElectrochemicalOperatorParameters<dim> const * electrical_parameters = dynamic_cast<ElectrochemicalOperatorParameters<dim> const *>(&parameters);
-    this->capacitor_state = electrical_parameters->capacitor_state;
+    std::shared_ptr<ElectrochemicalOperatorParameters<dim> const> electrochemical_parameters = 
+        std::dynamic_pointer_cast<ElectrochemicalOperatorParameters<dim> const>(parameters);
+
+    this->capacitor_state = electrochemical_parameters->capacitor_state;
 
     this->stiffness_matrix = 0.0;
     this->mass_matrix = 0.0;
