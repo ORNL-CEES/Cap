@@ -9,6 +9,7 @@
 #include <cache/electrochemical_operator.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/fe/fe_system.h>
+#include <deal.II/fe/fe_values.h> // move to postprocessor
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/constraint_matrix.h>
 #include <deal.II/lac/block_sparsity_pattern.h>
@@ -34,12 +35,13 @@ private:
 
     void reset(std::shared_ptr<boost::property_tree::ptree const> params);
 
-    void electrochemical_setup_system(double const time_step);
+    void electrochemical_setup_system(double const time_step, cache::CapacitorState const capacitor_state);
     void electrochemical_evolve_one_time_step(double const time_step);
     void thermal_setup_system(double const time_step);
     void thermal_evolve_one_time_step(double const time_step);
 
-    void process_solution();
+    enum OutputData { VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
+    void process_solution(double * data);
 
     typename dealii::Triangulation<dim> triangulation;
 
