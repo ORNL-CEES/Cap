@@ -13,6 +13,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 
+namespace cache {
+
 //////////////////////// OPERATOR PARAMETERS ////////////////////////////
 template <int dim>
 class OperatorParameters { 
@@ -62,5 +64,7 @@ protected:
     std::map<dealii::types::global_dof_index, double> boundary_values;
     std::vector<dealii::types::global_dof_index> null_space_dof_indices;
 };
+
+} // end namespace cache
 
 #endif // CACHE_OPERATOR_H

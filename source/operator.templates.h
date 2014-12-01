@@ -2,6 +2,8 @@
 
 #include <deal.II/dofs/dof_tools.h>
 
+namespace cache {
+
 //////////////////////// OPERATOR ////////////////////////////
 template <int dim>
 Operator<dim>::
@@ -49,3 +51,5 @@ set_null_space(unsigned int const               component,
     } // end for dof
     std::cout<<"dofs = "<<this->dof_handler.n_dofs()<<" - "<<this->null_space_dof_indices.size()<<"\n";
 }
+
+} // end namespace cache
