@@ -31,8 +31,8 @@ SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters)
 {
     std::shared_ptr<boost::property_tree::ptree> database = parameters.database;
 
-    SuperCapacitorMPValuesParameters<dim, spacedim> const * super_capacitor_parameters = 
-        dynamic_cast<SuperCapacitorMPValuesParameters<dim, spacedim> const *>(&parameters);
+//    SuperCapacitorMPValuesParameters<dim, spacedim> const * super_capacitor_parameters = 
+//        dynamic_cast<SuperCapacitorMPValuesParameters<dim, spacedim> const *>(&parameters);
     
     this->separator_material_id          = database->get<dealii::types::material_id>("separator_material_id"        );
     this->anode_electrode_material_id    = database->get<dealii::types::material_id>("anode_electrode_material_id"  );
