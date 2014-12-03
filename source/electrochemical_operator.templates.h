@@ -246,9 +246,11 @@ compute_heat_source(dealii::BlockVector<double> const & potential_solution_vecto
                     dealii::Vector<double> &            thermal_load_vector) const
 {
     double coeff;
-    if (this->capacitor_state == GalvanostaticCharge) {
+    if ((this->capacitor_state == GalvanostaticCharge)
+        || (this->capacitor_state == PotentiostaticCharge)) {
         coeff = this->alpha;
-    } else if (this->capacitor_state == GalvanostaticDischarge) {
+    } else if ((this->capacitor_state == GalvanostaticDischarge) 
+        || (this->capacitor_state == PotentiostaticDischarge)) {
         coeff = - this->alpha;
     } else if (this->capacitor_state == Relaxation) {
         coeff = 0.0;
@@ -274,6 +276,9 @@ unsigned int const n_components = dealii::DoFTools::n_components(this->dof_handl
 dealii::ComponentMask mask(n_components, false);
 mask.set(this->temperature_component, true);
 DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
+std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
+dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
+dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
         end_cell = this->dof_handler.end();
@@ -305,8 +310,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
         cell->get_dof_indices(local_dof_indices);
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::Vector<double> tmp_load_vector = dof_extractor.extract_vector(cell_load_vector);
-// TODO:
-//std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), 672*2));
+std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
         this->constraint_matrix.distribute_local_to_global(tmp_load_vector, tmp_indices, thermal_load_vector);
     } // end for cell
 }

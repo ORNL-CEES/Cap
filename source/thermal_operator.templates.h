@@ -64,7 +64,7 @@ the_mask.set(this->temperature_component, true);
 DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
 std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
 dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
-dealii::types::global_dof_index const dof_shift = this->dof_handler.n_dofs() - dofs_per_component[this->temperature_component];
+dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
 std::cout<<"dof_shift = "<<dof_shift<<"\n";
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
@@ -124,7 +124,7 @@ the_mask.set(this->temperature_component, true);
 DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
 std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
 dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
-dealii::types::global_dof_index const dof_shift = this->dof_handler.n_dofs() - dofs_per_component[this->temperature_component];
+dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
 std::cout<<"dof_shift = "<<dof_shift<<"\n";
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
@@ -135,13 +135,6 @@ std::cout<<"dof_shift = "<<dof_shift<<"\n";
         if (cell->at_boundary()) {
             for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
                 if (cell->face(face)->at_boundary()) {
-//                    if (cell->face(face)->boundary_indicator() == this->anode_boundary_id) {
-//                        std::fill(heat_transfer_coefficient_values.begin(), heat_transfer_coefficient_values.end(), 0.0);
-//                    } else if (cell->face(face)->boundary_indicator() == this->cathode_boundary_id) {
-//                        std::fill(heat_transfer_coefficient_values.begin(), heat_transfer_coefficient_values.end(), this->heat_transfer_coefficient);
-//                    } else {
-//                        std::fill(heat_transfer_coefficient_values.begin(), heat_transfer_coefficient_values.end(), 0.0);
-//                    } // end if
                     (this->b_values)->get_values("heat_transfer_coefficient", cell, face, heat_transfer_coefficient_values);
                     (this->b_values)->get_values("ambient_temperature",       cell, face, ambient_temperature_values);
                     fe_face_values.reinit(cell, face);
