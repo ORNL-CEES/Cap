@@ -31,6 +31,146 @@ SuperCapacitorProblem<dim>::
 run(std::shared_ptr<boost::property_tree::ptree const> input_params,
     std::shared_ptr<boost::property_tree::ptree>       output_params)
 {                                               
+    int const test_case = input_params->get<int>("test_case");
+    if (test_case == 1) {
+        this->run_constant_current_charge_constant_voltage_discharge(input_params, output_params);
+    } else if (test_case == 2) {
+        this->run_constant_current_cycling                          (input_params, output_params);
+    } else {
+       std::runtime_error("Unrecognized test case");
+    } // end if
+}
+
+template <int dim>
+void
+SuperCapacitorProblem<dim>::
+run_constant_current_cycling
+    ( std::shared_ptr<boost::property_tree::ptree const> input_params
+    , std::shared_ptr<boost::property_tree::ptree>       output_params
+    )
+{                                               
+    std::cout<<"run...\n";                      
+    this->reset(input_params);
+
+    unsigned int const thermal_block         = 1;
+    unsigned int const electrochemical_block = 0;
+    dealii::Vector<double> & thermal_solution         = this->solution.block(thermal_block        );
+    dealii::Vector<double> & electrochemical_solution = this->solution.block(electrochemical_block);
+
+   
+
+{   // find initial solution for electrochemical
+    electrochemical_solution = 0.0;
+    double const dummy_time_step = 1.0;
+    this->electrochemical_setup_system(dummy_time_step, cache::Initialize);
+    unsigned int step = 0;
+    double solution_norm;
+    double old_solution_norm = 0.0;
+    while (true) {
+        ++step;
+        this->electrochemical_evolve_one_time_step(dummy_time_step);
+        solution_norm = electrochemical_solution.l2_norm();
+        if (std::abs(solution_norm - old_solution_norm) < 1.0e-8) {
+            break;
+        } // end if
+        old_solution_norm = solution_norm;
+    } // end while
+    std::cout<<step<<" iterations\n";
+}
+
+    thermal_solution = 0.0; // TODO: initialize to ambient temperature
+    
+
+    double const time_step    = input_params->get<double>("time_step"   );
+    double const initial_time = input_params->get<double>("initial_time");
+    double const final_time   = input_params->get<double>("final_time"  );
+    unsigned int const max_cycles = input_params->get<unsigned int>("max_cycles");
+
+    std::vector<double> max_temperature;
+    std::vector<double> heat_production;
+    std::vector<double> voltage;
+    std::vector<double> current;
+    std::vector<double> time;
+    std::vector<std::string> capacitor_state;
+    std::vector<int> cycle;
+
+    double current_time = initial_time;
+    unsigned int step          = 0;
+    unsigned int current_cycle = 0;
+    double data[N_DATA];
+
+    while (current_cycle < max_cycles) {
+        if (current_time > final_time)
+            break;
+        ++current_cycle;
+    
+        this->thermal_setup_system(time_step);
+        this->electrochemical_setup_system(time_step, cache::GalvanostaticCharge);
+        while (current_time <= final_time) {
+            ++step;
+            current_time += time_step;
+            this->electrochemical_evolve_one_time_step(time_step);
+            this->thermal_evolve_one_time_step        (time_step);
+            this->process_solution(data);
+            std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
+                <<"U="<<data[VOLTAGE]<<"  "
+                <<"I="<<data[CURRENT]<<"  "
+                <<"Q="<<data[JOULE_HEATING]<<"  "
+                <<"T="<<data[TEMPERATURE]<<"\n";
+            max_temperature.push_back(data[TEMPERATURE]);
+            heat_production.push_back(data[JOULE_HEATING]);
+            voltage.push_back(data[VOLTAGE]);
+            current.push_back(data[CURRENT]);
+            time.push_back(current_time);
+            cycle.push_back(current_cycle);
+            capacitor_state.push_back("charging");
+            if (data[VOLTAGE] >= 2.2) {
+                break;
+            } // end if
+        } // end while
+
+        this->electrochemical_setup_system(time_step, cache::GalvanostaticDischarge);
+        while (current_time <= final_time) {
+            ++step;
+            current_time += time_step;
+            this->electrochemical_evolve_one_time_step(time_step);
+            this->thermal_evolve_one_time_step        (time_step);
+            this->process_solution(data);
+            std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
+                <<"U="<<data[VOLTAGE]<<"  "
+                <<"I="<<data[CURRENT]<<"  "
+                <<"Q="<<data[JOULE_HEATING]<<"  "
+                <<"T="<<data[TEMPERATURE]<<"\n";
+            max_temperature.push_back(data[TEMPERATURE]);
+            heat_production.push_back(data[JOULE_HEATING]);
+            voltage.push_back(data[VOLTAGE]);
+            current.push_back(data[CURRENT]);
+            time.push_back(current_time);
+            cycle.push_back(current_cycle);
+            capacitor_state.push_back("discharging");
+            if (data[VOLTAGE] <= 1.1) {
+                break;
+            } // end if
+        } // end while
+
+    } // end while
+
+    output_params->put("max_temperature", to_string(max_temperature));
+    output_params->put("heat_production", to_string(heat_production));
+    output_params->put("voltage",         to_string(voltage)        );
+    output_params->put("current",         to_string(current)        );
+    output_params->put("time",            to_string(time)           );
+    output_params->put("capacitor_state", to_string(capacitor_state));
+    output_params->put("cycle",           to_string(cycle)          );
+}                                               
+template <int dim>
+void
+SuperCapacitorProblem<dim>::
+run_constant_current_charge_constant_voltage_discharge
+    ( std::shared_ptr<boost::property_tree::ptree const> input_params
+    , std::shared_ptr<boost::property_tree::ptree>       output_params
+    )
+{                                               
     std::cout<<"run...\n";                      
     this->reset(input_params);
 

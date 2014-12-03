@@ -21,10 +21,10 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("material_properties.alpha",                          0.0);       
                                                                      
     params.put("material_properties.specific_capacitance",           86.0e6);          
-    params.put("material_properties.separator_void_volume_fraction", 0.6);
-    params.put("material_properties.electrode_void_volume_fraction", 0.67);
-    params.put("material_properties.electrolyte_conductivity",       0.067);      
-    params.put("material_properties.solid_phase_conductivity",       52.1);      
+    params.put("material_properties.separator_void_volume_fraction",  0.6  );
+    params.put("material_properties.electrode_void_volume_fraction",  0.67 );
+    params.put("material_properties.electrolyte_conductivity",        0.067);      
+    params.put("material_properties.solid_phase_conductivity",        52.1 );      
 
     params.put("material_properties.separator_material_id",         2);          
     params.put("material_properties.anode_electrode_material_id",   1);
@@ -55,9 +55,10 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("boundary_values.lower_boundary_id",   4);
     params.put("boundary_values.other_boundary_id",   5);
 
-    params.put("time_step",     "0.1");
+    params.put("time_step",     "1.0");
     params.put("initial_time",  "0.0");
-    params.put("final_time",   "30.0");
+    params.put("final_time",   "300.0");
+    params.put("max_cycles",    "100");
 
     params.put("solid_potential_component",  0);
     params.put("liquid_potential_component", 1);
@@ -90,6 +91,7 @@ int main(int argc, char *argv[])
     // SETTING PROBLEM PARAMETERS
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
     put_default_parameters(*in);
+    in->put("test_case", 2);
 
     // SOLVING THE PROBLEM
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
@@ -98,16 +100,6 @@ int main(int argc, char *argv[])
     // POSTPROCESSING QUANTITIES OF INTEREST
     std::vector<double> max_temperature = 
         cache::to_vector<double>(out->get<std::string>("max_temperature"));
-    BOOST_FOREACH(double const & val, max_temperature) { 
-        std::cout<<"  "<<val;
-    }
-    std::cout<<"\n";
-    std::vector<std::string> capacitor_state = 
-        cache::to_vector<std::string>(out->get<std::string>("capacitor_state"));
-    BOOST_FOREACH(std::string const & val, capacitor_state) { 
-        std::cout<<"  "<<val;
-    }
-    std::cout<<"\n";
 
     std::cout<<"goodbye cruel world\n";
 
