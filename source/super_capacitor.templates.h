@@ -1,5 +1,6 @@
 #include <cache/super_capacitor.h>
 #include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_values.h> // move to postprocessor
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -64,22 +65,37 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
     double const initial_time = input_params->get<double>("initial_time");
     double const final_time   = input_params->get<double>("final_time"  );
 
-    double time = initial_time;
+    std::vector<double> max_temperature;
+    std::vector<double> heat_production;
+    std::vector<double> voltage;
+    std::vector<double> current;
+    std::vector<double> time;
+    std::vector<std::string> capacitor_state;
+    std::vector<int> cycle;
+
+    double current_time = initial_time;
     unsigned int step = 0;
     double data[N_DATA];
 
     this->thermal_setup_system(time_step);
     this->electrochemical_setup_system(time_step, cache::GalvanostaticCharge);
-    while (time <= final_time) {
+    while (current_time <= final_time) {
         ++step;
-        time += time_step;
+        current_time += time_step;
         this->electrochemical_evolve_one_time_step(time_step);
-        double temperature = thermal_solution.linfty_norm();
+        this->thermal_evolve_one_time_step        (time_step);
         this->process_solution(data);
-        std::cout<<std::setprecision(5)<<"t="<<time<<"  "
+        std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
             <<"U="<<data[VOLTAGE]<<"  "
             <<"I="<<data[CURRENT]<<"  "
-            <<"Q="<<data[JOULE_HEATING]<<"\n";
+            <<"Q="<<data[JOULE_HEATING]<<"  "
+            <<"T="<<data[TEMPERATURE]<<"\n";
+        max_temperature.push_back(data[TEMPERATURE]);
+        heat_production.push_back(data[JOULE_HEATING]);
+        voltage.push_back(data[VOLTAGE]);
+        current.push_back(data[CURRENT]);
+        time.push_back(current_time);
+        capacitor_state.push_back("charging");
         if (data[VOLTAGE] >= 2.2) {
             break;
         } //
@@ -87,30 +103,30 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
     } // end while
 
     this->electrochemical_setup_system(time_step, cache::PotentiostaticDischarge);
-    while (time <= final_time) {
+    while (current_time <= final_time) {
         ++step;
-        time += time_step;
+        current_time += time_step;
         this->electrochemical_evolve_one_time_step(time_step);
+        this->thermal_evolve_one_time_step        (time_step);
         this->process_solution(data);
-        std::cout<<std::setprecision(5)<<"t="<<time<<"  "
+        std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
             <<"U="<<data[VOLTAGE]<<"  "
             <<"I="<<data[CURRENT]<<"  "
-            <<"Q="<<data[JOULE_HEATING]<<"\n";
+            <<"Q="<<data[JOULE_HEATING]<<"  "
+            <<"T="<<data[TEMPERATURE]<<"\n";
+        max_temperature.push_back(data[TEMPERATURE]);
+        heat_production.push_back(data[JOULE_HEATING]);
+        voltage.push_back(data[VOLTAGE]);
+        current.push_back(data[CURRENT]);
+        time.push_back(current_time);
+        capacitor_state.push_back("discharging");
     } // end while
 
-    std::vector<double> max_temperature(10, 1.0);          
-    std::vector<double> heat_production(10, 2.0);          
-    std::vector<double> voltage(10, 3.0);
-    std::vector<double> current(10, 4.0);
-    std::vector<double> t(10, 5.0);
-    std::vector<std::string> capacitor_state(10, "charging");
-    std::vector<int> cycle(10, 7);
-    
     output_params->put("max_temperature", to_string(max_temperature));
     output_params->put("heat_production", to_string(heat_production));
     output_params->put("voltage",         to_string(voltage));
     output_params->put("current",         to_string(current));
-    output_params->put("time",            to_string(t));
+    output_params->put("time",            to_string(time));
     output_params->put("capacitor_state", to_string(capacitor_state));
     output_params->put("cycle",           to_string(cycle));
 }                                               
@@ -307,11 +323,21 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     this->thermal_operator_params->constraint_matrix = &(this->constraint_matrix);
     this->thermal_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(1, 1));
     this->thermal_operator_params->some_vector       = &(this->solution.block(1));
-    this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
+    this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
     this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->thermal_operator = std::shared_ptr<cache::ThermalOperator<dim> >
         (new ThermalOperator<dim>(this->thermal_operator_params));
 
+
+    // initialize postprocessor
+    this->post_processor_params = std::shared_ptr<cache::SuperCapacitorPostprocessorParameters<dim> >
+        (new cache::SuperCapacitorPostprocessorParameters<dim>(database));
+    this->post_processor_params->dof_handler     = &(this->dof_handler);
+    this->post_processor_params->solution        = &(this->solution   );
+    this->post_processor_params->mp_values       = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
+    this->post_processor_params->boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
+    this->post_processor = std::shared_ptr<cache::SuperCapacitorPostprocessor<dim> >
+        (new cache::SuperCapacitorPostprocessor<dim>(this->post_processor_params));
 
 }
 
@@ -326,16 +352,16 @@ thermal_setup_system(double time_step)
         dealii::StandardExceptions::ExcMessage("Under construction"));
 
     unsigned int const thermal_block = 1; // TODO: ...
-    dealii::SparseMatrix<double> & thermal_matrix     = this->system_matrix.block(thermal_block, thermal_block);
-    dealii::Vector<double> &       thermal_solution   = this->solution     .block(thermal_block);
-    dealii::Vector<double> &       thermal_rhs_vector = this->system_rhs   .block(thermal_block);
+    dealii::SparseMatrix<double> & thermal_system_matrix = this->system_matrix.block(thermal_block, thermal_block);
+    dealii::Vector<double> &       thermal_solution      = this->solution     .block(thermal_block);
+    dealii::Vector<double> &       thermal_system_rhs    = this->system_rhs   .block(thermal_block);
 
-    this->system_matrix.block(1, 1).copy_from(this->thermal_operator->get_mass_matrix());
-    this->system_matrix.block(1, 1).add(time_step, this->thermal_operator->get_stiffness_matrix());
+    thermal_system_matrix.copy_from(this->thermal_operator->get_mass_matrix());
+    thermal_system_matrix.add(time_step, this->thermal_operator->get_stiffness_matrix());
 
-    dealii::MatrixTools::apply_boundary_values(this->thermal_operator->get_boundary_values(), this->system_matrix.block(1, 1), this->solution.block(1), this->system_rhs.block(1), false);
+    dealii::MatrixTools::apply_boundary_values(this->thermal_operator->get_boundary_values(), thermal_system_matrix, thermal_solution, thermal_system_rhs, false);
 
-    this->inverse_thermal_system_matrix.initialize(this->system_matrix.block(1, 1));
+    this->inverse_thermal_system_matrix.initialize(thermal_system_matrix);
 
 }
 
@@ -359,7 +385,7 @@ void SuperCapacitorProblem<dim>::
 electrochemical_evolve_one_time_step(double const time_step)
 { 
     std::map<dealii::types::global_dof_index, double>::const_iterator it,
-        begin_it = this->electrochemical_operator->get_boundary_values().cend(),
+        begin_it = this->electrochemical_operator->get_boundary_values().cbegin(),
         end_it = this->electrochemical_operator->get_boundary_values().cend();
     if (this->symmetric_correction) {
         for (it = begin_it ; it != end_it; ++it) {
@@ -436,81 +462,11 @@ void
 SuperCapacitorProblem<dim>::
 process_solution(double * data) 
 {   
-    std::fill(data, data+N_DATA, 0.0);
-    dealii::types::boundary_id const cathode_boundary_id = 1; //database->get<dealii::types::boundary_id>("cathode_boundary_id");
-    std::shared_ptr<MPValues<dim> const> mp_values = electrochemical_operator_params->mp_values;
-    unsigned int const temperature_component      = 2; //database->get<unsigned int>("temperature_component"     );
-    unsigned int const solid_potential_component  = 0; //database->get<unsigned int>("solid_potential_component" );
-    unsigned int const liquid_potential_component = 1; //database->get<unsigned int>("liquid_potential_component");
-    dealii::FEValuesExtractors::Scalar const solid_potential (solid_potential_component );
-    dealii::FEValuesExtractors::Scalar const liquid_potential(liquid_potential_component);
-    dealii::FEValuesExtractors::Scalar const temperature     (temperature_component     );
-
-    dealii::Triangulation<dim> const & tria_ = this->dof_handler.get_tria();
-    dealii::Vector<double> joule_heating(tria_.n_active_cells());
-
-    dealii::FiniteElement<dim> const & fe_ = this->dof_handler.get_fe(); // TODO: don't want to use directly fe because we might create postprocessor that will only know about dof_handler
-    dealii::QGauss<dim>   quadrature_rule     (fe_.degree+1);
-    dealii::QGauss<dim-1> face_quadrature_rule(fe_.degree+1);
-    dealii::FEValues<dim>     fe_values     (fe_, quadrature_rule,      dealii::update_values | dealii::update_gradients | dealii::update_JxW_values);
-    dealii::FEFaceValues<dim> fe_face_values(fe_, face_quadrature_rule, dealii::update_values | dealii::update_gradients | dealii::update_JxW_values | dealii::update_normal_vectors);
-    unsigned int const dofs_per_cell   = fe_.dofs_per_cell;
-    unsigned int const n_q_points      = quadrature_rule     .size();
-    unsigned int const n_face_q_points = face_quadrature_rule.size();
-    std::vector<double>                  solid_electrical_conductivity_values (n_q_points);
-    std::vector<double>                  liquid_electrical_conductivity_values(n_q_points);
-    std::vector<dealii::Tensor<1, dim> > solid_potential_gradients            (n_q_points);
-    std::vector<dealii::Tensor<1, dim> > liquid_potential_gradients           (n_q_points);
-
-    std::vector<double>                  face_solid_electrical_conductivity_values(n_face_q_points);
-    std::vector<double>                  face_solid_potential_values              (n_face_q_points);
-    std::vector<dealii::Tensor<1, dim> > face_solid_potential_gradients           (n_face_q_points);
-    std::vector<dealii::Point<dim> >     normal_vectors                           (n_face_q_points);
-    typename dealii::DoFHandler<dim>::active_cell_iterator
-        cell = this->dof_handler.begin_active(),
-        end_cell = this->dof_handler.end();
-    for ( ; cell != end_cell; ++cell) {
-        fe_values.reinit(cell);
-        mp_values->get_values("solid_electrical_conductivity",  cell, solid_electrical_conductivity_values );
-        mp_values->get_values("liquid_electrical_conductivity", cell, liquid_electrical_conductivity_values);
-        fe_values[solid_potential ].get_function_gradients(this->solution, solid_potential_gradients );
-        fe_values[liquid_potential].get_function_gradients(this->solution, liquid_potential_gradients);
-        for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
-            data[JOULE_HEATING] += 
-              ( solid_electrical_conductivity_values [q_point] * solid_potential_gradients [q_point] * solid_potential_gradients [q_point]
-              + liquid_electrical_conductivity_values[q_point] * liquid_potential_gradients[q_point] * liquid_potential_gradients[q_point]
-              ) * fe_values.JxW(q_point);
-            data[VOLUME] += fe_values.JxW(q_point);
-        } // end for quadrature point
-        if (cell->at_boundary()) {
-            for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
-                if (cell->face(face)->at_boundary()) {
-if (cell->face(face)->boundary_indicator() == cathode_boundary_id) {
-                    fe_face_values.reinit(cell, face);
-                    mp_values->get_values("solid_electrical_conductivity", cell, face_solid_electrical_conductivity_values); // TODO: should take face as an argument...
-                    fe_face_values[solid_potential].get_function_gradients(this->solution, face_solid_potential_gradients);
-                    fe_face_values[solid_potential].get_function_values   (this->solution, face_solid_potential_values   );
-                    normal_vectors = fe_face_values.get_normal_vectors();
-                    for (unsigned int face_q_point = 0; face_q_point < n_face_q_points; ++face_q_point) {
-                        data[CURRENT] += 
-                          ( face_solid_electrical_conductivity_values [face_q_point] * face_solid_potential_gradients[face_q_point] 
-                          * normal_vectors[face_q_point] 
-                          ) * fe_face_values.JxW(face_q_point); 
-                        data[VOLTAGE] += face_solid_potential_values[face_q_point] * fe_face_values.JxW(face_q_point);
-                        data[SURFACE_AREA] += fe_face_values.JxW(face_q_point);
-                    } // end for face quadrature point
-} // end if cathode
-                } // end if face at boundary
-            } // end for face
-        } // end if cell at boundary
-    } // end for cell
-    data[VOLTAGE] /= data[SURFACE_AREA];
-//    std::cout
-//        <<"I="<<data[CURRENT]<<"  "
-//        <<"U="<<data[VOLTAGE]<<"  "
-//        <<"Q="<<data[JOULE_HEATING]<<"  "
-//        <<"A="<<data[SURFACE_AREA]<<"  "
-//        <<"V="<<data[VOLUME]<<"\n";
+    this->post_processor->reset(this->post_processor_params);
+    this->post_processor->get("voltage",         data[VOLTAGE]      );
+    this->post_processor->get("current",         data[CURRENT]      );
+    this->post_processor->get("joule_heating",   data[JOULE_HEATING]);
+    this->post_processor->get("max_temperature", data[TEMPERATURE]  );
 }          
 
 } // end namespace cache

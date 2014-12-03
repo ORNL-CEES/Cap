@@ -5,11 +5,10 @@
 #include <cache/mp_values.h>
 #include <cache/boundary_values.h>
 #include <cache/thermal_operator.h>
-#include <cache/thermal_operator.h>
 #include <cache/electrochemical_operator.h>
+#include <cache/post_processor.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/fe/fe_system.h>
-#include <deal.II/fe/fe_values.h> // move to postprocessor
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/constraint_matrix.h>
 #include <deal.II/lac/block_sparsity_pattern.h>
@@ -40,7 +39,7 @@ private:
     void thermal_setup_system(double const time_step);
     void thermal_evolve_one_time_step(double const time_step);
 
-    enum OutputData { VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
+    enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
     void process_solution(double * data);
 
     typename dealii::Triangulation<dim> triangulation;
@@ -61,6 +60,10 @@ private:
     std::shared_ptr<cache::ElectrochemicalOperator<dim> >           electrochemical_operator;
     std::shared_ptr<cache::ThermalOperatorParameters<dim> >         thermal_operator_params;
     std::shared_ptr<cache::ThermalOperator<dim> >                   thermal_operator;
+
+    std::shared_ptr<cache::SuperCapacitorPostprocessorParameters<dim> > post_processor_params;
+    std::shared_ptr<cache::SuperCapacitorPostprocessor<dim> >           post_processor;
+
 
     bool const symmetric_correction;
     std::map<dealii::types::global_dof_index, double> rhs_set;

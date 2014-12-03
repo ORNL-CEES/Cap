@@ -6,18 +6,6 @@ SET(TARGET "cap")
 
 INCLUDE_DIRECTORIES(include)
 
-SET(BOOST_INSTALL_DIR /Users/qdi/Projects/dtk/testing-clang/install/dbg/boost)
-# setup boost
-INCLUDE_DIRECTORIES(${BOOST_INSTALL_DIR}/include)
-SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-FIND_LIBRARY(BOOST_PROGRAM_OPTIONS_LIB NAMES boost_program_options PATHS ${BOOST_INSTALL_DIR}/lib NO_DEFAULT_PATH)
-IF (NOT BOOST_PROGRAM_OPTIONS_LIB)
-    MESSAGE(FATAL_ERROR "Boost program_options library not found in ${BOOST_INSTALL_DIR}/lib")
-ELSE()
-    MESSAGE("Using boost program_options library ${BOOST_PROGRAM_OPTIONS_LIB}")
-ENDIF()
-
 # Declare all source files the target consists of:
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -31,6 +19,7 @@ ADD_LIBRARY( cache
     include/cache/operator.cc
     include/cache/thermal_operator.cc
     include/cache/electrochemical_operator.cc
+    include/cache/post_processor.cc
     include/cache/utils.cc
     include/cache/super_capacitor.cc
     )
