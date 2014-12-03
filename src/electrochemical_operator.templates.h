@@ -5,6 +5,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_values.h>
+#include <numeric>
 
 namespace cache {
 
