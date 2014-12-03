@@ -1,0 +1,70 @@
+\documentclass[10pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+
+
+
+\begin{document}
+
+
+\footnotesize
+\begin{tabular}{llll}
+Path & Parameter & Value & Units \\
+\texttt{material\_properties.separator\_density}               & $\rho^{separator}$    & 1.2528e3  & [kg/m$^3$] \\
+\texttt{material\_properties.electrode\_density}               & $\rho^{electrode}$    & 0.93e3    & [kg/m$^3$] \\
+\texttt{material\_properties.collector\_density}               & $\rho^{collector}$    & 2.7e3     & [kg/m$^3$] \\
+\texttt{material\_properties.separator\_heat\_capacity}        & $C_p^{separator}$     & 3.1404e3  & [J/K] \\
+\texttt{material\_properties.electrode\_heat\_capacity}        & $C_p^{electrode}$     & 1.34e3    & [J/K] \\
+\texttt{material\_properties.collector\_heat\_capacity}        & $C_p^{collector}$     & 0.89815e3 & [J/K] \\
+\texttt{material\_properties.separator\_thermal\_conductivity} & $\lambda^{separator}$ & 0.0019e2  & [W/m$\cdot$K] \\
+\texttt{material\_properties.electrode\_thermal\_conductivity} & $\lambda^{electrode}$ & 0.0011e2  & [W/m$\cdot$K] \\
+\texttt{material\_properties.collector\_thermal\_conductivity} & $\lambda^{collector}$ & 2.37e2    & [W/m$\cdot$K] \\
+\texttt{operating\_conditions.charge\_potential}           & $U_{charge}$    & 2.2     & [V] \\
+\texttt{operating\_conditions.discharge\_potential}        & $U_{discharge}$ & 1.1     & [V] \\
+\texttt{operating\_conditions.charge\_current\_density}    & $I_{charge}$    & 324.65  & [A/m${2}$] \\
+\texttt{operating\_conditions.discharge\_current\_density} & $I_{discharge}$ & -324.65 & [A/m${2}$] \\
+\texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & [F/m$^3$] \\
+\texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & [1] \\
+\texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & [1] \\
+\texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_l$             & 0.067     & [S/m] \\
+\texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_s$             & 52.1      & [S/m] \\
+\texttt{geometry.electrode\_width} & $w^{electrode}$ & 50.0e-6 & [m] \\
+\texttt{geometry.separator\_width} & $w^{separator}$ & 25.0e-6 & [m] \\
+\texttt{geometry.collector\_width} & $w^{collector}$ &  5.0e-6 & [m] \\
+\texttt{geometry.sandwich\_height} & $h^{sandwich}$  & 25.0e-6 & [m] \\
+\texttt{operating\_conditions.max\_cycles}      &  & 100  & [1] \\
+\texttt{operating\_conditions.relaxation\_time} & $t_{pause}$     &  5.0 & [s] \\
+\\
+\texttt{upper\_heat\_transfer\_coefficient} & $h$   & 8.0e-2 & [W/m$^2\cdot$K] \\
+\texttt{lower\_heat\_transfer\_coefficient} & $h$   & 0.0    & [W/m$^2\cdot$K] \\
+\texttt{left\_heat\_transfer\_coefficient}  & $h$   & 0.0    & [W/m$^2\cdot$K] \\
+\texttt{right\_heat\_transfer\_coefficient} & $h$   & 0.0    & [W/m$^2\cdot$K] \\
+\texttt{upper\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
+\texttt{lower\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
+\texttt{left\_ambient\_temperature}         & $T_a$ & 0.0    & [K] \\
+\texttt{right\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
+\texttt{.initial\_time}    & $t_0$           &  0.0 & [s] \\
+\texttt{.final\_time}      & $t_1$           & 30.0 & [s] \\
+\texttt{.time\_step}       & $\Delta t$      &  0.1 & [s] \\
+\texttt{.mesh\_resolution} &  & [1 -- 10] \\
+\texttt{.dim}              &  & 2 \\
+\end{tabular}
+
+
+\begin{tabular}{llll}
+\texttt{output.max\_temperatures} & $\max{T(t_i)}$ & [K] \\
+\texttt{output.Joule\_heating} & $Q(t_i)$ & [W] \\
+\texttt{output.voltage} & $U$ & [V] \\
+\texttt{output.current} & $I$ & [A] \\
+\texttt{output.time} & $t_i$ & [s] \\
+\texttt{output.cycle} &  & [1] \\
+\texttt{output.power\_density} & $P$ & [W/m$^3$] \\
+\texttt{output.energy\_density} & $E$ & [J/m$^3$] \\
+\end{tabular}
+
+\end{document}  
