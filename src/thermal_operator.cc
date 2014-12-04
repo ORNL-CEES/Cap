@@ -1,11 +1,11 @@
-#include <cache/thermal_operator.templates.h>
+#include <cap/thermal_operator.templates.h>
 
-namespace cache {
+namespace cap {
 
 template class ThermalOperatorParameters<2>;
 template class ThermalOperator<2>;
 template class ThermalOperatorParameters<3>;
 template class ThermalOperator<3>;
 
-} // end namespace cache
+} // end namespace cap
 

@@ -1,11 +1,11 @@
-#include <cache/post_processor.h>
+#include <cap/post_processor.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <algorithm>
 #include <functional>
 #include <limits>
 
-namespace cache {
+namespace cap {
 
 //////////////////////// POSTPROCESSOR ////////////////////////////
 template <int dim>
@@ -145,4 +145,4 @@ if (cell->face(face)->boundary_indicator() == cathode_boundary_id) {
 //    std::for_each(this->values.begin(), this->values.end(), [] (std::unordered_map<std::string, double>::value_type & p) { std::cout<<p.first<<"  "<<p.second<<"\n"; });
 }
 
-} // end namespace cache
+} // end namespace cap

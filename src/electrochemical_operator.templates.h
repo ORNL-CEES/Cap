@@ -1,5 +1,5 @@
-#include <cache/electrochemical_operator.h>
-#include <cache/dof_extractor.h>
+#include <cap/electrochemical_operator.h>
+#include <cap/dof_extractor.h>
 #include <deal.II/base/function.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -7,7 +7,7 @@
 #include <deal.II/fe/fe_values.h>
 #include <numeric>
 
-namespace cache {
+namespace cap {
 
 template <int dim>
 ElectrochemicalOperator<dim>::
@@ -316,4 +316,4 @@ std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std:
     } // end for cell
 }
 
-} // end namespace cache
+} // end namespace cap

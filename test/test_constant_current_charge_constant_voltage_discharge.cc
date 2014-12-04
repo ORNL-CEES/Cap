@@ -1,5 +1,5 @@
-#include <cache/super_capacitor.h>
-#include <cache/utils.h>
+#include <cap/super_capacitor.h>
+#include <cap/utils.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
 #include <iostream>
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     database->put("upper_boundary_id",             3);
     database->put("lower_boundary_id",             4);
     database->put("other_boundary_id",             5);
-    cache::SuperCapacitorProblem<2> super_capacitor(database);
+    cap::SuperCapacitorProblem<2> super_capacitor(database);
 
     // SETTING PROBLEM PARAMETERS
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
@@ -98,13 +98,13 @@ int main(int argc, char *argv[])
 
     // POSTPROCESSING QUANTITIES OF INTEREST
     std::vector<double> max_temperature = 
-        cache::to_vector<double>(out->get<std::string>("max_temperature"));
+        cap::to_vector<double>(out->get<std::string>("max_temperature"));
     BOOST_FOREACH(double const & val, max_temperature) { 
         std::cout<<"  "<<val;
     }
     std::cout<<"\n";
     std::vector<std::string> capacitor_state = 
-        cache::to_vector<std::string>(out->get<std::string>("capacitor_state"));
+        cap::to_vector<std::string>(out->get<std::string>("capacitor_state"));
     BOOST_FOREACH(std::string const & val, capacitor_state) { 
         std::cout<<"  "<<val;
     }

@@ -1,4 +1,6 @@
-#include <cache/dof_extractor.templates.h>
+#include <cap/dof_extractor.templates.h>
+
+namespace cap {
 
 DoFExtractor::
 DoFExtractor(dealii::ComponentMask const & row_mask, 
@@ -58,3 +60,5 @@ template dealii::FullMatrix<double> DoFExtractor::extract_matrix(dealii::FullMat
 template dealii::FullMatrix<float> DoFExtractor::extract_matrix(dealii::FullMatrix<float> const & ) const;
 template dealii::Vector<double> DoFExtractor::extract_vector(dealii::Vector<double> const & ) const;
 template dealii::Vector<float> DoFExtractor::extract_vector(dealii::Vector<float> const & ) const;
+
+} // end namespace cap

@@ -1,5 +1,5 @@
-#ifndef CACHE_BOUNDARY_VALUES_H
-#define CACHE_BOUNDARY_VALUES_H
+#ifndef CAP_BOUNDARY_VALUES_H
+#define CAP_BOUNDARY_VALUES_H
 
 //#include <deal.II/base/types.h>
 //#include <deal.II/base/tensor.h>
@@ -82,4 +82,4 @@ protected:
     double lower_heat_transfer_coefficient;
 };
 
-#endif // CACHE_BOUNDARY_VALUES_H
+#endif // CAP_BOUNDARY_VALUES_H

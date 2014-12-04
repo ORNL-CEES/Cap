@@ -1,8 +1,8 @@
-#ifndef CACHE_POSTPROCESSOR_H
-#define CACHE_POSTPROCESSOR_H
+#ifndef CAP_POSTPROCESSOR_H
+#define CAP_POSTPROCESSOR_H
 
-#include <cache/mp_values.h>
-#include <cache/boundary_values.h>
+#include <cap/mp_values.h>
+#include <cap/boundary_values.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/sparse_matrix.h>
 //#include <deal.II/lac/vector.h>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace cache {
+namespace cap {
 
 //////////////////////// POSTPROCESSOR PARAMETERS ////////////////////////////
 template <int dim>
@@ -70,6 +70,6 @@ public:
 
 };
 
-} // end namespace cache
+} // end namespace cap
 
-#endif // CACHE_POSTPROCESSOR_H
+#endif // CAP_POSTPROCESSOR_H

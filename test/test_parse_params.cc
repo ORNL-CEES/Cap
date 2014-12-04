@@ -1,4 +1,4 @@
-#include <cache/utils.h>
+#include <cap/utils.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/exceptions.h>
 #include <boost/foreach.hpp>
@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
        dealii::StandardExceptions::ExcInternalError());
 
    // ensure to_string and to_vector are working properly
-   params.put("ones", cache::to_string(std::vector<double>(10, 1.0)));
-   params.put("yes",  cache::to_string(std::vector<std::string>(10, "yes")));
-   std::vector<double> ones = cache::to_vector<double>(params.get<std::string>("ones"));
-   std::vector<std::string> yes = cache::to_vector<std::string>(params.get<std::string>("yes"));
+   params.put("ones", cap::to_string(std::vector<double>(10, 1.0)));
+   params.put("yes",  cap::to_string(std::vector<std::string>(10, "yes")));
+   std::vector<double> ones = cap::to_vector<double>(params.get<std::string>("ones"));
+   std::vector<std::string> yes = cap::to_vector<std::string>(params.get<std::string>("yes"));
    BOOST_FOREACH(double const & val, ones) 
        Assert(val == 1.0, dealii::StandardExceptions::ExcInternalError());
    BOOST_FOREACH(std::string const & val, yes) 

@@ -6,6 +6,7 @@
 \usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
 								% TeX will automatically convert eps --> pdf in pdflatex		
 \usepackage{amssymb}
+\usepackage{amsmath}
 
 
 
@@ -66,5 +67,51 @@ Path & Parameter & Value & Units \\
 \texttt{output.power\_density} & $P$ & [W/m$^3$] \\
 \texttt{output.energy\_density} & $E$ & [J/m$^3$] \\
 \end{tabular}
+
+\section{Geometry}
+
+\section{Governing equations}
+%----------------------------------------------------------------------------- 
+% ELECTROCHEMICAL
+%----------------------------------------------------------------------------- 
+Governing equations for the electrolyte potential $\Phi_l$ and the solid phase
+potential $\Phi_s$ are
+\begin{align}
+aC (\dot{\Phi}_l - \dot{\Phi}_s) &= \nabla \cdot (\sigma_l \nabla \Phi_l) \text{ on } \Omega \\
+aC (\dot{\Phi}_s - \dot{\Phi}_l) &= \nabla \cdot (\sigma_s \nabla \Phi_s) \text{ on } \Omega
+\end{align}
+$aC$ is the specific capacitance, 
+$\sigma_l=\sigma_l\varepsilon^{1.5}$ and $\sigma_s=\sigma_s(1-\varepsilon)^{1.5}$ 
+are the electrolyte and solid phase electrical conductivities, 
+$\varepsilon$ is the porous medium void volume fraction.
+
+anode 
+
+cathode
+
+Boundary conditions, choose from either potentiostatic charge/discharge
+(Dirichlet)
+\begin{equation}
+\Phi_s = u_{charge/discharge} \text{ on } \Gamma
+\end{equation}
+or galvanostatic charge/discharge (Neumann)
+\begin{equation}
+- \sigma_s \frac{\partial \Phi_s}{\partial n} = \pm i_{charge/discharge} \text{ on } \Gamma
+\end{equation}
+
+%----------------------------------------------------------------------------- 
+% THERMAL
+%----------------------------------------------------------------------------- 
+The temperature field $\Theta$ obeys
+\begin{equation}
+\rho C_p \dot{\Theta} = \nabla \cdot (\lambda \nabla \Theta) + q \text{ on } \Omega
+\end{equation}
+Material properties $\rho$, $C_p$ and $\lambda$ are density, heat capacity and
+thermal conductivity.
+The last two terms account for Joule heating.
+Robin boundary condition with heat transfer coefficient $h$
+\begin{equation}
+- \lambda \frac{\partial \Theta}{\partial n} = h (\Theta - \Theta_{ambient}) \text{ on } \Gamma
+\end{equation}
 
 \end{document}  

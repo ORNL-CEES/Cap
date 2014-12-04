@@ -1,5 +1,5 @@
-#ifndef CACHE_MP_VALUES_H
-#define CACHE_MP_VALUES_H
+#ifndef CAP_MP_VALUES_H
+#define CAP_MP_VALUES_H
 
 //#include <deal.II/base/types.h>
 //#include <deal.II/base/tensor.h>
@@ -7,6 +7,8 @@
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/dofs/dof_accessor.h>
 #include <boost/property_tree/ptree.hpp>
+
+namespace cap {
 
 //////////////////////// MP VALUES PARAMETERS ////////////////////////////
 template <int dim, int spacedim=dim>
@@ -80,4 +82,6 @@ protected:
 
 };
 
-#endif // CACHE_MP_VALUES_H
+} // end namespace cap
+
+#endif // CAP_MP_VALUES_H

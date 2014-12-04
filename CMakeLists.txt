@@ -1,35 +1,35 @@
-SET(DEAL_II_DIR /Users/qdi/Scratch/install/dealii/dev)
-SET( CAP_DATA_DIR /Users/qdi/Projects/cap )
-
-# Set the name of the project and target:
-SET(TARGET "cap")
+IF(NOT DEFINED DEAL_II_INSTALL_DIR)
+    MESSAGE(FATAL_ERROR "\n"
+        "You must pass a flag -DDEAL_II_INSTALL_DIR=/path/to/your/install\n"
+        "to cmake.\n"
+        )
+ENDIF()
+SET(CAP_DATA_DIR /Users/qdi/Projects/cap)
 
 INCLUDE_DIRECTORIES(include)
 
-# Declare all source files the target consists of:
-if(COMMAND cmake_policy)
+IF(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY lib )
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib )
-ADD_LIBRARY( cache
-    include/cache/mp_values.cc
-    include/cache/boundary_values.cc
-    include/cache/dof_extractor.cc
-    include/cache/operator.cc
-    include/cache/thermal_operator.cc
-    include/cache/electrochemical_operator.cc
-    include/cache/post_processor.cc
-    include/cache/utils.cc
-    include/cache/super_capacitor.cc
+ENDIF(COMMAND cmake_policy)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
+ADD_LIBRARY(cap
+    include/cap/mp_values.cc
+    include/cap/boundary_values.cc
+    include/cap/dof_extractor.cc
+    include/cap/operator.cc
+    include/cap/thermal_operator.cc
+    include/cap/electrochemical_operator.cc
+    include/cap/post_processor.cc
+    include/cap/utils.cc
+    include/cap/super_capacitor.cc
     )
 
-# Usually, you will not need to modify anything beyond this point...
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 FIND_PACKAGE(deal.II 8.0 QUIET
-  HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
+  HINTS ${DEAL_II_INSTALL_DIR}
   )
 IF(NOT ${deal.II_FOUND})
   MESSAGE(FATAL_ERROR "\n"
@@ -42,12 +42,18 @@ ENDIF()
 MESSAGE(STATUS "Found deal.II version ${DEAL_II_PACKAGE_VERSION} at '${deal.II_DIR}'")
 
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
-PROJECT(${TARGET})
+PROJECT(cap)
 #DEAL_II_INVOKE_AUTOPILOT()
-#TARGET_LINK_LIBRARIES(${TARGET} ${BOOST_PROGRAM_OPTIONS_LIB})
 
-DEAL_II_SETUP_TARGET( cache ) 
+DEAL_II_SETUP_TARGET(cap) 
 
 ENABLE_TESTING()
-ADD_SUBDIRECTORY( test )
-ADD_SUBDIRECTORY( doc )
+ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(doc)
+
+#CTEST_START(Nightly)
+#SET(CTEST_DROP_METHOD "http")
+#SET(CTEST_DROP_SITE "qdi-imac.ornl.gov")
+#SET(CTEST_DROP_LOCATION "/~qdi/CDash/submit.php?project=CAP")
+#SET(CTEST_DROP_SITE_CDASH TRUE)
+#CTEST_SUBMIT()

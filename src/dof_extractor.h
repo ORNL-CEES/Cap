@@ -1,10 +1,12 @@
-#ifndef CACHE_DOF_EXTRACTOR_H
-#define CACHE_DOF_EXTRACTOR_H
+#ifndef CAP_DOF_EXTRACTOR_H
+#define CAP_DOF_EXTRACTOR_H
 
 #include <deal.II/base/types.h>
 #include <deal.II/fe/component_mask.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/lac/vector.h>
+
+namespace cap {
 
 class DoFExtractor {
 public:
@@ -21,4 +23,6 @@ private:
     std::vector<unsigned int> column_indices;
 };
 
-#endif // CACHE_DOF_EXTRACTOR_H
+} // end namespace cap
+
+#endif // CAP_DOF_EXTRACTOR_H

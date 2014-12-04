@@ -1,8 +1,8 @@
-#include <cache/super_capacitor.templates.h>
+#include <cap/super_capacitor.templates.h>
 
-namespace cache {
+namespace cap {
 
 template class SuperCapacitorProblem<2>;
 template class SuperCapacitorProblem<3>;
 
-} // end namespace cache
+} // end namespace cap

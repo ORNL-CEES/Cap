@@ -1,4 +1,4 @@
-#include <cache/super_capacitor.h>
+#include <cap/super_capacitor.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h> // move to postprocessor
 #include <deal.II/grid/grid_in.h>
@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <fstream>
 
-namespace cache {
+namespace cap {
 
 template <int dim>                         
 SuperCapacitorProblem<dim>::               
@@ -62,7 +62,7 @@ run_constant_current_cycling
 {   // find initial solution for electrochemical
     electrochemical_solution = 0.0;
     double const dummy_time_step = 1.0;
-    this->electrochemical_setup_system(dummy_time_step, cache::Initialize);
+    this->electrochemical_setup_system(dummy_time_step, Initialize);
     unsigned int step = 0;
     double solution_norm;
     double old_solution_norm = 0.0;
@@ -105,7 +105,7 @@ run_constant_current_cycling
         ++current_cycle;
     
         this->thermal_setup_system(time_step);
-        this->electrochemical_setup_system(time_step, cache::GalvanostaticCharge);
+        this->electrochemical_setup_system(time_step, GalvanostaticCharge);
         while (current_time <= final_time) {
             ++step;
             current_time += time_step;
@@ -129,7 +129,7 @@ run_constant_current_cycling
             } // end if
         } // end while
 
-        this->electrochemical_setup_system(time_step, cache::GalvanostaticDischarge);
+        this->electrochemical_setup_system(time_step, GalvanostaticDischarge);
         while (current_time <= final_time) {
             ++step;
             current_time += time_step;
@@ -182,7 +182,7 @@ run_constant_current_charge_constant_voltage_discharge
 {   // find initial solution for electrochemical
     electrochemical_solution = 0.0;
     double const dummy_time_step = 1.0;
-    this->electrochemical_setup_system(dummy_time_step, cache::Initialize);
+    this->electrochemical_setup_system(dummy_time_step, Initialize);
     unsigned int step = 0;
     double solution_norm;
     double old_solution_norm = 0.0;
@@ -218,7 +218,7 @@ run_constant_current_charge_constant_voltage_discharge
     double data[N_DATA];
 
     this->thermal_setup_system(time_step);
-    this->electrochemical_setup_system(time_step, cache::GalvanostaticCharge);
+    this->electrochemical_setup_system(time_step, GalvanostaticCharge);
     while (current_time <= final_time) {
         ++step;
         current_time += time_step;
@@ -242,7 +242,7 @@ run_constant_current_charge_constant_voltage_discharge
         // TODO: ...
     } // end while
 
-    this->electrochemical_setup_system(time_step, cache::PotentiostaticDischarge);
+    this->electrochemical_setup_system(time_step, PotentiostaticDischarge);
     while (current_time <= final_time) {
         ++step;
         current_time += time_step;
@@ -439,16 +439,16 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
         (new SuperCapacitorBoundaryValues<dim>(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database)));
 
     // initialize operators
-    this->electrochemical_operator_params = std::shared_ptr<cache::ElectrochemicalOperatorParameters<dim> >
-        (new cache::ElectrochemicalOperatorParameters<dim>(database));
+    this->electrochemical_operator_params = std::shared_ptr<ElectrochemicalOperatorParameters<dim> >
+        (new ElectrochemicalOperatorParameters<dim>(database));
     this->electrochemical_operator_params->dof_handler       = &(this->dof_handler);
     this->electrochemical_operator_params->constraint_matrix = &(this->constraint_matrix);
     this->electrochemical_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(0, 0));
     this->electrochemical_operator_params->some_vector       = &(this->solution.block(0));
     this->electrochemical_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
     this->electrochemical_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
-    this->electrochemical_operator = std::shared_ptr<cache::ElectrochemicalOperator<dim> >
-        (new cache::ElectrochemicalOperator<dim>(this->electrochemical_operator_params));
+    this->electrochemical_operator = std::shared_ptr<ElectrochemicalOperator<dim> >
+        (new ElectrochemicalOperator<dim>(this->electrochemical_operator_params));
 
     // set null space
     this->electrochemical_operator->set_null_space(database->get<unsigned int>("solid_potential_component" ), database->get<dealii::types::material_id>("material_properties.separator_material_id"        ));
@@ -457,27 +457,27 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     std::vector<dealii::types::global_dof_index> const & null_space = this->electrochemical_operator->get_null_space();
     std::cout<<"null space size : "<<null_space.size()<<"\n";
 
-    this->thermal_operator_params = std::shared_ptr<cache::ThermalOperatorParameters<dim> >
-        (new cache::ThermalOperatorParameters<dim>(database));
+    this->thermal_operator_params = std::shared_ptr<ThermalOperatorParameters<dim> >
+        (new ThermalOperatorParameters<dim>(database));
     this->thermal_operator_params->dof_handler       = &(this->dof_handler);
     this->thermal_operator_params->constraint_matrix = &(this->constraint_matrix);
     this->thermal_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(1, 1));
     this->thermal_operator_params->some_vector       = &(this->solution.block(1));
     this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
     this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
-    this->thermal_operator = std::shared_ptr<cache::ThermalOperator<dim> >
+    this->thermal_operator = std::shared_ptr<ThermalOperator<dim> >
         (new ThermalOperator<dim>(this->thermal_operator_params));
 
 
     // initialize postprocessor
-    this->post_processor_params = std::shared_ptr<cache::SuperCapacitorPostprocessorParameters<dim> >
-        (new cache::SuperCapacitorPostprocessorParameters<dim>(database));
+    this->post_processor_params = std::shared_ptr<SuperCapacitorPostprocessorParameters<dim> >
+        (new SuperCapacitorPostprocessorParameters<dim>(database));
     this->post_processor_params->dof_handler     = &(this->dof_handler);
     this->post_processor_params->solution        = &(this->solution   );
     this->post_processor_params->mp_values       = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
     this->post_processor_params->boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
-    this->post_processor = std::shared_ptr<cache::SuperCapacitorPostprocessor<dim> >
-        (new cache::SuperCapacitorPostprocessor<dim>(this->post_processor_params));
+    this->post_processor = std::shared_ptr<SuperCapacitorPostprocessor<dim> >
+        (new SuperCapacitorPostprocessor<dim>(this->post_processor_params));
 
 }
 
@@ -558,7 +558,7 @@ electrochemical_evolve_one_time_step(double const time_step)
 template <int dim>
 void
 SuperCapacitorProblem<dim>::
-electrochemical_setup_system(double const time_step, cache::CapacitorState const capacitor_state) 
+electrochemical_setup_system(double const time_step, CapacitorState const capacitor_state) 
 {   
     this->electrochemical_operator_params->capacitor_state = capacitor_state;
     this->electrochemical_operator->reset(this->electrochemical_operator_params);
@@ -609,4 +609,4 @@ process_solution(double * data)
     this->post_processor->get("max_temperature", data[TEMPERATURE]  );
 }          
 
-} // end namespace cache
+} // end namespace cap

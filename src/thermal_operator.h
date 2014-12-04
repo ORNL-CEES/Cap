@@ -1,9 +1,9 @@
-#ifndef CACHE_THERMAL_OPERATOR_H
-#define CACHE_THERMAL_OPERATOR_H
+#ifndef CAP_THERMAL_OPERATOR_H
+#define CAP_THERMAL_OPERATOR_H
 
-#include <cache/operator.h>
+#include <cap/operator.h>
 
-namespace cache {
+namespace cap {
 
 //////////////////////// THERMAL OPERATOR PARAMETERS ////////////////////////////
 template <int dim>
@@ -29,6 +29,6 @@ protected:
     unsigned int temperature_component;
 };
 
-} // end namespace cache
+} // end namespace cap
 
-#endif // CACHE_THERMAL_OPERATOR_H
+#endif // CAP_THERMAL_OPERATOR_H

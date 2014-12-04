@@ -1,6 +1,6 @@
-#include <cache/utils.templates.h>
+#include <cap/utils.templates.h>
 
-namespace cache {
+namespace cap {
 
 template std::vector<int>         to_vector(std::string const & s);
 template std::vector<float>       to_vector(std::string const & s);
@@ -12,5 +12,5 @@ template std::string to_string(std::vector<float> const       & v);
 template std::string to_string(std::vector<double> const      & v);
 template std::string to_string(std::vector<std::string> const & v);
 
-} // end namespace cache
+} // end namespace cap
 

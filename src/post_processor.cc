@@ -1,6 +1,6 @@
-#include <cache/post_processor.templates.h>
+#include <cap/post_processor.templates.h>
 
-namespace cache {
+namespace cap {
 
 template class PostprocessorParameters<2>;
 template class Postprocessor<2>;
@@ -12,4 +12,4 @@ template class SuperCapacitorPostprocessor<2>;
 template class SuperCapacitorPostprocessorParameters<3>;
 template class SuperCapacitorPostprocessor<3>;
 
-} // end namespace cache
+} // end namespace cap

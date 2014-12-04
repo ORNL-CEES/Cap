@@ -1,4 +1,6 @@
-#include <cache/dof_extractor.h>
+#include <cap/dof_extractor.h>
+
+namespace cap {
 
 template <typename T>
 dealii::FullMatrix<T>
@@ -23,3 +25,4 @@ extract_vector(dealii::Vector<T> const & vector_in) const
     return vector_out;
 }
 
+} // end namespace cap

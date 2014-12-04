@@ -1,5 +1,7 @@
-#include <cache/mp_values.h>
+#include <cap/mp_values.h>
 #include <stdexcept>
+
+namespace cap {
 
 template <int dim, int spacedim>
 void
@@ -129,3 +131,5 @@ get_values(std::string const &          key,
         throw std::runtime_error("Invalid key");
     } // end if key
 }
+
+} // end namespace cap

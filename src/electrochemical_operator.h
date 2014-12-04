@@ -1,9 +1,9 @@
-#ifndef CACHE_ELECTROCHEMICAL_OPERATOR_H
-#define CACHE_ELECTROCHEMICAL_OPERATOR_H
+#ifndef CAP_ELECTROCHEMICAL_OPERATOR_H
+#define CAP_ELECTROCHEMICAL_OPERATOR_H
 
-#include <cache/operator.h>
+#include <cap/operator.h>
 
-namespace cache {
+namespace cap {
 
 //////////////////////// ELECTROCHEMICAL OPERATOR PARAMETERS ////////////////////////////
 enum CapacitorState { GalvanostaticCharge, GalvanostaticDischarge, PotentiostaticCharge, PotentiostaticDischarge, Initialize, Relaxation };
@@ -44,6 +44,6 @@ protected:
     dealii::types::boundary_id cathode_boundary_id; 
 };
 
-} // end namespace cache
+} // end namespace cap
 
-#endif // CACHE_ELECTROCHEMICAL_OPERATOR_H
+#endif // CAP_ELECTROCHEMICAL_OPERATOR_H

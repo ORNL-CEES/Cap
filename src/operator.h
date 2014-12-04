@@ -1,8 +1,8 @@
-#ifndef CACHE_OPERATOR_H
-#define CACHE_OPERATOR_H
+#ifndef CAP_OPERATOR_H
+#define CAP_OPERATOR_H
 
-#include <cache/mp_values.h>
-#include <cache/boundary_values.h>
+#include <cap/mp_values.h>
+#include <cap/boundary_values.h>
 
 //#include <deal.II/base/types.h>
 //#include <deal.II/dofs/dof_handler.h>
@@ -13,7 +13,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 
-namespace cache {
+namespace cap {
 
 //////////////////////// OPERATOR PARAMETERS ////////////////////////////
 template <int dim>
@@ -65,6 +65,6 @@ protected:
     std::vector<dealii::types::global_dof_index> null_space_dof_indices;
 };
 
-} // end namespace cache
+} // end namespace cap
 
-#endif // CACHE_OPERATOR_H
+#endif // CAP_OPERATOR_H

@@ -1,8 +1,8 @@
-#include <cache/utils.h>
+#include <cap/utils.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
-namespace cache {
+namespace cap {
 
 template <typename T>
 std::vector<T> to_vector(std::string const & s)
@@ -22,5 +22,5 @@ std::string to_string(std::vector<T> const & v)
     return s;
 }
 
-} // end namespace cache
+} // end namespace cap
 
