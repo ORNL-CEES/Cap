@@ -8,6 +8,8 @@
 #include <deal.II/dofs/dof_accessor.h>
 #include <boost/property_tree/ptree.hpp>
 
+namespace cap {
+
 //////////////////////// BOUNDARY VALUES PARAMETERS ////////////////////////////
 template <int dim, int spacedim=dim>
 class BoundaryValuesParameters {
@@ -81,5 +83,7 @@ protected:
     double upper_heat_transfer_coefficient;
     double lower_heat_transfer_coefficient;
 };
+
+} // end namespace cap
 
 #endif // CAP_BOUNDARY_VALUES_H

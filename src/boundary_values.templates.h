@@ -1,6 +1,8 @@
 #include <cap/boundary_values.h>
 #include <stdexcept>
 
+namespace cap {
+
 template <int dim, int spacedim>
 void
 BoundaryValues<dim, spacedim>::
@@ -121,3 +123,5 @@ get_values(std::string const &          key,
         throw std::runtime_error("Invalid key");
     } // end if key
 }
+
+} // end namespace cap
