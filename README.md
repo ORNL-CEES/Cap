@@ -14,7 +14,7 @@ CONFIGURE, BUILD and TEST
 Install deal.II
 
     $ cd ${PREFIX}
-    $ git pull https://github.com/dealii/dealii ${PREFIX}/source/dealii
+    $ git clone https://github.com/dealii/dealii ${PREFIX}/source/dealii
     $ mkdir build/dealii
     $ cd build/dealii
     $ cmake -DCMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii ${PREFIX}/source/dealii
@@ -23,8 +23,8 @@ Install deal.II
 Configure and build cap
 
     $ cd ${PREFIX}
-    $ git pull https://github.com/dalg24/cap ${PREFIX}/source/cap
-    $ git pull https://github.com/dalg24/cap-data ${PREFIX}/source/cap-data
+    $ git clone https://github.com/dalg24/cap ${PREFIX}/source/cap
+    $ git clone https://github.com/dalg24/cap-data ${PREFIX}/source/cap-data
     $ mkdir build/cap
     $ cd build/cap
     $ cmake -DDEAL_II_INSTALL_DIR=${PREFIX}/install/dealii -DCAP_DATA_DIR=${PREFIX}/source/cap-data ${PREFIX}/source/cap
