@@ -24,9 +24,10 @@ Configure and build cap
 
     $ cd ${PREFIX}
     $ git pull https://github.com/dalg24/cap source/cap ${PREFIX}/source/cap
+    $ git pull https://github.com/dalg24/cap source/cap ${PREFIX}/source/cap-data
     $ mkdir build/cap
     $ cd build/cap
-    $ cmake -DDEAL_II_INSTALL_DIR=${PREFIX}/install/dealii ${PREFIX}/source/cap
+    $ cmake -DDEAL_II_INSTALL_DIR=${PREFIX}/install/dealii -DCAP_DATA_DIR=${PREFIX}/source/cap-data ${PREFIX}/source/cap
     $ make -j<N>
 
 Run tests
