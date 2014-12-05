@@ -4,8 +4,12 @@ IF(NOT DEFINED DEAL_II_INSTALL_DIR)
         "to cmake.\n"
         )
 ENDIF()
-SET(CAP_DATA_DIR /Users/qdi/Projects/cap)
-
+IF(NOT DEFINED CAP_DATA_DIR)
+    MESSAGE(FATAL_ERROR "\n"
+        "You must pass a flag -DCAP_DATA_DIR=/path/to/dir/with/meshes\n"
+        "to cmake.\n"
+        )
+ENDIF()
 INCLUDE_DIRECTORIES(include)
 
 IF(COMMAND cmake_policy)
