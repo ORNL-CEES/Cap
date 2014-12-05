@@ -7,111 +7,319 @@
 								% TeX will automatically convert eps --> pdf in pdflatex		
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,calc,3d,chains,fit,decorations.markings}
+\usepackage{circuitikz}
 
 
 
 \begin{document}
 
 
-\footnotesize
-\begin{tabular}{llll}
-Path & Parameter & Value & Units \\
-\texttt{material\_properties.separator\_density}               & $\rho^{separator}$    & 1.2528e3  & [kg/m$^3$] \\
-\texttt{material\_properties.electrode\_density}               & $\rho^{electrode}$    & 0.93e3    & [kg/m$^3$] \\
-\texttt{material\_properties.collector\_density}               & $\rho^{collector}$    & 2.7e3     & [kg/m$^3$] \\
-\texttt{material\_properties.separator\_heat\_capacity}        & $C_p^{separator}$     & 3.1404e3  & [J/K] \\
-\texttt{material\_properties.electrode\_heat\_capacity}        & $C_p^{electrode}$     & 1.34e3    & [J/K] \\
-\texttt{material\_properties.collector\_heat\_capacity}        & $C_p^{collector}$     & 0.89815e3 & [J/K] \\
-\texttt{material\_properties.separator\_thermal\_conductivity} & $\lambda^{separator}$ & 0.0019e2  & [W/m$\cdot$K] \\
-\texttt{material\_properties.electrode\_thermal\_conductivity} & $\lambda^{electrode}$ & 0.0011e2  & [W/m$\cdot$K] \\
-\texttt{material\_properties.collector\_thermal\_conductivity} & $\lambda^{collector}$ & 2.37e2    & [W/m$\cdot$K] \\
-\texttt{operating\_conditions.charge\_potential}           & $U_{charge}$    & 2.2     & [V] \\
-\texttt{operating\_conditions.discharge\_potential}        & $U_{discharge}$ & 1.1     & [V] \\
-\texttt{operating\_conditions.charge\_current\_density}    & $I_{charge}$    & 324.65  & [A/m${2}$] \\
-\texttt{operating\_conditions.discharge\_current\_density} & $I_{discharge}$ & -324.65 & [A/m${2}$] \\
-\texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & [F/m$^3$] \\
-\texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & [1] \\
-\texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & [1] \\
-\texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_l$             & 0.067     & [S/m] \\
-\texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_s$             & 52.1      & [S/m] \\
-\texttt{geometry.electrode\_width} & $w^{electrode}$ & 50.0e-6 & [m] \\
-\texttt{geometry.separator\_width} & $w^{separator}$ & 25.0e-6 & [m] \\
-\texttt{geometry.collector\_width} & $w^{collector}$ &  5.0e-6 & [m] \\
-\texttt{geometry.sandwich\_height} & $h^{sandwich}$  & 25.0e-6 & [m] \\
-\texttt{operating\_conditions.max\_cycles}      &  & 100  & [1] \\
-\texttt{operating\_conditions.relaxation\_time} & $t_{pause}$     &  5.0 & [s] \\
-\\
-\texttt{upper\_heat\_transfer\_coefficient} & $h$   & 8.0e-2 & [W/m$^2\cdot$K] \\
-\texttt{lower\_heat\_transfer\_coefficient} & $h$   & 0.0    & [W/m$^2\cdot$K] \\
-\texttt{left\_heat\_transfer\_coefficient}  & $h$   & 0.0    & [W/m$^2\cdot$K] \\
-\texttt{right\_heat\_transfer\_coefficient} & $h$   & 0.0    & [W/m$^2\cdot$K] \\
-\texttt{upper\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
-\texttt{lower\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
-\texttt{left\_ambient\_temperature}         & $T_a$ & 0.0    & [K] \\
-\texttt{right\_ambient\_temperature}        & $T_a$ & 0.0    & [K] \\
-\texttt{.initial\_time}    & $t_0$           &  0.0 & [s] \\
-\texttt{.final\_time}      & $t_1$           & 30.0 & [s] \\
-\texttt{.time\_step}       & $\Delta t$      &  0.1 & [s] \\
-\texttt{.mesh\_resolution} &  & [1 -- 10] \\
-\texttt{.dim}              &  & 2 \\
+\texttt{input\_params} \\
+{\footnotesize
+\begin{tabular}{lllll}
+  & Path                                                            & Parameter              & Value     & Units           \\
+  & \texttt{material\_properties.separator\_density}                & $\rho^{separator}$     & 1.2528e3  & [kg/m$^3$]      \\
+  & \texttt{material\_properties.electrode\_density}                & $\rho^{electrode}$     & 0.93e3    & [kg/m$^3$]      \\
+  & \texttt{material\_properties.collector\_density}                & $\rho^{collector}$     & 2.7e3     & [kg/m$^3$]      \\
+  & \texttt{material\_properties.separator\_heat\_capacity}         & $C_p^{separator}$      & 3.1404e3  & [J/K]           \\
+  & \texttt{material\_properties.electrode\_heat\_capacity}         & $C_p^{electrode}$      & 1.34e3    & [J/K]           \\
+  & \texttt{material\_properties.collector\_heat\_capacity}         & $C_p^{collector}$      & 0.89815e3 & [J/K]           \\
+  & \texttt{material\_properties.separator\_thermal\_conductivity}  & $\lambda^{separator}$  & 0.0019e2  & [W/m$\cdot$K]   \\
+  & \texttt{material\_properties.electrode\_thermal\_conductivity}  & $\lambda^{electrode}$  & 0.0011e2  & [W/m$\cdot$K]   \\
+  & \texttt{material\_properties.collector\_thermal\_conductivity}  & $\lambda^{collector}$  & 2.37e2    & [W/m$\cdot$K]   \\
+  & \texttt{operating\_conditions.charge\_potential}                & $U_{charge}$           & 2.2       & [V]             \\
+  & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & [V]             \\
+  & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & [A/m${2}$]      \\
+  & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & [A/m${2}$]      \\
+  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & [F/m$^3$]       \\
+  & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & [1]             \\
+  & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & [1]             \\
+  & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & [S/m]           \\
+  & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & [S/m]           \\
+X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & [m]             \\
+X & \texttt{geometry.separator\_width}                              & $w^{separator}$        & 25.0e-6   & [m]             \\
+X & \texttt{geometry.collector\_width}                              & $w^{collector}$        &  5.0e-6   & [m]             \\
+X & \texttt{geometry.sandwich\_height}                              & $h^{sandwich}$         & 25.0e-6   & [m]             \\
+  & \texttt{operating\_conditions.max\_cycles}                      &                        & 100       & [1]             \\
+X & \texttt{operating\_conditions.relaxation\_time}                 & $t_{pause}$            &  5.0      & [s]             \\
+  & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & [W/m$^2\cdot$K] \\
+  & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 0.0       & [K]             \\
 \end{tabular}
+}
+
+X denotes parameters that have not been enabled yet
 
 
+\texttt{output\_params} \\
+{\footnotesize
 \begin{tabular}{llll}
-\texttt{output.max\_temperatures} & $\max{T(t_i)}$ & [K] \\
-\texttt{output.Joule\_heating} & $Q(t_i)$ & [W] \\
-\texttt{output.voltage} & $U$ & [V] \\
-\texttt{output.current} & $I$ & [A] \\
-\texttt{output.time} & $t_i$ & [s] \\
-\texttt{output.cycle} &  & [1] \\
-\texttt{output.power\_density} & $P$ & [W/m$^3$] \\
-\texttt{output.energy\_density} & $E$ & [J/m$^3$] \\
+Path                      &     & Units \\
+\texttt{max\_temperature} & $\Theta_{max}$ & [K] \\
+\texttt{heat\_production} & $Q$ & [W] \\
+\texttt{voltage}          & $U$ & [V] \\
+\texttt{current}          & $I$ & [A] \\
+\texttt{time}             & $t$ & [s] \\
+\texttt{capacitor\_state} \\
+\texttt{cycle}            \\
+\texttt{surface\_area}    & $S$ & [m$^2$] \\
+\texttt{volume}           & $V$ & [m$^3$] \\
 \end{tabular}
+}
+
+total heat source
+\begin{equation}
+Q = \int_\Omega q dV
+\end{equation}
+
+volume of the sandwich (current collectors + electrodes + separator)
+\begin{equation}
+V = \int_\Omega dV
+\end{equation}
+
+total current flowing through the sandwich
+\begin{equation}
+I = \int_{\partial\Omega} \sigma_s \frac{\partial \Phi_s}{\partial n} dS
+\end{equation}
+
+potential difference 
+\begin{equation}
+U = \int_{\partial\Omega^{cathode}} \Phi_s dS / S^{cathode} 
+- \int_{\partial\Omega^{anode}} \Phi_s dS / S^{anode}
+\end{equation}
+
+
+
+
 
 \section{Geometry}
+
+\tikzstyle{vecArrow} = [thick, decoration={markings,mark=at position
+   1 with {\arrow[semithick]{open triangle 60}}},
+   double distance=1.4pt, shorten >= 5.5pt,
+   preaction = {decorate},
+   postaction = {draw,line width=1.4pt, white,shorten >= 4.5pt}]
+\tikzstyle{innerWhite} = [semithick, white,line width=1.4pt, shorten >= 4.5pt]
+
+\newcommand\xorig{0}
+\newcommand\hs{75}
+\newcommand\ys{0}
+\newcommand\yacc{0}
+\newcommand\hacc{80}
+\newcommand\yccc{-5}
+\newcommand\hccc{80}
+\newcommand\wacc{7.5}
+\newcommand\wea{25}
+\newcommand\ws{12.5}
+\newcommand\wec{25}
+\newcommand\wccc{7.5}
+\newcommand\xacc{\xorig}
+\newcommand\xea{\xacc+\wacc}
+\newcommand\xs{\xea+\wea}
+\newcommand\xec{\xs+\ws}
+\newcommand\xccc{\xec+\wec}
+\begin{tikzpicture}[scale=0.1]
+\draw[black,thick,fill=purple!75!black] (\xea,\ys) -- (\xea,\ys+\hs) --
+(\xea+\wea,\ys+\hs) -- (\xea+\wea,\ys) -- (\xea,\ys);
+\draw[black,thick,fill=green!60] (\xs,\ys) -- (\xs,\ys+\hs) --
+(\xs+\ws,\ys+\hs) -- (\xs+\ws,\ys) -- (\xs,\ys);
+\draw[black,thick,fill=blue!70] (\xec,\ys) -- (\xec,\ys+\hs) --
+(\xec+\wec,\ys+\hs) -- (\xec+\wec,\ys) -- (\xec,\ys);
+\draw[black,thick,fill=gray] (\xacc,\yacc) -- (\xacc,\yacc+\hacc) --
+(\xacc+\wacc,\yacc+\hacc) -- (\xacc+\wacc,\yacc) -- (\xacc,\yacc);
+\draw[black,thick,fill=gray] (\xccc,\yccc+\hccc) -- (\xccc,\yccc) --
+(\xccc+\wccc,\yccc) -- (\xccc+\wccc,\yccc+\hccc) -- (\xccc,\yccc+\hccc);
+\draw node[rotate=90] at (\xea+0.5*\wea,\ys+0.5*\hs) {electrode (anode)};
+\draw node[rotate=90] at (\xs+0.5*\ws,\ys+0.5*\hs) {separator};
+\draw node[rotate=90] at (\xec+0.5*\wec,\ys+0.5*\hs) {electrode (cathode)};
+\draw[white] node[rotate=90] at (\xacc+0.5*\wacc,\yacc+0.5*\hacc) {current
+collector (anode)};
+\draw[white] node[rotate=90] at (\xccc+0.5*\wccc,\yccc+0.5*\hccc) {current
+collector (cathode)};
+
+\draw[vecArrow] (\xacc+0.5*\wacc,\yacc+\hacc+10) --
+(\xacc+0.5*\wacc,\yacc+\hacc); 
+%\draw node[anchor=south] at (\xacc+0.5*\wacc,\yacc+\hacc+10) {$I_0$};
+
+\draw[vecArrow] (\xccc+0.5*\wccc,\yccc) -- (\xccc+0.5*\wccc,\yccc-10); 
+%\draw node[anchor=north] at (\xccc+0.5*\wccc,\yccc-10) {$2 I_0$};
+\end{tikzpicture}
+
+non overlapping domains
+$\Omega^{collector\ anode}$ 
+$\Omega^{electrode\ anode}$ 
+$\Omega^{separator}$  
+$\Omega^{electrode\ cathode}$
+$\Omega^{collector\ cathode}$
+with common interfaces
+
+define 
+$\Gamma^{anode}$  
+and
+$\Gamma^{cathode}$  
+as the two terminals of the device
 
 \section{Governing equations}
 %----------------------------------------------------------------------------- 
 % ELECTROCHEMICAL
 %----------------------------------------------------------------------------- 
+\subsection{Electrochemical}
+
 Governing equations for the electrolyte potential $\Phi_l$ and the solid phase
 potential $\Phi_s$ are
 \begin{align}
-aC (\dot{\Phi}_l - \dot{\Phi}_s) &= \nabla \cdot (\sigma_l \nabla \Phi_l) \text{ on } \Omega \\
-aC (\dot{\Phi}_s - \dot{\Phi}_l) &= \nabla \cdot (\sigma_s \nabla \Phi_s) \text{ on } \Omega
+aC (\dot{\Phi}_l - \dot{\Phi}_s) &= \nabla \cdot (\sigma_l \nabla \Phi_l) \text{ on } \Omega^{electrode} \\
+aC (\dot{\Phi}_s - \dot{\Phi}_l) &= \nabla \cdot (\sigma_s \nabla \Phi_s) \text{ on } \Omega^{electrode} \\
+0 &= \nabla \cdot (\sigma_l \nabla \Phi_l) \text{ on } \Omega^{separator} \\
+0 &= \nabla \cdot (\sigma_s \nabla \Phi_s) \text{ on } \Omega^{collector}
 \end{align}
-$aC$ is the specific capacitance, 
-$\sigma_l=\sigma_l\varepsilon^{1.5}$ and $\sigma_s=\sigma_s(1-\varepsilon)^{1.5}$ 
-are the electrolyte and solid phase electrical conductivities, 
-$\varepsilon$ is the porous medium void volume fraction.
+$aC$ is the specific capacitance. In our model, we assume it accounts for both 
+double-layer capacitance and pseudocapacitance. $a$ is the interfacial area
+per unit volume.
 
-anode 
+$\sigma_s$ and $\sigma_l$ are the electrolyte and solid phase electrical
+conductivities. They are effective transport properties.
 
-cathode
+In our current model, we have
+$\sigma_l=\sigma_{l0}\varepsilon^\zeta$ and
+$\sigma_s=\sigma_{s0}(1-\varepsilon)^\zeta$.
+$\varepsilon$ is the porous medium void volume fraction,
+$\zeta$ is the Bruggeman's coefficient (taken equal to $3/2$)...
 
-Boundary conditions, choose from either potentiostatic charge/discharge
-(Dirichlet)
+[Interface conditions]
+coming soon... (basically continuity of the fluxes within both phases)
+
+[Boundary conditions]
+arbitarily anode current collector ``grounded''
 \begin{equation}
-\Phi_s = u_{charge/discharge} \text{ on } \Gamma
+\Phi_s = 0 \text{\ on\ } \Gamma^{anode}
 \end{equation}
-or galvanostatic charge/discharge (Neumann)
+
+choose from
+\begin{enumerate}
+\item Potentiostatic charge/discharge \\
+$\Phi_s = U \text{\ on\ } \Gamma^{cathode}$
+i.e. constant voltage charge/discharge
+
+\item Galvanostatic charge/discharge \\
+$\sigma_s \frac{\partial \Phi_s}{\partial n} = I / S^{cathode} \text{\ on\ } \Gamma^{cathode}$
+i.e. constant current charge/discharge
+\end{enumerate}
+
+here $S^{cathode}$ represents the surface area of the terminal on the cathode
+current collector (over which we impose the current density flowing into the
+device)
 \begin{equation}
-- \sigma_s \frac{\partial \Phi_s}{\partial n} = \pm i_{charge/discharge} \text{ on } \Gamma
+S^{cathode} = \int_{\Gamma^{cathode}} dS
 \end{equation}
 
 %----------------------------------------------------------------------------- 
 % THERMAL
 %----------------------------------------------------------------------------- 
+\subsection{Thermal}
+
 The temperature field $\Theta$ obeys
 \begin{equation}
 \rho C_p \dot{\Theta} = \nabla \cdot (\lambda \nabla \Theta) + q \text{ on } \Omega
+\label{eq:heat_conduction}
 \end{equation}
+This is a standard heat conduction equation.
 Material properties $\rho$, $C_p$ and $\lambda$ are density, heat capacity and
 thermal conductivity.
-The last two terms account for Joule heating.
-Robin boundary condition with heat transfer coefficient $h$
+$q=q^{reversible}+q^{irreversible}$ is the heat source.
+\begin{itemize}
+\item[$\diamond$] $q^{irr} = \sigma | \nabla \Phi |^2$: Joule heating (ohmic
+losses $\propto R I^2$ when current traverse resistive material)
+
+\item[$\diamond$] $q^{rev} = \pm \frac{2 k_B \Theta}{e} \ln(\frac{V_H}{V_0}) |
+\sigma \nabla \Phi |$: changes in entropy (ions in the electrolyte of a double
+layer capacitor are arranged in the electric field during charging and are
+spreading themselves again during discharging)
+\end{itemize}
+
+In the current model, we have $q^{rev} = \pm \alpha |\sigma \nabla\Phi|$ where
+$\alpha$ is a constant.
+
+[Boundary conditions]
 \begin{equation}
-- \lambda \frac{\partial \Theta}{\partial n} = h (\Theta - \Theta_{ambient}) \text{ on } \Gamma
+- \lambda \frac{\partial \Theta}{\partial n} = h (\Theta - \Theta_{ambient}) \text{ on } \partial\Omega
 \end{equation}
+heat transfer coefficient $h$ and ambient temperature $\Theta_{ambient}$
+
+%-----------------------------------------------------------------------------
+% DAMON
+%-----------------------------------------------------------------------------
+\newpage
+\section{Inadequacy}
+Damon, I suggest we start with a simple model of anisotropic heat conduction
+with uniform heat source.
+
+The scalar thermal conductivity $\lambda$ in \eqref{eq:heat_conduction} becomes 
+a tensor 
+\begin{equation}
+\lambda = 
+\begin{bmatrix}
+\lambda_x & 0         & 0         \\
+0         & \lambda_y & 0         \\
+0         & 0         & \lambda_z \\
+\end{bmatrix}
+\end{equation}
+and I suppose we can define something like
+\begin{equation}
+\lambda_x = \frac{\lambda^{electrode} 2w^{electrode} + \lambda^{separator} w^{separator} + \lambda^{collector} 2w^{collector}}{w^{sanwhich}}
+\end{equation}
+and
+\begin{equation}
+\lambda_y = \lambda_z = \frac{w^{sandwich}}{\frac{2w^{electrode}}{\lambda^{electrode}} + \frac{w^{separator}}{\lambda^{separator}} + \frac{2w^{collector}}{\lambda^{collector}}}
+\end{equation}
+
+where $w^{sandwich}=2w^{electrode}+w^{separator}+2w^{collector}$
+
+The heat source is approximated by $q = R^{sandwich} I^2 / V$.
+where $V$ is the volume of the sandwhich and the electrical resistance
+$R^{sandwich}$ is computed as
+\begin{equation}
+R^{sandwich} = 
+\frac{2w^{electrode}}{A} (\frac{1}{\sigma_l^{electrode}} + \frac{1}{\sigma_s^{electrode}})
++ \frac{w^{separator}}{A} \frac{1}{\sigma_l^{separator}}
++ \frac{2w^{collector}}{A} \frac{1}{\sigma_s^{collector}}
+\end{equation}
+
+\begin{circuitikz}
+\draw (0,0) to[R=$R_s^{collector}$] (2,0); 
+\draw (2,0) to[short] (2,1) to[R=$R_s^{electrode}$] (4,1) to[short] (4,0);
+\draw (2,0) to[short] (2,-1) to[R=$R_l^{electrode}$] (4,-1) to[short] (4,0);
+\draw (4,0) to[R=$R_l^{separator}$] (6,0); 
+\draw (6,0) to[short] (6,1) to[R=$R_s^{electrode}$] (8,1) to[short] (8,0);
+\draw (6,0) to[short] (6,-1) to[R=$R_l^{electrode}$] (8,-1) to[short] (8,0);
+\draw (8,0) to[R=$R_s^{collector}$] (10,0); 
+\draw (11,0) node {$\equiv$}; 
+\draw (12,0) to[R=$R^{sandwich}$] (14,0); 
+\end{circuitikz}
+
+Above is the corresponding equivalent circuit.
+We use the formula $R=w/\sigma A$ (Pouillet's law).
+$A$ is the cross-sectional area of the sandwich.
+This assumes the current density is totally uniform in the medium.
+
+Another option even cruder would be a 0-D equation...
+\begin{equation}
+m C_p \dot{\Theta} = Q - H (\Theta - \Theta_{ambient})
+\end{equation}
+
+%-----------------------------------------------------------------------------
+% FLORIAN
+%-----------------------------------------------------------------------------
+\newpage
+\section{Optimization}
+
+
+%-----------------------------------------------------------------------------
+% BRENDAN
+%-----------------------------------------------------------------------------
+\newpage
+\section{Uncertainty}
+
 
 \end{document}  
