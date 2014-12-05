@@ -79,6 +79,7 @@ protected:
     double separator_void_volume_fraction;
     double electrolyte_conductivity;
     double solid_phase_conductivity;
+    double bruggemans_coefficient;
 
 };
 

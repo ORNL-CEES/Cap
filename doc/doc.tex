@@ -322,6 +322,7 @@ The code takes as input
   & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & [1]             \\
   & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & [S/m]           \\
   & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & [S/m]           \\
+  & \texttt{material\_properties.bruggemans\_coefficient}           & $\zeta$                & 1.5       & [1]             \\
   & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & [W/m$^2\cdot$K] \\
   & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 0.0       & [K]             \\
 X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & [m]             \\
@@ -333,8 +334,7 @@ X & \texttt{geometry.sandwich\_height}                              & $h^{sandwi
 
 You will not be able to change the geometry for now. I marked the corresponding
 input with an X. 
-You may tune all the other parameters. I may make it possible to change
-Bruggerman's coefficient $\zeta$. I just realize I forgot about this one...
+You may tune all the other parameters.
 
 
 

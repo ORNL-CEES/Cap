@@ -19,6 +19,7 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("material_properties.electrode_void_volume_fraction",  0.67     );
     params.put("material_properties.electrolyte_conductivity",        0.067    );      
     params.put("material_properties.solid_phase_conductivity",       52.1      );      
+    params.put("material_properties.bruggemans_coefficient",          1.5      );      
 
     params.put("boundary_values.charge_potential",             2.2);      
     params.put("boundary_values.discharge_potential",          1.4);      
