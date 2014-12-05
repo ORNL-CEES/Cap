@@ -26,7 +26,7 @@ void
 ThermalOperator<dim>::
 reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 {
-std::cout<<"### reset thermal ###\n";
+//std::cout<<"### reset thermal ###\n";
     this->stiffness_matrix = 0.0;
     this->mass_matrix = 0.0;
     this->load_vector = 0.0;
@@ -35,10 +35,10 @@ std::cout<<"### reset thermal ###\n";
     this->compute_thermal_operator_contribution();
     this->compute_robin_boundary_contribution();
 
-std::cout<<std::setprecision(15)
-    <<"stiffness="<<this->stiffness_matrix.l1_norm()<<"  "
-    <<"mass="<<this->mass_matrix.l1_norm()<<"  "
-    <<"load="<<this->load_vector.l2_norm()<<"\n";
+//std::cout<<std::setprecision(15)
+//    <<"stiffness="<<this->stiffness_matrix.l1_norm()<<"  "
+//    <<"mass="<<this->mass_matrix.l1_norm()<<"  "
+//    <<"load="<<this->load_vector.l2_norm()<<"\n";
 }
 
 template <int dim>
@@ -65,7 +65,6 @@ DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
 std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
 dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
 dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
-std::cout<<"dof_shift = "<<dof_shift<<"\n";
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
         end_cell = this->dof_handler.end();
@@ -93,7 +92,6 @@ std::cout<<"dof_shift = "<<dof_shift<<"\n";
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::FullMatrix<double> tmp_mass_matrix = dof_extractor.extract_matrix(cell_mass_matrix);
 dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
-// TODO:
 std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
         this->constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
         this->constraint_matrix.distribute_local_to_global(tmp_mass_matrix, tmp_indices, this->mass_matrix);
@@ -125,7 +123,6 @@ DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
 std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
 dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
 dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
-std::cout<<"dof_shift = "<<dof_shift<<"\n";
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
         end_cell = this->dof_handler.end();
@@ -159,7 +156,6 @@ std::cout<<"dof_shift = "<<dof_shift<<"\n";
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
 dealii::Vector<double> tmp_load_vector = dof_extractor.extract_vector(cell_load_vector);
-// TODO:
 std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
         this->constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
         this->constraint_matrix.distribute_local_to_global(tmp_load_vector, tmp_indices, this->load_vector);

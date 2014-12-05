@@ -49,7 +49,6 @@ set_null_space(unsigned int const               component,
             this->null_space_dof_indices.push_back(dof);
         } // end if
     } // end for dof
-    std::cout<<"dofs = "<<this->dof_handler.n_dofs()<<" - "<<this->null_space_dof_indices.size()<<"\n";
 }
 
 } // end namespace cap

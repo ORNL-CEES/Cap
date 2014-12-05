@@ -1,6 +1,5 @@
 #include <cap/super_capacitor.h>
 #include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/fe_values.h> // move to postprocessor
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -17,6 +16,7 @@ template <int dim>
 SuperCapacitorProblem<dim>::               
 SuperCapacitorProblem(std::shared_ptr<boost::property_tree::ptree const> database)
     : dof_handler(triangulation)
+    , verbose(database->get<bool>("verbose", false))
     , symmetric_correction(true)
 { 
     std::cout<<"initialize...\n";
@@ -75,7 +75,8 @@ run_constant_current_cycling
         } // end if
         old_solution_norm = solution_norm;
     } // end while
-    std::cout<<step<<" iterations\n";
+    if (this->verbose)
+        std::cout<<step<<" iterations for finding initial electrochemical solution\n";
 }
 
     thermal_solution = 0.0; // TODO: initialize to ambient temperature
@@ -99,12 +100,13 @@ run_constant_current_cycling
     unsigned int current_cycle = 0;
     double data[N_DATA];
 
+    this->thermal_setup_system(time_step);
+
     while (current_cycle < max_cycles) {
         if (current_time > final_time)
             break;
         ++current_cycle;
     
-        this->thermal_setup_system(time_step);
         this->electrochemical_setup_system(time_step, GalvanostaticCharge);
         while (current_time <= final_time) {
             ++step;
@@ -112,11 +114,7 @@ run_constant_current_cycling
             this->electrochemical_evolve_one_time_step(time_step);
             this->thermal_evolve_one_time_step        (time_step);
             this->process_solution(data);
-            std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
-                <<"U="<<data[VOLTAGE]<<"  "
-                <<"I="<<data[CURRENT]<<"  "
-                <<"Q="<<data[JOULE_HEATING]<<"  "
-                <<"T="<<data[TEMPERATURE]<<"\n";
+            this->report_data(current_time, data);
             max_temperature.push_back(data[TEMPERATURE]);
             heat_production.push_back(data[JOULE_HEATING]);
             voltage.push_back(data[VOLTAGE]);
@@ -136,11 +134,7 @@ run_constant_current_cycling
             this->electrochemical_evolve_one_time_step(time_step);
             this->thermal_evolve_one_time_step        (time_step);
             this->process_solution(data);
-            std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
-                <<"U="<<data[VOLTAGE]<<"  "
-                <<"I="<<data[CURRENT]<<"  "
-                <<"Q="<<data[JOULE_HEATING]<<"  "
-                <<"T="<<data[TEMPERATURE]<<"\n";
+            this->report_data(current_time, data);
             max_temperature.push_back(data[TEMPERATURE]);
             heat_production.push_back(data[JOULE_HEATING]);
             voltage.push_back(data[VOLTAGE]);
@@ -163,6 +157,21 @@ run_constant_current_cycling
     output_params->put("capacitor_state", to_string(capacitor_state));
     output_params->put("cycle",           to_string(cycle)          );
 }                                               
+
+template <int dim>
+void
+SuperCapacitorProblem<dim>::
+report_data(double time, double const * data)
+{
+    if (this->verbose) {
+        std::cout<<std::setprecision(5)<<"t="<<time<<"  "
+            <<"U="<<data[VOLTAGE]<<"  "
+            <<"I="<<data[CURRENT]<<"  "
+            <<"Q="<<data[JOULE_HEATING]<<"  "
+            <<"T="<<data[TEMPERATURE]<<"\n";
+    }
+}
+
 template <int dim>
 void
 SuperCapacitorProblem<dim>::
@@ -195,7 +204,8 @@ run_constant_current_charge_constant_voltage_discharge
         } // end if
         old_solution_norm = solution_norm;
     } // end while
-    std::cout<<step<<" iterations\n";
+    if (this->verbose)
+        std::cout<<step<<" iterations for finding initial electrochemical solution\n";
 }
 
     thermal_solution = 0.0; // TODO: initialize to ambient temperature
@@ -225,11 +235,7 @@ run_constant_current_charge_constant_voltage_discharge
         this->electrochemical_evolve_one_time_step(time_step);
         this->thermal_evolve_one_time_step        (time_step);
         this->process_solution(data);
-        std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
-            <<"U="<<data[VOLTAGE]<<"  "
-            <<"I="<<data[CURRENT]<<"  "
-            <<"Q="<<data[JOULE_HEATING]<<"  "
-            <<"T="<<data[TEMPERATURE]<<"\n";
+        this->report_data(current_time, data);
         max_temperature.push_back(data[TEMPERATURE]);
         heat_production.push_back(data[JOULE_HEATING]);
         voltage.push_back(data[VOLTAGE]);
@@ -249,11 +255,7 @@ run_constant_current_charge_constant_voltage_discharge
         this->electrochemical_evolve_one_time_step(time_step);
         this->thermal_evolve_one_time_step        (time_step);
         this->process_solution(data);
-        std::cout<<std::setprecision(5)<<"t="<<current_time<<"  "
-            <<"U="<<data[VOLTAGE]<<"  "
-            <<"I="<<data[CURRENT]<<"  "
-            <<"Q="<<data[JOULE_HEATING]<<"  "
-            <<"T="<<data[TEMPERATURE]<<"\n";
+        this->report_data(current_time, data);
         max_temperature.push_back(data[TEMPERATURE]);
         heat_production.push_back(data[JOULE_HEATING]);
         voltage.push_back(data[VOLTAGE]);
@@ -283,9 +285,11 @@ build_triangulation(std::shared_ptr<boost::property_tree::ptree const> database)
     mesh_reader.attach_triangulation(this->triangulation);
     mesh_reader.read_ucd(fin);
     fin.close();
-    std::cout<<"cells="<<this->triangulation.n_active_cells()<<"  "
-        <<"faces="<<this->triangulation.n_active_faces()<<"  "
-        <<"vertices="<<this->triangulation.n_used_vertices()<<"\n";
+    if (this->verbose) {
+        std::cout<<"cells="<<this->triangulation.n_active_cells()<<"  "
+            <<"faces="<<this->triangulation.n_active_faces()<<"  "
+            <<"vertices="<<this->triangulation.n_used_vertices()<<"\n";
+    }
 }
 
 template <int dim>
@@ -411,16 +415,17 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
     // readibility
     this->thermal_load_vector.reinit(this->system_rhs.block(thermal_block));
 
-
-    std::cout
-        <<"total degrees of freedom : "<<this->dof_handler.n_dofs()<<"\n"
-        <<"    electrochemical : "
-        <<"solid_potential "<<dofs_per_component[solid_potential_component]
-        <<" + liquid_potential "<<dofs_per_component[liquid_potential_component]
-        <<"\n"
-        <<"    thermal         : "
-        <<"temperature "<<dofs_per_component[temperature_component]
-        <<"\n";
+    if (this->verbose) {
+        std::cout
+            <<"total degrees of freedom : "<<this->dof_handler.n_dofs()<<"\n"
+            <<"    electrochemical : "
+            <<"solid_potential "<<dofs_per_component[solid_potential_component]
+            <<" + liquid_potential "<<dofs_per_component[liquid_potential_component]
+            <<"\n"
+            <<"    thermal         : "
+            <<"temperature "<<dofs_per_component[temperature_component]
+            <<"\n";
+    }
 }
 
 template <int dim>
@@ -455,7 +460,9 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     this->electrochemical_operator->set_null_space(database->get<unsigned int>("liquid_potential_component"), database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  ));
     this->electrochemical_operator->set_null_space(database->get<unsigned int>("liquid_potential_component"), database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id"));
     std::vector<dealii::types::global_dof_index> const & null_space = this->electrochemical_operator->get_null_space();
-    std::cout<<"null space size : "<<null_space.size()<<"\n";
+    if (this->verbose) {
+        std::cout<<"null space size : "<<null_space.size()<<"\n";
+    }
 
     this->thermal_operator_params = std::shared_ptr<ThermalOperatorParameters<dim> >
         (new ThermalOperatorParameters<dim>(database));
@@ -593,8 +600,10 @@ electrochemical_setup_system(double const time_step, CapacitorState const capaci
             } // end if entry is non zero
         } // end for all entries
     } // end if symetric correction
-    std::cout<<"rhs set size is "<<rhs_set.size()<<"\n"
-        "rhs add size is "<<rhs_add.size()<<"\n";
+//    if (this->verbose) {
+//        std::cout<<"rhs set size is "<<rhs_set.size()<<"\n"
+//            "rhs add size is "<<rhs_add.size()<<"\n";
+//    }
 }
 
 template <int dim>

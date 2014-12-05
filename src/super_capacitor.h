@@ -47,6 +47,7 @@ private:
 
     enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
     void process_solution(double * data);
+    void report_data (double time, double const * data);
 
     typename dealii::Triangulation<dim> triangulation;
 
@@ -70,6 +71,7 @@ private:
     std::shared_ptr<SuperCapacitorPostprocessorParameters<dim> > post_processor_params;
     std::shared_ptr<SuperCapacitorPostprocessor<dim> >           post_processor;
 
+    bool const verbose;
 
     bool const symmetric_correction;
     std::map<dealii::types::global_dof_index, double> rhs_set;

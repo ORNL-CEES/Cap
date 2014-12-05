@@ -59,6 +59,7 @@ void put_default_parameters(boost::property_tree::ptree & params)
 std::shared_ptr<boost::property_tree::ptree> initialize_database()
 {
     std::shared_ptr<boost::property_tree::ptree> database(new boost::property_tree::ptree);
+    database->put("verbose",                    true);
     database->put("solid_potential_component",     0);
     database->put("liquid_potential_component",    1);
     database->put("temperature_component",         2);

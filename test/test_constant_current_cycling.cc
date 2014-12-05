@@ -17,11 +17,11 @@ int main(int argc, char *argv[])
     // SETTING PROBLEM PARAMETERS
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
     put_default_parameters(*in);
-    in->put("test_case", 2);
-    in->put("time_step",       "5.0");
-    in->put("initial_time",    "0.0");
-    in->put("final_time",   "1200.0");
-    in->put("max_cycles",    "100"  );
+    in->put("test_case",       2  );
+    in->put("time_step",       5.0);
+    in->put("initial_time",    0.0);
+    in->put("final_time",   1200.0);
+    in->put("max_cycles",    100  );
     in->put("boundary_values.charge_current_density",     32.465);      
     in->put("boundary_values.discharge_current_density", -32.465);      
 

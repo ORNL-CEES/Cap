@@ -40,7 +40,7 @@ void
 ElectrochemicalOperator<dim>::
 reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 {
-std::cout<<"### reset electrical ###\n";
+//std::cout<<"### reset electrical ###\n";
     std::shared_ptr<ElectrochemicalOperatorParameters<dim> const> electrochemical_parameters = 
         std::dynamic_pointer_cast<ElectrochemicalOperatorParameters<dim> const>(parameters);
 
@@ -66,10 +66,10 @@ std::cout<<"### reset electrical ###\n";
     } // end if
 
 
-std::cout<<std::setprecision(15)
-    <<"stiffness="<<this->stiffness_matrix.l1_norm()<<"  "
-    <<"mass="<<this->mass_matrix.l1_norm()<<"  "
-    <<"load="<<this->load_vector.l2_norm()<<"\n";
+//std::cout<<std::setprecision(15)
+//    <<"stiffness="<<this->stiffness_matrix.l1_norm()<<"  "
+//    <<"mass="<<this->mass_matrix.l1_norm()<<"  "
+//    <<"load="<<this->load_vector.l2_norm()<<"\n";
 }
 
 template <int dim>
