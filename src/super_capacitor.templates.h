@@ -94,6 +94,7 @@ run_constant_current_cycling
     std::vector<double> time;
     std::vector<std::string> capacitor_state;
     std::vector<int> cycle;
+    double volume;
 
     double current_time = initial_time;
     unsigned int step          = 0;
@@ -122,6 +123,7 @@ run_constant_current_cycling
             time.push_back(current_time);
             cycle.push_back(current_cycle);
             capacitor_state.push_back("charging");
+            volume = data[VOLUME];
             if (data[VOLTAGE] >= 2.2) {
                 break;
             } // end if
@@ -156,6 +158,7 @@ run_constant_current_cycling
     output_params->put("time",            to_string(time)           );
     output_params->put("capacitor_state", to_string(capacitor_state));
     output_params->put("cycle",           to_string(cycle)          );
+    output_params->put("volume",          volume                    );
 }                                               
 
 template <int dim>
@@ -168,6 +171,8 @@ report_data(double time, double const * data)
             <<"U="<<data[VOLTAGE]<<"  "
             <<"I="<<data[CURRENT]<<"  "
             <<"Q="<<data[JOULE_HEATING]<<"  "
+            <<"V="<<data[VOLUME]<<"  "
+            <<"S="<<data[SURFACE_AREA]<<"  "
             <<"T="<<data[TEMPERATURE]<<"\n";
     }
 }
@@ -616,6 +621,8 @@ process_solution(double * data)
     this->post_processor->get("current",         data[CURRENT]      );
     this->post_processor->get("joule_heating",   data[JOULE_HEATING]);
     this->post_processor->get("max_temperature", data[TEMPERATURE]  );
+    this->post_processor->get("volume",          data[VOLUME]       );
+    this->post_processor->get("surface_area",    data[SURFACE_AREA] );
 }          
 
 } // end namespace cap
