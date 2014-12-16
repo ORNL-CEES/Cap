@@ -45,7 +45,7 @@ private:
     void thermal_setup_system(double const time_step);
     void thermal_evolve_one_time_step(double const time_step);
 
-    enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
+    enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, MASS, N_DATA};
     void process_solution(double * data);
     void report_data (double time, double const * data);
 

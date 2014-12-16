@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
     in->put("initial_time",    0.0);
     in->put("final_time",    600.0);
     in->put("max_cycles",    100  );
-    in->put("boundary_values.charge_current_density",     32.465);      
-    in->put("boundary_values.discharge_current_density", -32.465);      
+    in->put("boundary_values.charge_current_density",     324.65);      
+    in->put("boundary_values.discharge_current_density", -324.65);      
 
     // SOLVING THE PROBLEM
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     std::vector<double> voltage         = cap::to_vector<double>(out->get<std::string>("voltage")        );
     std::vector<double> time            = cap::to_vector<double>(out->get<std::string>("time")           );
     double volume = out->get<double>("volume");
+    double mass   = out->get<double>("mass"  );
     std::vector<std::string> capacitor_state = cap::to_vector<std::string>(out->get<std::string>("capacitor_state"));
 
     std::size_t n = time.size();
@@ -66,10 +67,14 @@ int main(int argc, char *argv[])
             <<energy[i]<<"  "
             <<"\n";
     } // end for i
+    std::cout
+        <<volume<<"  "
+        <<mass<<"\n";
 
 
     auto minmax_energy = std::minmax_element(energy.begin(), energy.end());
-    double energy_density = (*minmax_energy.second - *minmax_energy.first) / volume;
+    double seconds_per_hour = 3600.0;
+    double energy_density = (*minmax_energy.second - *minmax_energy.first) / (mass * seconds_per_hour);
     std::cout<<energy_density<<"\n";
 
     return 0;
