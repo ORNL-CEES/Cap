@@ -38,8 +38,9 @@ int main(int argc, char *argv[])
     std::vector<double> voltage         = cap::to_vector<double>(out->get<std::string>("voltage")        );
     std::vector<double> time            = cap::to_vector<double>(out->get<std::string>("time")           );
     double volume = out->get<double>("volume");
-    double mass   = out->get<double>("mass"  );
+    double mass   = out->get<double>("mass");
     std::vector<std::string> capacitor_state = cap::to_vector<std::string>(out->get<std::string>("capacitor_state"));
+    std::vector<int>         cycle           = cap::to_vector<int>        (out->get<std::string>("cycle")          );
 
     std::size_t n = time.size();
     std::vector<double> power(n);
@@ -47,7 +48,10 @@ int main(int argc, char *argv[])
     std::vector<double> energy(n);
     energy[0] = 0.0;
     for (std::size_t i = 1; i < n; ++i)
-        energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
+        if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
+            energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
+        else
+            energy[i] = energy[i-1];
     std::vector<double> efficiency(n);
     std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
         [](double const & P, double const & Q) { return 100.0 * (std::abs(P) - Q) / std::abs(P); });
@@ -58,11 +62,12 @@ int main(int argc, char *argv[])
         std::cout<<i<<"  "
             <<time[i]<<"  "
             <<capacitor_state[i]<<"  "
+            <<cycle[i]<<"  "
+            <<current[i]<<"  "
+            <<voltage[i]<<"  "
             <<max_temperature[i]<<"  "
             <<heat_production[i]<<"  "
             <<power[i]<<"  "
-            <<current[i]<<"  "
-            <<voltage[i]<<"  "
             <<efficiency[i]<<"  "
             <<energy[i]<<"  "
             <<"\n";
@@ -76,6 +81,10 @@ int main(int argc, char *argv[])
     double seconds_per_hour = 3600.0;
     double energy_density = (*minmax_energy.second - *minmax_energy.first) / (mass * seconds_per_hour);
     std::cout<<energy_density<<"\n";
+
+    double power_density = std::accumulate(power.begin(), power.end(), 0.0, 
+        [](double const & sum, double const & val) { return sum + std::abs(val); }) / (static_cast<double>(power.size()) * mass);
+    std::cout<<power_density<<"\n";
 
     return 0;
 }
