@@ -5,10 +5,13 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/vector_tools.h>
+#include <boost/format.hpp>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
+#include <functional>
 
 namespace cap {
 
@@ -162,6 +165,89 @@ run_constant_current_cycling
     output_params->put("cycle",           to_string(cycle)          );
     output_params->put("volume",          volume                    );
     output_params->put("mass",            mass                      );
+
+    std::size_t const n = time.size();
+    // compute power
+    std::vector<double> power(n);
+    std::transform(voltage.begin(), voltage.end(), current.begin(), power.begin(), std::multiplies<double>());
+    // compute energy
+    std::vector<double> energy(n);
+    energy[0] = 0.0;
+    for (std::size_t i = 1; i < n; ++i)
+        if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
+            energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
+        else
+            energy[i] = energy[i-1];
+    // compute thermal losses
+    std::vector<double> thermal_energy_loss(n);
+    thermal_energy_loss[0] = 0.0;
+    for (std::size_t i = 1; i < n; ++i)
+        thermal_energy_loss[i] = thermal_energy_loss[i-1] + 0.5 * (time[i] - time[i-1]) * (heat_production[i] + heat_production[i-1]);
+    // compute efficiency
+    std::vector<double> efficiency(n);
+    std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
+        [](double const & P, double const & Q) { return 100.0 * (std::abs(P) - Q) / std::abs(P); });
+
+    output_params->put("power",               to_string(power)              );
+    output_params->put("energy",              to_string(energy)             );
+    output_params->put("thermal_energy_loss", to_string(thermal_energy_loss));
+    output_params->put("efficiency",          to_string(efficiency)         );
+    
+    auto minmax_energy = std::minmax_element(energy.begin(), energy.end());
+    double const seconds_per_hour = 3600.0;
+    double const qoi_energy_density = 
+        (*minmax_energy.second - *minmax_energy.first) / (mass * seconds_per_hour);
+
+    double const qoi_power_density = 
+        std::accumulate(power.begin(), power.end(), 0.0, 
+            [](double const & sum, double const & val) { return sum + std::abs(val); }
+        ) / (static_cast<double>(power.size()) * mass);
+
+    double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
+    double const qoi_efficiency =
+        std::accumulate(efficiency.begin(), efficiency.end(), 0.0) / efficiency.size(); 
+
+    output_params->put("quantities_of_interest.max_temperature", qoi_max_temperature);
+    output_params->put("quantities_of_interest.energy_density",  qoi_energy_density );
+    output_params->put("quantities_of_interest.power_density",   qoi_power_density  );
+    output_params->put("quantities_of_interest.efficiency",      qoi_efficiency     );
+
+    double max_heat_production = *std::max_element(heat_production.begin(), heat_production.end());
+    std::vector<double> dummy(n, 0.0);
+    for (std::size_t i = 1; i < n; ++i)
+        dummy[i] = dummy[i-1] + (time[i] - time[i-1]) * max_heat_production;
+    std::ofstream fout;
+    fout.open("output_test_constant_current_cycling");
+    fout<<boost::format("# %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  \n")
+        % "time[s]"
+        % "capacitor_state"
+        % "cycle"
+        % "current[A]"
+        % "voltage[V]"
+        % "max_temperature[K]"
+        % "heat_production[W]"
+        % "power[W/kg]"
+        % "efficiency[%]"
+        % "energy[Wh/kg]"
+        % "loss[Wh/kg]"
+        % "dummy[Wh/kg]"
+    ;
+    for (std::size_t i = 0; i < n; ++i)
+          fout<<boost::format("  %7.1f  %15s  %5d  %10f  %10.3f  %18.3f  %18.4e  %11.4e  %13.1f  %13.4e  %11.4e  %12.4e  \n")
+              % time[i]
+              % capacitor_state[i]
+              % cycle[i]
+              % current[i]
+              % voltage[i]
+              % max_temperature[i]
+              % heat_production[i]
+              % power[i]
+              % efficiency[i]
+              % energy[i]
+              % thermal_energy_loss[i]
+              % dummy[i]
+          ;
+    fout.close();
 }                                               
 
 template <int dim>
@@ -170,11 +256,13 @@ SuperCapacitorProblem<dim>::
 report_data(double time, double const * data)
 {
     if (this->verbose) {
-        std::cout<<std::setprecision(5)<<"t="<<time<<"  "
-            <<"U="<<data[VOLTAGE]<<"  "
-            <<"I="<<data[CURRENT]<<"  "
-            <<"Q="<<data[JOULE_HEATING]<<"  "
-            <<"T="<<data[TEMPERATURE]<<"\n";
+        std::cout<<boost::format("t=%4.1fs  U=%6.3fV  I=%6.3fA  Q=%8.4eW  T=%6.3fK  \n")
+            % time
+            % data[VOLTAGE]
+            % data[CURRENT]
+            % data[JOULE_HEATING]
+            % data[TEMPERATURE]
+        ;
     }
 }
 
