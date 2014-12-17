@@ -22,7 +22,7 @@ SuperCapacitorProblem(std::shared_ptr<boost::property_tree::ptree const> databas
     , verbose(database->get<bool>("verbose", false))
     , symmetric_correction(true)
 { 
-    std::cout<<"initialize...\n";
+//    std::cout<<"initialize...\n";
     this->build_triangulation(database);
     this->set_cell_material_ids_and_face_boundary_ids(database);
     this->initialize_system(database);
@@ -52,7 +52,7 @@ run_constant_current_cycling
     , std::shared_ptr<boost::property_tree::ptree>       output_params
     )
 {                                               
-    std::cout<<"run...\n";                      
+//    std::cout<<"run...\n";                      
     this->reset(input_params);
 
     unsigned int const thermal_block         = 1;

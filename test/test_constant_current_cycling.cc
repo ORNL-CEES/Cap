@@ -12,7 +12,9 @@ void put_default_parameters(boost::property_tree::ptree & params);
 
 int main(int argc, char *argv[])
 {
-    cap::SuperCapacitorProblem<2> super_capacitor(initialize_database());
+    std::shared_ptr<boost::property_tree::ptree> database = initialize_database();
+    database->put("verbose", false);
+    cap::SuperCapacitorProblem<2> super_capacitor(database);
 
     // SETTING PROBLEM PARAMETERS
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
