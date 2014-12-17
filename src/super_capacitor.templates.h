@@ -12,6 +12,7 @@
 #include <fstream>
 #include <algorithm>
 #include <functional>
+#include <numeric>
 
 namespace cap {
 
