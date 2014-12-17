@@ -243,6 +243,7 @@ Path                      &     & Units \\
 \texttt{cycle}            \\
 \texttt{surface\_area}    & $S$ & [m$^2$] \\
 \texttt{volume}           & $V$ & [m$^3$] \\
+\texttt{mass}             & $M$ & [kg]    \\
 \end{tabular}
 }
 
@@ -285,14 +286,25 @@ efficiency $\eta=\frac{|P|-Q}{|P|}$
 
 We want to maximize 
 
-power density $P/V$
+power density $P/M$
 
-energy density $E/V$
+energy density $E/M$
 
 efficiency
 
 Constraints are 
 temperature $\Theta$ and voltage $U$ must not exceed some threshold values.
+
+{\footnotesize
+\begin{tabular}{llll}
+Path                      &     & Units \\
+\texttt{quantities\_of\_interest.max\_temperature} & $\Theta_{max}$ & [K] \\
+\texttt{quantities\_of\_interest.energy\_density}  & $E/M$          & [Wh/kg] \\
+\texttt{quantities\_of\_interest.power\_density}   & $P/M$          & [W/kg] \\
+\texttt{quantities\_of\_interest.efficiency}       & $\eta$         & [\%] \\
+\end{tabular}
+}
+
 
 [note] 
 I suspect the potential gradient should not exceed some maximum for safety,
