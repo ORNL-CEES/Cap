@@ -84,6 +84,8 @@ run_constant_current_cycling
 
     thermal_solution = 0.0; // TODO: initialize to ambient temperature
     
+    double const max_voltage = input_params->get<double>("boundary_values.charge_potential");
+    double const min_voltage = input_params->get<double>("boundary_values.discharge_potential");
 
     double const time_step    = input_params->get<double>("time_step"   );
     double const initial_time = input_params->get<double>("initial_time");
@@ -107,6 +109,16 @@ run_constant_current_cycling
 
     this->thermal_setup_system(time_step);
 
+    this->process_solution(data);
+    this->report_data(current_time, data);
+    max_temperature.push_back(data[TEMPERATURE]);
+    heat_production.push_back(data[JOULE_HEATING]);
+    voltage.push_back(data[VOLTAGE]);
+    current.push_back(data[CURRENT]);
+    time.push_back(current_time);
+    cycle.push_back(current_cycle);
+    capacitor_state.push_back("initialize");
+
     while (current_cycle < max_cycles) {
         if (current_time > final_time)
             break;
@@ -129,7 +141,7 @@ run_constant_current_cycling
             capacitor_state.push_back("charging");
             volume = data[VOLUME];
             mass   = data[MASS  ];
-            if (data[VOLTAGE] >= 2.2) {
+            if (data[VOLTAGE] >= max_voltage) {
                 break;
             } // end if
         } // end while
@@ -149,7 +161,7 @@ run_constant_current_cycling
             time.push_back(current_time);
             cycle.push_back(current_cycle);
             capacitor_state.push_back("discharging");
-            if (data[VOLTAGE] <= 1.1) {
+            if (data[VOLTAGE] <= min_voltage) {
                 break;
             } // end if
         } // end while
@@ -169,7 +181,8 @@ run_constant_current_cycling
     std::size_t const n = time.size();
     // compute power
     std::vector<double> power(n);
-    std::transform(voltage.begin(), voltage.end(), current.begin(), power.begin(), std::multiplies<double>());
+    std::transform(voltage.begin(), voltage.end(), current.begin(), power.begin(), 
+        [&mass](double const & U, double const & I) { return U * I / mass; });
     // compute energy
     std::vector<double> energy(n);
     energy[0] = 0.0;
@@ -177,7 +190,7 @@ run_constant_current_cycling
         if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
             energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
         else
-            energy[i] = energy[i-1];
+            energy[i] = 0.0; // reset to zero when toggle from charge to discharge
     // compute thermal losses
     std::vector<double> thermal_energy_loss(n);
     thermal_energy_loss[0] = 0.0;
@@ -196,16 +209,16 @@ run_constant_current_cycling
     auto minmax_energy = std::minmax_element(energy.begin(), energy.end());
     double const seconds_per_hour = 3600.0;
     double const qoi_energy_density = 
-        (*minmax_energy.second - *minmax_energy.first) / (mass * seconds_per_hour);
+         - *minmax_energy.first / seconds_per_hour;
 
     double const qoi_power_density = 
         std::accumulate(power.begin(), power.end(), 0.0, 
             [](double const & sum, double const & val) { return sum + std::abs(val); }
-        ) / (static_cast<double>(power.size()) * mass);
+        ) / static_cast<double>(power.size());
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
     double const qoi_efficiency =
-        std::accumulate(efficiency.begin(), efficiency.end(), 0.0) / efficiency.size(); 
+          - *minmax_energy.first / *minmax_energy.second;
 
     output_params->put("quantities_of_interest.max_temperature", qoi_max_temperature);
     output_params->put("quantities_of_interest.energy_density",  qoi_energy_density );
@@ -256,7 +269,7 @@ SuperCapacitorProblem<dim>::
 report_data(double time, double const * data)
 {
     if (this->verbose) {
-        std::cout<<boost::format("t=%4.1fs  U=%6.3fV  I=%6.3fA  Q=%8.4eW  T=%6.3fK  \n")
+        std::cout<<boost::format("t=%6.1fs  U=%6.4fV  I=%6.4fA  Q=%8.6eW  T=%6.3fK  \n")
             % time
             % data[VOLTAGE]
             % data[CURRENT]
