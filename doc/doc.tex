@@ -3,8 +3,9 @@
 \geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
 %\geometry{landscape}                		% Activate for for rotated page geometry
 %\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
-\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
-								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{tikz}
@@ -118,7 +119,11 @@ $\sigma_s \frac{\partial \Phi_s}{\partial n} = I / S^{cathode} \text{\ on\ } \Ga
 i.e. constant current charge/discharge
 
 \item Relaxation \\
-nothing
+nothing (is same as galvanostatic with zero current)
+
+\item Constant power \\
+$\Phi_s \sigma_s \frac{\partial \Phi_s}{\partial n} = P / S^{cathode} \text{\ on\ } \Gamma^{cathode}$
+(nonlinear condition)
 \end{enumerate}
 
 here $S^{cathode}$ represents the surface area of the terminal on the cathode
@@ -280,9 +285,12 @@ Quantities of interest are
 
 power $P=UI$
 
-energy $E=\int_{t_0}^t P - Q d\tau$
+energy \\
+$E^{charge}   =\int_{t_0}^{t} P d\tau \text{\ for\ all\ } t_0 \leq t \leq t_1=t_0+\Delta t^{charge}   $
+\\
+$E^{discharge}=\int_{t_1}^{t} P d\tau \text{\ for\ all\ } t_1 \leq t \leq t_2=t_1+\Delta t^{discharge}$
 
-efficiency $\eta=\frac{|P|-Q}{|P|}$
+efficiency $\eta=E^{discharge}(t_2)/E^{charge}(t_1)$
 
 We want to maximize 
 
@@ -364,16 +372,61 @@ You may tune all the other parameters.
 \newpage
 %-----------------------------------------------------------------------------
 \section{Test case 1: constant current charge constant voltage discharge}
-This is basically \cite{Allu2014b} with current collector added and coupled to
-thermal.
+This is inspired by an experiment by Verbrugge et al. \cite{Verbrugge2005}.
+
+The supercapacitor is initially fully discharged at 0 V.  Then it is charged
+to 1.7 V at a constant current of 100 A.  Subsequently, a constant 1.4 V is
+applied for 5 s and the supercapacitor is allowed to rest at open circuit for
+3 min.  The sequence is repeated for a series of potentials from 1.8 to 2.4 V
+with increments of 0.1 V.
+
+Fig.~\ref{fig:series_of_constant_current_charge_and_constant_voltage_discharge}
+illustrates that.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/series_of_constant_current_charge_and_constant_voltage_discharge}
+    \caption{
+Constant current charge (100 A) followed by constant voltage (1.4 V)
+discharge.  The maximum voltages at the end of each charge range from 1.8 V to
+2.4 V by increments of 0.1 V.  (This figure is taken from \cite{Verbrugge2005}.)
+    }
+    \label{fig:series_of_constant_current_charge_and_constant_voltage_discharge}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/constant_current_charge_constant_voltage_discharge_current_and_voltage}
+    \caption{mine}
+    \label{fig:constant_current_charge_constant_voltage_discharge_current_and_voltage}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/constant_current_charge_constant_voltage_discharge_power_density}
+    \caption{mine}
+    \label{fig:constant_current_charge_constant_voltage_discharge_current_and_voltage}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/constant_current_charge_constant_voltage_discharge_temperature}
+    \caption{mine}
+    \label{fig:constant_current_charge_constant_voltage_discharge_temperature}
+\end{figure}
+
+
 
 %-----------------------------------------------------------------------------
 \section{Test case 2: constant current cycling}
 The supercapacitor undergoes a series of galvanostatic charge and discharge at
-constant current 100 A over the range 1.1 V--2.2 V.
+constant current 100 A over the range 1.1--2.2 V.
 The experiment starts at 1.4 V with a charge.  The initial condition is
 imposed by applying a potentiostatic charge from 0 V until near-equilibrium
 is reached.
+
+Fig~\ref{fig:constant_current_cycling_current_and_voltage} shows
 
 \begin{figure}[h!]
     \centering
@@ -389,49 +442,33 @@ current at 100 A between 1.1 and 2.2 V.
     \centering
     \includegraphics[width=\textwidth]{figures/constant_current_cycling_power_density}
     \caption{Supercapacitor power density during constant current cycling.
-Red color denotes , green area represents the actual energy recovered at discharge
+Red color denotes the energy fed into the device during the charge and the
+green area represents the actual energy recovered at discharge.
     }
-    \label{fig:constant_current_cycling_power_density.png}
+    \label{fig:constant_current_cycling_power_density}
 \end{figure}
+When looking carefully at
+Fig.~\ref{fig:constant_current_cycling_power_density}, one may notice that
+the red and the green surface area are slightly out of balance which reflects
+the dissipative energy losses in the supercapacitor due to Joule heating.
+The ratio between green to red surface area over one charge/discharge cycle
+gives the efficiency $\eta = 85.8\%$.  The heat produced makes the temperature
+field in the supercapacitor rise.  Its maximum value is plotted in
+Fig.~\ref{fig:constant_current_cycling_temperature} as a function of time.
+
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{figures/constant_current_cycling_temperature}
     \caption{Evolution of the maximum temperature in the supercapacitor over
-1 hour of cycles charge/discharge at 100 A.
+1 hour of cycles charge/discharge at 100 A.  0 represents the ambient
+temperature.
     }
-    \label{fig:constant_current_cycling_temperature.png}
+    \label{fig:constant_current_cycling_temperature}
 \end{figure}
 
 %-----------------------------------------------------------------------------
-\section{Test case 3:}
-This is inspired by an experiment by Verbrugge et al. \cite{Verbrugge2005}.
-
-The supercapacitor is initially fully discharged at 0 V.  Then it is charged
-to 1.7 V at a constant current of 100 A.  Subsequently, a constant 1.4 V is
-applied for 5 s and the supercapacitor is allowed to rest at open circuit for
-3 min.  The sequence is repeated for a series of potentials from 1.8 to 2.4 V
-with increments of 0.1 V.
-
-Figure \ref{fig:series_of_constant_current_charge_and_constant_voltage_discharge}
-illustrates that.
-
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\textwidth]{figures/series_of_constant_current_charge_and_constant_voltage_discharge}
-    \caption{
-Constant current charge (100 A) followed by constant voltage (1.4 V)
-discharge.  The maximum voltages at the end of each charge range from 1.8 V to
-2.4 V by increments of 0.1 V.  (This figure is taken from \cite{Verbrugge2005}.)
-    }
-    \label{fig:series_of_constant_current_charge_and_constant_voltage_discharge}
-\end{figure}
-
-
-
-%-----------------------------------------------------------------------------
-\section{Test case 4: constant power}
+\section{Test case 3: constant power}
 
 
 
