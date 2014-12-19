@@ -40,9 +40,22 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
         this->run_constant_current_charge_constant_voltage_discharge(input_params, output_params);
     } else if (test_case == 2) {
         this->run_constant_current_cycling                          (input_params, output_params);
+    } else if (test_case == 3) {
+        this->run_constant_power_cycling                            (input_params, output_params);
     } else {
        std::runtime_error("Unrecognized test case");
     } // end if
+}
+
+template <int dim>
+void
+SuperCapacitorProblem<dim>::
+run_constant_power_cycling
+    ( std::shared_ptr<boost::property_tree::ptree const> input_params
+    , std::shared_ptr<boost::property_tree::ptree>       output_params
+    )
+{
+
 }
 
 template <int dim>
@@ -296,28 +309,8 @@ run_constant_current_charge_constant_voltage_discharge
     dealii::Vector<double> & thermal_solution         = this->solution.block(thermal_block        );
     dealii::Vector<double> & electrochemical_solution = this->solution.block(electrochemical_block);
 
-{   // find initial solution for electrochemical
     electrochemical_solution = 0.0;
-    double const dummy_time_step = 1.0;
-    this->electrochemical_setup_system(dummy_time_step, Initialize);
-    unsigned int step = 0;
-    double solution_norm;
-    double old_solution_norm = 0.0;
-    while (true) {
-        ++step;
-        this->electrochemical_evolve_one_time_step(dummy_time_step);
-        solution_norm = electrochemical_solution.l2_norm();
-        if (std::abs(solution_norm - old_solution_norm) < 1.0e-8) {
-            break;
-        } // end if
-        old_solution_norm = solution_norm;
-    } // end while
-    if (this->verbose)
-        std::cout<<step<<" iterations for finding initial electrochemical solution\n";
-}
-
     thermal_solution = 0.0; // TODO: initialize to ambient temperature
-    
 
     double const time_step    = input_params->get<double>("time_step"   );
     double const initial_time = input_params->get<double>("initial_time");
@@ -330,47 +323,88 @@ run_constant_current_charge_constant_voltage_discharge
     std::vector<double> time;
     std::vector<std::string> capacitor_state;
     std::vector<int> cycle;
+    double volume;
+    double mass;
 
+    double tick;
+    double const discharge_duration =   5.0;
+    double const rest_duration      = 180.0;
     double current_time = initial_time;
     unsigned int step = 0;
     double data[N_DATA];
 
-    this->thermal_setup_system(time_step);
-    this->electrochemical_setup_system(time_step, GalvanostaticCharge);
-    while (current_time <= final_time) {
-        ++step;
-        current_time += time_step;
-        this->electrochemical_evolve_one_time_step(time_step);
-        this->thermal_evolve_one_time_step        (time_step);
-        this->process_solution(data);
-        this->report_data(current_time, data);
-        max_temperature.push_back(data[TEMPERATURE]);
-        heat_production.push_back(data[JOULE_HEATING]);
-        voltage.push_back(data[VOLTAGE]);
-        current.push_back(data[CURRENT]);
-        time.push_back(current_time);
-        capacitor_state.push_back("charging");
-        if (data[VOLTAGE] >= 2.2) {
-            break;
-        } //
-        // TODO: ...
-    } // end while
+    std::vector<double> max_voltage;
+    for (double U = 1.7; U <= 2.4; U += 0.1)
+        max_voltage.push_back(U);
 
-    this->electrochemical_setup_system(time_step, PotentiostaticDischarge);
-    while (current_time <= final_time) {
-        ++step;
-        current_time += time_step;
-        this->electrochemical_evolve_one_time_step(time_step);
-        this->thermal_evolve_one_time_step        (time_step);
-        this->process_solution(data);
-        this->report_data(current_time, data);
-        max_temperature.push_back(data[TEMPERATURE]);
-        heat_production.push_back(data[JOULE_HEATING]);
-        voltage.push_back(data[VOLTAGE]);
-        current.push_back(data[CURRENT]);
-        time.push_back(current_time);
-        capacitor_state.push_back("discharging");
-    } // end while
+    unsigned int const n_cycles = max_voltage.size();
+    unsigned int current_cycle = 0;
+
+    while (current_cycle < n_cycles) {
+        ++current_cycle;
+    
+        this->thermal_setup_system(time_step);
+        this->electrochemical_setup_system(time_step, GalvanostaticCharge);
+        while (current_time <= final_time) {
+            ++step;
+            current_time += time_step;
+            this->electrochemical_evolve_one_time_step(time_step);
+            this->thermal_evolve_one_time_step        (time_step);
+            this->process_solution(data);
+            this->report_data(current_time, data);
+            max_temperature.push_back(data[TEMPERATURE]);
+            heat_production.push_back(data[JOULE_HEATING]);
+            voltage.push_back(data[VOLTAGE]);
+            current.push_back(data[CURRENT]);
+            time.push_back(current_time);
+            cycle.push_back(current_cycle);
+            capacitor_state.push_back("charging");
+            volume = data[VOLUME];
+            mass   = data[MASS  ];
+            if (data[VOLTAGE] >= max_voltage[current_cycle-1]) {
+                break;
+            } //
+        } // end while
+
+        tick = current_time;
+        this->electrochemical_setup_system(time_step, PotentiostaticDischarge);
+        while ((current_time <= final_time)
+            && (current_time - tick <= discharge_duration)) {
+            ++step;
+            current_time += time_step;
+            this->electrochemical_evolve_one_time_step(time_step);
+            this->thermal_evolve_one_time_step        (time_step);
+            this->process_solution(data);
+            this->report_data(current_time, data);
+            max_temperature.push_back(data[TEMPERATURE]);
+            heat_production.push_back(data[JOULE_HEATING]);
+            voltage.push_back(data[VOLTAGE]);
+            current.push_back(data[CURRENT]);
+            time.push_back(current_time);
+            cycle.push_back(current_cycle);
+            capacitor_state.push_back("discharging");
+        } // end while
+
+        tick = current_time;
+        this->electrochemical_setup_system(time_step, Relaxation);
+        while ((current_time <= final_time)
+            && (current_time - tick <= rest_duration)) {
+            ++step;
+            current_time += time_step;
+            this->electrochemical_evolve_one_time_step(time_step);
+            this->thermal_evolve_one_time_step        (time_step);
+            this->process_solution(data);
+            this->report_data(current_time, data);
+            max_temperature.push_back(data[TEMPERATURE]);
+            heat_production.push_back(data[JOULE_HEATING]);
+            voltage.push_back(data[VOLTAGE]);
+            current.push_back(data[CURRENT]);
+            time.push_back(current_time);
+            cycle.push_back(current_cycle);
+            capacitor_state.push_back("resting");
+        } // end while
+
+    } // end for
 
     output_params->put("max_temperature", to_string(max_temperature));
     output_params->put("heat_production", to_string(heat_production));
@@ -379,6 +413,92 @@ run_constant_current_charge_constant_voltage_discharge
     output_params->put("time",            to_string(time));
     output_params->put("capacitor_state", to_string(capacitor_state));
     output_params->put("cycle",           to_string(cycle));
+    output_params->put("volume",          volume                    );
+    output_params->put("mass",            mass                      );
+
+    std::size_t const n = time.size();
+    // compute power
+    std::vector<double> power(n);
+    std::transform(voltage.begin(), voltage.end(), current.begin(), power.begin(), 
+        [&mass](double const & U, double const & I) { return U * I / mass; });
+    // compute energy
+    std::vector<double> energy(n);
+    energy[0] = 0.0;
+    for (std::size_t i = 1; i < n; ++i)
+        if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
+            energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
+        else
+            energy[i] = 0.0; // reset to zero when toggle from charge to discharge
+    // compute thermal losses
+    std::vector<double> thermal_energy_loss(n);
+    thermal_energy_loss[0] = 0.0;
+    for (std::size_t i = 1; i < n; ++i)
+        thermal_energy_loss[i] = thermal_energy_loss[i-1] + 0.5 * (time[i] - time[i-1]) * (heat_production[i] + heat_production[i-1]);
+    // compute efficiency
+    std::vector<double> efficiency(n);
+    std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
+        [](double const & P, double const & Q) { return 100.0 * (std::abs(P) - Q) / std::abs(P); });
+
+    output_params->put("power",               to_string(power)              );
+    output_params->put("energy",              to_string(energy)             );
+    output_params->put("thermal_energy_loss", to_string(thermal_energy_loss));
+    output_params->put("efficiency",          to_string(efficiency)         );
+    
+    auto minmax_energy = std::minmax_element(energy.begin(), energy.end());
+    double const seconds_per_hour = 3600.0;
+    double const qoi_energy_density = 
+         - *minmax_energy.first / seconds_per_hour;
+
+    double const qoi_power_density = 
+        std::accumulate(power.begin(), power.end(), 0.0, 
+            [](double const & sum, double const & val) { return sum + std::abs(val); }
+        ) / static_cast<double>(power.size());
+
+    double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
+    double const qoi_efficiency =
+          - *minmax_energy.first / *minmax_energy.second;
+
+    output_params->put("quantities_of_interest.max_temperature", qoi_max_temperature);
+    output_params->put("quantities_of_interest.energy_density",  qoi_energy_density );
+    output_params->put("quantities_of_interest.power_density",   qoi_power_density  );
+    output_params->put("quantities_of_interest.efficiency",      qoi_efficiency     );
+
+    double max_heat_production = *std::max_element(heat_production.begin(), heat_production.end());
+    std::vector<double> dummy(n, 0.0);
+    for (std::size_t i = 1; i < n; ++i)
+        dummy[i] = dummy[i-1] + (time[i] - time[i-1]) * max_heat_production;
+    std::ofstream fout;
+    fout.open("output_test_constant_current_charge_constant_voltage_discharge");
+    fout<<boost::format("# %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  \n")
+        % "time[s]"
+        % "capacitor_state"
+        % "cycle"
+        % "current[A]"
+        % "voltage[V]"
+        % "max_temperature[K]"
+        % "heat_production[W]"
+        % "power[W/kg]"
+        % "efficiency[%]"
+        % "energy[Wh/kg]"
+        % "loss[Wh/kg]"
+        % "dummy[Wh/kg]"
+    ;
+    for (std::size_t i = 0; i < n; ++i)
+          fout<<boost::format("  %7.1f  %15s  %5d  %10f  %10.3f  %18.3f  %18.4e  %11.4e  %13.1f  %13.4e  %11.4e  %12.4e  \n")
+              % time[i]
+              % capacitor_state[i]
+              % cycle[i]
+              % current[i]
+              % voltage[i]
+              % max_temperature[i]
+              % heat_production[i]
+              % power[i]
+              % efficiency[i]
+              % energy[i]
+              % thermal_energy_loss[i]
+              % dummy[i]
+          ;
+    fout.close();
 }                                               
 
 template <int dim>
