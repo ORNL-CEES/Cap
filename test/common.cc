@@ -55,6 +55,11 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("boundary_values.lower_boundary_id",             4);
     params.put("boundary_values.other_boundary_id",             5);
 
+    params.put("geometry.electrode_width", 50.0e-6);
+    params.put("geometry.separator_width", 25.0e-6);
+    params.put("geometry.collector_width",  5.0e-6);
+    params.put("geometry.sandwich_height",  5.0e-6);
+
 }
 
 std::shared_ptr<boost::property_tree::ptree> initialize_database()
