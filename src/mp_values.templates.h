@@ -92,6 +92,18 @@ get_values(std::string const &          key,
         } else {
             throw std::runtime_error("Invalid material id");
         } // end if material id
+    } else if (key.compare("density") == 0) {
+        if (cell->material_id() == this->separator_material_id) {
+            std::fill(values.begin(), values.end(), this->separator_density);
+        } else if ((cell->material_id() == this->anode_electrode_material_id) 
+            || (cell->material_id() == this->cathode_electrode_material_id)) {
+            std::fill(values.begin(), values.end(), this->electrode_density);
+        } else if ((cell->material_id() == this->anode_collector_material_id) 
+            || (cell->material_id() == this->cathode_collector_material_id)) {
+            std::fill(values.begin(), values.end(), this->collector_density);
+        } else {
+            throw std::runtime_error("Invalid material id");
+        } // end if material id
     } else if (key.compare("specific_capacitance") == 0) {
         if (cell->material_id() == this->separator_material_id) {
             std::fill(values.begin(), values.end(), 0.0);

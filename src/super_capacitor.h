@@ -34,6 +34,9 @@ private:
     void run_constant_current_cycling(
         std::shared_ptr<boost::property_tree::ptree const> input_params,
         std::shared_ptr<boost::property_tree::ptree>       output_params);
+    void run_constant_power_cycling(
+        std::shared_ptr<boost::property_tree::ptree const> input_params,
+        std::shared_ptr<boost::property_tree::ptree>       output_params);
     void build_triangulation(std::shared_ptr<boost::property_tree::ptree const> database);
     void set_cell_material_ids_and_face_boundary_ids(std::shared_ptr<boost::property_tree::ptree const> database);
     void initialize_system(std::shared_ptr<boost::property_tree::ptree const> database);
@@ -45,7 +48,7 @@ private:
     void thermal_setup_system(double const time_step);
     void thermal_evolve_one_time_step(double const time_step);
 
-    enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, N_DATA};
+    enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, MASS, N_DATA};
     void process_solution(double * data);
     void report_data (double const time, double const * data);
 

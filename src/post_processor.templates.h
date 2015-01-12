@@ -57,6 +57,7 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
     this->values["joule_heating"  ] = 0.0;
     this->values["surface_area"   ] = 0.0;
     this->values["volume"         ] = 0.0;
+    this->values["mass"           ] = 0.0;
 }
 
 template <int dim>
@@ -88,6 +89,7 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     unsigned int const n_face_q_points = face_quadrature_rule.size();
     std::vector<double>                  solid_electrical_conductivity_values (n_q_points);
     std::vector<double>                  liquid_electrical_conductivity_values(n_q_points);
+    std::vector<double>                  density_values                       (n_q_points);
     std::vector<dealii::Tensor<1, dim> > solid_potential_gradients            (n_q_points);
     std::vector<dealii::Tensor<1, dim> > liquid_potential_gradients           (n_q_points);
     std::vector<double>                  temperature_values                   (n_q_points);
@@ -105,6 +107,7 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         fe_values.reinit(cell);
         this->mp_values->get_values("solid_electrical_conductivity",  cell, solid_electrical_conductivity_values );
         this->mp_values->get_values("liquid_electrical_conductivity", cell, liquid_electrical_conductivity_values);
+        this->mp_values->get_values("density",                        cell, density_values                       );
         fe_values[solid_potential ].get_function_gradients(this->solution, solid_potential_gradients );
         fe_values[liquid_potential].get_function_gradients(this->solution, liquid_potential_gradients);
         fe_values[temperature]      .get_function_values  (this->solution, temperature_values        );
@@ -114,6 +117,7 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
               + liquid_electrical_conductivity_values[q_point] * liquid_potential_gradients[q_point] * liquid_potential_gradients[q_point]
               ) * fe_values.JxW(q_point);
             this->values["volume"       ] += fe_values.JxW(q_point);
+            this->values["mass"         ] += density_values[q_point] * fe_values.JxW(q_point);
         } // end for quadrature point
         max_temperature = *std::max_element(temperature_values.begin(), temperature_values.end());
         if (max_temperature > this->values["max_temperature"]) {

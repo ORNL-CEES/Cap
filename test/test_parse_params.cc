@@ -17,14 +17,16 @@ int main(int argc, char *argv[])
        dealii::StandardExceptions::ExcInternalError());
 
    // ensure to_string and to_vector are working properly
-   params.put("ones", cap::to_string(std::vector<double>(10, 1.0)));
-   params.put("yes",  cap::to_string(std::vector<std::string>(10, "yes")));
-   std::vector<double> ones = cap::to_vector<double>(params.get<std::string>("ones"));
-   std::vector<std::string> yes = cap::to_vector<std::string>(params.get<std::string>("yes"));
+   params.put("ones",  cap::to_string(std::vector<double>     (10, 1.0)  ));
+   params.put("yes",   cap::to_string(std::vector<std::string>(10, "yes")));
+   params.put("empty", cap::to_string(std::vector<int>        ()         ));
+   std::vector<double>      ones  = cap::to_vector<double>     (params.get<std::string>("ones") );
+   std::vector<std::string> yes   = cap::to_vector<std::string>(params.get<std::string>("yes")  );
+   std::vector<int>         empty = cap::to_vector<int>        (params.get<std::string>("empty"));
    BOOST_FOREACH(double const & val, ones) 
        Assert(val == 1.0, dealii::StandardExceptions::ExcInternalError());
    BOOST_FOREACH(std::string const & val, yes) 
        Assert(val == "yes", dealii::StandardExceptions::ExcInternalError());
-
+   Assert(empty.empty(), dealii::StandardExceptions::ExcInternalError());
    return 0;
 }

@@ -18,9 +18,11 @@ int main(int argc, char *argv[])
     std::shared_ptr<boost::property_tree::ptree> in(new boost::property_tree::ptree);
     put_default_parameters(*in);
     in->put("test_case", 1);
-    in->put("time_step",     "0.1");
-    in->put("initial_time",  "0.0");
-    in->put("final_time",   "30.0");
+    in->put("time_step",       "0.5");
+    in->put("initial_time",    "0.0");
+    in->put("final_time",    "900.0");
+    in->put("boundary_values.charge_current_density", 324.65);
+    in->put("boundary_values.discharge_potential",      1.4 );
 
     // SOLVING THE PROBLEM
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
@@ -29,16 +31,6 @@ int main(int argc, char *argv[])
     // POSTPROCESSING QUANTITIES OF INTEREST
     std::vector<double> max_temperature = 
         cap::to_vector<double>(out->get<std::string>("max_temperature"));
-    BOOST_FOREACH(double const & val, max_temperature) { 
-        std::cout<<"  "<<val;
-    }
-    std::cout<<"\n";
-    std::vector<std::string> capacitor_state = 
-        cap::to_vector<std::string>(out->get<std::string>("capacitor_state"));
-    BOOST_FOREACH(std::string const & val, capacitor_state) { 
-        std::cout<<"  "<<val;
-    }
-    std::cout<<"\n";
 
     return 0;
 }
