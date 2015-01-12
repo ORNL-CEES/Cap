@@ -1,5 +1,6 @@
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/macros.cmake)
 ADD_CAP_TEST(test_parse_params)
+ADD_CAP_TEST(test_geometry)
 ADD_CAP_TEST(test_constant_current_charge_constant_voltage_discharge)
 ADD_CAP_TEST(test_constant_current_cycling)
 
