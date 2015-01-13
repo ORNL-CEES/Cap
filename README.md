@@ -2,7 +2,7 @@ cap
 ===
 DEPENDENCIES
 ------------
-deal.II compiled with C++11 support. The development sources can be found 
+deal.II version 8.2 compiled with C++11 support. The development sources can be found 
 [here](https://github.com/dealii/dealii).
 
 CONFIGURE, BUILD and TEST
@@ -13,11 +13,12 @@ CONFIGURE, BUILD and TEST
 
 Install deal.II
 
-    $ cd ${PREFIX}
-    $ git clone https://github.com/dealii/dealii ${PREFIX}/source/dealii
-    $ mkdir build/dealii
-    $ cd build/dealii
-    $ cmake -DCMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii ${PREFIX}/source/dealii
+    $ cd ${PREFIX}/source
+    $ wget https://github.com/dealii/dealii/releases/download/v8.2.1/dealii-8.2.1.tar.gz
+    $ tar -xf dealii-8.2.1.tar.gz
+    $ mkdir -p ${PREFIX}/build/dealii
+    $ cd ${PREFIX}/build/dealii
+    $ cmake -DCMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii ${PREFIX}/source/dealii-8.2.1
     $ make install    (alternatively $ make -j<N> install)
 
 Configure and build cap
