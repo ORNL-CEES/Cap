@@ -22,10 +22,14 @@ int main(int argc, char *argv[])
     in->put("test_case",       2  );
     in->put("time_step",       1.0);
     in->put("initial_time",    0.0);
-    in->put("final_time",    300.0);
+    in->put("final_time",   3600.0);
     in->put("max_cycles",    100  );
     in->put("boundary_values.charge_current_density",     324.65);      
     in->put("boundary_values.discharge_current_density", -324.65);      
+    in->put("boundary_values.charge_potential",             2.2 );
+    in->put("boundary_values.discharge_potential",          1.1 );
+    in->put("boundary_values.initial_potential",            1.4 );
+    in->put("boundary_values.ambient_temperature",          0.0 );
 
     // SOLVING THE PROBLEM
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
