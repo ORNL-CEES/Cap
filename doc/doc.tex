@@ -322,33 +322,34 @@ The code takes as input
 
 \texttt{input\_params} \\
 {\footnotesize
-\begin{tabular}{lllll}
-  & Path                                                            & Parameter              & Value     & Units           \\
-  & \texttt{material\_properties.separator\_density}                & $\rho^{separator}$     & 1.2528e3  & [kg/m$^3$]      \\
-  & \texttt{material\_properties.electrode\_density}                & $\rho^{electrode}$     & 0.93e3    & [kg/m$^3$]      \\
-  & \texttt{material\_properties.collector\_density}                & $\rho^{collector}$     & 2.7e3     & [kg/m$^3$]      \\
-  & \texttt{material\_properties.separator\_heat\_capacity}         & $C_p^{separator}$      & 3.1404e3  & [J/K]           \\
-  & \texttt{material\_properties.electrode\_heat\_capacity}         & $C_p^{electrode}$      & 1.34e3    & [J/K]           \\
-  & \texttt{material\_properties.collector\_heat\_capacity}         & $C_p^{collector}$      & 0.89815e3 & [J/K]           \\
-  & \texttt{material\_properties.separator\_thermal\_conductivity}  & $\lambda^{separator}$  & 0.0019e2  & [W/m$\cdot$K]   \\
-  & \texttt{material\_properties.electrode\_thermal\_conductivity}  & $\lambda^{electrode}$  & 0.0011e2  & [W/m$\cdot$K]   \\
-  & \texttt{material\_properties.collector\_thermal\_conductivity}  & $\lambda^{collector}$  & 2.37e2    & [W/m$\cdot$K]   \\
-  & \texttt{operating\_conditions.charge\_potential}                & $U_{charge}$           & 2.2       & [V]             \\
-  & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & [V]             \\
-  & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & [A/m${2}$]      \\
-  & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & [A/m${2}$]      \\
-  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & [F/m$^3$]       \\
-  & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & [1]             \\
-  & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & [1]             \\
-  & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & [S/m]           \\
-  & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & [S/m]           \\
-  & \texttt{material\_properties.bruggemans\_coefficient}           & $\zeta$                & 1.5       & [1]             \\
-  & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & [W/m$^2\cdot$K] \\
-  & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 0.0       & [K]             \\
-X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & [m]             \\
-X & \texttt{geometry.separator\_width}                              & $w^{separator}$        & 25.0e-6   & [m]             \\
-X & \texttt{geometry.collector\_width}                              & $w^{collector}$        &  5.0e-6   & [m]             \\
-X & \texttt{geometry.sandwich\_height}                              & $h^{sandwich}$         & 25.0e-6   & [m]             \\
+\begin{tabular}{llllll}
+  & Path                                                            & Parameter              & Value     & Range               & Units           \\
+  & \texttt{material\_properties.separator\_density}                & $\rho^{separator}$     & 1.2528e3  & 1.2e3 -- 1.3e3      & [kg/m$^3$]      \\
+  & \texttt{material\_properties.electrode\_density}                & $\rho^{electrode}$     & 0.93e3    & 0.85e3 -- 0.95e3    & [kg/m$^3$]      \\
+  & \texttt{material\_properties.collector\_density}                & $\rho^{collector}$     & 2.7e3     & 2.4e3 -- 2.9e3      & [kg/m$^3$]      \\
+  & \texttt{material\_properties.separator\_heat\_capacity}         & $C_p^{separator}$      & 3.1404e3  & 2.9e3 -- 3.3e3      & [J/K]           \\
+  & \texttt{material\_properties.electrode\_heat\_capacity}         & $C_p^{electrode}$      & 1.34e3    & 1.3e3 -- 1.4e3      & [J/K]           \\
+  & \texttt{material\_properties.collector\_heat\_capacity}         & $C_p^{collector}$      & 0.89815e3 & 0.8e3 -- 0.95e3     & [J/K]           \\
+  & \texttt{material\_properties.separator\_thermal\_conductivity}  & $\lambda^{separator}$  & 0.0019e2  & 0.001e2 -- 0.004e2  & [W/m$\cdot$K]   \\
+  & \texttt{material\_properties.electrode\_thermal\_conductivity}  & $\lambda^{electrode}$  & 0.0011e2  & 0.0005e2 -- 0.003e2 & [W/m$\cdot$K]   \\
+  & \texttt{material\_properties.collector\_thermal\_conductivity}  & $\lambda^{collector}$  & 2.37e2    & 2.2e2 -- 2.6e2      & [W/m$\cdot$K]   \\
+  & \texttt{operating\_conditions.charge\_potential}                & $U_{charge}$           & 2.2       & 1.5 -- 2.5          & [V]             \\
+  & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & 0.5 -- 1.5          & [V]             \\
+  & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & 50.0 -- 500.0       & [A/m${2}$]      \\
+  & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & -500.0 -- -50.0     & [A/m${2}$]      \\
+  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & 50.0 -- 120.0       & [F/m$^3$]       \\
+  & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & 0.6 -- 0.8          & [1]             \\
+  & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & 0.4 -- 0.7          & [1]             \\
+  & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & 0.03 -- 0.11        & [S/m]           \\
+  & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & 10.0 -- 200.0       & [S/m]           \\
+  & \texttt{material\_properties.bruggemans\_coefficient}           & $\zeta$                & 1.5       & 1.5 -- 4            & [1]             \\
+  & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & 2.0e-2 -- 20e-2     & [W/m$^2\cdot$K] \\
+  & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 300.0     & 250.0 -- 320.0      & [K]             \\
+X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & 35.0e-6 -- 65.0e-6  & [m]             \\
+X & \texttt{geometry.separator\_width}                              & $w^{separator}$        & 25.0e-6   & 17.5e-6 -- 32.5e-6  & [m]             \\
+X & \texttt{geometry.collector\_width}                              & $w^{collector}$        &  5.0e-6   &  3.5e-6 --  6.5e-6  & [m]             \\
+X & \texttt{geometry.sandwich\_height}                              & $h^{sandwich}$         & 25.0e-6   &                     & [m]             \\
+X & \texttt{geometry.tab\_height}                                   & $h^{tab}$              &  5.0e-6   &                     & [m]             \\
 \end{tabular}
 }
 
@@ -368,6 +369,96 @@ You may tune all the other parameters.
 \newpage
 \section{Uncertainty}
 
+Here is my understanding of the system with the concentration equation.
+You start from Nernst-Planck equation wich is nothing but another conservation
+of mass equation to describe the motion of chemical species in the liquid
+phase.
+Concentration of species $j$ obey
+\begin{equation}
+\epsilon \frac{\partial c_j}{\partial t} = - \nabla \cdot N_j
+\label{eq:nernst_planck}
+\end{equation}
+where $N_j$ describes the flux of ions under the influence of both an ionic
+concentration gradient $\nabla c_j$ and an electric field $-\nabla \Phi_2$.
+\begin{equation}
+N_j = -D_j (\nabla c_j - \zeta_j \frac{F}{R\Theta} c_j \nabla \Phi_2)
+\end{equation}
+(this assumes no convection)
+In Verbrugge's paper, the subscript $j=+,-$ refers to the positive and
+negative ions respectively.  I follow his notation for simplicity.
+($\Phi_2$ is the liquid phase potential that you call $V_l$ and I call $\Phi_l$.)
+You will notice the void volume fraction $\epsilon$ on the rhs of
+\eqref{eq:nernst_planck}.  Here again somehow homogenization has already
+happened.  Anyway, ionic diffusion coefficients $D_j$ are effective transport
+properties.  They incorporate the effect of the porosivity and tortuosity, 
+$D = \epsilon D_\infty / \Gamma$.
+%Verbrugge says we are in the context of a dilute solution wherein there is a
+%large excess of solvent.
+$R$ is the universal gas constant ($R=8.3144621$ J/molK) and $F$ is the
+Faraday constant (magnitude of the electric charge in a mole of electrons,
+$F=9.64853399\times10^4$ C/mol).
+Note that $F=e N_A$ and $R=k_B N_A$ where $N_A$ is the Avogadro constant so we
+may as well work with the elementary charge $e$ and Boltzmann constant $k_B$.
+$\Theta$ is the absolute temperature in K 
+(I am using relative temperatures in the current implementation of the heat
+transport problem so I would need to change that)
+
+$\zeta_j$ is the valence of ionic species $j$ (number of charges).  For example,
+the lithium cation Li$^+$ is monovalent and has a charge +1.
+In Verbrugge's paper, $\zeta_+ = -\zeta_- = +1$
+
+Then you write
+\begin{equation}
+i_2 = F \sum_j \zeta_j N_j
+\end{equation}
+which basically says that the current $i_2$ is induced by the the molar fluxes
+of all species.
+
+The current density in the solution phase is due to the charge carried by
+ionic species.
+
+Electroneutrality for the solution phase requires that
+\begin{equation}
+\sum_j \zeta_j c_j = 0
+\end{equation}
+
+
+Molar flux of species $j$ away from the electrode surface (interface with
+collector I suppose) due to charging and discharging of the double layer ios
+given by
+\begin{equation}
+\zeta_j F j_j = -C \frac{dq_j}{dq} (\dot{\Phi}_s - \dot{\Phi}_l)
+\end{equation}
+$dq_j/dq$ represents the change in the surface concentration of species $j$
+associated with a change in the surface charge on the electrode $q$.
+The overall charge of the electric double layer is zero
+
+
+In place of Ohm's law in the electrolyte phase we invert the relation 
+
+My main concern is Verbrugge specifies natural boundary conditions so there is
+no steady-state solution (without the time derivative, the problem is not
+well-posed)
+
+\begin{equation}
+\epsilon \frac{\partial c}{\partial t} = 
+\nabla \cdot (D \nabla c)
+- \frac{aC}{F} (t_+ \frac{dq_+}{dq} + t_- \frac{dq_-}{dq})
+\frac{\partial}{\partial t}(V_s - V_l)
+\end{equation}
+
+\begin{equation}
+aC \frac{\partial}{\partial t} (V_s - V_l) = \nabla \cdot (\sigma_s V_s)
+\end{equation}
+
+\begin{equation}
+aC \frac{\partial}{\partial t} (V_l - V_s) = \nabla \cdot (\sigma_l V_l 
++ \sigma_l (\frac{t_+ - t_-}{f}) \nabla \ln c)
+\end{equation}
+
+\begin{equation}
+\sigma_l = \frac{F^2}{RT} \frac{1}{2} D \left( \frac{1}{t_+} + \frac{1}{t-} \right) c
+\end{equation}
 
 \newpage
 %-----------------------------------------------------------------------------
