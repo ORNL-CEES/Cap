@@ -27,10 +27,8 @@ void put_default_parameters(boost::property_tree::ptree & params)
     params.put("boundary_values.discharge_current_density", -324.65);      
     params.put("boundary_values.initial_potential",            1.6);      
                                                                   
-    params.put("boundary_values.upper_ambient_temperature",       0.0);      
-    params.put("boundary_values.lower_ambient_temperature",       0.0);      
-    params.put("boundary_values.upper_heat_transfer_coefficient", 8.0e-2);      
-    params.put("boundary_values.lower_heat_transfer_coefficient", 0.0);      
+    params.put("boundary_values.ambient_temperature",       300.0   );
+    params.put("boundary_values.heat_transfer_coefficient",   8.0e-2);
 
     // USUALLY YOU WILL NOT WANT TO MESS WITH THE THESE ONES
     params.put("solid_potential_component",  0);

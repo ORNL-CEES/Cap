@@ -56,10 +56,10 @@ SuperCapacitorBoundaryValues(BoundaryValuesParameters<dim, spacedim> const & par
     this->discharge_current_density = database->get<double>("discharge_current_density");
     this->initial_potential         = database->get<double>("initial_potential"        );   
 
-    this->upper_ambient_temperature       = database->get<double>("upper_ambient_temperature"      ); 
-    this->lower_ambient_temperature       = database->get<double>("lower_ambient_temperature"      ); 
-    this->upper_heat_transfer_coefficient = database->get<double>("upper_heat_transfer_coefficient"); 
-    this->lower_heat_transfer_coefficient = database->get<double>("lower_heat_transfer_coefficient"); 
+    this->upper_ambient_temperature       = database->get<double>("ambient_temperature"      ); 
+    this->lower_ambient_temperature       = database->get<double>("ambient_temperature"      ); 
+    this->upper_heat_transfer_coefficient = database->get<double>("heat_transfer_coefficient"); 
+    this->lower_heat_transfer_coefficient = 0.0;
 
 }
 

@@ -96,7 +96,7 @@ run_constant_current_cycling
         std::cout<<step<<" iterations for finding initial electrochemical solution\n";
 }
 
-    thermal_solution = 0.0; // TODO: initialize to ambient temperature
+    thermal_solution = input_params->get<double>("boundary_values.ambient_temperature");
     
     double const max_voltage = input_params->get<double>("boundary_values.charge_potential");
     double const min_voltage = input_params->get<double>("boundary_values.discharge_potential");
@@ -310,7 +310,7 @@ run_constant_current_charge_constant_voltage_discharge
     dealii::Vector<double> & electrochemical_solution = this->solution.block(electrochemical_block);
 
     electrochemical_solution = 0.0;
-    thermal_solution = 0.0; // TODO: initialize to ambient temperature
+    thermal_solution = input_params->get<double>("boundary_values.ambient_temperature");
 
     double const time_step    = input_params->get<double>("time_step"   );
     double const initial_time = input_params->get<double>("initial_time");
