@@ -5,7 +5,9 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/vector_tools.h>
+#include <deal.II/numerics/data_out.h>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -43,7 +45,7 @@ run(std::shared_ptr<boost::property_tree::ptree const> input_params,
     } else if (test_case == 3) {
         this->run_constant_power_cycling                            (input_params, output_params);
     } else {
-       std::runtime_error("Unrecognized test case");
+       std::runtime_error("Unrecognized test case '"+std::to_string(test_case)+"'");
     } // end if
 }
 
@@ -280,7 +282,7 @@ run_constant_current_cycling
 template <int dim>
 void
 SuperCapacitorProblem<dim>::
-report_data(double time, double const * data)
+report_data(double time, double const * data) const
 {
     if (this->verbose) {
         std::cout<<boost::format("t=%6.1fs  U=%6.4fV  I=%6.4fA  Q=%8.6eW  T=%6.3fK  \n")
@@ -290,6 +292,20 @@ report_data(double time, double const * data)
             % data[JOULE_HEATING]
             % data[TEMPERATURE]
         ;
+    }
+
+    static int i = 0;
+    std::vector<std::string> keys = this->post_processor->get_vector_keys();
+    if (!keys.empty()) {
+        dealii::DataOut<dim> data_out;
+        data_out.attach_triangulation(this->triangulation);
+        BOOST_FOREACH(std::string const & key, keys)
+            data_out.add_data_vector(this->post_processor->get(key), key);
+        data_out.build_patches();
+        std::string const filename = "solution-" + dealii::Utilities::int_to_string(i++, 4) + ".vtk";
+        std::ofstream fout(filename.c_str());
+        data_out.write_vtk(fout);
+        fout.close();
     }
 }
 

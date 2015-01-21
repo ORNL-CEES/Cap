@@ -1,4 +1,5 @@
 #include <cap/post_processor.h>
+#include <cap/utils.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <algorithm>
@@ -22,7 +23,11 @@ dealii::Vector<double> const &
 Postprocessor<dim>::
 get(std::string const & key) const
 {
-    throw std::runtime_error("Should have been overloaded..."); 
+    std::unordered_map<std::string, dealii::Vector<double> >::const_iterator it =
+        this->vectors.find(key);
+    AssertThrow(it != this->vectors.end(),
+        dealii::StandardExceptions::ExcMessage("Key "+key+" doesn't exist"));
+    return it->second;
 }
 
 template <int dim>
@@ -35,6 +40,19 @@ get(std::string const & key, double & value) const
     AssertThrow(it != this->values.end(),
         dealii::StandardExceptions::ExcMessage("Key "+key+" doesn't exist"));
     value = it->second;
+}
+
+template <int dim>
+std::vector<std::string>
+Postprocessor<dim>::
+get_vector_keys() const
+{
+    std::vector<std::string> keys;
+    std::unordered_map<std::string, dealii::Vector<double> >::const_iterator it     = this->vectors.begin();
+    std::unordered_map<std::string, dealii::Vector<double> >::const_iterator end_it = this->vectors.end();
+    for ( ; it != end_it; ++it)
+        keys.push_back(it->first);
+    return keys;
 }
 
 //////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS ////////////////////////////
@@ -58,6 +76,23 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
     this->values["surface_area"   ] = 0.0;
     this->values["volume"         ] = 0.0;
     this->values["mass"           ] = 0.0;
+
+    std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
+
+    this->debug_material_properties =
+        cap::to_vector<std::string>( database->get("debug.material_properties", "") );
+    this->debug_boundary_ids = database->get("debug.boundary_ids", false);
+    this->debug_material_ids = database->get("debug.material_ids", false);
+
+    if (this->debug_material_ids)
+        this->vectors["material_id"] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+    if (this->debug_boundary_ids)
+        throw std::runtime_error("not implemented yet");
+    for ( std::vector<std::string>::const_iterator it =
+              this->debug_material_properties.begin();
+          it != this->debug_material_properties.end();
+          ++it )
+        this->vectors[*it] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
 }
 
 template <int dim>
@@ -103,7 +138,8 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = this->dof_handler.begin_active(),
         end_cell = this->dof_handler.end();
-    for ( ; cell != end_cell; ++cell) {
+    std::size_t cell_id = 0;
+    for ( ; cell != end_cell; ++cell, ++cell_id) {
         fe_values.reinit(cell);
         this->mp_values->get_values("solid_electrical_conductivity",  cell, solid_electrical_conductivity_values );
         this->mp_values->get_values("liquid_electrical_conductivity", cell, liquid_electrical_conductivity_values);
@@ -123,6 +159,23 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         if (max_temperature > this->values["max_temperature"]) {
              this->values["max_temperature"] = max_temperature;
         } // end if
+        if (this->debug_material_ids)
+            this->vectors["material_id"][cell_id] = static_cast<double>( cell->material_id() );
+        for ( std::vector<std::string>::const_iterator it =
+                  this->debug_material_properties.begin();
+              it != this->debug_material_properties.end();
+              ++it )
+        {
+            std::vector<double> values(n_q_points);
+            this->mp_values->get_values(*it, cell, values);
+            double cell_averaged_value = 0.0;
+            for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
+                cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
+            }
+            cell_averaged_value /= cell->measure();
+            this->vectors[*it][cell_id] = cell_averaged_value;
+        }
+
         if (cell->at_boundary()) {
             for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
                 if (cell->face(face)->at_boundary()) {

@@ -41,6 +41,7 @@ public:
 
     dealii::Vector<double> const & get(std::string const & key) const;
     void get(std::string const & key, double & value) const;
+    std::vector<std::string> get_vector_keys() const;
     
 
 protected:
@@ -67,6 +68,10 @@ class SuperCapacitorPostprocessor : public Postprocessor<dim> {
 public:
     SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
     void reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
+private:
+    bool debug_material_ids;
+    bool debug_boundary_ids;
+    std::vector<std::string> debug_material_properties;
 
 };
 

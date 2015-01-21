@@ -50,7 +50,7 @@ private:
 
     enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, MASS, N_DATA};
     void process_solution(double * data);
-    void report_data (double const time, double const * data);
+    void report_data (double const time, double const * data) const;
 
     typename dealii::Triangulation<dim> triangulation;
 

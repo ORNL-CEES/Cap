@@ -141,7 +141,7 @@ get_values(std::string const &          key,
             throw std::runtime_error("Invalid material id");
         } // end if material id
     } else {
-        throw std::runtime_error("Invalid key");
+        throw std::runtime_error("Invalid key '"+key+"' material property");
     } // end if key
 }
 
