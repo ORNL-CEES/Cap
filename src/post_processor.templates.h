@@ -166,7 +166,7 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         fe_values[temperature     ].get_function_gradients(this->solution, temperature_gradients     );
         fe_values[solid_potential ].get_function_gradients(this->solution, solid_potential_gradients );
         fe_values[liquid_potential].get_function_gradients(this->solution, liquid_potential_gradients);
-        fe_values[temperature]     .get_function_values   (this->solution, temperature_values        );
+        fe_values[temperature     ].get_function_values   (this->solution, temperature_values        );
         fe_values[solid_potential ].get_function_values   (this->solution, solid_potential_values    );
         fe_values[liquid_potential].get_function_values   (this->solution, liquid_potential_values   );
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
@@ -212,6 +212,15 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
             } else if (it->compare("overpotential") == 0) {
                 std::transform( solid_potential_values.begin(), solid_potential_values.end(),
                     liquid_potential_values.begin(), values.begin(), std::minus<double>() );
+            } else if (it->compare("joule_heating") == 0) {
+                for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
+                    values[q_point] = 
+                        liquid_electrical_conductivity_values[q_point] * liquid_potential_gradients[q_point].norm_square()
+                        +
+                        solid_electrical_conductivity_values[q_point] * solid_potential_gradients[q_point].norm_square()
+                        ;
+                }
+                    
             } else {
               throw dealii::StandardExceptions::ExcMessage("Solution field '"+(*it)+"' is not recognized");
             }
