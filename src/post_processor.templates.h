@@ -81,6 +81,10 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
 
     this->debug_material_properties =
         cap::to_vector<std::string>( database->get("debug.material_properties", "") );
+    this->debug_solution_fields =
+        cap::to_vector<std::string>( database->get("debug.solution_fields", "") );
+    this->debug_solution_fluxes =
+        cap::to_vector<std::string>( database->get("debug.solution_fluxes", "") );
     this->debug_boundary_ids = database->get("debug.boundary_ids", false);
     this->debug_material_ids = database->get("debug.material_ids", false);
 
@@ -93,6 +97,18 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
           it != this->debug_material_properties.end();
           ++it )
         this->vectors[*it] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+    for ( std::vector<std::string>::const_iterator it =
+              this->debug_solution_fields.begin();
+          it != this->debug_solution_fields.end();
+          ++it )
+        this->vectors[*it] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+    for ( std::vector<std::string>::const_iterator it =
+              this->debug_solution_fluxes.begin();
+          it != this->debug_solution_fluxes.end();
+          ++it )
+        for (int d = 0; d < dim; ++d)
+            this->vectors[(*it)+"_"+std::to_string(d)] = 
+                dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
 }
 
 template <int dim>
@@ -125,9 +141,12 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     std::vector<double>                  solid_electrical_conductivity_values (n_q_points);
     std::vector<double>                  liquid_electrical_conductivity_values(n_q_points);
     std::vector<double>                  density_values                       (n_q_points);
+    std::vector<dealii::Tensor<1, dim> > temperature_gradients                (n_q_points);
     std::vector<dealii::Tensor<1, dim> > solid_potential_gradients            (n_q_points);
     std::vector<dealii::Tensor<1, dim> > liquid_potential_gradients           (n_q_points);
     std::vector<double>                  temperature_values                   (n_q_points);
+    std::vector<double>                  solid_potential_values               (n_q_points);
+    std::vector<double>                  liquid_potential_values              (n_q_points);
     double                               max_temperature;
 
     std::vector<double>                  face_solid_electrical_conductivity_values(n_face_q_points);
@@ -144,9 +163,12 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         this->mp_values->get_values("solid_electrical_conductivity",  cell, solid_electrical_conductivity_values );
         this->mp_values->get_values("liquid_electrical_conductivity", cell, liquid_electrical_conductivity_values);
         this->mp_values->get_values("density",                        cell, density_values                       );
+        fe_values[temperature     ].get_function_gradients(this->solution, temperature_gradients     );
         fe_values[solid_potential ].get_function_gradients(this->solution, solid_potential_gradients );
         fe_values[liquid_potential].get_function_gradients(this->solution, liquid_potential_gradients);
-        fe_values[temperature]      .get_function_values  (this->solution, temperature_values        );
+        fe_values[temperature]     .get_function_values   (this->solution, temperature_values        );
+        fe_values[solid_potential ].get_function_values   (this->solution, solid_potential_values    );
+        fe_values[liquid_potential].get_function_values   (this->solution, liquid_potential_values   );
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
             this->values["joule_heating"] += 
               ( solid_electrical_conductivity_values [q_point] * solid_potential_gradients [q_point] * solid_potential_gradients [q_point]
@@ -174,6 +196,66 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
             }
             cell_averaged_value /= cell->measure();
             this->vectors[*it][cell_id] = cell_averaged_value;
+        }
+        for ( std::vector<std::string>::const_iterator it =
+                  this->debug_solution_fields.begin();
+              it != this->debug_solution_fields.end();
+              ++it )
+        {
+            std::vector<double> values(n_q_points);
+            if (it->compare("temperature") == 0) {
+                values = temperature_values;
+            } else if (it->compare("solid_potential") == 0) {
+                values = solid_potential_values;
+            } else if (it->compare("liquid_potential") == 0) {
+                values = liquid_potential_values;
+            } else if (it->compare("overpotential") == 0) {
+                std::transform( solid_potential_values.begin(), solid_potential_values.end(),
+                    liquid_potential_values.begin(), values.begin(), std::minus<double>() );
+            } else {
+              throw dealii::StandardExceptions::ExcMessage("Solution field '"+(*it)+"' is not recognized");
+            }
+            double cell_averaged_value = 0.0;
+            for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
+                cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
+            }
+            cell_averaged_value /= cell->measure();
+            this->vectors[*it][cell_id] = cell_averaged_value;
+        }
+        for ( std::vector<std::string>::const_iterator it =
+                  this->debug_solution_fluxes.begin();
+              it != this->debug_solution_fluxes.end();
+              ++it )
+        {
+            std::vector<dealii::Tensor<1, dim> > values(n_q_points);
+            if (it->compare("heat_flux") == 0) {
+                  std::vector<double> thermal_conductivity_values(n_q_points);
+                this->mp_values->get_values("thermal_conductivity", cell, thermal_conductivity_values);
+                std::transform( thermal_conductivity_values.begin(), thermal_conductivity_values.end(),
+                    temperature_gradients.begin(), values.begin(),
+                    [](double const x, dealii::Tensor<1, dim> const & y) { return x*y; }
+                    );
+            } else if (it->compare("solid_current_density") == 0) {
+                std::transform( solid_electrical_conductivity_values.begin(), solid_electrical_conductivity_values.end(),
+                    solid_potential_gradients.begin(), values.begin(),
+                    [](double const x, dealii::Tensor<1, dim> const & y) { return x*y; }
+                    );
+            } else if (it->compare("liquid_current_density") == 0) {
+                std::transform( liquid_electrical_conductivity_values.begin(), liquid_electrical_conductivity_values.end(),
+                    liquid_potential_gradients.begin(), values.begin(),
+                    [](double const x, dealii::Tensor<1, dim> const & y) { return x*y; }
+                    );
+            } else {
+              throw dealii::StandardExceptions::ExcMessage("Solution flux '"+(*it)+"' is not recognized");
+            }
+            dealii::Tensor<1, dim> cell_averaged_value;
+            cell_averaged_value = 0.0;
+            for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
+                cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
+            }
+            cell_averaged_value /= cell->measure();
+            for (int d = 0; d < dim; ++d)
+                this->vectors[(*it)+"_"+std::to_string(d)][cell_id] = cell_averaged_value[d];
         }
 
         if (cell->at_boundary()) {

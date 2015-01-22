@@ -72,6 +72,8 @@ private:
     bool debug_material_ids;
     bool debug_boundary_ids;
     std::vector<std::string> debug_material_properties;
+    std::vector<std::string> debug_solution_fields;
+    std::vector<std::string> debug_solution_fluxes;
 
 };
 
