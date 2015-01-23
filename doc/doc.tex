@@ -460,6 +460,123 @@ aC \frac{\partial}{\partial t} (V_l - V_s) = \nabla \cdot (\sigma_l V_l
 \sigma_l = \frac{F^2}{RT} \frac{1}{2} D \left( \frac{1}{t_+} + \frac{1}{t-} \right) c
 \end{equation}
 
+
+%-----------------------------------------------------------------------------
+\subsection{starting point for homogenization}
+\begin{figure}
+    \centering
+\begin{tikzpicture}[scale=2.0]
+\draw[black,thick] (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- (1,1);
+\draw[black,thick] (0,0) circle (0.7);
+\draw node at (0,0) {$\Omega_2$};
+\draw node at (0.7,-0.7) {$\Omega_1$};
+\draw[black,thick,dotted] (0.5,0.5) -- (1.2,0.7) node[anchor=west] {$\Gamma_{12}$};
+\end{tikzpicture}
+    \caption{the caption}
+\end{figure}
+
+
+Electrons in the solid phase (current collector and skeletal portion of the
+porous electrode) move in response to the electric field $-\nabla \Phi_1$.
+
+Ohm's law for the solid phase reads
+\begin{equation}
+    i_1 = -\sigma \nabla \Phi_1 .
+    \label{eq:ohms_law_solid_phase}
+\end{equation}
+$\sigma$ denotes the solid phase electronic conductivity (equal to the
+inverse of the resistivity), $\Phi_1$ respresents the electric potential in
+the solid phase.  The subscript $1$ indicates solid.
+
+current in the electrolyte solution filling the pores is defined as the net flux of
+charged species
+\begin{equation}
+    i_2 = F \sum_j \zeta_j N_j
+\end{equation}
+$F$ is the Faraday constant (amount of electric charge in a mole of electrons,
+$F=e N_A$).  $\zeta_j$ is the charge number of species $j$
+
+Conservation of mass to describe the motion of ionic species $j$ in the
+solution filling the pores of the electrode/separator.
+\begin{equation}
+    \frac{\partial c_j}{\partial t} =
+        -\nabla N_j + R_j
+    \label{eq:nernst_planck}
+\end{equation}
+$R_j$ is the source term 
+ions transport by migration and diffusion
+Nernst-Planck relation
+$N_j$ describes the flux of ions under the influence of both an ionic
+concentration gradient $\nabla c_j$ and an electric field $-\nabla \Phi_2$.
+\begin{equation}
+N_j = -D_j (\nabla c_j - \zeta_j \frac{F}{R\Theta} c_j \nabla \Phi_2)
+\end{equation}
+$\frac{\zeta_j F c_j}{R \Theta}$ represents the mobility of the ions, i.e.
+their ability to move in the solution in response to the electric field
+$-\Phi_2$.  $R$ is universal gas constant.
+$\Theta$ is the absolute temperature in K.
+
+
+the movement of charged species in the solution
+$\kappa$ is used here rather than $\sigma$ to indicate that the mobile charge
+carriers in the electrolyte are ions as opposed to electrons in the metal
+portion.
+
+Assume a binary (1:1) electrolyte, $j=+,-$
+
+
+No accumulation of charges in the solution phase
+\begin{equation}
+    \nabla \cdot i_2 = 0 \text{ on } \Omega_2
+\end{equation}
+
+Interface $\Gamma_{12}$
+\begin{equation}
+    \frac{\partial i_1}{\partial n} = 
+    -\frac{\partial i_2}{\partial n} = 
+        C \left( \dot{\Phi}_1 - \dot{\Phi}_2 \right)
+\end{equation}
+\begin{equation}
+    \frac{\partial c_j}{\partial n} = 
+        C \frac{d q_j}{d q} \left( \dot{\Phi}_1 - \dot{\Phi}_2 \right)
+\end{equation}
+$n$ is the normal vector at the solid-liquid interface pointing from 1 to 2.
+[I might have messed up the signs here :D]
+$\frac{d q_j}{d q}$ represents the change in surface concentration of species
+$j$ assiociated with a change in the surface charge on the electrode.
+$C$ is the double-layer capacity
+
+relation between the current density and the surface overpotential
+$\Phi_1-\Phi_2$ and the composition $c_j$ adjacent to the interface
+$i_n = f(\Phi_1-\Phi_2,c_j) + C \left( \dot{\Phi}_1 - \dot{\Phi}_2 \right)$
+
+first term given by Butler-Volmer equation, describes the kinetics of the
+electrode reaction.  Typically we ignore it for supercapacitor modeling.
+
+%-----------------------------------------------------------------------------
+\subsection{after homogenization}
+assume homogenization has somehow happened at this stage.
+transport properties have been modified to take in to account porosity and
+tortuosity.
+
+\begin{equation}
+    \epsilon \frac{\partial c}{\partial t} =
+        \nabla \cdot \left( D \nabla c \right)
+        - \frac{aC}{F} \left( 
+            t_- \frac{d q_+}{d q}
+            +
+            t_+ \frac{d q_-}{d q}
+            \right)
+            \frac{\partial \left( \Phi_1 - \Phi_2 \right)}{\partial t}
+\end{equation}
+\begin{equation}
+    \nabla \cdot i_2 =
+        aC \frac{\partial \left( \Phi_1 - \Phi_2 \right)}{\partial t}
+\end{equation}
+$a$ is the interfacial area per unit volume.
+
+
+
 \newpage
 %-----------------------------------------------------------------------------
 \section{Test case 1: constant current charge constant voltage discharge}
