@@ -522,7 +522,37 @@ $\kappa$ is used here rather than $\sigma$ to indicate that the mobile charge
 carriers in the electrolyte are ions as opposed to electrons in the metal
 portion.
 
-Assume a binary (1:1) electrolyte, $j=+,-$
+In many supercapacitor and battery systems, the electrolyte can be considered
+to be a binary mixture \cite{Newman2004}.  Following \cite{Verbrugge2005}, we
+assume a binary 1:1 electrolyte, i.e. $j=+,-$ and $\zeta_+=-\zeta_-=1$.
+(\cite{Verbrugge2005} says it is consistent with electrolytes employed in
+supercapacitor systems)
+$\frac{d q_+}{d q}=\frac{d q_-}{d q}=-\frac{1}{2}$
+
+electroneutrality dictates that $\sum_j \zeta_j c_j = 0$ in the electrolyte.
+$c_+=c_-=c$
+
+Current is associated with the flux of ions $i_2 = F(N_+ - N_-)$
+
+\begin{equation}
+    \kappa = \frac{F^2}{RT} \frac{1}{2} D \left(
+        \frac{1}{t_-} + \frac{1}{t_+}
+        \right) c
+\end{equation}
+
+the binary diffusion coefficient $D$ is an average of the individual ionic
+diffusivities 
+\begin{equation}
+    D = \frac{2 D_+ D_-}{D_+ + D_-} ,
+\end{equation}
+and the transference number is defined as
+\begin{equation}
+    t_+ = \frac{D_+}{D_+ + D_-}
+    , \quad
+    t_- = \frac{D_-}{D_+ + D_-}
+    , \quad \text{and }
+    t_+ + t_- = 1 .
+\end{equation}
 
 
 No accumulation of charges in the solution phase
@@ -575,7 +605,54 @@ tortuosity.
 \end{equation}
 $a$ is the interfacial area per unit volume.
 
+\begin{equation}
+    \rho C_p \frac{\partial \Theta}{\partial t} =
+         \nabla \cdot \left( \lambda \nabla \Theta \right)
+         +
+         q
+\end{equation}
 
+%-----------------------------------------------------------------------------
+\subsection{fe formulation}
+assume
+aC constant in each material layer
+
+concentration-dependance of $\kappa$ is neglected
+
+\newcommand{\Maa}{\langle \varphi_{i,\Phi_1}, aC \varphi_{j,\Phi_1} \rangle}
+\newcommand{\Mab}{-\langle \varphi_{i,\Phi_1}, aC \varphi_{j,\Phi_2} \rangle}
+\newcommand{\Mba}{-\langle \varphi_{i,\Phi_1}, aC \varphi_{j,\Phi_2} \rangle}
+\newcommand{\Mbb}{\langle \varphi_{i,\Phi_1}, aC \varphi_{j,\Phi_2} \rangle}
+\newcommand{\Mca}{\langle \varphi_{i,\Phi_1}, \frac{aC}{F}(t_-\frac{d q_+}{d q} + t_+\frac{d q_-}{d q}) \varphi_{j,c} \rangle}
+\newcommand{\Mcb}{-\langle \varphi_{i,\Phi_1}, \frac{aC}{F}(t_-\frac{d q_+}{d q} + t_+\frac{d q_-}{d q}) \varphi_{j,c} \rangle}
+\newcommand{\Mcc}{\langle \varphi_{i,c}, \epsilon \varphi_{j,c} \rangle}
+\newcommand{\Mdd}{\langle \varphi_{i,\Theta}, \rho C_p \varphi_{j,\Theta} \rangle}
+
+\begin{equation}
+    M =
+    \begin{pmatrix}
+        \Maa & \Mab & 0    & 0    \\
+        \Mba & \Mbb & 0    & 0    \\
+        \Mca & \Mcb & \Mcc & 0    \\
+        0    & 0    & 0    & \Mdd \\
+    \end{pmatrix}
+\end{equation}
+
+
+\newcommand{\Kaa}{\langle \nabla\varphi_{i,\Phi_1}, \sigma \nabla\varphi_{j,\Phi_1} \rangle}
+\newcommand{\Kbb}{\langle \nabla\varphi_{i,\Phi_2}, \kappa \nabla\varphi_{j,\Phi_2} \rangle}
+\newcommand{\Kbc}{\langle \nabla\varphi_{i,\Phi_2}, \frac{F^2}{RT}\frac12D\left(\frac{1}{t_+}+\frac{1}{t_-}\right) \nabla\varphi_{j,\Phi_2} \rangle}
+\newcommand{\Kcc}{\langle \nabla\varphi_{i,c}, D \nabla\varphi_{j,c} \rangle}
+\newcommand{\Kdd}{\langle \nabla\varphi_{i,\Theta}, \lambda \nabla\varphi_{j,\Theta} \rangle}
+\begin{equation}
+    K =
+    \begin{pmatrix}
+        \Kaa  & 0    & 0    & 0 \\
+        0     & \Kbb & \Kbc & 0 \\
+        0     & 0    & \Kcc & 0 \\
+        0     & 0    & 0    & \Kdd
+    \end{pmatrix}
+\end{equation}
 
 \newpage
 %-----------------------------------------------------------------------------
