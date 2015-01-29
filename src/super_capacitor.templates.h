@@ -201,17 +201,12 @@ run_constant_current_cycling
         [&mass](double const & U, double const & I) { return U * I / mass; });
     // compute energy
     std::vector<double> energy(n);
-    energy[0] = 0.0;
-    for (std::size_t i = 1; i < n; ++i)
-        if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
-            energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
-        else
-            energy[i] = 0.0; // reset to zero when toggle from charge to discharge
+    cap::compute_energy(capacitor_state, time, power, energy);
+
     // compute thermal losses
     std::vector<double> thermal_energy_loss(n);
-    thermal_energy_loss[0] = 0.0;
-    for (std::size_t i = 1; i < n; ++i)
-        thermal_energy_loss[i] = thermal_energy_loss[i-1] + 0.5 * (time[i] - time[i-1]) * (heat_production[i] + heat_production[i-1]);
+    cap::compute_thermal_energy_losses(capacitor_state, time, heat_production, thermal_energy_loss);
+
     // compute efficiency
     std::vector<double> efficiency(n);
     std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
@@ -227,10 +222,11 @@ run_constant_current_cycling
     double const qoi_energy_density = 
          - *minmax_energy.first / seconds_per_hour;
 
-    double const qoi_power_density = 
-        std::accumulate(power.begin(), power.end(), 0.0, 
-            [](double const & sum, double const & val) { return sum + std::abs(val); }
-        ) / static_cast<double>(power.size());
+    std::vector<double> duration;
+    std::vector<double> average_power;
+    cap::extract_duration_and_average_power(capacitor_state, time, energy, duration, average_power);
+
+    double const qoi_power_density = *std::min_element(average_power.begin(), average_power.end()) * (-1.0);
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
     double const qoi_efficiency =
@@ -439,17 +435,12 @@ run_constant_current_charge_constant_voltage_discharge
         [&mass](double const & U, double const & I) { return U * I / mass; });
     // compute energy
     std::vector<double> energy(n);
-    energy[0] = 0.0;
-    for (std::size_t i = 1; i < n; ++i)
-        if (capacitor_state[i].compare(capacitor_state[i-1]) == 0)
-            energy[i] = energy[i-1] + 0.5 * (time[i] - time[i-1]) * (power[i] + power[i-1]);
-        else
-            energy[i] = 0.0; // reset to zero when toggle from charge to discharge
+    cap::compute_energy(capacitor_state, time, power, energy);
+
     // compute thermal losses
     std::vector<double> thermal_energy_loss(n);
-    thermal_energy_loss[0] = 0.0;
-    for (std::size_t i = 1; i < n; ++i)
-        thermal_energy_loss[i] = thermal_energy_loss[i-1] + 0.5 * (time[i] - time[i-1]) * (heat_production[i] + heat_production[i-1]);
+    cap::compute_thermal_energy_losses(capacitor_state, time, heat_production, thermal_energy_loss);
+
     // compute efficiency
     std::vector<double> efficiency(n);
     std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
@@ -465,10 +456,11 @@ run_constant_current_charge_constant_voltage_discharge
     double const qoi_energy_density = 
          - *minmax_energy.first / seconds_per_hour;
 
-    double const qoi_power_density = 
-        std::accumulate(power.begin(), power.end(), 0.0, 
-            [](double const & sum, double const & val) { return sum + std::abs(val); }
-        ) / static_cast<double>(power.size());
+    std::vector<double> duration;
+    std::vector<double> average_power;
+    cap::extract_duration_and_average_power(capacitor_state, time, energy, duration, average_power);
+
+    double const qoi_power_density = *std::min_element(average_power.begin(), average_power.end()) * (-1.0);
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
     double const qoi_efficiency =
@@ -484,7 +476,7 @@ run_constant_current_charge_constant_voltage_discharge
     for (std::size_t i = 1; i < n; ++i)
         dummy[i] = dummy[i-1] + (time[i] - time[i-1]) * max_heat_production;
     std::ofstream fout;
-    fout.open("output_test_constant_current_charge_constant_voltage_discharge");
+    fout.open("output_test_constant_current_cycling");
     fout<<boost::format("# %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  \n")
         % "time[s]"
         % "capacitor_state"
@@ -516,6 +508,7 @@ run_constant_current_charge_constant_voltage_discharge
           ;
     fout.close();
 }                                               
+
 
 template <int dim>
 void 
