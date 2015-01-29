@@ -238,26 +238,42 @@ The code outputs
 \texttt{output\_params} \\
 {\footnotesize
 \begin{tabular}{llll}
-Path                      &     & Units \\
+Path                      &                & Units \\
 \texttt{max\_temperature} & $\Theta_{max}$ & [K] \\
-\texttt{heat\_production} & $Q$ & [W] \\
-\texttt{voltage}          & $U$ & [V] \\
-\texttt{current}          & $I$ & [A] \\
-\texttt{time}             & $t$ & [s] \\
+\texttt{heat\_production} & $Q$            & [W] \\
+\texttt{voltage}          & $U$            & [V] \\
+\texttt{current}          & $I$            & [A] \\
+\texttt{time}             & $t$            & [s] \\
 \texttt{capacitor\_state} \\
 \texttt{cycle}            \\
-\texttt{surface\_area}    & $S$ & [m$^2$] \\
-\texttt{volume}           & $V$ & [m$^3$] \\
-\texttt{mass}             & $M$ & [kg]    \\
+\texttt{surface\_area}    & $S$           & [m$^2$] \\
+\texttt{volume}           & $V$           & [m$^3$] \\
+\texttt{mass}             & $M$           & [kg]    \\
 \end{tabular}
 }
+
+
+\begin{equation}
+V = \int_\Omega dV
+\end{equation}
+
+\begin{equation}
+S = \int_{\Gamma^{cathode}} dS
+\end{equation}
+
+\begin{equation}
+M = \int_{\Omega} \rho dV
+\end{equation}
+
+(one value at each time step for what follows)
+
+maximum temperature $\Theta_{max} = \max_{\Omega} \Theta$
 
 heat production
 \begin{equation}
 Q = \int_\Omega q dV
 \end{equation}
 
-maximum temperature $\Theta_{max}$
 
 potential difference between the two terminals
 \begin{equation}
@@ -271,24 +287,33 @@ current flowing through the supercapacitor
 I = \int_{\Gamma^{cathode}} \sigma_s \frac{\partial \Phi_s}{\partial n} dS
 \end{equation}
 
-(one value at each time step)
 
-\begin{equation}
-V = \int_\Omega dV
-\end{equation}
+{\footnotesize
+\begin{tabular}{llll}
+Path                         &                & Units   \\
+\texttt{power\_density}      & $P$            & [W/kg]  \\
+\texttt{energy\_density}     & $E$            & [Wh/kg] \\
+\texttt{charge\_duration}    & $\delta t$     & [s] \\
+\texttt{discharge\_duration} & $\delta t$     & [s] \\
+\texttt{current}          & $I$            & [A] \\
+\texttt{time}             & $t$            & [s] \\
+\texttt{capacitor\_state} \\
+\texttt{cycle}            \\
+\texttt{surface\_area}    & $S$           & [m$^2$] \\
+\texttt{volume}           & $V$           & [m$^3$] \\
+\texttt{mass}             & $M$           & [kg]    \\
+\end{tabular}
+}
 
-\begin{equation}
-S = \int_{\Gamma^{cathode}} dV
-\end{equation}
 
-Quantities of interest are 
 
-power $P=UI$
 
-energy \\
-$E^{charge}   =\int_{t_0}^{t} P d\tau \text{\ for\ all\ } t_0 \leq t \leq t_1=t_0+\Delta t^{charge}   $
-\\
-$E^{discharge}=\int_{t_1}^{t} P d\tau \text{\ for\ all\ } t_1 \leq t \leq t_2=t_1+\Delta t^{discharge}$
+power density $P=UI/M$
+
+energy density \\
+$E=\int_{t_0}^{t} P d\tau \text{\ for\ all\ } t_0 \leq t \leq t_1+\delta_t$
+
+
 
 efficiency $\eta=E^{discharge}(t_2)/E^{charge}(t_1)$
 
@@ -337,7 +362,7 @@ The code takes as input
   & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & 0.5 -- 1.5          & [V]             \\
   & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & 50.0 -- 500.0       & [A/m${2}$]      \\
   & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & -500.0 -- -50.0     & [A/m${2}$]      \\
-  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & 50.0 -- 120.0       & [F/m$^3$]       \\
+  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & 50.0e6 -- 120.0e6   & [F/m$^3$]       \\
   & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & 0.6 -- 0.8          & [1]             \\
   & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & 0.4 -- 0.7          & [1]             \\
   & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & 0.03 -- 0.11        & [S/m]           \\
