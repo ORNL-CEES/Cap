@@ -8,6 +8,23 @@
 
 namespace cap {
 
+template <class InputIterator1, class InputIterator2,
+          class OutputIterator, class T>
+void approximate_integral_with_trapezoidal_rule
+    (InputIterator1 first1, InputIterator1 last1,
+                            InputIterator2 first2,
+     OutputIterator result, T init)
+{
+    *result = init;
+    ++first1; ++first2; ++result;
+    while (first1 != last1)
+    {
+        *result = *std::prev(result) + 0.5 * (*first1 - *std::prev(first1)) * (*first2 + *std::prev(first2));
+        ++first1; ++first2; ++result;
+    }
+
+}
+
 void compute_energy(std::vector<std::string> const & capacitor_state,
     std::vector<double> const & time,
     std::vector<double> const & power,
@@ -28,9 +45,9 @@ void compute_energy(std::vector<std::string> const & capacitor_state,
         auto same = [&it] (std::string const & o) { return it->compare(o) == 0; };
         std::vector<std::string>::const_iterator next = std::find_if_not(it, end_it, same);
         std::size_t last = first + std::distance(it, next);
-        energy[first] = 0.0;
-        for (std::size_t pos = first + 1; pos < last; ++pos)
-            energy[pos] = energy[pos-1] + 0.5 * (time[pos] - time[pos-1]) * (power[pos] + power[pos-1]);
+        approximate_integral_with_trapezoidal_rule(std::next(time.begin(), first), std::next(time.begin(), last),
+                                                   std::next(power.begin(), first), 
+                                                   std::next(energy.begin(), first), 0.0);
         it = next;
         first = last;
     }
