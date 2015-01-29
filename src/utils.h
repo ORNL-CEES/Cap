@@ -4,8 +4,26 @@
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <vector>
+#include <iterator>
 
 namespace cap {
+
+template <class InputIterator1, class InputIterator2,
+          class OutputIterator, class T>
+void approximate_integral_with_trapezoidal_rule
+    (InputIterator1 first1, InputIterator1 last1,
+                            InputIterator2 first2,
+     OutputIterator result, T init)
+{
+    *result = init;
+    ++first1; ++first2; ++result;
+    while (first1 != last1)
+    {
+        *result = *std::prev(result) + 0.5 * (*first1 - *std::prev(first1)) * (*first2 + *std::prev(first2));
+        ++first1; ++first2; ++result;
+    }
+}
+
 
 template <typename T>
 std::vector<T> to_vector(std::string const & s);
