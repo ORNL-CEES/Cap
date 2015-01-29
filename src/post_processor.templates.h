@@ -91,7 +91,7 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
     if (this->debug_material_ids)
         this->vectors["material_id"] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
     if (this->debug_boundary_ids)
-        throw std::runtime_error("not implemented yet");
+        throw dealii::StandardExceptions::ExcMessage("not implemented yet");
     for ( std::vector<std::string>::const_iterator it =
               this->debug_material_properties.begin();
           it != this->debug_material_properties.end();
