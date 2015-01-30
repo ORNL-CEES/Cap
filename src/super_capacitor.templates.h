@@ -212,10 +212,10 @@ run_constant_current_cycling
     std::transform(power.begin(), power.end(), heat_production.begin(), efficiency.begin(), 
         [](double const & P, double const & Q) { return 100.0 * (std::abs(P) - Q) / std::abs(P); });
 
-    output_params->put("power",               to_string(power)              );
-    output_params->put("energy",              to_string(energy)             );
+    output_params->put("power_density"      , to_string(power)              );
+    output_params->put("energy_density"     , to_string(energy)             );
     output_params->put("thermal_energy_loss", to_string(thermal_energy_loss));
-    output_params->put("efficiency",          to_string(efficiency)         );
+    output_params->put("efficiency"         , to_string(efficiency)         );
     
     auto minmax_energy = std::minmax_element(energy.begin(), energy.end());
     double const seconds_per_hour = 3600.0;
@@ -228,6 +228,7 @@ run_constant_current_cycling
 
     average_power.pop_back(); // the last charge/discharge is not fully completed so it would twist the answer
     double const qoi_power_density = *std::min_element(average_power.begin(), average_power.end()) * (-1.0);
+    double const qoi_charge_time   = *std::max_element(duration.begin(), duration.end());
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
     double const qoi_efficiency =
@@ -237,6 +238,7 @@ run_constant_current_cycling
     output_params->put("quantities_of_interest.energy_density",  qoi_energy_density );
     output_params->put("quantities_of_interest.power_density",   qoi_power_density  );
     output_params->put("quantities_of_interest.efficiency",      qoi_efficiency     );
+    output_params->put("quantities_of_interest.charge_time",     qoi_charge_time    );
 
     double max_heat_production = *std::max_element(heat_production.begin(), heat_production.end());
     std::vector<double> dummy(n, 0.0);
