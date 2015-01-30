@@ -226,7 +226,7 @@ run_constant_current_cycling
     std::vector<double> average_power;
     cap::extract_duration_and_average_power(capacitor_state, time, energy, duration, average_power);
 
-    average_power.erase(std::remove_if(average_power.begin(), average_power.end(), [] (double & v) { return v != v; }), std::end(average_power));
+    average_power.pop_back(); // the last charge/discharge is not fully completed so it would twist the answer
     double const qoi_power_density = *std::min_element(average_power.begin(), average_power.end()) * (-1.0);
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());

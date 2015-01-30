@@ -60,7 +60,7 @@ void extract_duration_and_average_power(std::vector<std::string> const & capacit
         std::vector<std::string>::const_iterator next = std::find_if_not(it, end_it, same);
         std::size_t last = first + std::distance(it, next);
         duration.push_back(time[last-1] - time[first]);
-        average_power.push_back((energy[last-1] - energy[first]) / duration.back());
+        average_power.push_back((first != last-1 ? (energy[last-1] - energy[first]) / duration.back() : 0.0));
         it = next;
         first = last;
     }
