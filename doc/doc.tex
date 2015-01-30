@@ -362,12 +362,14 @@ The code takes as input
   & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & 0.5 -- 1.5          & [V]             \\
   & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & 50.0 -- 500.0       & [A/m${2}$]      \\
   & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & -500.0 -- -50.0     & [A/m${2}$]      \\
-  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & 50.0e6 -- 120.0e6   & [F/m$^3$]       \\
+  & \texttt{material\_properties.differential\_capacitance}         & $C$                    & 6.4e-2    & 4.0e-2 -- 9.0e-2    & [F/m$^2$]       \\
   & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & 0.6 -- 0.8          & [1]             \\
   & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & 0.4 -- 0.7          & [1]             \\
   & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & 0.03 -- 0.11        & [S/m]           \\
   & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & 10.0 -- 200.0       & [S/m]           \\
   & \texttt{material\_properties.bruggemans\_coefficient}           & $\zeta$                & 1.5       & 1.5 -- 4            & [1]             \\
+  & \texttt{material\_properties.pores\_characteristic\_dimension}  & $r$                    & 1.5e-9    & ??? -- ???          & [m]             \\
+  & \texttt{material\_properties.pores\_geometry\_factor}           & ???                    & 2         & 0 -- 2              & [1]             \\
   & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & 2.0e-2 -- 20e-2     & [W/m$^2\cdot$K] \\
   & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 300.0     & 250.0 -- 320.0      & [K]             \\
 X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & 35.0e-6 -- 65.0e-6  & [m]             \\
@@ -384,6 +386,19 @@ You may tune all the other parameters.
 
 
 
+From \cite{Verbrugge2005}, we can estimate the specific surface $a$ for various
+pore geometries.
+\begin{equation}
+    a = \frac{(1+\gamma)\epsilon}{r}
+    \left\{
+    \begin{array}{ll}
+    \gamma=2 & \text{spheres}   \\
+    \gamma=1 & \text{cylinders} \\
+    \gamma=0 & \text{slabs}
+    \end{array}
+    \right.
+\end{equation}
+$r$ is the pore's charcteristic dimension (e.g., the pore radius or breadth).
 
 
 
