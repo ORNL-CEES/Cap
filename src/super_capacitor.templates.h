@@ -226,6 +226,7 @@ run_constant_current_cycling
     std::vector<double> average_power;
     cap::extract_duration_and_average_power(capacitor_state, time, energy, duration, average_power);
 
+    average_power.erase(std::remove_if(average_power.begin(), average_power.end(), [] (double & v) { return v != v; }), std::end(average_power));
     double const qoi_power_density = *std::min_element(average_power.begin(), average_power.end()) * (-1.0);
 
     double const qoi_max_temperature = *std::max_element(max_temperature.begin(), max_temperature.end());
@@ -476,7 +477,7 @@ run_constant_current_charge_constant_voltage_discharge
     for (std::size_t i = 1; i < n; ++i)
         dummy[i] = dummy[i-1] + (time[i] - time[i-1]) * max_heat_production;
     std::ofstream fout;
-    fout.open("output_test_constant_current_cycling");
+    fout.open("output_test_constant_current_charge_constant_voltage_discharge");
     fout<<boost::format("# %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s  \n")
         % "time[s]"
         % "capacitor_state"
@@ -508,7 +509,6 @@ run_constant_current_charge_constant_voltage_discharge
           ;
     fout.close();
 }                                               
-
 
 template <int dim>
 void 
