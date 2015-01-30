@@ -42,22 +42,24 @@ SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters)
     this->cathode_electrode_material_id  = database->get<dealii::types::material_id>("cathode_electrode_material_id");
     this->cathode_collector_material_id  = database->get<dealii::types::material_id>("cathode_collector_material_id");
 
-    this->separator_thermal_conductivity = database->get<double>("separator_thermal_conductivity"); 
-    this->electrode_thermal_conductivity = database->get<double>("electrode_thermal_conductivity"); 
-    this->collector_thermal_conductivity = database->get<double>("collector_thermal_conductivity"); 
-    this->separator_density              = database->get<double>("separator_density"             );              
-    this->electrode_density              = database->get<double>("electrode_density"             );              
-    this->collector_density              = database->get<double>("collector_density"             );              
-    this->separator_heat_capacity        = database->get<double>("separator_heat_capacity"       );        
-    this->electrode_heat_capacity        = database->get<double>("electrode_heat_capacity"       );        
-    this->collector_heat_capacity        = database->get<double>("collector_heat_capacity"       );        
+    this->separator_thermal_conductivity = database->get<double>("separator_thermal_conductivity");
+    this->electrode_thermal_conductivity = database->get<double>("electrode_thermal_conductivity");
+    this->collector_thermal_conductivity = database->get<double>("collector_thermal_conductivity");
+    this->separator_density              = database->get<double>("separator_density"             );
+    this->electrode_density              = database->get<double>("electrode_density"             );
+    this->collector_density              = database->get<double>("collector_density"             );
+    this->separator_heat_capacity        = database->get<double>("separator_heat_capacity"       );
+    this->electrode_heat_capacity        = database->get<double>("electrode_heat_capacity"       );
+    this->collector_heat_capacity        = database->get<double>("collector_heat_capacity"       );
 
-    this->specific_capacitance           = database->get<double>("specific_capacitance"          );          
+    this->differential_capacitance       = database->get<double>("differential_capacitance"      );
     this->electrode_void_volume_fraction = database->get<double>("electrode_void_volume_fraction");
     this->separator_void_volume_fraction = database->get<double>("separator_void_volume_fraction");
-    this->electrolyte_conductivity       = database->get<double>("electrolyte_conductivity"      );      
-    this->solid_phase_conductivity       = database->get<double>("solid_phase_conductivity"      );      
-    this->bruggemans_coefficient         = database->get<double>("bruggemans_coefficient"        );      
+    this->electrolyte_conductivity       = database->get<double>("electrolyte_conductivity"      );
+    this->solid_phase_conductivity       = database->get<double>("solid_phase_conductivity"      );
+    this->bruggemans_coefficient         = database->get<double>("bruggemans_coefficient"        );
+    this->pores_characteristic_dimension = database->get<double>("pores_characteristic_dimension");
+    this->pores_geometry_factor          = database->get<double>("pores_geometry_factor"         );
 
 }
 
@@ -109,7 +111,7 @@ get_values(std::string const &          key,
             std::fill(values.begin(), values.end(), 0.0);
         } else if ((cell->material_id() == this->anode_electrode_material_id) 
             || (cell->material_id() == this->cathode_electrode_material_id)) {
-            std::fill(values.begin(), values.end(), this->specific_capacitance);
+            std::fill(values.begin(), values.end(), (1.0+this->pores_geometry_factor)*this->electrode_void_volume_fraction/this->pores_characteristic_dimension*this->differential_capacitance);
         } else if ((cell->material_id() == this->anode_collector_material_id) 
             || (cell->material_id() == this->cathode_collector_material_id)) {
             std::fill(values.begin(), values.end(), 0.0);

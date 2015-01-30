@@ -74,12 +74,14 @@ protected:
     double electrode_heat_capacity;
     double collector_heat_capacity;
 
-    double specific_capacitance;
+    double differential_capacitance;
     double electrode_void_volume_fraction;
     double separator_void_volume_fraction;
     double electrolyte_conductivity;
     double solid_phase_conductivity;
     double bruggemans_coefficient;
+    double pores_characteristic_dimension;
+    double pores_geometry_factor;
 
 };
 
