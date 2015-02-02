@@ -5,6 +5,8 @@ DEPENDENCIES
 deal.II version 8.2 compiled with C++11 support. The development sources can be found 
 [here](https://github.com/dealii/dealii).
 
+Boost Unit Test Framework (UTF) is required to build all the tests.
+
 CONFIGURE, BUILD and TEST
 -------------------------
 
