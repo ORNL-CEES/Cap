@@ -56,7 +56,7 @@ public:
     SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters);
     void get_values(std::string const &          key,
                     active_cell_iterator const & cell,
-                    std::vector<double> &        values) const;
+                    std::vector<double> &        values) const override;
 protected:
     dealii::types::material_id separator_material_id;
     dealii::types::material_id anode_electrode_material_id;
