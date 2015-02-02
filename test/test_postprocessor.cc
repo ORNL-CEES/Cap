@@ -1,5 +1,10 @@
+#define BOOST_TEST_MODULE MyFirstTest
+#define BOOST_TEST_DYN_LINK
 #include <cap/post_processor.h>
+#include <cap/utils.h>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
+#include <boost/test/unit_test.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -20,7 +25,37 @@
 //  axarr[1].set_ylabel("energy")
 //  show()
 
-int main(int argc, char *argv[])
+BOOST_AUTO_TEST_CASE( test_approximate_integral_with_trapezoidal_rule )
+{
+    double const tolerance = 1.0e-8;
+    std::size_t const n = 100001;
+
+    double const a = 0.0;
+    double const b = 2.0;
+    std::vector<double> x(n);
+    std::vector<double> y(n);
+    std::vector<double> r(n);
+    std::vector<double> e(n);
+    for (std::size_t i = 0; i < n; ++i) {
+        x[i] = a + static_cast<double>(i) / (n - 1) * (b - a);
+        y[i] = std::cos(x[i]);
+        e[i] = std::sin(x[i]);
+    }
+    cap::approximate_integral_with_trapezoidal_rule(
+        x.begin(), x.end(),
+        y.begin(),
+        r.begin(), 0.0
+        );
+    std::transform(e.begin(), e.end(), r.begin(), e.begin(), 
+        [] (double const & computed, double const & exact) 
+        { return std::abs(computed - exact); }
+        );
+    double const max_error = *std::max_element(e.begin(), e.end());
+    std::cout<<"max_error="<<max_error<<"\n";
+    BOOST_CHECK_LT( max_error, tolerance );
+}
+
+BOOST_AUTO_TEST_CASE( test_postprocessor )
 {
     std::fstream fout("data", std::fstream::out);
     std::ostream & os = fout;
@@ -74,6 +109,4 @@ int main(int argc, char *argv[])
                 % exact[i]
                 % error[i]
                 ;
-    
-    return 0;
 }

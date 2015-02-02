@@ -1,20 +1,27 @@
+#define BOOST_TEST_MODULE MyFirstTest
+#define BOOST_TEST_DYN_LINK
 #include <cap/utils.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/exceptions.h>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/test/unit_test.hpp>
 
-int main(int argc, char *argv[])
+BOOST_AUTO_TEST_CASE( test_parse_params )
 {
+   // create a database
    boost::property_tree::ptree params;
 
    // ensure material_ids and boundary_ids are parsed correctly
    params.put("some_material_id", 3);
    params.put("some_boundary_id", 1);
-   Assert(params.get<dealii::types::material_id>("some_material_id") == dealii::types::material_id(3),
-       dealii::StandardExceptions::ExcInternalError());
-   Assert(params.get<dealii::types::boundary_id>("some_boundary_id") == dealii::types::boundary_id(1),
-       dealii::StandardExceptions::ExcInternalError());
+   BOOST_CHECK_EQUAL( params.get<dealii::types::material_id>("some_material_id"), dealii::types::material_id(3) );
+   BOOST_CHECK_EQUAL( params.get<dealii::types::material_id>("some_boundary_id"), dealii::types::boundary_id(1) );
+
+   // ensure property tree will throw
+   params.put("is_a_string", "hello cruel world");
+   BOOST_CHECK_THROW( params.get<double>("invalid_key"), boost::property_tree::ptree_bad_path );
+   BOOST_CHECK_THROW( params.get<double>("is_a_string"), boost::property_tree::ptree_bad_data );
 
    // ensure to_string and to_vector are working properly
    params.put("ones",  cap::to_string(std::vector<double>     (10, 1.0)  ));
@@ -24,9 +31,8 @@ int main(int argc, char *argv[])
    std::vector<std::string> yes   = cap::to_vector<std::string>(params.get<std::string>("yes")  );
    std::vector<int>         empty = cap::to_vector<int>        (params.get<std::string>("empty"));
    BOOST_FOREACH(double const & val, ones) 
-       Assert(val == 1.0, dealii::StandardExceptions::ExcInternalError());
+       BOOST_CHECK_EQUAL( val, 1.0 );
    BOOST_FOREACH(std::string const & val, yes) 
-       Assert(val == "yes", dealii::StandardExceptions::ExcInternalError());
-   Assert(empty.empty(), dealii::StandardExceptions::ExcInternalError());
-   return 0;
+       BOOST_CHECK_EQUAL( val, "yes" );
+   BOOST_CHECK( empty.empty() );
 }

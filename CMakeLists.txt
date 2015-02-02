@@ -29,11 +29,30 @@ ADD_LIBRARY(cap
     src/post_processor.cc
     src/utils.cc
     src/super_capacitor.cc
-)
+    )
 
 FIND_PACKAGE(deal.II 8.2 REQUIRED PATHS ${DEAL_II_INSTALL_DIR} NO_DEFAULT_PATH)
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 DEAL_II_SETUP_TARGET(cap) 
+
+IF(DEFINED BOOST_INSTALL_DIR)
+    MESSAGE("BOOST_INSTALL_DIR = ${BOOST_INSTALL_DIR}")
+    FIND_LIBRARY(Boost_LIBRARIES 
+        NAMES boost_unit_test_framework
+        PATHS ${BOOST_INSTALL_DIR}/lib
+        NO_DEFAULT_PATH
+        )
+    FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
+        PATHS ${BOOST_INSTALL_DIR}/include
+        NO_DEFAULT_PATH
+        )
+    SET(Boost_LIBRARY_DIR ${BOOST_INSTALL_DIR}/lib)
+    MESSAGE("Boost_LIBRARIES = ${Boost_LIBRARIES}")
+    MESSAGE("Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}")
+    MESSAGE("Boost_LIBRARY_DIR = ${Boost_LIBRARY_DIR}")
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
+ENDIF()
 
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)
