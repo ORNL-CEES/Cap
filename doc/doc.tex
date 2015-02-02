@@ -94,10 +94,10 @@ $\sigma_s$ and $\sigma_l$ are the electrolyte and solid phase electrical
 conductivities. They are effective transport properties.
 
 In our current model, we have
-$\sigma_l=\sigma_{l0}\varepsilon^\zeta$ and
-$\sigma_s=\sigma_{s0}(1-\varepsilon)^\zeta$.
+$\sigma_l=\sigma_{l0}\varepsilon^\beta$ and
+$\sigma_s=\sigma_{s0}(1-\varepsilon)^\beta$.
 $\varepsilon$ is the porous medium void volume fraction,
-$\zeta$ is the Bruggeman's coefficient (taken equal to $3/2$)...
+$\beta$ is the Bruggeman's coefficient (taken equal to $3/2$)...
 
 [Interface conditions]
 coming soon... (basically continuity of the fluxes within both phases)
@@ -238,20 +238,22 @@ The code outputs
 \texttt{output\_params} \\
 {\footnotesize
 \begin{tabular}{llll}
-Path                      &                & Units \\
-\texttt{max\_temperature} & $\Theta_{max}$ & [K] \\
-\texttt{heat\_production} & $Q$            & [W] \\
-\texttt{voltage}          & $U$            & [V] \\
-\texttt{current}          & $I$            & [A] \\
-\texttt{time}             & $t$            & [s] \\
-\texttt{capacitor\_state} \\
-\texttt{cycle}            \\
-\texttt{surface\_area}    & $S$           & [m$^2$] \\
-\texttt{volume}           & $V$           & [m$^3$] \\
-\texttt{mass}             & $M$           & [kg]    \\
+Path                      &                & Units   \\
+\texttt{max\_temperature} & $\Theta_{max}$ & [K]     \\
+\texttt{efficiency}       & $\eta$         & [\%]    \\
+\texttt{power\_density}   & $P$            & [W/kg]  \\
+\texttt{energy\_density}  & $E$            & [Wh/kg] \\
+\texttt{heat\_production} & $Q$            & [W]     \\
+\texttt{voltage}          & $U$            & [V]     \\
+\texttt{current}          & $I$            & [A]     \\
+\texttt{time}             & $t$            & [s]     \\
+\texttt{capacitor\_state}                            \\
+\texttt{cycle}                                       \\
+\texttt{surface\_area}    & $S$           & [m$^2$]  \\
+\texttt{volume}           & $V$           & [m$^3$]  \\
+\texttt{mass}             & $M$           & [kg]     \\
 \end{tabular}
 }
-
 
 \begin{equation}
 V = \int_\Omega dV
@@ -265,63 +267,71 @@ S = \int_{\Gamma^{cathode}} dS
 M = \int_{\Omega} \rho dV
 \end{equation}
 
-(one value at each time step for what follows)
+\begin{equation}
+\Theta_{max} = \max_{\Omega} \Theta
+\end{equation}
 
-maximum temperature $\Theta_{max} = \max_{\Omega} \Theta$
-
-heat production
 \begin{equation}
 Q = \int_\Omega q dV
 \end{equation}
 
-
 potential difference between the two terminals
 \begin{equation}
-U = \int_{\Gamma^{cathode}} \Phi_s dS / S^{cathode} 
-- \int_{\Gamma^{anode}} \Phi_s dS / S^{anode}
+U = \int_{\Gamma^{cathode}} \Phi_s dS / S 
 \end{equation}
-[the second term is forced to zero]
+[since $\Phi_s=0$ on $\Gamma^{anode}$]
 
 current flowing through the supercapacitor
 \begin{equation}
 I = \int_{\Gamma^{cathode}} \sigma_s \frac{\partial \Phi_s}{\partial n} dS
 \end{equation}
 
+power density 
+\begin{equation}
+P=UI/M
+\end{equation}
+
+energy density
+\begin{equation}
+E=\int_{t_0}^{t} P d\tau \text{\ for\ all\ } t_0 \leq t \leq t_1
+\end{equation}
+[I set $E(t_0)$ to zero when \texttt{capacitor\_state} changes]
+
+efficiency 
+\begin{equation}
+\eta=100\frac{|P|-Q}{|P}
+\end{equation}
+
+
+
 
 {\footnotesize
 \begin{tabular}{llll}
-Path                         &                & Units   \\
-\texttt{power\_density}      & $P$            & [W/kg]  \\
-\texttt{energy\_density}     & $E$            & [Wh/kg] \\
-\texttt{charge\_duration}    & $\delta t$     & [s] \\
-\texttt{discharge\_duration} & $\delta t$     & [s] \\
-\texttt{current}          & $I$            & [A] \\
-\texttt{time}             & $t$            & [s] \\
-\texttt{capacitor\_state} \\
-\texttt{cycle}            \\
-\texttt{surface\_area}    & $S$           & [m$^2$] \\
-\texttt{volume}           & $V$           & [m$^3$] \\
-\texttt{mass}             & $M$           & [kg]    \\
+Path                             &                & Units   \\
+\texttt{hidden.energy\_density}  & $E^*$          & [Wh/kg] \\
+\texttt{hidden.charge\_time}     & $\Delta t$     & [s]     \\
+\texttt{hidden.capacitor\_state}                            \\
 \end{tabular}
 }
 
 
+From here, $E^{charge} = \max(E^*)$ and $E^{discharge} = - \min(E^*)$
 
+energy density is defined as $E=E^{discharge}$
 
-power density $P=UI/M$
+power density is averaged over the discharge $P=E^{discharge}/\Delta t^{discharge}$
 
-energy density \\
-$E=\int_{t_0}^{t} P d\tau \text{\ for\ all\ } t_0 \leq t \leq t_1+\delta_t$
+efficiency $\eta=E^{discharge}/E^{charge}$
 
+charge time $\Delta t=\Delta t^{charge}$
 
-
-efficiency $\eta=E^{discharge}(t_2)/E^{charge}(t_1)$
+[here it turns out $\Delta t^{charge}$ and $\Delta t^{discharge}$ are equals]
 
 We want to maximize 
 
-power density $P/M$
+power density 
 
-energy density $E/M$
+energy density
 
 efficiency
 
@@ -332,9 +342,10 @@ temperature $\Theta$ and voltage $U$ must not exceed some threshold values.
 \begin{tabular}{llll}
 Path                      &     & Units \\
 \texttt{quantities\_of\_interest.max\_temperature} & $\Theta_{max}$ & [K] \\
-\texttt{quantities\_of\_interest.energy\_density}  & $E/M$          & [Wh/kg] \\
-\texttt{quantities\_of\_interest.power\_density}   & $P/M$          & [W/kg] \\
+\texttt{quantities\_of\_interest.energy\_density}  & $E$            & [Wh/kg] \\
+\texttt{quantities\_of\_interest.power\_density}   & $P$            & [W/kg] \\
 \texttt{quantities\_of\_interest.efficiency}       & $\eta$         & [\%] \\
+\texttt{quantities\_of\_interest.charge\_time}     & $\Delta t$     & [s]  \\
 \end{tabular}
 }
 
@@ -362,12 +373,14 @@ The code takes as input
   & \texttt{operating\_conditions.discharge\_potential}             & $U_{discharge}$        & 1.1       & 0.5 -- 1.5          & [V]             \\
   & \texttt{operating\_conditions.charge\_current\_density}         & $I_{charge}$           & 324.65    & 50.0 -- 500.0       & [A/m${2}$]      \\
   & \texttt{operating\_conditions.discharge\_current\_density}      & $I_{discharge}$        & -324.65   & -500.0 -- -50.0     & [A/m${2}$]      \\
-  & \texttt{material\_properties.specific\_capacitance}             & $aC$                   & 86.0e6    & 50.0e6 -- 120.0e6   & [F/m$^3$]       \\
+  & \texttt{material\_properties.differential\_capacitance}         & $C$                    & 6.4e-2    & 4.0e-2 -- 9.0e-2    & [F/m$^2$]       \\
   & \texttt{material\_properties.separator\_void\_volume\_fraction} & $\epsilon^{separator}$ & 0.6       & 0.6 -- 0.8          & [1]             \\
   & \texttt{material\_properties.electrode\_void\_volume\_fraction} & $\epsilon^{electrode}$ & 0.67      & 0.4 -- 0.7          & [1]             \\
   & \texttt{material\_properties.electrolyte\_conductivity}         & $\sigma_{l0}$          & 0.067     & 0.03 -- 0.11        & [S/m]           \\
   & \texttt{material\_properties.solid\_phase\_conductivity}        & $\sigma_{s0}$          & 52.1      & 10.0 -- 200.0       & [S/m]           \\
-  & \texttt{material\_properties.bruggemans\_coefficient}           & $\zeta$                & 1.5       & 1.5 -- 4            & [1]             \\
+  & \texttt{material\_properties.bruggemans\_coefficient}           & $\beta$                & 1.5       & 1.5 -- 4            & [1]             \\
+  & \texttt{material\_properties.pores\_characteristic\_dimension}  & $r$                    & 1.5e-9    & ??? -- ???          & [m]             \\
+  & \texttt{material\_properties.pores\_geometry\_factor}           & $\gamma$               & 2         & 0 -- 2              & [1]             \\
   & \texttt{heat\_transfer\_coefficient}                            & $h$                    & 8.0e-2    & 2.0e-2 -- 20e-2     & [W/m$^2\cdot$K] \\
   & \texttt{ambient\_temperature}                                   & $\Theta_{ambient}$     & 300.0     & 250.0 -- 320.0      & [K]             \\
 X & \texttt{geometry.electrode\_width}                              & $w^{electrode}$        & 50.0e-6   & 35.0e-6 -- 65.0e-6  & [m]             \\
@@ -384,6 +397,19 @@ You may tune all the other parameters.
 
 
 
+From \cite{Verbrugge2005}, we can estimate the specific surface $a$ for various
+pore geometries.
+\begin{equation}
+    a = \frac{(1+\gamma)\epsilon}{r}
+    \left\{
+    \begin{array}{ll}
+    \gamma=2 & \text{spheres}   \\
+    \gamma=1 & \text{cylinders} \\
+    \gamma=0 & \text{slabs}
+    \end{array}
+    \right.
+\end{equation}
+$r$ is the pore's charcteristic dimension (e.g., the pore radius or breadth).
 
 
 
