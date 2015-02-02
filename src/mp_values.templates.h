@@ -33,6 +33,7 @@ SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters)
 {
     std::shared_ptr<boost::property_tree::ptree> database = parameters.database;
 
+    if (!database) throw std::runtime_error("supercapacitor material property values database is empty");
 //    SuperCapacitorMPValuesParameters<dim, spacedim> const * super_capacitor_parameters = 
 //        dynamic_cast<SuperCapacitorMPValuesParameters<dim, spacedim> const *>(&parameters);
     
