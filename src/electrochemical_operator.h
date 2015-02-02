@@ -21,7 +21,7 @@ template <int dim>
 class ElectrochemicalOperator : public Operator<dim> {
 public:
     ElectrochemicalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters);
-    void reset(std::shared_ptr<OperatorParameters<dim> const> parameters);
+    void reset(std::shared_ptr<OperatorParameters<dim> const> parameters) override;
 
     void compute_heat_source(dealii::BlockVector<double> const & , dealii::Vector<double> & ) const; // TODO: template 1st argument
     

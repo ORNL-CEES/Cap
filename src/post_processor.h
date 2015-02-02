@@ -22,7 +22,7 @@ public:
     { }
     virtual ~PostprocessorParameters() { }
 
-    dealii::DoFHandler<dim> const * dof_handler;
+    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
     dealii::BlockVector<double> const * solution;
 
     std::shared_ptr<MPValues<dim> const>       mp_values;
@@ -45,7 +45,7 @@ public:
     
 
 protected:
-    dealii::DoFHandler<dim> const & dof_handler;
+    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
     dealii::BlockVector<double> const & solution;
 
     std::shared_ptr<MPValues<dim> const>       mp_values;
@@ -67,7 +67,7 @@ template <int dim>
 class SuperCapacitorPostprocessor : public Postprocessor<dim> {
 public:
     SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
-    void reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
+    void reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
 private:
     bool debug_material_ids;
     bool debug_boundary_ids;

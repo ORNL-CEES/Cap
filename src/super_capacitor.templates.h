@@ -21,8 +21,7 @@ namespace cap {
 template <int dim>                         
 SuperCapacitorProblem<dim>::               
 SuperCapacitorProblem(std::shared_ptr<boost::property_tree::ptree const> database)
-    : dof_handler(triangulation)
-    , verbose(database->get<bool>("verbose", false))
+    : verbose(database->get<bool>("verbose", false))
     , symmetric_correction(true)
 { 
 //    std::cout<<"initialize...\n";
@@ -612,11 +611,13 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
     // distribute degrees of freedom
     this->fe = std::make_shared<typename dealii::FESystem<dim> >
         (typename dealii::FE_Q<dim>(1), 3); // TODO: read degree p from database
-    this->dof_handler.distribute_dofs(*this->fe);
-    dealii::DoFRenumbering::component_wise(this->dof_handler);
-    unsigned int const n_components = dealii::DoFTools::n_components(this->dof_handler);
+    this->dof_handler = std::make_shared<typename dealii::DoFHandler<dim> >(triangulation);
+    this->constraint_matrix = std::make_shared<dealii::ConstraintMatrix>();
+    (*this->dof_handler).distribute_dofs(*this->fe);
+    dealii::DoFRenumbering::component_wise(*this->dof_handler);
+    unsigned int const n_components = dealii::DoFTools::n_components(*this->dof_handler);
     std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
-    dealii::DoFTools::count_dofs_per_component(this->dof_handler, dofs_per_component);
+    dealii::DoFTools::count_dofs_per_component(*this->dof_handler, dofs_per_component);
 
     unsigned int const temperature_component      = database->get<unsigned int>("temperature_component"     );
     unsigned int const solid_potential_component  = database->get<unsigned int>("solid_potential_component" );
@@ -628,7 +629,7 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
         dofs_per_component[solid_potential_component] + dofs_per_component[liquid_potential_component];
 
     // make sparsity pattern
-    unsigned int const max_couplings = this->dof_handler.max_couplings_between_dofs();
+    unsigned int const max_couplings = (*this->dof_handler).max_couplings_between_dofs();
     this->sparsity_pattern.reinit(2, 2);
     this->sparsity_pattern.block(electrochemical_block, electrochemical_block).reinit(n_electrochemical_dofs, n_electrochemical_dofs, 2*max_couplings);
     this->sparsity_pattern.block(electrochemical_block, thermal_block        ).reinit(n_electrochemical_dofs, n_thermal_dofs,           max_couplings);
@@ -636,7 +637,7 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
     this->sparsity_pattern.block(thermal_block        , thermal_block        ).reinit(n_thermal_dofs,         n_thermal_dofs,           max_couplings);
     this->sparsity_pattern.collect_sizes();
 
-    dealii::DoFTools::make_sparsity_pattern(this->dof_handler, this->sparsity_pattern, this->constraint_matrix);
+    dealii::DoFTools::make_sparsity_pattern(*this->dof_handler, this->sparsity_pattern, *this->constraint_matrix);
     this->sparsity_pattern.compress();
 
     // initialize matrices and vectors
@@ -654,7 +655,7 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
 
     if (this->verbose) {
         std::cout
-            <<"total degrees of freedom : "<<this->dof_handler.n_dofs()<<"\n"
+            <<"total degrees of freedom : "<<(*this->dof_handler).n_dofs()<<"\n"
             <<"    electrochemical : "
             <<"solid_potential "<<dofs_per_component[solid_potential_component]
             <<" + liquid_potential "<<dofs_per_component[liquid_potential_component]
@@ -683,8 +684,8 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     // initialize operators
     this->electrochemical_operator_params = std::shared_ptr<ElectrochemicalOperatorParameters<dim> >
         (new ElectrochemicalOperatorParameters<dim>(database));
-    this->electrochemical_operator_params->dof_handler       = &(this->dof_handler);
-    this->electrochemical_operator_params->constraint_matrix = &(this->constraint_matrix);
+    this->electrochemical_operator_params->dof_handler       = this->dof_handler;
+    this->electrochemical_operator_params->constraint_matrix = this->constraint_matrix;
     this->electrochemical_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(0, 0));
     this->electrochemical_operator_params->some_vector       = &(this->solution.block(0));
     this->electrochemical_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
@@ -703,8 +704,8 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
 
     this->thermal_operator_params = std::shared_ptr<ThermalOperatorParameters<dim> >
         (new ThermalOperatorParameters<dim>(database));
-    this->thermal_operator_params->dof_handler       = &(this->dof_handler);
-    this->thermal_operator_params->constraint_matrix = &(this->constraint_matrix);
+    this->thermal_operator_params->dof_handler       = this->dof_handler;
+    this->thermal_operator_params->constraint_matrix = this->constraint_matrix;
     this->thermal_operator_params->sparsity_pattern  = &(this->sparsity_pattern.block(1, 1));
     this->thermal_operator_params->some_vector       = &(this->solution.block(1));
     this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
@@ -716,7 +717,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     // initialize postprocessor
     this->post_processor_params = std::shared_ptr<SuperCapacitorPostprocessorParameters<dim> >
         (new SuperCapacitorPostprocessorParameters<dim>(database));
-    this->post_processor_params->dof_handler     = &(this->dof_handler);
+    this->post_processor_params->dof_handler     = this->dof_handler;
     this->post_processor_params->solution        = &(this->solution   );
     this->post_processor_params->mp_values       = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
     this->post_processor_params->boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);

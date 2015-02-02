@@ -54,9 +54,9 @@ private:
 
     typename dealii::Triangulation<dim> triangulation;
 
-    std::shared_ptr<typename dealii::FESystem<dim> > fe; // TODO: would be nice to get rid of this guy
-    typename dealii::DoFHandler<dim>    dof_handler;
-    dealii::ConstraintMatrix            constraint_matrix;
+    std::shared_ptr<typename dealii::FESystem<dim>   > fe; // TODO: would be nice to get rid of this guy
+    std::shared_ptr<typename dealii::DoFHandler<dim> > dof_handler;
+    std::shared_ptr<dealii::ConstraintMatrix         > constraint_matrix;
     dealii::BlockSparsityPattern        sparsity_pattern;
     dealii::BlockSparseMatrix<double>   system_matrix;
     dealii::BlockVector<double>         system_rhs;

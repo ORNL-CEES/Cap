@@ -12,7 +12,7 @@ namespace cap {
 template <int dim>
 Postprocessor<dim>::
 Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters) 
-  : dof_handler(*(parameters->dof_handler))
+  : dof_handler(parameters->dof_handler)
   , solution(*(parameters->solution))
   , mp_values(parameters->mp_values)
   , boundary_values(parameters->boundary_values)
@@ -69,6 +69,7 @@ SuperCapacitorPostprocessor<dim>::
 SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     : Postprocessor<dim>(parameters)
 {
+    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
     this->values["max_temperature"] = 0.0;
     this->values["voltage"        ] = 0.0;
     this->values["current"        ] = 0.0;
@@ -89,26 +90,26 @@ SuperCapacitorPostprocessor(std::shared_ptr<PostprocessorParameters<dim> const> 
     this->debug_material_ids = database->get("debug.material_ids", false);
 
     if (this->debug_material_ids)
-        this->vectors["material_id"] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+        this->vectors["material_id"] = dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
     if (this->debug_boundary_ids)
         throw dealii::StandardExceptions::ExcMessage("not implemented yet");
     for ( std::vector<std::string>::const_iterator it =
               this->debug_material_properties.begin();
           it != this->debug_material_properties.end();
           ++it )
-        this->vectors[*it] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+        this->vectors[*it] = dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
     for ( std::vector<std::string>::const_iterator it =
               this->debug_solution_fields.begin();
           it != this->debug_solution_fields.end();
           ++it )
-        this->vectors[*it] = dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+        this->vectors[*it] = dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
     for ( std::vector<std::string>::const_iterator it =
               this->debug_solution_fluxes.begin();
           it != this->debug_solution_fluxes.end();
           ++it )
         for (int d = 0; d < dim; ++d)
             this->vectors[(*it)+"_"+std::to_string(d)] = 
-                dealii::Vector<double>(this->dof_handler.get_tria().n_active_cells());
+                dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
 }
 
 template <int dim>
@@ -116,6 +117,7 @@ void
 SuperCapacitorPostprocessor<dim>::
 reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 {
+    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
     std::for_each(this->values.begin(), this->values.end(), 
         [] (std::unordered_map<std::string, double>::value_type & p) { p.second = 0.0; });
     this->values["max_temperature"] = -std::numeric_limits<double>::max();
@@ -127,10 +129,10 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component" ));
     dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
 
-    dealii::Triangulation<dim> const & triangulation = this->dof_handler.get_tria();
+    dealii::Triangulation<dim> const & triangulation = dof_handler.get_tria();
     dealii::Vector<double> joule_heating(triangulation.n_active_cells());
 
-    dealii::FiniteElement<dim> const & fe = this->dof_handler.get_fe(); // TODO: don't want to use directly fe because we might create postprocessor that will only know about dof_handler
+    dealii::FiniteElement<dim> const & fe = dof_handler.get_fe(); // TODO: don't want to use directly fe because we might create postprocessor that will only know about dof_handler
     dealii::QGauss<dim>   quadrature_rule     (fe.degree+1);
     dealii::QGauss<dim-1> face_quadrature_rule(fe.degree+1);
     dealii::FEValues<dim>     fe_values     (fe, quadrature_rule,      dealii::update_values | dealii::update_gradients | dealii::update_JxW_values);
@@ -155,8 +157,8 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     std::vector<dealii::Point<dim> >     normal_vectors                           (n_face_q_points);
 
     typename dealii::DoFHandler<dim>::active_cell_iterator
-        cell = this->dof_handler.begin_active(),
-        end_cell = this->dof_handler.end();
+        cell = dof_handler.begin_active(),
+        end_cell = dof_handler.end();
     std::size_t cell_id = 0;
     for ( ; cell != end_cell; ++cell, ++cell_id) {
         fe_values.reinit(cell);

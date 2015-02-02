@@ -24,8 +24,8 @@ public:
     {  }
     virtual ~OperatorParameters() { }
 
-    dealii::DoFHandler<dim> const * dof_handler;
-    dealii::ConstraintMatrix const * constraint_matrix;
+    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+    std::shared_ptr<dealii::ConstraintMatrix const> constraint_matrix;
     dealii::SparsityPattern const * sparsity_pattern;
     dealii::Vector<double> const * some_vector;
 
@@ -52,8 +52,8 @@ public:
     
 
 protected:
-    dealii::DoFHandler<dim> const & dof_handler;
-    dealii::ConstraintMatrix const & constraint_matrix;
+    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+    std::shared_ptr<dealii::ConstraintMatrix const> constraint_matrix;
 
     std::shared_ptr<MPValues<dim> const>       mp_values;
     std::shared_ptr<BoundaryValues<dim> const> b_values;
