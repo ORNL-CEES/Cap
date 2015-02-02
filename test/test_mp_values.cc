@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE MaterialPropertyValues
-#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MAIN
 #include <cap/mp_values.h>
 #include <boost/test/unit_test.hpp>
 #include <deal.II/grid/tria_accessor.h>

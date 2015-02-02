@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE MyFirstTest
-#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MAIN
 #include <cap/utils.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/exceptions.h>
