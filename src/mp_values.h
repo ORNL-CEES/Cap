@@ -70,6 +70,7 @@ protected:
     double separator_density;
     double electrode_density;
     double collector_density;
+    double electrolyte_mass_density;
     double separator_heat_capacity;
     double electrode_heat_capacity;
     double collector_heat_capacity;
@@ -79,6 +80,9 @@ protected:
     double separator_void_volume_fraction;
     double electrolyte_conductivity;
     double solid_phase_conductivity;
+    double collector_electrical_resistivity;
+    double separator_tortuosity_factor;
+    double electrode_tortuosity_factor;
     double bruggemans_coefficient;
     double pores_characteristic_dimension;
     double pores_geometry_factor;

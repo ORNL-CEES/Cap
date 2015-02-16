@@ -124,7 +124,9 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 
     std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
 
-    dealii::types::boundary_id const cathode_boundary_id = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id");
+    dealii::types::material_id const anode_electrode_material_id   = database->get<dealii::types::material_id>("material_properties.anode_electrode_material_id"  );
+    dealii::types::material_id const cathode_electrode_material_id = database->get<dealii::types::material_id>("material_properties.cathode_electrode_material_id");
+    dealii::types::boundary_id const cathode_boundary_id           = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id"              );
     dealii::FEValuesExtractors::Scalar const temperature     (database->get<unsigned int>("temperature_component"     ));
     dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component" ));
     dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
@@ -149,7 +151,11 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     std::vector<double>                  temperature_values                   (n_q_points);
     std::vector<double>                  solid_potential_values               (n_q_points);
     std::vector<double>                  liquid_potential_values              (n_q_points);
-    double                               max_temperature;
+    double                               max_temperature = std::numeric_limits<double>::lowest();
+    double                               anode_electrode_potential   = 0.0;
+    double                               cathode_electrode_potential = 0.0;
+    double                               anode_electrode_volume      = 0.0;
+    double                               cathode_electrode_volume    = 0.0;
 
     std::vector<double>                  face_solid_electrical_conductivity_values(n_face_q_points);
     std::vector<double>                  face_solid_potential_values              (n_face_q_points);
@@ -178,6 +184,15 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
               ) * fe_values.JxW(q_point);
             this->values["volume"       ] += fe_values.JxW(q_point);
             this->values["mass"         ] += density_values[q_point] * fe_values.JxW(q_point);
+            if (cell->material_id() == anode_electrode_material_id) {
+                anode_electrode_potential += (solid_potential_values[q_point] - liquid_potential_values[q_point]) * fe_values.JxW(q_point);
+                anode_electrode_volume += fe_values.JxW(q_point);
+            } else if (cell->material_id() == cathode_electrode_material_id) {
+                cathode_electrode_potential += (solid_potential_values[q_point] - liquid_potential_values[q_point]) * fe_values.JxW(q_point);
+                cathode_electrode_volume += fe_values.JxW(q_point);
+            } else {
+                // do nothing
+            }
         } // end for quadrature point
         max_temperature = *std::max_element(temperature_values.begin(), temperature_values.end());
         if (max_temperature > this->values["max_temperature"]) {
@@ -292,6 +307,10 @@ if (cell->face(face)->boundary_indicator() == cathode_boundary_id) {
         } // end if cell at boundary
     } // end for cell
     this->values["voltage"] /= this->values["surface_area"];
+    anode_electrode_potential   /= anode_electrode_volume;
+    cathode_electrode_potential /= cathode_electrode_volume;
+    this->values["anode_potential"  ] = anode_electrode_potential;
+    this->values["cathode_potential"] = cathode_electrode_potential;
 //    std::for_each(this->values.begin(), this->values.end(), [] (std::unordered_map<std::string, double>::value_type & p) { std::cout<<p.first<<"  "<<p.second<<"\n"; });
 }
 
