@@ -28,7 +28,7 @@ template <int dim, int spacedim=dim>
 class BoundaryValues {
 public:
     typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
-    BoundaryValues(BoundaryValuesParameters<dim, spacedim> const & parameters) { }
+    BoundaryValues(BoundaryValuesParameters<dim, spacedim> const & ) { }
     virtual ~BoundaryValues() { }
     virtual void get_values(std::string const &          key,
                             active_cell_iterator const & cell,

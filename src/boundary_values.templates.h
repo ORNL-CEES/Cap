@@ -12,6 +12,10 @@ get_values(std::string const &          key,
            std::vector<double> &        values) const
 
 {
+    std::ignore = key;
+    std::ignore = cell;
+    std::ignore = face;
+    std::ignore = values;
     throw std::runtime_error("Should have been overloaded..."); 
 }
 
@@ -24,6 +28,10 @@ get_values(std::string const &                         key,
            std::vector<dealii::Tensor<1, spacedim> > & values) const
 
 {
+    std::ignore = key;
+    std::ignore = cell;
+    std::ignore = face;
+    std::ignore = values;
     throw std::runtime_error("Should have been overloaded..."); 
 }
 

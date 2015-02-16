@@ -6,6 +6,7 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <numeric>
+#include <tuple>
 
 namespace cap {
 
@@ -26,6 +27,7 @@ void
 ThermalOperator<dim>::
 reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 {
+    std::ignore = parameters;
 //std::cout<<"### reset thermal ###\n";
     this->stiffness_matrix = 0.0;
     this->mass_matrix = 0.0;

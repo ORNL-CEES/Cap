@@ -70,7 +70,6 @@ run_constant_power_cycling
     double const initial_time = input_params->get<double>("initial_time");
     double const final_time   = input_params->get<double>("final_time"  );
     double const discharge_potential = input_params->get<double>("boundary_values.discharge_potential");
-    double const charge_potential    = input_params->get<double>("boundary_values.charge_potential"   );
 
     std::vector<double> max_temperature;
     std::vector<double> heat_production;
@@ -705,7 +704,7 @@ run_constant_current_charge_constant_voltage_discharge
 template <int dim>
 void 
 SuperCapacitorProblem<dim>::
-build_triangulation(std::shared_ptr<boost::property_tree::ptree const> database) 
+build_triangulation(std::shared_ptr<boost::property_tree::ptree const> /*database*/) 
 {
     dealii::GridIn<dim> mesh_reader;
     std::fstream fin;

@@ -29,7 +29,7 @@ template <int dim, int spacedim=dim>
 class MPValues {
 public:
     typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
-    MPValues(MPValuesParameters<dim, spacedim> const & parameters) { }
+    MPValues(MPValuesParameters<dim, spacedim> const & ) { }
     virtual ~MPValues() { }
     virtual void get_values(std::string const &          key,
                             active_cell_iterator const & cell,

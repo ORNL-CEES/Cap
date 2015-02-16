@@ -37,7 +37,7 @@ class Postprocessor {
 public:
     Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
     virtual ~Postprocessor() { }
-    virtual void reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters) { }
+    virtual void reset(std::shared_ptr<PostprocessorParameters<dim> const> ) { }
 
     dealii::Vector<double> const & get(std::string const & key) const;
     void get(std::string const & key, double & value) const;

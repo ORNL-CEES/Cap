@@ -41,7 +41,7 @@ class Operator {
 public:
     Operator(std::shared_ptr<OperatorParameters<dim> const> parameters);
     virtual ~Operator() { }
-    virtual void reset(std::shared_ptr<OperatorParameters<dim> const> parameters) { }
+    virtual void reset(std::shared_ptr<OperatorParameters<dim> const> ) { }
 
     inline dealii::SparseMatrix<double> const & get_mass_matrix() const { return this->mass_matrix; }
     inline dealii::SparseMatrix<double> const & get_stiffness_matrix() const { return this->stiffness_matrix; }
