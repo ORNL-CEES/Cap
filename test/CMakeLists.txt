@@ -7,6 +7,7 @@ IF(MAKE_TEST_WITH_BOOST)
     ADD_CAP_TEST_WITH_BOOST(test_parse_params)
     ADD_CAP_TEST_WITH_BOOST(test_postprocessor)
     ADD_CAP_TEST_WITH_BOOST(test_mp_values)
+    ADD_CAP_TEST_WITH_BOOST(test_equivalent_circuit)
 ENDIF()
 
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
