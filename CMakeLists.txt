@@ -29,6 +29,7 @@ ADD_LIBRARY(cap
     src/post_processor.cc
     src/utils.cc
     src/super_capacitor.cc
+    src/resistor_capacitor.cc
     )
 
 FIND_PACKAGE(deal.II 8.2 REQUIRED PATHS ${DEAL_II_INSTALL_DIR} NO_DEFAULT_PATH)
