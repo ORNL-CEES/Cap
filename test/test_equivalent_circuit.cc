@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE TestEquivalentCircuit
 #define BOOST_TEST_MAIN
 #include <cap/super_capacitor.h>
+#include <cap/resistor_capacitor.h>
 #include <cap/mp_values.h>
 #include <cap/utils.h>
 #include <deal.II/base/types.h>
@@ -11,24 +12,34 @@
 #include <boost/test/unit_test.hpp>
 #include <functional>
 #include <algorithm>
+#include <memory>
 
 namespace cap {
 enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, MASS, N_DATA};
-class SeriesRC
+class EquivalentCircuit
 {
 public:
-    SeriesRC(std::shared_ptr<boost::property_tree::ptree const> /*datatabase*/)
+    EquivalentCircuit(std::shared_ptr<boost::property_tree::ptree const> /*datatabase*/)
     { }
     void process_solution(double * data)
     {
-        data[VOLTAGE] = U;
-        data[CURRENT] = I;
+        data[VOLTAGE] = equivalent_circuit->U;
+        data[CURRENT] = equivalent_circuit->I;
     }
     void evolve_one_time_step(double const & delta_t)
     {
-        U_C += I * delta_t / C;
-        U_R = R * I;
-        U = U_R + U_C;
+        if (capacitor_state == cap::GalvanostaticCharge)
+            equivalent_circuit->evolve_one_time_step_constant_current(delta_t, I_charge);
+        else if (capacitor_state == cap::GalvanostaticDischarge)
+            equivalent_circuit->evolve_one_time_step_constant_current(delta_t, I_discharge);
+        else if (capacitor_state == cap::PotentiostaticCharge)
+            equivalent_circuit->evolve_one_time_step_constant_voltage(delta_t, U_charge);
+        else if (capacitor_state == cap::PotentiostaticDischarge)
+            equivalent_circuit->evolve_one_time_step_constant_voltage(delta_t, U_discharge);
+        else if (capacitor_state == cap::Relaxation)
+            equivalent_circuit->evolve_one_time_step_constant_current(delta_t, 0.0);
+        else
+            throw std::runtime_error("invalid capacitor state");
     }
     void reset(std::shared_ptr<boost::property_tree::ptree const> database)
     {
@@ -129,23 +140,24 @@ public:
         std::cout<<"discharge_current="<<discharge_current<<"\n";
         std::cout<<"initial_voltage="<<initial_voltage<<"\n";
 
-        this->R   = sandwich_resistance;
-        this->C   = sandwich_capacitance;
-        this->U_C = initial_voltage;
-        this->I_charge    = charge_current;
-        this->I_discharge = discharge_current;
-        this->U   = this->U_C + this->U_R;
+        equivalent_circuit = std::make_shared<cap::SeriesRC>(cap::SeriesRC(sandwich_resistance, sandwich_capacitance));
+        equivalent_circuit->I = charge_current;
+        equivalent_circuit->reset(initial_voltage);
+        I_charge    = charge_current;
+        I_discharge = discharge_current;
     }
-    void setup(CapacitorState capacitor_state)
-    {        if (capacitor_state == GalvanostaticCharge)
-            this->I = I_charge;
+    void setup(CapacitorState const change)
+    {
+        capacitor_state = change;
+        if (capacitor_state == GalvanostaticCharge)
+            equivalent_circuit->I = I_charge;
         else if (capacitor_state == GalvanostaticDischarge)
-            this->I = I_discharge;
+            equivalent_circuit->I = I_discharge;
         else if (capacitor_state == Relaxation)
-            this->I = 0.0;
+            equivalent_circuit->I = 0.0;
         else
             throw std::runtime_error("invalid capacitor state");
-         
+        equivalent_circuit->reset(equivalent_circuit->U_C);
     }
     void run(std::shared_ptr<boost::property_tree::ptree const> input_params,
         std::shared_ptr<boost::property_tree::ptree> output_params)
@@ -158,7 +170,6 @@ public:
 
         double const max_voltage = input_params->get<double>("boundary_values.charge_potential");
         double const min_voltage = input_params->get<double>("boundary_values.discharge_potential");
-        double const initial_voltage = input_params->get<double>("boundary_values.initial_potential");
 
         std::vector<double> voltage;
         std::vector<double> current;
@@ -166,7 +177,6 @@ public:
         std::vector<std::string> capacitor_state;
         std::vector<int> cycle;
 
-//        double voltage = initial_voltage;
         double current_time = initial_time;
         std::size_t step = 0;
         std::size_t current_cycle = 0;
@@ -224,14 +234,13 @@ public:
     }
 
 private:
-    double R;
-    double C;
-    double U_R;
-    double U_C;
-    double I;
-    double U;
+    std::shared_ptr<cap::SeriesRC> equivalent_circuit;
+    cap::CapacitorState capacitor_state;
     double I_charge;
     double I_discharge;
+    double U_charge;
+    double U_discharge;
+
 };
 
 } // end namespace cap
@@ -274,6 +283,12 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     in->put("initial_time",    0.0);
     in->put("final_time",     15.0);
     in->put("max_cycles",      1  );
+    in->put("debug.solution_fields", "solid_potential,liquid_potential,overpotential,joule_heating");
+    in->put("debug.solution_fluxes", "liquid_current_density,solid_current_density");
+    in->put("debug.material_properties", "specific_capacitance,liquid_electrical_conductivity");
+    in->put("debug.material_ids", true);
+
+    in->put("material_properties.electrode_void_volume_fraction", 0.55);
 
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
     std::vector<double> time;
@@ -292,7 +307,7 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     std::cout<<"########  END HIGH FIDELITY MODEL  ########\n";
 
     std::cout<<"########  BEGIN LOW FIDELITY MODEL  ########\n";
-    cap::SeriesRC low_fidelity_model(database);
+    cap::EquivalentCircuit low_fidelity_model(database);
     low_fidelity_model.run(in, out);
     time    = cap::to_vector<double>(out->get<std::string>("time")   );
     current = cap::to_vector<double>(out->get<std::string>("current"));
