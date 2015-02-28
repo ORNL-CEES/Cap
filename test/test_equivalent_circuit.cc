@@ -49,10 +49,10 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     in->put("initial_time",    0.0);
     in->put("final_time",     15.0);
     in->put("max_cycles",      1  );
-    in->put("debug.solution_fields", "solid_potential,liquid_potential,overpotential,joule_heating");
-    in->put("debug.solution_fluxes", "liquid_current_density,solid_current_density");
-    in->put("debug.material_properties", "specific_capacitance,liquid_electrical_conductivity");
-    in->put("debug.material_ids", true);
+//    in->put("debug.solution_fields", "solid_potential,liquid_potential,overpotential,joule_heating");
+//    in->put("debug.solution_fluxes", "liquid_current_density,solid_current_density");
+//    in->put("debug.material_properties", "specific_capacitance,liquid_electrical_conductivity");
+//    in->put("debug.material_ids", true);
 
     in->put("material_properties.electrode_void_volume_fraction", 0.55);
 
