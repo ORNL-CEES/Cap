@@ -29,7 +29,7 @@ void
 SeriesRC::
 evolve_one_time_step_constant_current(double const delta_t, double const constant_current)
 {
-    I = constant_current; 
+    I = constant_current;
     U_C += I * delta_t / C;
     U = R * I + U_C;
 }
@@ -40,7 +40,7 @@ void
 SeriesRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
-    U = constant_voltage; 
+    U = constant_voltage;
     U_C = U - (U - U_C) * std::exp(-delta_t/(R*C));
     I = U - U_C / R;
 }
@@ -75,6 +75,49 @@ evolve_one_time_step_constant_power(double const delta_t, double const constant_
     }
     U_C += I * delta_t / C;
     return k;
+}
+
+
+
+ParallelRC::
+ParallelRC(double const parallel_resistance, double const capacitance, double const initial_capacitor_voltage)
+    : R_parallel(parallel_resistance)
+    , C(capacitance)
+    , U_C(initial_capacitor_voltage)
+    , U(U_C)
+    , I(0.0)
+    , R_series(0.0)
+{ }
+
+
+
+void
+ParallelRC::
+reset(double const capacitor_voltage)
+{
+    U_C = capacitor_voltage;
+    U = R_series * I + U_C;
+}
+
+
+
+void
+ParallelRC::
+evolve_one_time_step_constant_current(double const delta_t, double const constant_current)
+{
+    I = constant_current;
+    U_C = R_parallel * I + (U_C - R_parallel * I) * std::exp(- delta_t / (R_parallel * C));
+    U = R_series * I + U_C;
+}
+
+
+void
+ParallelRC::
+evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
+{
+    U = constant_voltage;
+    I = (U - U_C * std::exp(- delta_t / (R_parallel * C))) / (R_series + R_parallel * (1.0 - std::exp(- delta_t / (R_parallel * C))));
+    U_C = U - R_series * I;
 }
 
 } // end namespace

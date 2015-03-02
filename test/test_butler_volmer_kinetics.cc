@@ -18,6 +18,8 @@ double const TAU       = R * C;
 double const DELTA_T   = 0.1 * TAU;
 double const TOLERANCE = 1.0e-8;    // in percentage units
 
+
+
 BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
 {
     std::vector<double> time;
@@ -41,6 +43,8 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
         rc.evolve_one_time_step_constant_voltage(DELTA_T, 0.0);
     }
 }
+
+
 
 BOOST_AUTO_TEST_CASE( test_series_rc_constant_current )
 {
@@ -69,6 +73,8 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_current )
     }
 
 }
+
+
 
 BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
 {
@@ -105,4 +111,55 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
         rc_newton     .evolve_one_time_step_constant_power(DELTA_T, -P, "NEWTON"     );
         rc_fixed_point.evolve_one_time_step_constant_power(DELTA_T, -P, "FIXED_POINT");
     }
+}
+
+
+
+BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_current )
+{
+    std::vector<double> time;
+    for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
+        time.push_back(t);
+
+    cap::ParallelRC rc(R, C);
+
+    // CHARGE
+    rc.I = I;
+    rc.reset(0.0);
+    BOOST_FOREACH(double const & t, time)
+    {
+        BOOST_CHECK_CLOSE(rc.U, R * I * (1.0 - std::exp(-t / TAU)), TOLERANCE);
+        rc.evolve_one_time_step_constant_current(DELTA_T, I);
+    }
+
+    // RELAXATION
+    rc.I = I;
+    rc.reset(U);
+    BOOST_FOREACH(double const & t, time)
+    {
+        BOOST_CHECK_CLOSE(rc.U_C, U * std::exp(-t / TAU), TOLERANCE);
+        rc.evolve_one_time_step_constant_current(DELTA_T, 0.0);
+    }
+}
+
+
+
+BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_voltage )
+{
+    std::vector<double> time;
+    for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
+        time.push_back(t);
+
+    cap::ParallelRC rc(R, C);
+    rc.R_series = R;
+
+    // CHARGE
+    rc.reset(0.0);
+    BOOST_FOREACH(double const & t, time)
+    {
+        std::cout<<t<<"  "<<rc.I<<"  "<<rc.U<<"  "<<rc.U_C<<"\n";
+//        BOOST_CHECK_CLOSE(rc.I, R * I * (1.0 - std::exp(-t / TAU)), TOLERANCE);
+        rc.evolve_one_time_step_constant_voltage(DELTA_T, U);
+    }
+
 }
