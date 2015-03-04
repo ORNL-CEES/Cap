@@ -43,7 +43,6 @@ void scan(std::shared_ptr<cap::SeriesRC> rc, std::shared_ptr<boost::property_tre
         rc->I = -power/initial_voltage;
         rc->reset(initial_voltage);
         // TODO: time step control
-        double const guess = 
         double time_step = (0.5 * rc->C * rc->U * rc->U) / (power + rc->R * rc->I * rc->I) / steps;
         double voltage = initial_voltage;
         double time = 0.0;
