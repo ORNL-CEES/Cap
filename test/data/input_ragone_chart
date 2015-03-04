@@ -1,0 +1,11 @@
+<!-- SERIES RC -->
+<capacitance>          3.0    </capacitance>
+<series_resistance>   50.0e-3 </series_resistance>
+
+<!-- SCAN -->
+<steps>                1000    </steps>
+<ratio>                 1.05   </ratio>
+<initial_voltage>       2.7    </initial_voltage>
+<final_voltage>         1.2    </final_voltage>
+<energy_limit>          1.0e0  </energy_limit>
+<power_limit>           0.1e0  </power_limit>

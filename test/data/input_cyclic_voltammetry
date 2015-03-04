@@ -1,0 +1,13 @@
+<!-- PARALLEL RC -->
+<capacitance>          3.0    </capacitance>
+<parallel_resistance>  2.5e6  </parallel_resistance>
+<series_resistance>   50.0e-3 </series_resistance>
+
+<!-- SCAN -->
+<scan_rate>           100.0e-3 </scan_rate>
+<step_size>             5.0e-3 </step_size>
+<initial_voltage>       0.0    </initial_voltage>
+<upper_voltage_limit>   3.5    </upper_voltage_limit>
+<lower_voltage_limit>  -2.0    </lower_voltage_limit>
+<final_voltage>         0.0    </final_voltage>
+<cycles>                1      </cycles>
