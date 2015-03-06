@@ -29,6 +29,7 @@ ADD_LIBRARY(cap
     src/post_processor.cc
     src/utils.cc
     src/super_capacitor.cc
+    src/energy_storage_device.cc
     src/resistor_capacitor.cc
     src/equivalent_circuit.cc
     )

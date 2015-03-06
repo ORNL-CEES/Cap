@@ -10,24 +10,17 @@
 
 
 
-// TODO: electrochemical device should have method to report its current state
-// so that we can call something like 
-// rc->report(time, os);
-void report(double const t, std::shared_ptr<cap::ParallelRC const> rc, std::ostream & os = std::cout)
+namespace cap {
+
+void report(double const t, std::shared_ptr<cap::EnergyStorageDevice const> dev, std::ostream & os = std::cout)
 {
-    os<<boost::format("  %10.4f  %10.7f  %10.7f  %10.7f  \n")
-        % t
-        % rc->I
-        % rc->U
-        % rc->U_C
-        ;
+    os<<t<<"  ";
+    dev->print_data(os);
 }
 
 
 
-namespace cap {
-
-void scan(std::shared_ptr<cap::ParallelRC> rc, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
     double const scan_rate           = database->get<double>("scan_rate"          );
     double const step_size           = database->get<double>("step_size"          );
@@ -39,51 +32,48 @@ void scan(std::shared_ptr<cap::ParallelRC> rc, std::shared_ptr<boost::property_t
 
     double const time_step = step_size / scan_rate;
     double time = 0.0;
-    rc->reset(initial_voltage);
+    dev->reset_voltage(initial_voltage);
     for (int n = 0; n < cycles; ++n)
     {
         double voltage = initial_voltage;
         for ( ; voltage <= upper_voltage_limit; voltage += step_size, time+=time_step)
         {
-            rc->evolve_one_time_step_constant_voltage(time_step, voltage);
-            report(time, rc, os);
+            dev->evolve_one_time_step_constant_voltage(time_step, voltage);
+            report(time, dev, os);
         }
         for ( ; voltage >= lower_voltage_limit; voltage -= step_size, time+=time_step)
         {
-            rc->evolve_one_time_step_constant_voltage(time_step, voltage);
-            report(time, rc, os);
+            dev->evolve_one_time_step_constant_voltage(time_step, voltage);
+            report(time, dev, os);
         }
         for ( ; voltage <= final_voltage; voltage += step_size, time+=time_step)
         {
-            rc->evolve_one_time_step_constant_voltage(time_step, voltage);
-            report(time, rc, os);
+            dev->evolve_one_time_step_constant_voltage(time_step, voltage);
+            report(time, dev, os);
         }
     }
 }
 
 } // end namespace cap
 
-
-
 BOOST_AUTO_TEST_CASE( test_cyclic_voltammetry )
 {
     // parse input file
-    std::shared_ptr<boost::property_tree::ptree> database =
+    std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_cyclic_voltammetry", *database);
+    read_xml("input_cyclic_voltammetry", *input_database);
 
     // build an energy storage system
-    double const C          = database->get<double>("capacitance"        );
-    double const R_parallel = database->get<double>("parallel_resistance");
-    double const R_series   = database->get<double>("series_resistance"  );
-
-    std::shared_ptr<cap::ParallelRC> rc =
-        std::make_shared<cap::ParallelRC>(R_parallel, C);
-    rc->R_series = R_series;
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    std::shared_ptr<cap::EnergyStorageDevice> device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
     // scan the system
     std::fstream fout;
     fout.open("cyclic_voltammetry_data", std::fstream::out);
 
-    cap::scan(rc, database, fout);
+    std::shared_ptr<boost::property_tree::ptree> cyclic_voltammetry_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("cyclic_voltammetry"));
+    cap::scan(device, cyclic_voltammetry_database, fout);
 }    

@@ -51,7 +51,7 @@ void scan(std::shared_ptr<cap::SeriesRC> rc, std::shared_ptr<boost::property_tre
         int step = 1;
         for ( ; voltage >= final_voltage; time+=time_step, ++step)
         {
-            rc->evolve_one_time_step_constant_power(time_step, -power);
+            rc->evolve_one_time_step_constant_power(time_step, -power, "NEWTON");
             voltage = rc->U;
             energy -= rc->U * rc->I * time_step; // TODO: trapeze
 //            report(time, rc, os);
