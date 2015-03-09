@@ -10,40 +10,29 @@
 
 
 
-// TODO: electrochemical device should have method to report its current state
-// so that we can call something like 
-// rc->report(time, os);
-void report(double const t, std::shared_ptr<cap::SeriesRC const> rc, std::ostream & os = std::cout)
-{
-    os<<boost::format("  %10.4f  %10.7f  %10.7f  %10.7f  \n")
-        % t
-        % rc->I
-        % rc->U
-        % rc->U_C
-        ;
-}
-
-
-
 namespace cap {
 
-void scan(std::shared_ptr<cap::SeriesRC> rc, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
-    double const ratio           = database->get<double>("ratio"              );
-    double const initial_voltage = database->get<double>("initial_voltage"    );
-    double const final_voltage   = database->get<double>("final_voltage"      );
+    double const ratio             = database->get<double>("ratio"            );
+    double const initial_voltage   = database->get<double>("initial_voltage"  );
+    double const final_voltage     = database->get<double>("final_voltage"    );
 
-    double const start_power     = database->get<double>("power_limit" );
-    double const finish_energy   = database->get<double>("energy_limit");
-    int    const steps           = database->get<int   >("steps"       );
+    double const power_lower_limit = database->get<double>("power_lower_limit");
+    double const power_upper_limit = database->get<double>("power_upper_limit");
+    int    const steps             = database->get<int   >("steps"            );
 
-    double power = start_power;
-    for ( ; ; power *= ratio)
+    std::shared_ptr<cap::ParallelRC> rc = std::dynamic_pointer_cast<cap::ParallelRC>(dev);
+    for (double power = power_lower_limit; power <= power_upper_limit; power *= ratio)
     {
-        rc->I = -power/initial_voltage;
-        rc->reset(initial_voltage);
+        dev->reset_current(-power/initial_voltage);
+        dev->reset_voltage(initial_voltage);
         // TODO: time step control
-        double time_step = (0.5 * rc->C * rc->U * rc->U) / (power + rc->R * rc->I * rc->I) / steps;
+        double const C = rc->C;
+        double const U = rc->U;
+        double const R = rc->R_series;
+        double const I = rc->I;
+        double time_step = (0.5 * C * U * U) / (power + R * I * I) / steps;
         double voltage = initial_voltage;
         double time = 0.0;
         double energy = 0.0;
@@ -51,20 +40,17 @@ void scan(std::shared_ptr<cap::SeriesRC> rc, std::shared_ptr<boost::property_tre
         int step = 1;
         for ( ; voltage >= final_voltage; time+=time_step, ++step)
         {
-            rc->evolve_one_time_step_constant_power(time_step, -power, "NEWTON");
+            dev->evolve_one_time_step_constant_power(time_step, -power);
             voltage = rc->U;
             energy -= rc->U * rc->I * time_step; // TODO: trapeze
-//            report(time, rc, os);
         }
         
-        os<<boost::format("  %10.7f  %10.7f  %10.7f  %10d \n")
+        os<<boost::format("  %10.7e  %10.7e  %10.7e  %10d \n")
             % power
             % energy
             % time
             % step
             ;
-        if (energy <= finish_energy)
-            break;
     }
 }
 
@@ -75,20 +61,21 @@ void scan(std::shared_ptr<cap::SeriesRC> rc, std::shared_ptr<boost::property_tre
 BOOST_AUTO_TEST_CASE( test_ragone_chart )
 {
     // parse input file
-    std::shared_ptr<boost::property_tree::ptree> database =
+    std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_ragone_chart", *database);
+    read_xml("input_ragone_chart", *input_database);
 
     // build an energy storage system
-    double const C          = database->get<double>("capacitance"        );
-    double const R_series   = database->get<double>("series_resistance"  );
-
-    std::shared_ptr<cap::SeriesRC> rc =
-        std::make_shared<cap::SeriesRC>(R_series, C);
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    std::shared_ptr<cap::EnergyStorageDevice> device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
     // scan the system
     std::fstream fout;
     fout.open("ragone_chart_data", std::fstream::out);
 
-    cap::scan(rc, database, fout);
+    std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart"));
+    cap::scan(device, ragone_chart_database, fout);
 }    
