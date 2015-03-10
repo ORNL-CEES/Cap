@@ -50,7 +50,7 @@ private:
 
     enum OutputData { TEMPERATURE, VOLTAGE, CURRENT, JOULE_HEATING, SURFACE_AREA, VOLUME, MASS, N_DATA};
     void process_solution(double * data);
-    void report_data (double const time, double const * data) const;
+    void report_data(double const time, double const * data) const;
 
     typename dealii::Triangulation<dim> triangulation;
 
@@ -65,14 +65,14 @@ private:
     dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
     dealii::SparseDirectUMFPACK inverse_thermal_system_matrix;
     dealii::Vector<double> thermal_load_vector;
-    
+
     std::shared_ptr<ElectrochemicalOperatorParameters<dim> > electrochemical_operator_params;
-    std::shared_ptr<ElectrochemicalOperator<dim> >           electrochemical_operator;
-    std::shared_ptr<ThermalOperatorParameters<dim> >         thermal_operator_params;
-    std::shared_ptr<ThermalOperator<dim> >                   thermal_operator;
+    std::shared_ptr<ElectrochemicalOperator<dim>           > electrochemical_operator;
+    std::shared_ptr<ThermalOperatorParameters<dim>         > thermal_operator_params;
+    std::shared_ptr<ThermalOperator<dim>                   > thermal_operator;
 
     std::shared_ptr<SuperCapacitorPostprocessorParameters<dim> > post_processor_params;
-    std::shared_ptr<SuperCapacitorPostprocessor<dim> >           post_processor;
+    std::shared_ptr<SuperCapacitorPostprocessor<dim>           > post_processor;
 
     bool const verbose;
 

@@ -72,7 +72,13 @@ SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters)
     this->bruggemans_coefficient           = database->get<double>("bruggemans_coefficient"          );
     this->pores_characteristic_dimension   = database->get<double>("pores_characteristic_dimension"  );
     this->pores_geometry_factor            = database->get<double>("pores_geometry_factor"           );
-
+                                                                                                                 
+    this->anodic_charge_transfer_coefficient   = database->get<double>("anodic_charge_transfer_coefficient"  ,   0.5         );
+    this->cathodic_charge_transfer_coefficient = database->get<double>("cathodic_charge_transfer_coefficient",   0.5         );
+    this->faraday_constant                     = database->get<double>("faraday_constant"                    ,   9.64853365e4);
+    this->gas_constant                         = database->get<double>("gas_constant"                        ,   8.3144621   );
+    this->exchange_current_density             = database->get<double>("exchange_current_density"            ,   0.0         );
+    this->temperature                          = database->get<double>("temperature"                         , 300.0         );
 }
 
 template <int dim, int spacedim>
@@ -151,6 +157,21 @@ get_values(std::string const &          key,
             || (cell->material_id() == this->cathode_electrode_material_id)) {
 //            std::fill(values.begin(), values.end(), this->electrolyte_conductivity*std::pow(this->electrode_void_volume_fraction, this->bruggemans_coefficient));
             std::fill(values.begin(), values.end(), this->electrolyte_conductivity*this->electrode_void_volume_fraction/this->electrode_tortuosity_factor);
+        } else if ((cell->material_id() == this->anode_collector_material_id) 
+            || (cell->material_id() == this->cathode_collector_material_id)) {
+            std::fill(values.begin(), values.end(), 0.0);
+        } else {
+            throw std::runtime_error("Invalid material id");
+        } // end if material id
+    } else if (key.compare("faradaic_reaction_coefficient") == 0) {
+        if (cell->material_id() == this->separator_material_id) {
+            std::fill(values.begin(), values.end(), 0.0);
+        } else if ((cell->material_id() == this->anode_electrode_material_id) 
+            || (cell->material_id() == this->cathode_electrode_material_id)) {
+            std::fill(values.begin(), values.end(),
+                this->exchange_current_density * (this->anodic_charge_transfer_coefficient + this->cathodic_charge_transfer_coefficient)
+                    * this->faraday_constant / (this->gas_constant * this->temperature)
+                );
         } else if ((cell->material_id() == this->anode_collector_material_id) 
             || (cell->material_id() == this->cathode_collector_material_id)) {
             std::fill(values.begin(), values.end(), 0.0);

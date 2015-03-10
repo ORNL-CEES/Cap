@@ -48,11 +48,11 @@ protected:
     std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
     dealii::BlockVector<double> const & solution;
 
-    std::shared_ptr<MPValues<dim> const>       mp_values;
+    std::shared_ptr<MPValues<dim>       const> mp_values;
     std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 
     std::unordered_map<std::string, dealii::Vector<double> > vectors;
-    std::unordered_map<std::string, double> values;
+    std::unordered_map<std::string, double                 > values;
 };
 
 //////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS ////////////////////////////

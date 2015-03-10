@@ -187,9 +187,10 @@ compute_electrical_operator_contribution()
     unsigned int const n_q_points = quadrature_rule.size();
     dealii::FullMatrix<double> cell_stiffness_matrix(dofs_per_cell, dofs_per_cell);
     dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
-    std::vector<double> solid_phase_diffusion_coefficient_values(n_q_points);
+    std::vector<double> solid_phase_diffusion_coefficient_values (n_q_points);
     std::vector<double> liquid_phase_diffusion_coefficient_values(n_q_points);
-    std::vector<double> specific_capacitance_values(n_q_points);
+    std::vector<double> specific_capacitance_values              (n_q_points);
+    std::vector<double> faradaic_reaction_coefficient_values     (n_q_points);
     std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
 dealii::ComponentMask mask(n_components, false);
@@ -203,9 +204,10 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
         cell_stiffness_matrix = 0.0;
         cell_mass_matrix = 0.0;
         fe_values.reinit(cell);
-        (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
-        (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("specific_capacitance"          , cell, specific_capacitance_values              );
+        (this->mp_values)->get_values("solid_electrical_conductivity" , cell, solid_phase_diffusion_coefficient_values );
         (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
+        (this->mp_values)->get_values("faradaic_reaction_coefficient" , cell, faradaic_reaction_coefficient_values     );
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
             for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                 for (unsigned int j = 0; j < dofs_per_cell; ++j) {
@@ -216,6 +218,18 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
                         + liquid_phase_diffusion_coefficient_values[q_point] *
                         ( fe_values[liquid_potential].gradient(i, q_point) * 
                           fe_values[liquid_potential].gradient(j, q_point) )
+                        + faradaic_reaction_coefficient_values[q_point] *
+                        ( fe_values[solid_potential].value(i, q_point) *
+                          fe_values[solid_potential].value(j, q_point) )
+                        - faradaic_reaction_coefficient_values[q_point] *
+                        ( fe_values[liquid_potential].value(i, q_point) *
+                          fe_values[solid_potential].value(j, q_point) )
+                        - faradaic_reaction_coefficient_values[q_point] *
+                        ( fe_values[solid_potential].value(i, q_point) *
+                          fe_values[liquid_potential].value(j, q_point) )
+                        + faradaic_reaction_coefficient_values[q_point] *
+                        ( fe_values[liquid_potential].value(i, q_point) *
+                          fe_values[liquid_potential].value(j, q_point) )
                         ) * fe_values.JxW(q_point);
                     cell_mass_matrix(i, j) += (
                         + specific_capacitance_values[q_point] *

@@ -87,6 +87,12 @@ protected:
     double pores_characteristic_dimension;
     double pores_geometry_factor;
 
+    double anodic_charge_transfer_coefficient;
+    double cathodic_charge_transfer_coefficient;
+    double faraday_constant;
+    double gas_constant;
+    double exchange_current_density;
+    double temperature;
 };
 
 } // end namespace cap

@@ -841,7 +841,7 @@ initialize_system(std::shared_ptr<boost::property_tree::ptree const> database)
 
     this->solution.reinit(this->system_rhs);
 
-    // TODO: add const ref thermal_solution and elctrochemical_solution for
+    // TODO: add const ref thermal_solution and electrochemical_solution for
     // readibility
     this->thermal_load_vector.reinit(this->system_rhs.block(thermal_block));
 
@@ -863,15 +863,15 @@ void
 SuperCapacitorProblem<dim>::
 reset(std::shared_ptr<boost::property_tree::ptree const> database) 
 {
-    std::shared_ptr<boost::property_tree::ptree> material_properties_database = 
+    std::shared_ptr<boost::property_tree::ptree> material_properties_database =
         std::make_shared<boost::property_tree::ptree>(database->get_child("material_properties"));
-    std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values = std::shared_ptr<SuperCapacitorMPValues<dim> >
-        (new SuperCapacitorMPValues<dim>(SuperCapacitorMPValuesParameters<dim>(material_properties_database)));
+    std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values =
+        std::make_shared<SuperCapacitorMPValues<dim> >(SuperCapacitorMPValuesParameters<dim>(material_properties_database));
 
-    std::shared_ptr<boost::property_tree::ptree> boundary_values_database = 
+    std::shared_ptr<boost::property_tree::ptree> boundary_values_database =
         std::make_shared<boost::property_tree::ptree>(database->get_child("boundary_values"));
-    std::shared_ptr<SuperCapacitorBoundaryValues<dim> > boundary_values = std::shared_ptr<SuperCapacitorBoundaryValues<dim> >
-        (new SuperCapacitorBoundaryValues<dim>(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database)));
+    std::shared_ptr<SuperCapacitorBoundaryValues<dim> > boundary_values =
+        std::make_shared<SuperCapacitorBoundaryValues<dim> >(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database));
 
     // initialize operators
     this->electrochemical_operator_params = std::shared_ptr<ElectrochemicalOperatorParameters<dim> >

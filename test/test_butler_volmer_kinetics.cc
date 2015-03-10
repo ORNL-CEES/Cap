@@ -17,18 +17,18 @@ BOOST_AUTO_TEST_CASE( test_butler_volmer_kinetic )
 {
     double const faraday_constant                     =   9.64853365e4;
     double const gas_constant                         =   8.3144621;
-    double const boltzman_constant                    =   8.6173324e-5;
+    double const boltzmann_constant                   =   8.6173324e-5;
     double const temperature                          = 300.0;
     double const anodic_charge_transfer_coefficient   =   0.5;
     double const cathodic_charge_transfer_coefficient =   0.5;
     double const exchange_current_density             =   1.0;
     BOOST_CHECK_CLOSE(
         faraday_constant/(gas_constant*temperature),
-        1.0/(boltzman_constant*temperature),
+        1.0/(boltzmann_constant*temperature),
         TOLERANCE);
     std::cout<<boost::format("  %15.7e  %15.7e  \n")
         % static_cast<double>(faraday_constant/(gas_constant*temperature))
-        % static_cast<double>(1.0/(boltzman_constant*temperature))
+        % static_cast<double>(1.0/(boltzmann_constant*temperature))
         ;
 
 
@@ -52,13 +52,13 @@ BOOST_AUTO_TEST_CASE( test_butler_volmer_kinetic )
             % overpotential
             % static_cast<double>(
                 exchange_current_density * 
-                (std::exp(anodic_charge_transfer_coefficient * overpotential / (boltzman_constant*temperature))
-                - std::exp(- cathodic_charge_transfer_coefficient * overpotential / (boltzman_constant*temperature)))
+                (std::exp(anodic_charge_transfer_coefficient * overpotential / (boltzmann_constant*temperature))
+                - std::exp(- cathodic_charge_transfer_coefficient * overpotential / (boltzmann_constant*temperature)))
               )
             % static_cast<double>(
                 exchange_current_density *
                 (anodic_charge_transfer_coefficient + cathodic_charge_transfer_coefficient)
-                    * overpotential / (boltzman_constant*temperature)
+                    * overpotential / (boltzmann_constant*temperature)
               )
             ;
 
