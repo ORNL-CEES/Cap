@@ -32,6 +32,7 @@ ADD_LIBRARY(cap
     src/energy_storage_device.cc
     src/resistor_capacitor.cc
     src/equivalent_circuit.cc
+    src/geometry.cc
     )
 
 FIND_PACKAGE(deal.II 8.2 REQUIRED PATHS ${DEAL_II_INSTALL_DIR} NO_DEFAULT_PATH)
