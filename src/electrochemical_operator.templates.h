@@ -53,14 +53,22 @@ reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 
     this->compute_electrical_operator_contribution();
 
-    if ((this->capacitor_state == GalvanostaticCharge)
-        || (this->capacitor_state == GalvanostaticDischarge)
-        || (this->capacitor_state == Relaxation)) {
-        this->compute_neumann_boundary_contribution();
-    } else if ((this->capacitor_state == PotentiostaticCharge)
-        || (this->capacitor_state == PotentiostaticDischarge)
-        || (this->capacitor_state == Initialize)) {
-        this->compute_dirichlet_boundary_values();
+    if (this->capacitor_state == GalvanostaticCharge) {
+        this->compute_neumann_boundary_contribution(this->charge_current_density);
+    } else if (this->capacitor_state == GalvanostaticDischarge) {
+        this->compute_neumann_boundary_contribution(this->discharge_current_density);
+    } else if (this->capacitor_state == Relaxation) {
+        this->compute_neumann_boundary_contribution(0.0);
+    } else if (this->capacitor_state == PotentiostaticCharge) {
+        this->compute_dirichlet_boundary_values(this->charge_potential);
+    } else if (this->capacitor_state == PotentiostaticDischarge) {
+        this->compute_dirichlet_boundary_values(this->discharge_potential);
+    } else if (this->capacitor_state == Initialize) {
+        this->compute_dirichlet_boundary_values(this->initial_potential);
+    } else if (this->capacitor_state == CustomConstantCurrent) {
+        this->compute_neumann_boundary_contribution(electrochemical_parameters->custom_constant_current);
+    } else if (this->capacitor_state == CustomConstantVoltage) {
+        this->compute_dirichlet_boundary_values(electrochemical_parameters->custom_constant_voltage);
     } else {
         throw std::runtime_error("State of the capacitor undetermined");
     } // end if
@@ -75,19 +83,8 @@ reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
 template <int dim>
 void 
 ElectrochemicalOperator<dim>::
-compute_dirichlet_boundary_values() {
+compute_dirichlet_boundary_values(double const potential) {
     dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
-double potential;
-if (this->capacitor_state == PotentiostaticCharge) {
-    potential = this->charge_potential;
-} else if (this->capacitor_state == PotentiostaticDischarge) {
-    potential = this->discharge_potential;
-} else if (this->capacitor_state == Initialize) {
-    potential = this->initial_potential;
-} else {
-    throw std::runtime_error("What are you doing here?");
-}
-    
     unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
     std::vector<bool> mask(n_components, false);
     mask[this->solid_potential_component] = true;
@@ -104,7 +101,7 @@ if (this->capacitor_state == PotentiostaticCharge) {
 template <int dim>
 void 
 ElectrochemicalOperator<dim>::
-compute_neumann_boundary_contribution() {
+compute_neumann_boundary_contribution(double const current_density) {
     dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
     dealii::ConstraintMatrix const & constraint_matrix = *(this->constraint_matrix);
 {
@@ -113,17 +110,6 @@ compute_neumann_boundary_contribution() {
     mask[this->solid_potential_component] = true;
     dealii::ComponentMask component_mask(mask);
     dealii::VectorTools::interpolate_boundary_values(dof_handler, this->anode_boundary_id, dealii::ConstantFunction<dim>(0.0, n_components), this->boundary_values, component_mask);
-}
-
-std::string current_density;
-if (this->capacitor_state == GalvanostaticCharge) {
-    current_density = "charge_current_density";
-} else if (this->capacitor_state == GalvanostaticDischarge) {
-    current_density = "discharge_current_density";
-} else if (this->capacitor_state == Relaxation) {
-    return;
-} else {
-    throw std::runtime_error("Did you get lost?");
 }
 
     dealii::FEValuesExtractors::Scalar const solid_potential(this->solid_potential_component);
@@ -150,7 +136,8 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
             for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
                 if (cell->face(face)->at_boundary()) {
                     fe_face_values.reinit(cell, face);
-                    (this->b_values)->get_values(current_density, cell, face, current_density_values);
+                    std::fill(current_density_values.begin(), current_density_values.end(),
+                        ((cell->face(face)->boundary_indicator() == this->cathode_boundary_id) ? current_density : 0.0));
                     for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
                         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                             cell_load_vector(i) += (

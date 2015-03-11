@@ -10,6 +10,7 @@
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/lac/constraint_matrix.h>
 #include <deal.II/lac/block_sparsity_pattern.h>
 #include <deal.II/lac/block_sparse_matrix.h>
@@ -18,8 +19,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/format.hpp>
 #include <memory>
 #include <tuple>
+#include <fstream>
 
 
 
@@ -37,6 +40,7 @@ public:
     void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage);
     void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  );
 
+    void evolve_one_time_step(double const time_step);
 private:
     std::shared_ptr<typename dealii::FESystem<dim>    > fe; // TODO: would be nice to get rid of this guy
     std::shared_ptr<typename dealii::DoFHandler<dim>  > dof_handler;
@@ -127,7 +131,7 @@ NoName(std::shared_ptr<Parameters const> parameters)
         std::make_shared<SuperCapacitorMPValues<dim> >(SuperCapacitorMPValuesParameters<dim>(material_properties_database));
 
     std::shared_ptr<boost::property_tree::ptree> boundary_values_database =
-        std::make_shared<boost::property_tree::ptree>(database->get_child("boundary_values"));
+        std::make_shared<boost::property_tree::ptree>(database->get_child("boundary_values")    );
     std::shared_ptr<SuperCapacitorBoundaryValues<dim> > boundary_values =
         std::make_shared<SuperCapacitorBoundaryValues<dim> >(SuperCapacitorBoundaryValuesParameters<dim>(boundary_values_database));
 
@@ -144,9 +148,12 @@ NoName(std::shared_ptr<Parameters const> parameters)
         std::make_shared<ElectrochemicalOperator<dim> >(this->electrochemical_operator_params);
 
     // set null space
-    this->electrochemical_operator->set_null_space(solid_potential_component , database->get<dealii::types::material_id>("material_properties.separator_material_id"        ));
-    this->electrochemical_operator->set_null_space(liquid_potential_component, database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  ));
-    this->electrochemical_operator->set_null_space(liquid_potential_component, database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id"));
+    dealii::types::material_id separator_material_id         = database->get<dealii::types::material_id>("material_properties.separator_material_id"        );
+    dealii::types::material_id anode_collector_material_id   = database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  );
+    dealii::types::material_id cathode_collector_material_id = database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id");
+    this->electrochemical_operator->set_null_space(solid_potential_component , separator_material_id        );
+    this->electrochemical_operator->set_null_space(liquid_potential_component, anode_collector_material_id  );
+    this->electrochemical_operator->set_null_space(liquid_potential_component, cathode_collector_material_id);
 
     // initialize thermal operator
     this->thermal_operator_params =
@@ -159,7 +166,6 @@ NoName(std::shared_ptr<Parameters const> parameters)
     this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->thermal_operator =
         std::make_shared<ThermalOperator<dim> >(this->thermal_operator_params);
-
 
     // initialize postprocessor
     this->post_processor_params =
@@ -179,9 +185,9 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage)
 {
-    std::ignore = time_step;
-    std::ignore = constant_voltage;
-    throw std::runtime_error("not implemented");
+    this->electrochemical_operator_params->capacitor_state = CustomConstantVoltage;
+    this->electrochemical_operator_params->custom_constant_voltage = constant_voltage;
+    this->evolve_one_time_step(time_step);
 }
 
 
@@ -191,9 +197,88 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_current(double const time_step, double const constant_current)
 {
-    std::ignore = time_step;
-    std::ignore = constant_current;
-    throw std::runtime_error("not implemented");
+    this->electrochemical_operator_params->capacitor_state = CustomConstantCurrent;
+    this->electrochemical_operator_params->custom_constant_current = constant_current;
+    this->evolve_one_time_step(time_step);
+}
+
+template <int dim>
+void
+NoName<dim>::
+evolve_one_time_step(double const time_step)
+{
+    bool const symmetric_correction = true;
+    this->electrochemical_operator->reset(this->electrochemical_operator_params);
+        
+    unsigned int const electrochemical_block = 0;
+    dealii::SparseMatrix<double> & system_matrix_electrochemical_block = (this->system_matrix)->block(electrochemical_block, electrochemical_block);
+    dealii::Vector      <double> & system_rhs_electrochemical_block    = (this->system_rhs   )->block(electrochemical_block);  
+    dealii::Vector      <double> & solution_electrochemical_block      = (this->solution     )->block(electrochemical_block);  
+    system_matrix_electrochemical_block.copy_from((this->electrochemical_operator)->get_mass_matrix());
+    system_matrix_electrochemical_block.add(time_step, (this->electrochemical_operator)->get_stiffness_matrix());
+    
+    std::vector<dealii::types::global_dof_index> const & null_space = (this->electrochemical_operator)->get_null_space();
+    system_matrix_electrochemical_block.set(null_space, dealii::FullMatrix<double>(dealii::IdentityMatrix(null_space.size())));
+    
+    system_rhs_electrochemical_block = 0.0;
+    dealii::MatrixTools::apply_boundary_values(this->electrochemical_operator->get_boundary_values(), system_matrix_electrochemical_block, solution_electrochemical_block, system_rhs_electrochemical_block, symmetric_correction);
+
+    dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
+    inverse_electrochemical_system_matrix.initialize(system_matrix_electrochemical_block);
+      
+    std::map<dealii::types::global_dof_index, double> rhs_set;
+    std::map<dealii::types::global_dof_index, double> rhs_add;
+    rhs_set.clear();
+    rhs_add.clear();
+    std::map<dealii::types::global_dof_index, double>::const_iterator it;
+    std::map<dealii::types::global_dof_index, double>::const_iterator begin_it = (this->electrochemical_operator)->get_boundary_values().cbegin();
+    std::map<dealii::types::global_dof_index, double>::const_iterator end_it   = (this->electrochemical_operator)->get_boundary_values().cend();
+    for (it = begin_it ; it != end_it; ++it) {
+        rhs_set[it->first] = system_rhs_electrochemical_block[it->first];
+        system_rhs_electrochemical_block[it->first] = 0.0;
+    } // end for
+    AssertThrow(rhs_set.size() == this->electrochemical_operator->get_boundary_values().size(),
+        dealii::StandardExceptions::ExcDimensionMismatch(rhs_set.size(), this->electrochemical_operator->get_boundary_values().size()));
+    if ((symmetric_correction)
+        && (system_rhs_electrochemical_block.l2_norm() != 0.0)) {
+        dealii::types::global_dof_index n = system_rhs_electrochemical_block.size();
+        for (dealii::types::global_dof_index i = 0; i < n; ++i) {
+            if (system_rhs_electrochemical_block[i] != 0.0) {
+                rhs_add[i] = system_rhs_electrochemical_block[i];
+            } // end if entry is non zero
+        } // end for all entries
+    } // end if symetric correction
+
+
+
+    begin_it = (this->electrochemical_operator)->get_boundary_values().cbegin(),
+    end_it   = (this->electrochemical_operator)->get_boundary_values().cend();
+    if (symmetric_correction) {
+        for (it = begin_it ; it != end_it; ++it) {
+            solution_electrochemical_block[it->first] = 0.0;
+        } // end for
+    } // end if symmetric correction
+        (this->electrochemical_operator)->get_mass_matrix().vmult(system_rhs_electrochemical_block, solution_electrochemical_block);
+    for (it = begin_it ; it != end_it; ++it) {
+        system_rhs_electrochemical_block[it->first] = 0.0;
+        solution_electrochemical_block[it->first] = it->second;
+    } // end for
+    system_rhs_electrochemical_block.add(time_step, this->electrochemical_operator->get_load_vector());
+
+    begin_it = rhs_set.cbegin();
+    end_it   = rhs_set.cend();
+    for (it = begin_it ; it != end_it; ++it) {
+        system_rhs_electrochemical_block[it->first] = it->second;
+    } // end for
+    if (symmetric_correction) {
+        begin_it = rhs_add.cbegin();
+        end_it   = rhs_add.cend();
+        for (it = begin_it ; it != end_it; ++it) {
+            system_rhs_electrochemical_block[it->first] += it->second;
+        } // end for
+    } // end if symmetric correction
+
+    inverse_electrochemical_system_matrix.vmult(solution_electrochemical_block, system_rhs_electrochemical_block);
 }
 
 
@@ -215,8 +300,15 @@ void
 NoName<dim>::
 print_data(std::ostream & os) const
 {
-    std::ignore = os;
-    throw std::runtime_error("not implemented");
+    double current;
+    double voltage;
+    this->post_processor->reset(this->post_processor_params);
+    this->post_processor->get("voltage", voltage);
+    this->post_processor->get("current", current);
+    os<<boost::format("  %10.5f  %10.7f  \n")
+        % current
+        % voltage
+        ;
 }
 
 
@@ -253,4 +345,24 @@ BOOST_AUTO_TEST_CASE( test_no_name )
     read_xml("input_no_name", *database);
 
     cap::NoName<2> no_name(std::make_shared<cap::Parameters const>(database));
+
+    double const charge_time     = database->get<double>("charge_time"    );
+    double const relaxation_time = database->get<double>("relaxation_time");
+    double const time_step       = database->get<double>("time_step"      );
+    double const charge_current  = database->get<double>("charge_current" );
+    std::fstream fout;
+    fout.open("no_name_data", std::fstream::out);
+    std::ostream & os = fout;
+    for (double time = 0.0 ; time < charge_time; time += time_step)
+    {
+        no_name.evolve_one_time_step_constant_current(time_step, charge_current);
+        os<<boost::format("%5.1f  ") % time;
+        no_name.print_data(os);
+    }
+    for (double time = charge_time ; time < charge_time+relaxation_time; time += time_step)
+    {
+        no_name.evolve_one_time_step_constant_current(time_step, 0.0);
+        os<<boost::format("%5.1f  ") % time;
+        no_name.print_data(os);
+    }
 }
