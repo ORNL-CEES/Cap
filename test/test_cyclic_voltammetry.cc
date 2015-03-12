@@ -14,7 +14,7 @@ namespace cap {
 
 void report(double const t, std::shared_ptr<cap::EnergyStorageDevice const> dev, std::ostream & os = std::cout)
 {
-    os<<t<<"  ";
+    os<<boost::format("%10.5f  ") % t;
     dev->print_data(os);
 }
 
