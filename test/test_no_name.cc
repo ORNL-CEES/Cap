@@ -210,7 +210,7 @@ evolve_one_time_step(double const time_step)
     bool const symmetric_correction = true;
     this->electrochemical_operator->reset(this->electrochemical_operator_params);
         
-    unsigned int const electrochemical_block = 0;
+    unsigned int const electrochemical_block = 1; // TODO: !!!!!!!!
     dealii::SparseMatrix<double> & system_matrix_electrochemical_block = (this->system_matrix)->block(electrochemical_block, electrochemical_block);
     dealii::Vector      <double> & system_rhs_electrochemical_block    = (this->system_rhs   )->block(electrochemical_block);  
     dealii::Vector      <double> & solution_electrochemical_block      = (this->solution     )->block(electrochemical_block);  
