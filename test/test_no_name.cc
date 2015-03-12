@@ -76,11 +76,12 @@ NoName(std::shared_ptr<Parameters const> parameters)
 
     // build triangulation
     this->geometry = std::make_shared<cap::SuperCapacitorGeometry<dim> >(database);
-    std::shared_ptr<dealii::Triangulation<dim> const> triangulation = (*this->geometry).get_triangulation();
+    std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
+        (*this->geometry).get_triangulation();
     
     // distribute degrees of freedom
-    this->fe          = std::make_shared<dealii::FESystem<dim>   >(dealii::FE_Q<dim>(1), 3);
-    this->dof_handler = std::make_shared<dealii::DoFHandler<dim> >(*triangulation);
+    this->fe          = std::make_shared<dealii::FESystem  <dim> >(dealii::FE_Q<dim>(1), 3);
+    this->dof_handler = std::make_shared<dealii::DoFHandler<dim> >(*triangulation         );
     (*this->dof_handler).distribute_dofs(*this->fe);
     dealii::DoFRenumbering::component_wise(*this->dof_handler);
     unsigned int const n_components = dealii::DoFTools::n_components(*this->dof_handler);
@@ -114,8 +115,8 @@ NoName(std::shared_ptr<Parameters const> parameters)
 
     // initialize matrices and vectors
     this->system_matrix = std::make_shared<dealii::BlockSparseMatrix<double> >();
-    this->system_rhs    = std::make_shared<dealii::BlockVector<double>       >();
-    this->solution      = std::make_shared<dealii::BlockVector<double>       >();
+    this->system_rhs    = std::make_shared<dealii::BlockVector      <double> >();
+    this->solution      = std::make_shared<dealii::BlockVector      <double> >();
     (*this->system_matrix).reinit(*this->sparsity_pattern);
     (*this->system_rhs).reinit(n_blocks);
     (*this->system_rhs).block(electrochemical_block).reinit(n_electrochemical_dofs);
@@ -125,6 +126,7 @@ NoName(std::shared_ptr<Parameters const> parameters)
 
 
 
+    // read material properties
     std::shared_ptr<boost::property_tree::ptree> material_properties_database =
         std::make_shared<boost::property_tree::ptree>(database->get_child("material_properties"));
     std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values =
@@ -138,12 +140,12 @@ NoName(std::shared_ptr<Parameters const> parameters)
     // initialize electrochemical operator
     this->electrochemical_operator_params =
         std::make_shared<ElectrochemicalOperatorParameters<dim> >(database);
-    this->electrochemical_operator_params->dof_handler       = this->dof_handler;
-    this->electrochemical_operator_params->constraint_matrix = this->constraint_matrix;
-    this->electrochemical_operator_params->sparsity_pattern  = &((*this->sparsity_pattern).block(electrochemical_block, electrochemical_block));
-    this->electrochemical_operator_params->some_vector       = &((*this->solution).block(electrochemical_block));
-    this->electrochemical_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values);
-    this->electrochemical_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
+    (*this->electrochemical_operator_params).dof_handler       = this->dof_handler;
+    (*this->electrochemical_operator_params).constraint_matrix = this->constraint_matrix;
+    (*this->electrochemical_operator_params).sparsity_pattern  = &((*this->sparsity_pattern).block(electrochemical_block, electrochemical_block));
+    (*this->electrochemical_operator_params).some_vector       = &((*this->solution).block(electrochemical_block));
+    (*this->electrochemical_operator_params).mp_values         = std::dynamic_pointer_cast<MPValues      <dim> const>(mp_values);
+    (*this->electrochemical_operator_params).boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->electrochemical_operator =
         std::make_shared<ElectrochemicalOperator<dim> >(this->electrochemical_operator_params);
 
@@ -151,29 +153,29 @@ NoName(std::shared_ptr<Parameters const> parameters)
     dealii::types::material_id separator_material_id         = database->get<dealii::types::material_id>("material_properties.separator_material_id"        );
     dealii::types::material_id anode_collector_material_id   = database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  );
     dealii::types::material_id cathode_collector_material_id = database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id");
-    this->electrochemical_operator->set_null_space(solid_potential_component , separator_material_id        );
-    this->electrochemical_operator->set_null_space(liquid_potential_component, anode_collector_material_id  );
-    this->electrochemical_operator->set_null_space(liquid_potential_component, cathode_collector_material_id);
+    (*this->electrochemical_operator).set_null_space(solid_potential_component , separator_material_id        );
+    (*this->electrochemical_operator).set_null_space(liquid_potential_component, anode_collector_material_id  );
+    (*this->electrochemical_operator).set_null_space(liquid_potential_component, cathode_collector_material_id);
 
     // initialize thermal operator
     this->thermal_operator_params =
         std::make_shared<ThermalOperatorParameters<dim> >(database);
-    this->thermal_operator_params->dof_handler       = this->dof_handler;
-    this->thermal_operator_params->constraint_matrix = this->constraint_matrix;
-    this->thermal_operator_params->sparsity_pattern  = &((*this->sparsity_pattern).block(thermal_block, thermal_block));
-    this->thermal_operator_params->some_vector       = &((*this->solution).block(thermal_block));
-    this->thermal_operator_params->mp_values         = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
-    this->thermal_operator_params->boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
+    (*this->thermal_operator_params).dof_handler       = this->dof_handler;
+    (*this->thermal_operator_params).constraint_matrix = this->constraint_matrix;
+    (*this->thermal_operator_params).sparsity_pattern  = &((*this->sparsity_pattern).block(thermal_block, thermal_block));
+    (*this->thermal_operator_params).some_vector       = &((*this->solution).block(thermal_block));
+    (*this->thermal_operator_params).mp_values         = std::dynamic_pointer_cast<MPValues      <dim> const>(mp_values      );
+    (*this->thermal_operator_params).boundary_values   = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->thermal_operator =
         std::make_shared<ThermalOperator<dim> >(this->thermal_operator_params);
 
     // initialize postprocessor
     this->post_processor_params =
         std::make_shared<SuperCapacitorPostprocessorParameters<dim> >(database);
-    this->post_processor_params->dof_handler     = this->dof_handler;
-    this->post_processor_params->solution        = this->solution.get(); // TODO:
-    this->post_processor_params->mp_values       = std::dynamic_pointer_cast<MPValues<dim>       const>(mp_values      );
-    this->post_processor_params->boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
+    (*this->post_processor_params).dof_handler     = this->dof_handler;
+    (*this->post_processor_params).solution        = this->solution.get(); // TODO:
+    (*this->post_processor_params).mp_values       = std::dynamic_pointer_cast<MPValues      <dim> const>(mp_values      );
+    (*this->post_processor_params).boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->post_processor =
         std::make_shared<SuperCapacitorPostprocessor<dim> >(this->post_processor_params);
 }
@@ -185,8 +187,8 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage)
 {
-    this->electrochemical_operator_params->capacitor_state = CustomConstantVoltage;
-    this->electrochemical_operator_params->custom_constant_voltage = constant_voltage;
+    (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
+    (*this->electrochemical_operator_params).custom_constant_voltage = constant_voltage;
     this->evolve_one_time_step(time_step);
 }
 
@@ -197,8 +199,8 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_current(double const time_step, double const constant_current)
 {
-    this->electrochemical_operator_params->capacitor_state = CustomConstantCurrent;
-    this->electrochemical_operator_params->custom_constant_current = constant_current;
+    (*this->electrochemical_operator_params).capacitor_state = CustomConstantCurrent;
+    (*this->electrochemical_operator_params).custom_constant_current = constant_current;
     this->evolve_one_time_step(time_step);
 }
 
@@ -208,20 +210,22 @@ NoName<dim>::
 evolve_one_time_step(double const time_step)
 {
     bool const symmetric_correction = true;
-    this->electrochemical_operator->reset(this->electrochemical_operator_params);
+
+    // reset system
+    (*this->electrochemical_operator).reset(this->electrochemical_operator_params);
         
     unsigned int const electrochemical_block = 1; // TODO: !!!!!!!!
-    dealii::SparseMatrix<double> & system_matrix_electrochemical_block = (this->system_matrix)->block(electrochemical_block, electrochemical_block);
-    dealii::Vector      <double> & system_rhs_electrochemical_block    = (this->system_rhs   )->block(electrochemical_block);  
-    dealii::Vector      <double> & solution_electrochemical_block      = (this->solution     )->block(electrochemical_block);  
-    system_matrix_electrochemical_block.copy_from((this->electrochemical_operator)->get_mass_matrix());
-    system_matrix_electrochemical_block.add(time_step, (this->electrochemical_operator)->get_stiffness_matrix());
+    dealii::SparseMatrix<double> & system_matrix_electrochemical_block = (*this->system_matrix).block(electrochemical_block, electrochemical_block);
+    dealii::Vector      <double> & system_rhs_electrochemical_block    = (*this->system_rhs   ).block(electrochemical_block                       );
+    dealii::Vector      <double> & solution_electrochemical_block      = (*this->solution     ).block(electrochemical_block                       );
+    system_matrix_electrochemical_block.copy_from((*this->electrochemical_operator).get_mass_matrix());
+    system_matrix_electrochemical_block.add(time_step, (*this->electrochemical_operator).get_stiffness_matrix());
     
-    std::vector<dealii::types::global_dof_index> const & null_space = (this->electrochemical_operator)->get_null_space();
+    std::vector<dealii::types::global_dof_index> const & null_space = (*this->electrochemical_operator).get_null_space();
     system_matrix_electrochemical_block.set(null_space, dealii::FullMatrix<double>(dealii::IdentityMatrix(null_space.size())));
     
     system_rhs_electrochemical_block = 0.0;
-    dealii::MatrixTools::apply_boundary_values(this->electrochemical_operator->get_boundary_values(), system_matrix_electrochemical_block, solution_electrochemical_block, system_rhs_electrochemical_block, symmetric_correction);
+    dealii::MatrixTools::apply_boundary_values((*this->electrochemical_operator).get_boundary_values(), system_matrix_electrochemical_block, solution_electrochemical_block, system_rhs_electrochemical_block, symmetric_correction);
 
     dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
     inverse_electrochemical_system_matrix.initialize(system_matrix_electrochemical_block);
@@ -231,8 +235,8 @@ evolve_one_time_step(double const time_step)
     rhs_set.clear();
     rhs_add.clear();
     std::map<dealii::types::global_dof_index, double>::const_iterator it;
-    std::map<dealii::types::global_dof_index, double>::const_iterator begin_it = (this->electrochemical_operator)->get_boundary_values().cbegin();
-    std::map<dealii::types::global_dof_index, double>::const_iterator end_it   = (this->electrochemical_operator)->get_boundary_values().cend();
+    std::map<dealii::types::global_dof_index, double>::const_iterator begin_it = (*this->electrochemical_operator).get_boundary_values().cbegin();
+    std::map<dealii::types::global_dof_index, double>::const_iterator end_it   = (*this->electrochemical_operator).get_boundary_values().cend();
     for (it = begin_it ; it != end_it; ++it) {
         rhs_set[it->first] = system_rhs_electrochemical_block[it->first];
         system_rhs_electrochemical_block[it->first] = 0.0;
@@ -250,20 +254,20 @@ evolve_one_time_step(double const time_step)
     } // end if symetric correction
 
 
-
-    begin_it = (this->electrochemical_operator)->get_boundary_values().cbegin(),
-    end_it   = (this->electrochemical_operator)->get_boundary_values().cend();
+    // evolve one time step
+    begin_it = (*this->electrochemical_operator).get_boundary_values().cbegin(),
+    end_it   = (*this->electrochemical_operator).get_boundary_values().cend();
     if (symmetric_correction) {
         for (it = begin_it ; it != end_it; ++it) {
             solution_electrochemical_block[it->first] = 0.0;
         } // end for
     } // end if symmetric correction
-        (this->electrochemical_operator)->get_mass_matrix().vmult(system_rhs_electrochemical_block, solution_electrochemical_block);
+    (*this->electrochemical_operator).get_mass_matrix().vmult(system_rhs_electrochemical_block, solution_electrochemical_block);
     for (it = begin_it ; it != end_it; ++it) {
         system_rhs_electrochemical_block[it->first] = 0.0;
         solution_electrochemical_block[it->first] = it->second;
     } // end for
-    system_rhs_electrochemical_block.add(time_step, this->electrochemical_operator->get_load_vector());
+    system_rhs_electrochemical_block.add(time_step, (*this->electrochemical_operator).get_load_vector());
 
     begin_it = rhs_set.cbegin();
     end_it   = rhs_set.cend();
