@@ -18,6 +18,12 @@ ThermalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters)
     std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
     this->temperature_component = database->get<unsigned int>("temperature_component");
 
+    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
+    unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
+    std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
+    dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
+    this->dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
+
     std::shared_ptr<ThermalOperatorParameters<dim> const> thermal_parameters = 
         std::dynamic_pointer_cast<ThermalOperatorParameters<dim> const>(parameters);
 }
@@ -66,9 +72,6 @@ unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
 dealii::ComponentMask the_mask(n_components, false);
 the_mask.set(this->temperature_component, true);
 DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
-std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
-dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
-dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = dof_handler.begin_active(),
         end_cell = dof_handler.end();
@@ -96,7 +99,8 @@ dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_com
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::FullMatrix<double> tmp_mass_matrix = dof_extractor.extract_matrix(cell_mass_matrix);
 dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
-std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
+if (this->dof_shift != 0)
+    std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), this->dof_shift));
         constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
         constraint_matrix.distribute_local_to_global(tmp_mass_matrix, tmp_indices, this->mass_matrix);
     } // end for cell
@@ -126,9 +130,6 @@ unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
 dealii::ComponentMask the_mask(n_components, false);
 the_mask.set(this->temperature_component, true);
 DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
-std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
-dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
-dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[this->temperature_component]), 0);
     typename dealii::DoFHandler<dim>::active_cell_iterator
         cell = dof_handler.begin_active(),
         end_cell = dof_handler.end();
@@ -162,7 +163,8 @@ dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_com
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
 dealii::Vector<double> tmp_load_vector = dof_extractor.extract_vector(cell_load_vector);
-std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
+if (this->dof_shift != 0)
+    std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), this->dof_shift));
         constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
         constraint_matrix.distribute_local_to_global(tmp_load_vector, tmp_indices, this->load_vector);
     } // end for cell

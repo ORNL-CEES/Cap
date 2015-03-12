@@ -20,6 +20,12 @@ ElectrochemicalOperator(std::shared_ptr<OperatorParameters<dim> const> parameter
     this->liquid_potential_component = database->get<unsigned int>("liquid_potential_component");
     this->temperature_component      = database->get<unsigned int>("temperature_component"     );
                                               
+    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
+    unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
+    std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
+    dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
+    this->dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[std::min(this->solid_potential_component, this->liquid_potential_component)]), 0);
+
     this->charge_potential           = database->get<double>("boundary_values.charge_potential"         );
     this->discharge_potential        = database->get<double>("boundary_values.discharge_potential"      );
     this->charge_current_density     = database->get<double>("boundary_values.charge_current_density"   );
@@ -96,6 +102,14 @@ compute_dirichlet_boundary_values(double const potential) {
     dirichlet_boundary_condition[this->anode_boundary_id] = dirichlet_functions[0].get();
     dirichlet_boundary_condition[this->cathode_boundary_id] = dirichlet_functions[1].get();
     dealii::VectorTools::interpolate_boundary_values(dof_handler, dirichlet_boundary_condition, this->boundary_values, component_mask);
+dealii::types::global_dof_index const dof_shift = this->dof_shift;
+if (dof_shift != 0) {
+    std::map<dealii::types::global_dof_index, double> tmp_boundary_values;
+    std::for_each((this->boundary_values).begin(), (this->boundary_values).end(),
+        [&tmp_boundary_values, &dof_shift](std::pair<dealii::types::global_dof_index, double> const & p) { tmp_boundary_values[p.first - dof_shift] = p.second; }
+        );
+    (this->boundary_values).swap(tmp_boundary_values);
+}
 }
 
 template <int dim>
@@ -110,6 +124,14 @@ compute_neumann_boundary_contribution(double const current_density) {
     mask[this->solid_potential_component] = true;
     dealii::ComponentMask component_mask(mask);
     dealii::VectorTools::interpolate_boundary_values(dof_handler, this->anode_boundary_id, dealii::ConstantFunction<dim>(0.0, n_components), this->boundary_values, component_mask);
+dealii::types::global_dof_index const dof_shift = this->dof_shift;
+if (dof_shift != 0) {
+    std::map<dealii::types::global_dof_index, double> tmp_boundary_values;
+    std::for_each((this->boundary_values).begin(), (this->boundary_values).end(),
+        [&tmp_boundary_values, &dof_shift](std::pair<dealii::types::global_dof_index, double> const & p) { tmp_boundary_values[p.first - dof_shift] = p.second; }
+        );
+    (this->boundary_values).swap(tmp_boundary_values);
+}
 }
 
     dealii::FEValuesExtractors::Scalar const solid_potential(this->solid_potential_component);
@@ -152,6 +174,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
         cell->get_dof_indices(local_dof_indices);
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::Vector<double> tmp_load_vector = dof_extractor.extract_vector(cell_load_vector);
+std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), this->dof_shift));
         constraint_matrix.distribute_local_to_global(tmp_load_vector, tmp_indices, this->load_vector);
 //        this->constraint_matrix.distribute_local_to_global(cell_load_vector, local_dof_indices, this->load_vector);
     } // end for cell
@@ -162,10 +185,10 @@ void
 ElectrochemicalOperator<dim>::
 compute_electrical_operator_contribution() 
 {
-    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
-    dealii::ConstraintMatrix const & constraint_matrix = *(this->constraint_matrix);
-    dealii::FiniteElement<dim> const & fe = dof_handler.get_fe();
-    dealii::FEValuesExtractors::Scalar const solid_potential(this->solid_potential_component);
+    dealii::DoFHandler<dim>    const & dof_handler       = *(this->dof_handler);
+    dealii::ConstraintMatrix   const & constraint_matrix = *(this->constraint_matrix);
+    dealii::FiniteElement<dim> const & fe                = dof_handler.get_fe();
+    dealii::FEValuesExtractors::Scalar const solid_potential (this->solid_potential_component );
     dealii::FEValuesExtractors::Scalar const liquid_potential(this->liquid_potential_component);
     dealii::QGauss<dim> quadrature_rule(fe.degree+1); // TODO: map to component...
     dealii::FEValues<dim> fe_values(fe, quadrature_rule, 
@@ -239,6 +262,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::FullMatrix<double> tmp_mass_matrix = dof_extractor.extract_matrix(cell_mass_matrix);
 dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
+std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), this->dof_shift));
         constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
         constraint_matrix.distribute_local_to_global(tmp_mass_matrix, tmp_indices, this->mass_matrix);
 
@@ -319,7 +343,8 @@ dealii::types::global_dof_index const dof_shift = std::accumulate(&(dofs_per_com
         cell->get_dof_indices(local_dof_indices);
 std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
 dealii::Vector<double> tmp_load_vector = dof_extractor.extract_vector(cell_load_vector);
-std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
+if (dof_shift != 0)
+    std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), dof_shift));
         constraint_matrix.distribute_local_to_global(tmp_load_vector, tmp_indices, thermal_load_vector);
     } // end for cell
 }

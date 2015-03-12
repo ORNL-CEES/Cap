@@ -52,15 +52,16 @@ public:
     
 
 protected:
-    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+    std::shared_ptr<dealii::DoFHandler<dim>  const> dof_handler;
+    dealii::types::global_dof_index                 dof_shift;
     std::shared_ptr<dealii::ConstraintMatrix const> constraint_matrix;
 
-    std::shared_ptr<MPValues<dim> const>       mp_values;
+    std::shared_ptr<MPValues<dim>       const> mp_values;
     std::shared_ptr<BoundaryValues<dim> const> b_values;
 
     dealii::SparseMatrix<double> mass_matrix;
     dealii::SparseMatrix<double> stiffness_matrix;
-    dealii::Vector<double> load_vector;
+    dealii::Vector      <double> load_vector;
     std::map<dealii::types::global_dof_index, double> boundary_values;
     std::vector<dealii::types::global_dof_index> null_space_dof_indices;
 };

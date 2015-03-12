@@ -46,7 +46,7 @@ set_null_space(unsigned int const               component,
     } // end for cell
     for (dealii::types::global_dof_index dof = 0; dof < (*dof_handler).n_dofs(); ++dof) {
         if (selected_dofs[dof]) {
-            null_space_dof_indices.push_back(dof);
+            null_space_dof_indices.push_back(dof - this->dof_shift);
         } // end if
     } // end for dof
 }
