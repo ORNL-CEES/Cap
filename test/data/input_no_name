@@ -1,6 +1,6 @@
 <charge_time>15.0</charge_time>
-<relaxation_time>30.0</relaxation_time>
-<time_step>0.1</time_step>
+<relaxation_time>45.0</relaxation_time>
+<time_step>0.5</time_step>
 <charge_current>300.0</charge_current>
 
 <mesh_file>mesh_2d.ucd</mesh_file>
@@ -15,11 +15,11 @@
 <cathode_electrode_material_id>6</cathode_electrode_material_id>
 <cathode_collector_material_id>7</cathode_collector_material_id>
 
-<temperature_component>2</temperature_component>
-<solid_potential_component>0</solid_potential_component>
-<liquid_potential_component>1</liquid_potential_component>
-<thermal_block>1</thermal_block>
-<electrochemical_block>0</electrochemical_block>
+<temperature_component>0</temperature_component>
+<solid_potential_component>1</solid_potential_component>
+<liquid_potential_component>2</liquid_potential_component>
+<thermal_block>0</thermal_block>
+<electrochemical_block>1</electrochemical_block>
 <n_blocks>2</n_blocks> 
 
 <material_properties>
