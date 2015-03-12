@@ -33,36 +33,34 @@ class NoName : public EnergyStorageDevice
 {
 public:
     NoName(std::shared_ptr<Parameters const> parameters);
-    void print_data(std::ostream & os) const;
-    void reset_voltage(double const voltage);
-    void reset_current(double const current);
-    void evolve_one_time_step_constant_current(double const time_step, double const constant_current);
-    void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage);
-    void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  );
+    void print_data(std::ostream & os) const override;
+    void reset_voltage(double const voltage) override;
+    void reset_current(double const current) override;
+    void evolve_one_time_step_constant_current(double const time_step, double const constant_current) override;
+    void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) override;
+    void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) override;
 
     void evolve_one_time_step(double const time_step);
 private:
-    std::shared_ptr<typename dealii::FESystem<dim>    > fe; // TODO: would be nice to get rid of this guy
-    std::shared_ptr<typename dealii::DoFHandler<dim>  > dof_handler;
+    std::shared_ptr<dealii::FESystem            <dim> > fe; // TODO: would be nice to get rid of this guy
+    std::shared_ptr<dealii::DoFHandler          <dim> > dof_handler;
     std::shared_ptr<dealii::ConstraintMatrix          > constraint_matrix;
     std::shared_ptr<dealii::BlockSparsityPattern      > sparsity_pattern;
     std::shared_ptr<dealii::BlockSparseMatrix<double> > system_matrix;
-    std::shared_ptr<dealii::BlockVector<double>       > system_rhs;
-    std::shared_ptr<dealii::BlockVector<double>       > solution;
+    std::shared_ptr<dealii::BlockVector      <double> > system_rhs;
+    std::shared_ptr<dealii::BlockVector      <double> > solution;
 
 //    dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
 //    dealii::SparseDirectUMFPACK inverse_thermal_system_matrix;
 //    dealii::Vector<double> thermal_load_vector;
 //                                                               
-    std::shared_ptr<cap::SuperCapacitorGeometry<dim>           > geometry;
-
-    std::shared_ptr<ElectrochemicalOperatorParameters<dim>     > electrochemical_operator_params;
-    std::shared_ptr<ElectrochemicalOperator<dim>               > electrochemical_operator;
-    std::shared_ptr<ThermalOperatorParameters<dim>             > thermal_operator_params;
-    std::shared_ptr<ThermalOperator<dim>                       > thermal_operator;
-
+    std::shared_ptr<cap::SuperCapacitorGeometry          <dim> > geometry;
+    std::shared_ptr<ElectrochemicalOperatorParameters    <dim> > electrochemical_operator_params;
+    std::shared_ptr<ElectrochemicalOperator              <dim> > electrochemical_operator;
+    std::shared_ptr<ThermalOperatorParameters            <dim> > thermal_operator_params;
+    std::shared_ptr<ThermalOperator                      <dim> > thermal_operator;
     std::shared_ptr<SuperCapacitorPostprocessorParameters<dim> > post_processor_params;
-    std::shared_ptr<SuperCapacitorPostprocessor<dim>           > post_processor;
+    std::shared_ptr<SuperCapacitorPostprocessor          <dim> > post_processor;
 };
 
 
@@ -75,7 +73,9 @@ NoName(std::shared_ptr<Parameters const> parameters)
     std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
 
     // build triangulation
-    this->geometry = std::make_shared<cap::SuperCapacitorGeometry<dim> >(database);
+    std::shared_ptr<boost::property_tree::ptree> geometry_database =
+        std::make_shared<boost::property_tree::ptree>(database->get_child("geometry"));
+    this->geometry = std::make_shared<cap::SuperCapacitorGeometry<dim> >(geometry_database);
     std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
         (*this->geometry).get_triangulation();
     
@@ -339,34 +339,45 @@ reset_current(double const current)
 
 
 
+void charge_and_chill(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+{
+    double const charge_time     = database->get<double>("charge_time"    );
+    double const relaxation_time = database->get<double>("relaxation_time");
+    double const time_step       = database->get<double>("time_step"      );
+    double const charge_current  = database->get<double>("charge_current" );
+    for (double time = 0.0 ; time < charge_time; time += time_step)
+    {
+        dev->evolve_one_time_step_constant_current(time_step, charge_current);
+        os<<boost::format("%5.1f  ") % time;
+        dev->print_data(os);
+    }
+    for (double time = charge_time ; time < charge_time+relaxation_time; time += time_step)
+    {
+        dev->evolve_one_time_step_constant_current(time_step, 0.0);
+        os<<boost::format("%5.1f  ") % time;
+        dev->print_data(os);
+    }
+}
 
 } // end namespace cap
 
 BOOST_AUTO_TEST_CASE( test_no_name )
 {
-    std::shared_ptr<boost::property_tree::ptree> database =
+    // read input file
+    std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_no_name", *database);
+    read_xml("input_no_name", *input_database);
 
-    cap::NoName<2> no_name(std::make_shared<cap::Parameters const>(database));
+    // build an energy storage device
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    std::shared_ptr<cap::NoName<2> > device = 
+        std::make_shared<cap::NoName<2> >(std::make_shared<cap::Parameters const>(device_database));
 
-    double const charge_time     = database->get<double>("charge_time"    );
-    double const relaxation_time = database->get<double>("relaxation_time");
-    double const time_step       = database->get<double>("time_step"      );
-    double const charge_current  = database->get<double>("charge_current" );
+    // charge and then relax
     std::fstream fout;
     fout.open("no_name_data", std::fstream::out);
-    std::ostream & os = fout;
-    for (double time = 0.0 ; time < charge_time; time += time_step)
-    {
-        no_name.evolve_one_time_step_constant_current(time_step, charge_current);
-        os<<boost::format("%5.1f  ") % time;
-        no_name.print_data(os);
-    }
-    for (double time = charge_time ; time < charge_time+relaxation_time; time += time_step)
-    {
-        no_name.evolve_one_time_step_constant_current(time_step, 0.0);
-        os<<boost::format("%5.1f  ") % time;
-        no_name.print_data(os);
-    }
+    std::shared_ptr<boost::property_tree::ptree> operating_conditions_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("operating_conditions"));
+    cap::charge_and_chill(device, operating_conditions_database, fout);
 }
