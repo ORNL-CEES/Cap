@@ -6,7 +6,7 @@
 </operating_conditions>
 
 <device>
-    <type>no_name</type>
+    <type>NoName</type>
     <dim>2</dim>
 
     <geometry>
