@@ -1,0 +1,14 @@
+<device>
+    <type>ParallelRC</type>
+    <capacitance>3.0</capacitance>
+    <parallel_resistance>2.5e6</parallel_resistance>
+    <series_resistance>50.0e-3</series_resistance>
+</device>
+
+<operating_conditions>
+    <initial_voltage>0.0</initial_voltage>
+    <dc_voltage>2.5</dc_voltage>
+    <initial_time>0.0</initial_time>
+    <final_time>15.0</final_time>
+    <time_step>0.1</time_step>
+</operating_conditions>
