@@ -7,6 +7,7 @@
 #include <deal.II/lac/sparse_direct.h>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/test/floating_point_comparison.hpp>
 #include <tuple>
 
 namespace cap {
@@ -294,17 +295,23 @@ reset_voltage(double const voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
     (*this->electrochemical_operator_params).custom_constant_voltage = voltage;
-    double time_step = 60.0;
+    double percent_tolerance =   1.0e-6;
+    double time_step         = 600.0;
+    int    max_steps         =  30;
     double current;
-    for (std::size_t k = 0; k < 30; ++k)
+    double current_previous_time_step = std::nan("");
+    for (int step = 0; step < max_steps; ++step)
     {
         this->evolve_one_time_step(time_step);
-        this->post_processor->reset(this->post_processor_params);
-        this->post_processor->get("current", current);
-        std::cout<<k<<"  ";
-        this->print_data(std::cout);
+        this->get_current(current);
+        std::cout<<boost::format("  %3d  %20.15e  \n") % step % current;
+        if (boost::test_tools::check_is_close(current, current_previous_time_step, 
+            boost::test_tools::percent_tolerance(percent_tolerance)))
+            return;
+       current_previous_time_step = current;
     }
-//    throw std::runtime_error("not implemented");
+    throw std::runtime_error("Failed to converge at "+std::to_string(percent_tolerance)
+        +" percent within "+std::to_string(max_steps)+" steps.  See NoName::reset_voltage.");
 }
 
 
