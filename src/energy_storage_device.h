@@ -19,14 +19,14 @@ class EnergyStorageDevice
 public:
     EnergyStorageDevice() { }
     virtual ~EnergyStorageDevice() { }
-    virtual void   print_data(std::ostream & os) const = 0;
-    virtual double get_voltage() const = 0;
-    virtual double get_current() const = 0;
-    virtual void   reset_voltage(double const voltage) = 0;
-    virtual void   reset_current(double const current) = 0;
-    virtual void   evolve_one_time_step_constant_current(double const time_step, double const constant_current) = 0;
-    virtual void   evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) = 0;
-    virtual void   evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) = 0;
+    virtual void print_data(std::ostream & os) const = 0;
+    virtual void get_voltage(double & voltage) const = 0;
+    virtual void get_current(double & current) const = 0;
+    virtual void reset_voltage(double const voltage) = 0;
+    virtual void reset_current(double const current) = 0;
+    virtual void evolve_one_time_step_constant_current(double const time_step, double const constant_current) = 0;
+    virtual void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) = 0;
+    virtual void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) = 0;
 };
 
 

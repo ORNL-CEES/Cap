@@ -124,6 +124,9 @@ NoName(std::shared_ptr<Parameters const> parameters)
     (*this->post_processor_params).boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->post_processor =
         std::make_shared<SuperCapacitorPostprocessor<dim> >(this->post_processor_params);
+
+    (*this->solution) = 0.0;
+    (*this->post_processor).reset(this->post_processor_params);
 }
 
 
@@ -229,6 +232,8 @@ evolve_one_time_step(double const time_step)
     } // end if symmetric correction
 
     inverse_electrochemical_system_matrix.vmult(solution_electrochemical_block, system_rhs_electrochemical_block);
+
+    this->post_processor->reset(this->post_processor_params);
 }
 
 
@@ -248,11 +253,30 @@ evolve_one_time_step_constant_power(double const time_step, double const constan
 template <int dim>
 void
 NoName<dim>::
+get_current(double & current) const
+{
+    this->post_processor->get("current", current);
+}
+
+
+
+template <int dim>
+void
+NoName<dim>::
+get_voltage(double & voltage) const
+{
+    this->post_processor->get("voltage", voltage);
+}
+
+
+
+template <int dim>
+void
+NoName<dim>::
 print_data(std::ostream & os) const
 {
     double current;
     double voltage;
-    this->post_processor->reset(this->post_processor_params);
     this->post_processor->get("voltage", voltage);
     this->post_processor->get("current", current);
     os<<boost::format("  %10.5f  %10.7f  \n")

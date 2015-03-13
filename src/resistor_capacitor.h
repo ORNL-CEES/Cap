@@ -17,8 +17,8 @@ public:
     void evolve_one_time_step_constant_current(double const delta_t, double const constant_current) override;
     void evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage) override;
     void evolve_one_time_step_constant_power  (double const delta_t, double const constant_power  ) override;
-    inline double get_voltage() const override { return U; }
-    inline double get_current() const override { return I; }
+    inline void get_voltage(double & voltage) const override { voltage = U; }
+    inline void get_current(double & current) const override { current = I; }
     // TODO:
     std::size_t evolve_one_time_step_constant_power(double const delta_t, double const constant_power, std::string const & method = "NEWTON");
     void reset(double const capacitor_voltage);
@@ -41,8 +41,8 @@ public:
     void evolve_one_time_step_constant_current(double const delta_t, double const constant_current) override;
     void evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage) override;
     void evolve_one_time_step_constant_power  (double const delta_t, double const constant_power  ) override;
-    inline double get_voltage() const override { return U; }
-    inline double get_current() const override { return I; }
+    inline void get_voltage(double & voltage) const override { voltage = U; }
+    inline void get_current(double & current) const override { current = I; }
     // TODO:
     std::size_t evolve_one_time_step_constant_power(double const delta_t, double const constant_power, std::string const & method = "NEWTON");
     void reset(double const capacitor_voltage);
