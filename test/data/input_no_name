@@ -6,9 +6,12 @@
 </operating_conditions>
 
 <device>
-    <type>NoName</type>
+    <capacitance>3.0</capacitance>
+    <parallel_resistance>2.5e6</parallel_resistance>
+    <series_resistance>50.0e-3</series_resistance>
     <dim>2</dim>
 
+    <type>NoName</type>
     <geometry>
         <mesh_file>mesh_2d.ucd</mesh_file>
         <electrode_width>50.0e-6</electrode_width>
@@ -84,3 +87,8 @@
         <cathode_collector_material_id>7</cathode_collector_material_id>
     </boundary_values>
 </device>
+
+<initial_voltage>1.9</initial_voltage>
+<initial_current>0.0016</initial_current>
+<tolerance>1.0e-4</tolerance>
+<time_step>15.0</time_step>

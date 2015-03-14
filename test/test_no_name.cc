@@ -31,7 +31,37 @@ void charge_and_chill(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared
     }
 }
 
+
+
+void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
+
+{
+    double const initial_voltage = database->get<double>("initial_voltage");
+    double       initial_current;
+    double       voltage;
+    double       current;
+    double const tolerance       = database->get<double>("tolerance"      );
+    double const time_step       = database->get<double>("time_step"      );
+
+    dev->reset_voltage(initial_voltage);
+    dev->get_current(initial_current);
+    dev->get_voltage(voltage);
+    BOOST_CHECK_CLOSE(voltage, initial_voltage, tolerance);
+
+    dev->evolve_one_time_step_constant_voltage(time_step, initial_voltage);
+    dev->get_current(current);
+    BOOST_CHECK_CLOSE(current, initial_current, tolerance);
+    dev->get_voltage(voltage);
+    BOOST_CHECK_CLOSE(voltage, initial_voltage, tolerance);
+
+    initial_current = database->get<double>("initial_current");
+    dev->evolve_one_time_step_constant_current(time_step, initial_current);
+    dev->get_current(current);
+    BOOST_CHECK_CLOSE(current, initial_current, tolerance);
+}
+
 } // end namespace cap
+
 
 
 BOOST_AUTO_TEST_CASE( test_no_name )
@@ -53,4 +83,7 @@ BOOST_AUTO_TEST_CASE( test_no_name )
     std::shared_ptr<boost::property_tree::ptree> operating_conditions_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("operating_conditions"));
     cap::charge_and_chill(device, operating_conditions_database, fout);
+
+    // check sanity
+    cap::check_sanity(device, input_database);
 }
