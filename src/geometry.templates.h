@@ -1,8 +1,170 @@
 #include <cap/geometry.h>
 #include <deal.II/grid/grid_in.h>
 #include <fstream>
+#include <tuple>
 
 namespace cap {
+
+template <int dim>
+std::tuple
+  < std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  , std::pair<dealii::Point<dim>,dealii::Point<dim> >
+  >
+foo(std::shared_ptr<boost::property_tree::ptree const> const & database);
+
+
+
+template <>
+std::tuple
+  < std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  , std::pair<dealii::Point<2>,dealii::Point<2> >
+  >
+foo<2>(std::shared_ptr<boost::property_tree::ptree const> const & database)
+{
+    double const electrode_width = database->get<double>("electrode_width");
+    double const separator_width = database->get<double>("separator_width");
+    double const collector_width = database->get<double>("collector_width");
+    double const sandwich_height = database->get<double>("sandwich_height");
+    double const tab_height      = database->get<double>("tab_height"     ); 
+
+    std::pair<dealii::Point<2>,dealii::Point<2> > anode_tab_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > anode_collector_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > anode_electrode_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > separator_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > cathode_electrode_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > cathode_collector_bbox;
+    std::pair<dealii::Point<2>,dealii::Point<2> > cathode_tab_bbox;
+
+    anode_tab_bbox = 
+        std::make_pair(
+            dealii::Point<2>(-collector_width                                               , sandwich_height           ), 
+            dealii::Point<2>(0.0                                                            , sandwich_height+tab_height)
+        );
+    anode_collector_bbox =
+        std::make_pair(
+            dealii::Point<2>(-collector_width                                               , 0.0                       ), 
+            dealii::Point<2>(0.0                                                            , sandwich_height           )
+        );
+    anode_electrode_bbox =
+        std::make_pair(
+            dealii::Point<2>(0.0                                                            , 0.0                       ), 
+            dealii::Point<2>(electrode_width                                                , sandwich_height           )
+        );
+    separator_bbox =
+        std::make_pair(
+            dealii::Point<2>(electrode_width                                                , 0.0                       ), 
+            dealii::Point<2>(electrode_width+separator_width                                , sandwich_height           )
+        );
+    cathode_electrode_bbox =
+        std::make_pair(
+            dealii::Point<2>(electrode_width+separator_width                                , 0.0                       ), 
+            dealii::Point<2>(electrode_width+separator_width+electrode_width                , sandwich_height           )
+        );
+    cathode_collector_bbox =
+        std::make_pair(
+            dealii::Point<2>(electrode_width+separator_width+electrode_width                , 0.0                       ), 
+            dealii::Point<2>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           )
+        );
+    cathode_tab_bbox =
+        std::make_pair(
+            dealii::Point<2>(electrode_width+separator_width+electrode_width                , -tab_height               ), 
+            dealii::Point<2>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       )
+        );
+    return std::make_tuple
+        ( anode_tab_bbox
+        , anode_collector_bbox
+        , anode_electrode_bbox
+        , separator_bbox
+        , cathode_electrode_bbox
+        , cathode_collector_bbox
+        , cathode_tab_bbox
+        );
+}
+
+
+
+template <>
+std::tuple
+  < std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  , std::pair<dealii::Point<3>,dealii::Point<3> >
+  >
+foo<3>(std::shared_ptr<boost::property_tree::ptree const> const & database)
+{
+    double const electrode_width = database->get<double>("electrode_width");
+    double const separator_width = database->get<double>("separator_width");
+    double const collector_width = database->get<double>("collector_width");
+    double const sandwich_height = database->get<double>("sandwich_height");
+    double const sandwich_depth  = database->get<double>("sandwich_depth" );
+    double const tab_height      = database->get<double>("tab_height"     ); 
+
+    std::pair<dealii::Point<3>,dealii::Point<3> > anode_tab_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > anode_collector_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > anode_electrode_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > separator_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > cathode_electrode_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > cathode_collector_bbox;
+    std::pair<dealii::Point<3>,dealii::Point<3> > cathode_tab_bbox;
+
+    anode_tab_bbox = 
+        std::make_pair(
+            dealii::Point<3>(-collector_width                                               , sandwich_height           , 0.0           ), 
+            dealii::Point<3>(0.0                                                            , sandwich_height+tab_height, sandwich_depth)
+        );
+    anode_collector_bbox =
+        std::make_pair(
+            dealii::Point<3>(-collector_width                                               , 0.0                       , 0.0           ),
+            dealii::Point<3>(0.0                                                            , sandwich_height           , sandwich_depth) 
+        );
+    anode_electrode_bbox =
+        std::make_pair(
+            dealii::Point<3>(0.0                                                            , 0.0                       , 0.0           ),
+            dealii::Point<3>(electrode_width                                                , sandwich_height           , sandwich_depth) 
+        );
+    separator_bbox =
+        std::make_pair(
+            dealii::Point<3>(electrode_width                                                , 0.0                       , 0.0           ),
+            dealii::Point<3>(electrode_width+separator_width                                , sandwich_height           , sandwich_depth) 
+        );
+    cathode_electrode_bbox =
+        std::make_pair(
+            dealii::Point<3>(electrode_width+separator_width                                , 0.0                       , 0.0           ),
+            dealii::Point<3>(electrode_width+separator_width+electrode_width                , sandwich_height           , sandwich_depth) 
+        );
+    cathode_collector_bbox =
+        std::make_pair(
+            dealii::Point<3>(electrode_width+separator_width+electrode_width                , 0.0                       , 0.0           ),
+            dealii::Point<3>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           , sandwich_depth) 
+        );
+    cathode_tab_bbox =
+        std::make_pair(
+            dealii::Point<3>(electrode_width+separator_width+electrode_width                , -tab_height               , 0.0           ),
+            dealii::Point<3>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       , sandwich_depth) 
+        );
+    return std::make_tuple
+        ( anode_tab_bbox
+        , anode_collector_bbox
+        , anode_electrode_bbox
+        , separator_bbox
+        , cathode_electrode_bbox
+        , cathode_collector_bbox
+        , cathode_tab_bbox
+        );
+}
 
 template <int dim>
 Geometry<dim>::
@@ -48,48 +210,16 @@ SuperCapacitorGeometry(std::shared_ptr<boost::property_tree::ptree const> const 
     this->anode_collector_material_id    = database->get<dealii::types::material_id>("anode_collector_material_id"  );
     this->cathode_electrode_material_id  = database->get<dealii::types::material_id>("cathode_electrode_material_id");
     this->cathode_collector_material_id  = database->get<dealii::types::material_id>("cathode_collector_material_id");
-    double const electrode_width         = database->get<double                    >("electrode_width"              );
-    double const separator_width         = database->get<double                    >("separator_width"              );
-    double const collector_width         = database->get<double                    >("collector_width"              );
-    double const sandwich_height         = database->get<double                    >("sandwich_height"              );
-    double const tab_height              = database->get<double                    >("tab_height"                   ); 
 
-
-    this->anode_tab_bbox = 
-        std::make_pair(
-            dealii::Point<dim>(-collector_width                                               , sandwich_height           ), 
-            dealii::Point<dim>(0.0                                                            , sandwich_height+tab_height)
-        );
-    this->anode_collector_bbox =
-        std::make_pair(
-            dealii::Point<dim>(-collector_width                                               , 0.0                       ), 
-            dealii::Point<dim>(0.0                                                            , sandwich_height           )
-        );
-    this->anode_electrode_bbox =
-        std::make_pair(
-            dealii::Point<dim>(0.0                                                            , 0.0                       ), 
-            dealii::Point<dim>(electrode_width                                                , sandwich_height           )
-        );
-    this->separator_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width                                                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width                                , sandwich_height           )
-        );
-    this->cathode_electrode_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width                                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , sandwich_height           )
-        );
-    this->cathode_collector_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           )
-        );
-    this->cathode_tab_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , -tab_height               ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       )
-        );
+    std::tie
+        ( this->anode_tab_bbox
+        , this->anode_collector_bbox
+        , this->anode_electrode_bbox
+        , this->separator_bbox
+        , this->cathode_electrode_bbox
+        , this->cathode_collector_bbox
+        , this->cathode_tab_bbox
+        ) = foo<dim>(database);
         
     std::map<dealii::types::material_id, std::function<bool(dealii::Point<dim> const &)> > point_in_material_id;
     point_in_material_id[this->anode_collector_material_id] =
@@ -136,48 +266,23 @@ void
 SuperCapacitorGeometry<dim>::
 reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
 {
-    double const electrode_width = database->get<double>("electrode_width");
-    double const separator_width = database->get<double>("separator_width");
-    double const collector_width = database->get<double>("collector_width");
-    double const sandwich_height = database->get<double>("sandwich_height");
-    double const tab_height      = database->get<double>("tab_height"     ); 
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_tab_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_collector_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_electrode_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_separator_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_electrode_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_collector_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_tab_bbox;
+    std::tie
+        ( new_anode_tab_bbox
+        , new_anode_collector_bbox
+        , new_anode_electrode_bbox
+        , new_separator_bbox
+        , new_cathode_electrode_bbox
+        , new_cathode_collector_bbox
+        , new_cathode_tab_bbox
+        ) = foo<dim>(database);
 
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_tab_bbox = 
-        std::make_pair(
-            dealii::Point<dim>(-collector_width                                               , sandwich_height           ), 
-            dealii::Point<dim>(0.0                                                            , sandwich_height+tab_height)
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_collector_bbox =
-        std::make_pair(
-            dealii::Point<dim>(-collector_width                                               , 0.0                       ), 
-            dealii::Point<dim>(0.0                                                            , sandwich_height           )
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_anode_electrode_bbox =
-        std::make_pair(
-            dealii::Point<dim>(0.0                                                            , 0.0                       ), 
-            dealii::Point<dim>(electrode_width                                                , sandwich_height           )
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_separator_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width                                                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width                                , sandwich_height           )
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_electrode_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width                                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , sandwich_height           )
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_collector_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , 0.0                       ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           )
-        );
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > new_cathode_tab_bbox =
-        std::make_pair(
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width                , -tab_height               ), 
-            dealii::Point<dim>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       )
-        );
-    
     auto transform_point =
         [](dealii::Point<dim> const & p_0, dealii::Point<dim> const & p_1, dealii::Point<dim> const & p,
            dealii::Point<dim> const & q_0, dealii::Point<dim> const & q_1, dealii::Point<dim> &       q)
