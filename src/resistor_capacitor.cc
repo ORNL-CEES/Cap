@@ -5,29 +5,15 @@
 
 namespace cap {
 
-
-
 SeriesRC::
 SeriesRC(std::shared_ptr<Parameters const> params)
 {
     std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    R   = database->get<double>("series_resistance"             );
-    C   = database->get<double>("capacitance"                   );
-    U_C = database->get<double>("initial_capacitor_voltage", 0.0);
-    I   = database->get<double>("initial_current",           0.0);
-    U   = U_C + R * I;
+    R   = database->get<double>("series_resistance"     );
+    C   = database->get<double>("capacitance"           );
+    U   = database->get<double>("initial_voltage"  , 0.0);
+    this->reset_voltage(U);
 }
-
-
-
-SeriesRC::
-SeriesRC(double const resistance, double const capacitance, double const initial_capacitor_voltage)
-    : R(resistance)
-    , C(capacitance)
-    , U_C(initial_capacitor_voltage) 
-    , U(U_C)
-    , I(0.0) 
-{ }
 
 
 
@@ -142,25 +128,12 @@ ParallelRC::
 ParallelRC(std::shared_ptr<Parameters const> params)
 {
     std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    R_series   = database->get<double>("series_resistance"             );
-    R_parallel = database->get<double>("parallel_resistance"           );
-    C          = database->get<double>("capacitance"                   );
-    U          = database->get<double>("initial_capacitor_voltage", 0.0);
-    I          = database->get<double>("initial_current",           0.0);
-    U_C        = U - R_series * I;
+    R_series   = database->get<double>("series_resistance"       );
+    R_parallel = database->get<double>("parallel_resistance"     );
+    C          = database->get<double>("capacitance"             );
+    U          = database->get<double>("initial_voltage"    , 0.0);
+    this->reset_voltage(U);
 }
-
-
-
-ParallelRC::
-ParallelRC(double const parallel_resistance, double const capacitance, double const initial_capacitor_voltage)
-    : R_parallel(parallel_resistance)
-    , C(capacitance)
-    , U_C(initial_capacitor_voltage)
-    , U(U_C)
-    , I(0.0)
-    , R_series(0.0)
-{ }
 
 
 
@@ -224,8 +197,13 @@ ParallelRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
     U   = constant_voltage;
-    U_C =  R_parallel / (R_series + R_parallel) * U + (U_C - R_parallel / (R_series + R_parallel) * U) * std::exp(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
-    I   = (U - U_C) / R_series;
+    if (R_series != 0.0) {
+        U_C =  R_parallel / (R_series + R_parallel) * U + (U_C - R_parallel / (R_series + R_parallel) * U) * std::exp(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
+        I   = (U - U_C) / R_series;
+    } else {
+        U_C = U;
+        I   = U_C / R_parallel;
+    }
 }
 
 

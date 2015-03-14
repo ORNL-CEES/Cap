@@ -10,7 +10,6 @@ class SeriesRC : public EnergyStorageDevice
 {
 public:
     SeriesRC(std::shared_ptr<Parameters const> );
-    SeriesRC(double const resistance, double const capacitance, double const initial_capacitor_voltage = 0.0);
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;
@@ -34,7 +33,6 @@ class ParallelRC : public EnergyStorageDevice
 {
 public:
     ParallelRC(std::shared_ptr<Parameters const> );
-    ParallelRC(double const parallel_resistance, double const capacitance, double const initial_capacitor_voltage = 0.0);
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;

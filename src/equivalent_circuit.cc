@@ -141,8 +141,16 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     std::cout<<"discharge_current="<<discharge_current<<"\n";
     std::cout<<"initial_voltage="<<initial_voltage<<"\n";
 
-    equivalent_circuit = std::make_shared<cap::SeriesRC>(
-        cap::SeriesRC(sandwich_resistance, sandwich_capacitance, initial_voltage));
+    std::shared_ptr<boost::property_tree::ptree> db =
+        std::make_shared<boost::property_tree::ptree>();
+    db->put("capacitance"      , sandwich_capacitance);
+    db->put("series_resistance", sandwich_resistance );
+
+    equivalent_circuit = 
+        std::make_shared<cap::SeriesRC>(
+            std::make_shared<cap::Parameters>(db)
+        );
+    equivalent_circuit->reset_voltage(initial_voltage);
     I_charge    = charge_current;
     I_discharge = discharge_current;
 }
