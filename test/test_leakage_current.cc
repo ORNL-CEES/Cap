@@ -24,7 +24,7 @@ void measure_direct_leakage_current(std::shared_ptr<cap::EnergyStorageDevice> de
 
     double voltage;
     double current;
-    double current_previous_time_step = std::nan("");
+    double current_previous_time_step = std::numeric_limits<double>::quiet_NaN();
     dev->reset_voltage(initial_voltage);
     std::size_t step = 0;
     for (double time = initial_time; time < final_time; time += time_step)

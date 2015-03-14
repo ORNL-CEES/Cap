@@ -72,7 +72,7 @@ reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
     } else if (this->capacitor_state == Initialize) {
         this->compute_dirichlet_boundary_values(this->initial_potential);
     } else if (this->capacitor_state == CustomConstantCurrent) {
-        this->compute_neumann_boundary_contribution(electrochemical_parameters->custom_constant_current);
+        this->compute_neumann_boundary_contribution(electrochemical_parameters->custom_constant_current_density);
     } else if (this->capacitor_state == CustomConstantVoltage) {
         this->compute_dirichlet_boundary_values(electrochemical_parameters->custom_constant_voltage);
     } else {

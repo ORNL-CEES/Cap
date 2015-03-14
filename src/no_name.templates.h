@@ -149,8 +149,10 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_current(double const time_step, double const constant_current)
 {
+    double surface_area;
+    (*this->post_processor).get("surface_area", surface_area);
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantCurrent;
-    (*this->electrochemical_operator_params).custom_constant_current = constant_current;
+    (*this->electrochemical_operator_params).custom_constant_current_density = constant_current/surface_area;
     this->evolve_one_time_step(time_step);
 }
 
@@ -295,11 +297,11 @@ reset_voltage(double const voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
     (*this->electrochemical_operator_params).custom_constant_voltage = voltage;
-    double percent_tolerance =   1.0e-6;
-    double time_step         = 600.0;
+    double percent_tolerance =   1.0e-8;
+    double time_step         =  15.0;
     int    max_steps         =  30;
     double current;
-    double current_previous_time_step = std::nan("");
+    double current_previous_time_step = std::numeric_limits<double>::quiet_NaN();
     for (int step = 0; step < max_steps; ++step)
     {
         this->evolve_one_time_step(time_step);

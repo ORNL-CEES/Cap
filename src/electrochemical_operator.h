@@ -14,7 +14,7 @@ public:
         : OperatorParameters<dim>(d)
     { }
     CapacitorState capacitor_state;
-    double custom_constant_current;
+    double custom_constant_current_density;
     double custom_constant_voltage;
 };
 
