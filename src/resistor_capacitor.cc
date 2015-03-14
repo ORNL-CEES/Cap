@@ -101,7 +101,7 @@ evolve_one_time_step_constant_voltage(double const delta_t, double const constan
 {
     U = constant_voltage;
     U_C = U - (U - U_C) * std::exp(-delta_t/(R*C));
-    I = U - U_C / R;
+    I = (U - U_C) / R;
 }
 
 
@@ -145,9 +145,9 @@ ParallelRC(std::shared_ptr<Parameters const> params)
     R_series   = database->get<double>("series_resistance"             );
     R_parallel = database->get<double>("parallel_resistance"           );
     C          = database->get<double>("capacitance"                   );
-    U_C        = database->get<double>("initial_capacitor_voltage", 0.0);
+    U          = database->get<double>("initial_capacitor_voltage", 0.0);
     I          = database->get<double>("initial_current",           0.0);
-    U          = U_C + R_series * I;
+    U_C        = U - R_series * I;
 }
 
 
@@ -181,8 +181,9 @@ void
 ParallelRC::
 reset_voltage(double const voltage)
 {
-    U_C = voltage;
-    U = R_series * I + U_C;
+    U   = voltage;
+    U_C = R_parallel / (R_series + R_parallel) * U;
+    I   = U / (R_series + R_parallel);
 }
 
 
