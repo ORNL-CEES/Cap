@@ -297,8 +297,8 @@ reset_voltage(double const voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
     (*this->electrochemical_operator_params).custom_constant_voltage = voltage;
-    double percent_tolerance =   1.0e-8;
-    double time_step         =  15.0;
+    double percent_tolerance =   1.0e-2;
+    double time_step         =  60.0;
     int    max_steps         =  30;
     double current;
     double current_previous_time_step = std::numeric_limits<double>::quiet_NaN();

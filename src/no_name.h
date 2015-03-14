@@ -44,7 +44,7 @@ private:
 //    dealii::SparseDirectUMFPACK inverse_thermal_system_matrix;
 //    dealii::Vector<double> thermal_load_vector;
 //                                                               
-    std::shared_ptr<cap::SuperCapacitorGeometry          <dim> > geometry;
+    std::shared_ptr<SuperCapacitorGeometry               <dim> > geometry;
     std::shared_ptr<ElectrochemicalOperatorParameters    <dim> > electrochemical_operator_params;
     std::shared_ptr<ElectrochemicalOperator              <dim> > electrochemical_operator;
     std::shared_ptr<ThermalOperatorParameters            <dim> > thermal_operator_params;
