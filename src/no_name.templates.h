@@ -208,7 +208,7 @@ evolve_one_time_step(double const time_step)
 
     // evolve one time step
     begin_it = (*this->electrochemical_operator).get_boundary_values().cbegin(),
-    end_it   = (*this->electrochemical_operator).get_boundary_values().cend();
+    end_it   = (*this->electrochemical_operator).get_boundary_values().cend  ();
     if (symmetric_correction) {
         for (it = begin_it ; it != end_it; ++it) {
             solution_electrochemical_block[it->first] = 0.0;
@@ -297,9 +297,10 @@ reset_voltage(double const voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
     (*this->electrochemical_operator_params).custom_constant_voltage = voltage;
-    double percent_tolerance =   1.0e-2;
-    double time_step         =  60.0;
-    int    max_steps         =  30;
+    double const percent_tolerance =   1.0e-2;
+    double const tolerance         =   1.0e-10;
+    double const time_step         =  60.0;
+    int    const max_steps         =  30;
     double current;
     double current_previous_time_step = std::numeric_limits<double>::quiet_NaN();
     for (int step = 0; step < max_steps; ++step)
@@ -309,6 +310,8 @@ reset_voltage(double const voltage)
         std::cout<<boost::format("  %3d  %20.15e  \n") % step % current;
         if (boost::test_tools::check_is_close(current, current_previous_time_step, 
             boost::test_tools::percent_tolerance(percent_tolerance)))
+            return;
+        if (boost::test_tools::check_is_small(current, tolerance))
             return;
        current_previous_time_step = current;
     }

@@ -9,15 +9,16 @@
     <capacitance>3.0</capacitance>
     <parallel_resistance>2.5e6</parallel_resistance>
     <series_resistance>50.0e-3</series_resistance>
-    <dim>2</dim>
 
     <type>NoName</type>
+    <dim>2</dim>
     <geometry>
         <mesh_file>mesh_2d.ucd</mesh_file>
         <electrode_width>50.0e-6</electrode_width>
         <separator_width>25.0e-6</separator_width>
         <collector_width>5.0e-6</collector_width>
         <sandwich_height>25.0e-6</sandwich_height>
+        <sandwich_depth>50.0e-6</sandwich_depth>
         <tab_height>5.0e-6</tab_height>
         <separator_material_id>3</separator_material_id>
         <anode_electrode_material_id>4</anode_electrode_material_id>
