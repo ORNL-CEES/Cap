@@ -16,31 +16,6 @@
 
 namespace cap {
 
-void foo(std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
-{
-    double const frequency_lower_limit = database->get<double>("impedance_spectroscopy.frequency_lower_limit");
-    double const frequency_upper_limit = database->get<double>("impedance_spectroscopy.frequency_upper_limit");
-    double const ratio                 = database->get<double>("impedance_spectroscopy.ratio"                );
-    double const series_resistance     = database->get<double>("device.series_resistance"    );
-    double const parallel_resistance   = database->get<double>("device.parallel_resistance"  );
-    double const capacitance           = database->get<double>("device.capacitance"          );
-    double const pi                    = boost::math::constants::pi<double>();
-    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= ratio)
-    {
-        std::complex<double> impedance =
-            series_resistance + parallel_resistance / std::complex<double>(1.0, capacitance * parallel_resistance * 2.0*pi*frequency);
-        os<<boost::format( "  %20.15e  %20.15e  %20.15e  %20.15e  %20.15e  \n")
-            % frequency
-            % impedance.real()
-            % impedance.imag()
-            % std::abs(impedance)
-            % (std::arg(impedance) * 180.0 / pi)
-            ;
-    }
-}
-
-
-
 std::complex<double>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout);
 
@@ -72,11 +47,11 @@ void bar(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::p
 std::complex<double>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os)
 {
-    double const frequency           = database->get<double>("frequency"          );
-    double const amplitude           = database->get<double>("amplitude"          );
-    double const initial_voltage     = 0.0;
-    int    const cycles              = database->get<int   >("cycles"             );
-    int    const steps_per_cycle     = database->get<int   >("steps_per_cycle"    );
+    double const frequency       = database->get<double>("frequency"      );
+    double const amplitude       = database->get<double>("amplitude"      );
+    int    const cycles          = database->get<int   >("cycles"         );
+    int    const steps_per_cycle = database->get<int   >("steps_per_cycle");
+    double const initial_voltage = 0.0;
     std::vector<int> const powers_of_two =
         { 1, 2 ,4, 8, 16, 
           32, 64, 128, 256, 512, 
@@ -123,6 +98,67 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
 
 } // end namespace cap
 
+
+
+BOOST_AUTO_TEST_CASE( test_measure_impedance )
+{
+    // parse input file
+    std::shared_ptr<boost::property_tree::ptree> input_database =
+        std::make_shared<boost::property_tree::ptree>();
+    read_xml("input_impedance_spectroscopy", *input_database);
+
+    std::string const type = input_database->get<std::string>("device.type");
+    if ((type.compare("SeriesRC") != 0) && (type.compare("ParallelRC") != 0))
+        input_database->put("device.type", "ParallelRC");
+    std::string const duh = input_database->get<std::string>("device.type");
+    if (duh.compare("NoName") == 0)
+        throw std::runtime_error("duh");
+    
+
+    // build an energy storage system
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    std::shared_ptr<cap::EnergyStorageDevice> device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+
+    double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
+    double const frequency_upper_limit = input_database->get<double>("impedance_spectroscopy.frequency_upper_limit");
+    double const ratio                 = input_database->get<double>("impedance_spectroscopy.ratio"                );
+    double const series_resistance     = input_database->get<double>("device.series_resistance"  );
+    double const parallel_resistance   = input_database->get<double>("device.parallel_resistance");
+    double const capacitance           = input_database->get<double>("device.capacitance"        );
+    double const pi                    = boost::math::constants::pi<double>();
+    double const percent_tolerance     = 1.0e-1;
+    std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
+    std::fstream fout("computed_vs_exact_impedance_spectroscopy_data", std::fstream::out);
+    for (double frequency = frequency_lower_limit; frequency < frequency_upper_limit; frequency *= ratio)
+    {
+        impedance_spectroscopy_database->put("frequency", frequency);
+        std::complex<double> computed_impedance = cap::measure_impedance(device, impedance_spectroscopy_database);
+        std::complex<double> exact_impedance    =
+            ((type.compare("SeriesRC") == 0) ?
+            series_resistance + 1.0 / std::complex<double>(0.0, capacitance * 2.0*pi*frequency) :
+            series_resistance + parallel_resistance / std::complex<double>(1.0, capacitance * parallel_resistance * 2.0*pi*frequency));
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
+            % frequency
+            % computed_impedance.real()
+            % computed_impedance.imag()
+            % std::abs(computed_impedance)
+            % std::arg(computed_impedance)
+            % exact_impedance.real()
+            % exact_impedance.imag()
+            % std::abs(exact_impedance)
+            % std::arg(exact_impedance)
+            ;
+          BOOST_CHECK_CLOSE(computed_impedance.real(), exact_impedance.real(), percent_tolerance);
+          BOOST_CHECK_CLOSE(computed_impedance.imag(), exact_impedance.imag(), percent_tolerance);
+    }
+
+}
+
+
+
 BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
 {
     // parse input file
@@ -136,15 +172,12 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
-    // scan the system
+    // measure its impedance
     std::fstream fout;
     fout.open("impedance_spectroscopy_data", std::fstream::out);
 
-    std::shared_ptr<boost::property_tree::ptree> cyclic_voltammetry_database =
+    std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
-    cap::bar(device, cyclic_voltammetry_database, fout);
+    cap::bar(device, impedance_spectroscopy_database, fout);
 
-    fout.close();
-    fout.open("nyquist_plot_data", std::fstream::out);
-    cap::foo(input_database, fout);
 }    
