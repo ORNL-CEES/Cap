@@ -85,8 +85,10 @@ void
 SeriesRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
+    U_C -= (U - U_C) * std::expm1(-delta_t/(R*C));
+//    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C))); // ramp
+    U_C -= (constant_voltage - U) * std::expm1(-delta_t/(R*C));                             // step
     U = constant_voltage;
-    U_C = U - (U - U_C) * std::exp(-delta_t/(R*C));
     I = (U - U_C) / R;
 }
 
