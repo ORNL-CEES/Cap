@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestImpedanceSpectroscopy
+#define BOOST_TEST_MODULE TestResistorCapacitor2   
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
 #include <boost/format.hpp>
@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 
-BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
+BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
 {
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
@@ -31,14 +31,15 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
     double const frequency           = input_database->get<double>("impedance_spectroscopy.frequency"      );
     double const amplitude           = input_database->get<double>("impedance_spectroscopy.amplitude"      );
     int    const cycles              = input_database->get<int   >("impedance_spectroscopy.cycles"         );
+    int    const ignore_cycles       = input_database->get<int   >("impedance_spectroscopy.ignore_cycles"  );
     int    const steps_per_cycle     = input_database->get<int   >("impedance_spectroscopy.steps_per_cycle");
+    double const tolerance           = input_database->get<double>("impedance_spectroscopy.tolerance"      );
     double const initial_voltage     = 0.0;
     std::string const type = input_database->get<std::string>("device.type");
 
 
     double       time      = 0.0;
     double const time_step = 1.0 / frequency / steps_per_cycle;
-    double const phase     = std::asin(initial_voltage / amplitude);
     double const pi        = std::acos(-1.0);
 //    std::cout<<boost::format("  %20.15f  %20.15f  \n")
 //        % std::acos(-1.0)
@@ -51,38 +52,62 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
     std::fstream fout;
     fout.open("resistor_capacitor_data", std::fstream::out);
 
+    std::cout<<type<<"\n";
     std::cout<<"delta_t = "<<time_step<<"\n";
-    std::cout<<"tau = "<<series_resistance*capacitance<<"\n";
-    std::cout<<"delta_t / tau = "<<time_step/(series_resistance*capacitance)<<"\n";
-    std::cout<<"exp(- delta_t / tau) = "<<std::exp(-time_step/(series_resistance*capacitance))<<"\n";
+    double const tau = series_resistance*parallel_resistance/(series_resistance+parallel_resistance)*capacitance;
+    std::cout<<"tau = "<<tau<<"\n";
+    std::cout<<"delta_t / tau = "<<time_step/tau<<"\n";
+    std::cout<<"expm1(- delta_t / tau) = "<<std::exp(-time_step/tau)<<"\n";
 
-    double const harmonic_resistance =
-        series_resistance * parallel_resistance / (series_resistance + parallel_resistance);
-    double const angular_frequency =
-        2.0 * pi * frequency;
+    double const angular_frequency = 2.0 * pi * frequency;
 
-//    for (int n = 0; n < cycles*steps_per_cycle; ++n)
-    for (; time <= cycles / frequency; )
+    double const gain  =
+        (
+            (type.compare("SeriesRC") == 0)
+        ?
+            angular_frequency * capacitance / std::sqrt(1.0 + std::pow(angular_frequency * series_resistance * capacitance, 2))
+        :
+            1.0 / (series_resistance + parallel_resistance) / (1.0 + std::pow(angular_frequency*series_resistance*parallel_resistance/(series_resistance+parallel_resistance)*capacitance,2))
+                  * std::sqrt(
+                      std::pow(1.0 + std::pow(angular_frequency * parallel_resistance * capacitance,2 ) * series_resistance / (series_resistance + parallel_resistance), 2) 
+                    + std::pow(angular_frequency * std::pow(parallel_resistance, 2) / (series_resistance + parallel_resistance) * capacitance, 2)
+                  )
+        );
+
+    double const phase = 
+        (
+            (type.compare("SeriesRC") == 0)
+        ?
+            std::atan(
+                1.0 
+                /
+                (angular_frequency * series_resistance * capacitance)
+            )
+        :
+            std::atan(
+                angular_frequency * std::pow(parallel_resistance, 2) / (series_resistance + parallel_resistance) * capacitance
+                /
+                (1.0 + std::pow(angular_frequency * parallel_resistance * capacitance, 2) * series_resistance / (series_resistance + parallel_resistance))
+            )
+        );
+
+    for (int n = 0; n < cycles*steps_per_cycle; ++n)
     {
           time += time_step;
-          voltage = amplitude*std::sin(2.0*pi*frequency*time+phase);
+          voltage = amplitude * std::sin(angular_frequency * time);
           device->evolve_one_time_step_constant_voltage(time_step, voltage);
           device->get_current(current);
-          double exact =
-              ((type.compare("SeriesRC") == 0)  ?
-              amplitude * 2.0*pi*frequency*capacitance / std::sqrt(1.0 + std::pow(2.0*pi*frequency*series_resistance*capacitance,2))
-                  * std::sin(2.0*pi*frequency*time+phase+std::atan(1.0/(2.0*pi*frequency*series_resistance*capacitance)))
-              :
-              amplitude / (series_resistance+parallel_resistance) / (1.0 + std::pow(2.0*pi*frequency*series_resistance*parallel_resistance/(series_resistance+parallel_resistance)*capacitance,2))
-                  * std::sqrt(std::pow(1.0+std::pow(2.0*pi*frequency*parallel_resistance*capacitance,2)*series_resistance/(series_resistance+parallel_resistance),2) + std::pow(2.0*pi*frequency*std::pow(parallel_resistance,2)/(series_resistance+parallel_resistance)*capacitance,2))
-                  * std::sin(2.0*pi*frequency*time+phase+std::atan(2.0*pi*frequency*std::pow(parallel_resistance,2)/(series_resistance+parallel_resistance*capacitance)/(1.0+std::pow(2.0*pi*frequency*parallel_resistance*capacitance,2)*series_resistance/(series_resistance+parallel_resistance))))
-              );
+          double const exact = amplitude * gain * std::sin(angular_frequency * time + phase);
+          double const error = 100.0 * std::abs(current-exact)/(amplitude*gain);
+          if (n >= ignore_cycles*steps_per_cycle)
+              BOOST_CHECK_SMALL(error, tolerance);
 
-          fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  \n")
+          fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
               % time
               % current
               % voltage
               % exact
+              % error
               ;
     }
 
