@@ -124,22 +124,24 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     double const frequency_upper_limit = input_database->get<double>("impedance_spectroscopy.frequency_upper_limit");
     double const ratio                 = input_database->get<double>("impedance_spectroscopy.ratio"                );
-    double const series_resistance     = input_database->get<double>("device.series_resistance"  );
-    double const parallel_resistance   = input_database->get<double>("device.parallel_resistance");
-    double const capacitance           = input_database->get<double>("device.capacitance"        );
+    double const percent_tolerance     = input_database->get<double>("impedance_spectroscopy.percent_tolerance"    );
+    double const series_resistance     = input_database->get<double>("device.series_resistance"                    );
+    double const parallel_resistance   = input_database->get<double>("device.parallel_resistance"                  );
+    double const capacitance           = input_database->get<double>("device.capacitance"                          );
     double const pi                    = boost::math::constants::pi<double>();
-    double const percent_tolerance     = 1.0e-1;
+
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
     std::fstream fout("computed_vs_exact_impedance_spectroscopy_data", std::fstream::out);
     for (double frequency = frequency_lower_limit; frequency < frequency_upper_limit; frequency *= ratio)
     {
+        double const angular_frequency = 2.0 * pi * frequency;
         impedance_spectroscopy_database->put("frequency", frequency);
         std::complex<double> computed_impedance = cap::measure_impedance(device, impedance_spectroscopy_database);
         std::complex<double> exact_impedance    =
             ((type.compare("SeriesRC") == 0) ?
-            series_resistance + 1.0 / std::complex<double>(0.0, capacitance * 2.0*pi*frequency) :
-            series_resistance + parallel_resistance / std::complex<double>(1.0, capacitance * parallel_resistance * 2.0*pi*frequency));
+            series_resistance + 1.0 / std::complex<double>(0.0, capacitance * angular_frequency) :
+            series_resistance + parallel_resistance / std::complex<double>(1.0, parallel_resistance * capacitance * angular_frequency));
         fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
             % frequency
             % computed_impedance.real()
@@ -151,8 +153,10 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
             % std::abs(exact_impedance)
             % (std::arg(exact_impedance) * 180.0 / pi)
             ;
-          BOOST_CHECK_CLOSE(computed_impedance.real(), exact_impedance.real(), percent_tolerance);
-          BOOST_CHECK_CLOSE(computed_impedance.imag(), exact_impedance.imag(), percent_tolerance);
+//          BOOST_CHECK_CLOSE(computed_impedance.real(), exact_impedance.real(), percent_tolerance);
+//          BOOST_CHECK_CLOSE(computed_impedance.imag(), exact_impedance.imag(), percent_tolerance);
+          BOOST_CHECK_CLOSE(std::abs(computed_impedance), std::abs(exact_impedance), percent_tolerance);
+          BOOST_CHECK_CLOSE(std::arg(computed_impedance), std::arg(exact_impedance), percent_tolerance);
     }
 
 }
