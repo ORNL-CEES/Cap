@@ -145,11 +145,11 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
             % computed_impedance.real()
             % computed_impedance.imag()
             % std::abs(computed_impedance)
-            % std::arg(computed_impedance)
+            % (std::arg(computed_impedance) * 180.0 / pi)
             % exact_impedance.real()
             % exact_impedance.imag()
             % std::abs(exact_impedance)
-            % std::arg(exact_impedance)
+            % (std::arg(exact_impedance) * 180.0 / pi)
             ;
           BOOST_CHECK_CLOSE(computed_impedance.real(), exact_impedance.real(), percent_tolerance);
           BOOST_CHECK_CLOSE(computed_impedance.imag(), exact_impedance.imag(), percent_tolerance);
