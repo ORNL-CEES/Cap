@@ -1,17 +1,16 @@
 <device>
-    <type>SeriesRC</type>
+    <type>ParallelRC</type>
     <capacitance>3.0</capacitance>
-    <parallel_resistance>2.5e6</parallel_resistance>
-    <series_resistance>51.0e-3</series_resistance>
+    <parallel_resistance>2.5e2</parallel_resistance>
+    <series_resistance>50.0e-1</series_resistance>
 </device>
 
 <impedance_spectroscopy>
-    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
-    <frequency_upper_limit>1.0e6</frequency_upper_limit>
-    <frequency>1.0e+2</frequency>
-    <ratio>3.16227766</ratio>
+    <frequency>1.0e-5</frequency>
     <amplitude>1.1</amplitude>
-    <cycles>5</cycles>
+    <cycles>2</cycles>
+    <ignore_cycles>1</ignore_cycles>
     <steps_per_cycle>64</steps_per_cycle>
+    <tolerance>1.0e-1</tolerance>
 </impedance_spectroscopy>
 
