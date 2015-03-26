@@ -10,7 +10,7 @@
     <amplitude>1.1</amplitude>
     <cycles>2</cycles>
     <ignore_cycles>1</ignore_cycles>
-    <steps_per_cycle>64</steps_per_cycle>
+    <steps_per_cycle>2048</steps_per_cycle>
     <tolerance>1.0e-1</tolerance>
 </impedance_spectroscopy>
 
