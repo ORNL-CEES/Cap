@@ -9,9 +9,9 @@ SeriesRC::
 SeriesRC(std::shared_ptr<Parameters const> params)
 {
     std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    R   = database->get<double>("series_resistance"     );
-    C   = database->get<double>("capacitance"           );
-    U   = database->get<double>("initial_voltage"  , 0.0);
+    R = database->get<double>("series_resistance"     );
+    C = database->get<double>("capacitance"           );
+    U = database->get<double>("initial_voltage"  , 0.0);
     this->reset_voltage(U);
 }
 
@@ -86,8 +86,8 @@ SeriesRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
     U_C -= (U - U_C) * std::expm1(-delta_t/(R*C));
-//    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C))); // ramp
-    U_C -= (constant_voltage - U) * std::expm1(-delta_t/(R*C));                             // step
+    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C))); // ramp
+//    U_C -= (constant_voltage - U) * std::expm1(-delta_t/(R*C));                             // step
     U = constant_voltage;
     I = (U - U_C) / R;
 }
@@ -167,7 +167,7 @@ void
 ParallelRC::
 reset_current(double const current)
 {
-    I   = current;
+    I = current;
     U = R_series * I + U_C;
 }
 
@@ -198,14 +198,11 @@ void
 ParallelRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
+    U_C -=  (U - U_C) * R_parallel / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
+    U_C += (constant_voltage - U) / delta_t * R_parallel / (R_series + R_parallel) * (delta_t + (R_series * R_parallel * C) / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C))); // ramp
+//    U_C -=  (constant_voltage - U) * R_parallel / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C)); // step
     U   = constant_voltage;
-    if (R_series != 0.0) {
-        U_C =  R_parallel / (R_series + R_parallel) * U + (U_C - R_parallel / (R_series + R_parallel) * U) * std::exp(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
-        I   = (U - U_C) / R_series;
-    } else {
-        U_C = U;
-        I   = U_C / R_parallel;
-    }
+    I   = (U - U_C) / R_series;
 }
 
 
