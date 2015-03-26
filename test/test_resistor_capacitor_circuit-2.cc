@@ -11,6 +11,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <cap/resistor_capacitor.h>
+#include <memory>
+
 BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
 {
     // parse input file
@@ -53,12 +56,6 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     fout.open("resistor_capacitor_data", std::fstream::out);
 
     std::cout<<type<<"\n";
-    std::cout<<"delta_t = "<<time_step<<"\n";
-    double const tau = series_resistance*parallel_resistance/(series_resistance+parallel_resistance)*capacitance;
-    std::cout<<"tau = "<<tau<<"\n";
-    std::cout<<"delta_t / tau = "<<time_step/tau<<"\n";
-    std::cout<<"expm1(- delta_t / tau) = "<<std::exp(-time_step/tau)<<"\n";
-
     double const angular_frequency = 2.0 * pi * frequency;
 
     double const gain  =
@@ -112,3 +109,85 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     }
 
 }    
+
+
+
+BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
+{
+    // parse input file
+    std::shared_ptr<boost::property_tree::ptree> input_database =
+        std::make_shared<boost::property_tree::ptree>();
+    read_xml("input_resistor_capacitor", *input_database);
+
+    // build an energy storage system
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    std::shared_ptr<cap::EnergyStorageDevice> step_device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+    std::shared_ptr<cap::EnergyStorageDevice> ramp_device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+
+    std::fstream fout;
+    fout.open("step_vs_ramp_data", std::fstream::out);
+
+    std::string const type = input_database->get<std::string>("device.type");
+    double const series_resistance   = input_database->get<double>("device.series_resistance"              );
+    double const parallel_resistance = input_database->get<double>("device.parallel_resistance"            );
+    double const capacitance         = input_database->get<double>("device.capacitance"                    );
+    double const initial_voltage     = input_database->get<double>("initial_voltage"                       );
+    double const final_voltage       = input_database->get<double>("final_voltage"                         );
+    double const time_constant =
+        (
+            (type.compare("SeriesRC") == 0)
+        ?
+            series_resistance * capacitance
+        :
+            series_resistance * parallel_resistance / (series_resistance + parallel_resistance) * capacitance
+        );
+
+     step_device->reset_voltage(initial_voltage);
+     ramp_device->reset_voltage(initial_voltage);
+     double const initial_time = input_database->get<double>("initial_time"                          , 0.0);
+     double const final_time   = input_database->get<double>("final_time"                                 );
+     int    const steps        = input_database->get<int   >("steps"                                      );
+     double const time_step     = final_time / static_cast<double>(steps);
+
+     std::cout<<"time_constant = "<<time_constant<<"\n";
+     std::cout<<"time_step = "<<time_step<<"\n";
+     double step_capacitor_voltage;
+     double step_current;
+     double ramp_capacitor_voltage;
+     double ramp_current;
+     for (double time = initial_time; time <= final_time; time += time_step)
+     {
+         double const ramp_voltage = initial_voltage + (final_voltage - initial_voltage) / (final_time - initial_time) * (time - initial_time);
+         double const step_voltage = final_voltage;
+         ramp_device->evolve_one_time_step_constant_voltage(time_step, ramp_voltage);
+         step_device->evolve_one_time_step_constant_voltage(time_step, step_voltage);
+         if (type.compare("SeriesRC") == 0) {
+             step_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(step_device))->U_C;
+             ramp_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(ramp_device))->U_C;
+         } else if (type.compare("ParallelRC") == 0) {
+             step_capacitor_voltage = (std::dynamic_pointer_cast<cap::ParallelRC>(step_device))->U_C;
+             ramp_capacitor_voltage = (std::dynamic_pointer_cast<cap::ParallelRC>(ramp_device))->U_C;
+         } else {
+             throw std::runtime_error("NEIN NEIN NEIN");
+         }
+         step_device->get_current(step_current);
+         ramp_device->get_current(ramp_current);
+         fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
+             % time
+             % step_current
+             % step_voltage
+             % step_capacitor_voltage
+             % (series_resistance * step_current)
+             % ramp_current
+             % ramp_voltage
+             % ramp_capacitor_voltage
+             % (series_resistance * ramp_current)
+             ;
+     }
+
+     fout.close();
+
+}
