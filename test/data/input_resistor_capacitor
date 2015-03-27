@@ -18,4 +18,5 @@
 <final_voltage>2.7</final_voltage>
 <final_time>100.0</final_time>
 <initial_time>0.0</initial_time>
-<steps>10000</steps>
+<steps>16</steps>
+<control_steps>10000</control_steps>
