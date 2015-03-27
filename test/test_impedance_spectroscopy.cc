@@ -19,29 +19,6 @@ namespace cap {
 std::complex<double>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database);
 
-void bar(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
-{
-    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
-    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
-    double const ratio                 = database->get<double>("ratio"                );
-    double const pi                    = boost::math::constants::pi<double>();
-    std::shared_ptr<boost::property_tree::ptree> tmp =
-        std::make_shared<boost::property_tree::ptree>(*database);
-    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= ratio)
-    {
-        tmp->put("frequency", frequency);
-        std::complex<double> impedance =
-            measure_impedance(dev, tmp);
-        os<<boost::format( "  %20.15e  %20.15e  %20.15e  %20.15e  %20.15e  \n")
-            % frequency
-            % impedance.real()
-            % impedance.imag()
-            % std::abs(impedance)
-            % (std::arg(impedance) * 180.0 / pi)
-            ;
-    }
-}
-
 
 
 std::complex<double>
@@ -91,6 +68,31 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
     return impedance;
 }
 
+
+
+void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+{
+    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
+    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
+    double const ratio                 = database->get<double>("ratio"                );
+    double const pi                    = boost::math::constants::pi<double>();
+    std::shared_ptr<boost::property_tree::ptree> tmp =
+        std::make_shared<boost::property_tree::ptree>(*database);
+    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= ratio)
+    {
+        tmp->put("frequency", frequency);
+        std::complex<double> impedance =
+            measure_impedance(dev, tmp);
+        os<<boost::format( "  %20.15e  %20.15e  %20.15e  %20.15e  %20.15e  \n")
+            % frequency
+            % impedance.real()
+            % impedance.imag()
+            % std::abs(impedance)
+            % (std::arg(impedance) * 180.0 / pi)
+            ;
+    }
+}
+
 } // end namespace cap
 
 
@@ -103,12 +105,9 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     read_xml("input_impedance_spectroscopy", *input_database);
 
     std::string const type = input_database->get<std::string>("device.type");
+    // current test will only work for series or parallel rc circuit
     if ((type.compare("SeriesRC") != 0) && (type.compare("ParallelRC") != 0))
-        input_database->put("device.type", "ParallelRC");
-    std::string const duh = input_database->get<std::string>("device.type");
-    if (duh.compare("NoName") == 0)
-        throw std::runtime_error("duh");
-    
+        throw std::runtime_error("test measure impedance check not implemented for "+type);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
@@ -134,9 +133,13 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
         impedance_spectroscopy_database->put("frequency", frequency);
         std::complex<double> computed_impedance = cap::measure_impedance(device, impedance_spectroscopy_database);
         std::complex<double> exact_impedance    =
-            ((type.compare("SeriesRC") == 0) ?
-            series_resistance + 1.0 / std::complex<double>(0.0, capacitance * angular_frequency) :
-            series_resistance + parallel_resistance / std::complex<double>(1.0, parallel_resistance * capacitance * angular_frequency));
+            (
+                (type.compare("SeriesRC") == 0)
+                ?
+                series_resistance + 1.0 / std::complex<double>(0.0, capacitance * angular_frequency)
+                :
+                series_resistance + parallel_resistance / std::complex<double>(1.0, parallel_resistance * capacitance * angular_frequency)
+            );
         fout<<boost::format("  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
             % frequency
             % computed_impedance.real()
@@ -177,6 +180,6 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
 
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
-    cap::bar(device, impedance_spectroscopy_database, fout);
+    cap::impedance_spectroscopy(device, impedance_spectroscopy_database, fout);
 
 }    
