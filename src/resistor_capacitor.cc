@@ -85,9 +85,19 @@ void
 SeriesRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
+    U_C -= (constant_voltage - U_C) * std::expm1(-delta_t/(R*C));
+    U = constant_voltage;
+    I = (U - U_C) / R;
+}
+
+
+
+void
+SeriesRC::
+evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage)
+{
     U_C -= (U - U_C) * std::expm1(-delta_t/(R*C));
-    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C))); // ramp
-//    U_C -= (constant_voltage - U) * std::expm1(-delta_t/(R*C));                             // step
+    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C)));
     U = constant_voltage;
     I = (U - U_C) / R;
 }
@@ -198,9 +208,19 @@ void
 ParallelRC::
 evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage)
 {
-    U_C -=  (U * R_parallel / (R_series + R_parallel) - U_C) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
-    U_C += (constant_voltage - U) / delta_t * R_parallel / (R_series + R_parallel) * (delta_t + (R_series * R_parallel * C) / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C))); // ramp
-//    U_C -=  (constant_voltage - U) * R_parallel / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C)); // step
+    U_C -= (constant_voltage * R_parallel / (R_series + R_parallel) - U_C) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
+    U   = constant_voltage;
+    I   = (U - U_C) / R_series;
+}
+
+
+
+void
+ParallelRC::
+evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage)
+{
+    U_C -= (U * R_parallel / (R_series + R_parallel) - U_C) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C));
+    U_C += (constant_voltage - U) / delta_t * R_parallel / (R_series + R_parallel) * (delta_t + (R_series * R_parallel * C) / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C)));
     U   = constant_voltage;
     I   = (U - U_C) / R_series;
 }
