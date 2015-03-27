@@ -17,7 +17,7 @@
 namespace cap {
 
 std::complex<double>
-measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout);
+measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database);
 
 void bar(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
@@ -45,7 +45,7 @@ void bar(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::p
 
 
 std::complex<double>
-measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os)
+measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
 {
     double const frequency       = database->get<double>("frequency"      );
     double const amplitude       = database->get<double>("amplitude"      );
@@ -74,18 +74,13 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
     {
           time += time_step;
           voltage = amplitude*std::sin(2.0*pi*frequency*time+phase);
-          dev->evolve_one_time_step_constant_voltage(time_step, voltage);
+          dev->evolve_one_time_step_changing_voltage(time_step, voltage);
           dev->get_current(current);
           if (n >= steps_per_cycle)
           {
               excitation.push_back(voltage);
               response  .push_back(current);
           }
-//          os<<boost::format("  %20.15e  %20.15e  %20.15e  \n")
-//              % time
-//              % current
-//              % voltage
-//              ;
     }
     gsl_fft_real_radix2_transform(&(excitation[0]), 1, excitation.size());
     gsl_fft_real_radix2_transform(&(response  [0]), 1, response  .size());

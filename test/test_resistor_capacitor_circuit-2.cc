@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     {
           time += time_step;
           voltage = amplitude * std::sin(angular_frequency * time);
-          device->evolve_one_time_step_constant_voltage(time_step, voltage);
+          device->evolve_one_time_step_changing_voltage(time_step, voltage);
           device->get_current(current);
           double const exact = amplitude * gain * std::sin(angular_frequency * time + phase);
           double const error = 100.0 * std::abs(current-exact)/(amplitude*gain);
@@ -152,8 +152,9 @@ BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
      int    const steps        = input_database->get<int   >("steps"                                      );
      double const time_step     = final_time / static_cast<double>(steps);
 
-     std::cout<<"time_constant = "<<time_constant<<"\n";
-     std::cout<<"time_step = "<<time_step<<"\n";
+     std::cout<<"tau = "<<time_constant<<"\n";
+     std::cout<<"delta_t = "<<final_time<<"\n";
+     std::cout<<"delta_t/tau = "<<final_time/time_constant<<"\n";
      double step_capacitor_voltage;
      double step_current;
      double ramp_capacitor_voltage;
@@ -162,8 +163,8 @@ BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
      {
          double const ramp_voltage = initial_voltage + (final_voltage - initial_voltage) / (final_time - initial_time) * (time - initial_time);
          double const step_voltage = final_voltage;
-         ramp_device->evolve_one_time_step_constant_voltage(time_step, ramp_voltage);
-         step_device->evolve_one_time_step_constant_voltage(time_step, step_voltage);
+         ramp_device->evolve_one_time_step_changing_voltage(time_step, ramp_voltage);
+         step_device->evolve_one_time_step_changing_voltage(time_step, step_voltage);
          if (type.compare("SeriesRC") == 0) {
              step_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(step_device))->U_C;
              ramp_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(ramp_device))->U_C;
@@ -187,6 +188,8 @@ BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
              % (series_resistance * ramp_current)
              ;
      }
+     std::cout<<"step = "<<(series_resistance * step_current)<<"\n";
+     std::cout<<"ramp = "<<(series_resistance * ramp_current)<<"\n";
 
      fout.close();
 
