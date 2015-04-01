@@ -11,6 +11,7 @@
 #include <memory>
 
 
+
 void report_time_current_voltage(std::vector<double> const & time,
     std::vector<double> const & current,
     std::vector<double> const & voltage,
@@ -27,6 +28,8 @@ void report_time_current_voltage(std::vector<double> const & time,
             % voltage[i]
             ;
 }
+
+
 
 BOOST_AUTO_TEST_CASE( test_report_time_current_voltage )
 {
@@ -55,6 +58,7 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
 //    in->put("debug.material_ids", true);
 
     in->put("material_properties.electrode_void_volume_fraction", 0.55);
+    in->put("material_properties.exchange_current_density"      , 1.0e3);
 
     std::shared_ptr<boost::property_tree::ptree> out(new boost::property_tree::ptree);
     std::vector<double> time;
@@ -107,8 +111,6 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
 
     report_time_current_voltage(time, current, voltage);
     std::cout<<"########  END LOW FIDELITY MODEL  ########\n";
-
-
 }
 
 #include "common.cc"
