@@ -80,17 +80,21 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
         ( 1.0 / electrode_solid_electrical_conductivity_values[0]
           +
           1.0 / electrode_liquid_electrical_conductivity_values[0] )
-        * 0.33 // TODO:
+        * 0.5 // TODO:
         ;
     double const electrode_resistance = electrode_resistivity * electrode_width / cross_sectional_area;
     std::vector<double> electrode_specific_capacitance_values(1);
     mp_values->get_values("specific_capacitance", cell, electrode_specific_capacitance_values);
     double const electrode_capacitance =
         electrode_specific_capacitance_values[0] * electrode_width * cross_sectional_area;
+    std::vector<double> electrode_exchange_current_density_values(1);
+    mp_values->get_values("faradaic_reaction_coefficient", cell, electrode_exchange_current_density_values);
+    double const electrode_leakage_resistance = 1.0 / (electrode_exchange_current_density_values[0] * electrode_width * cross_sectional_area);
     std::cout<<"ELECTRODE\n";
     std::cout<<"    specific_capacitance="<<electrode_specific_capacitance_values[0]<<"\n";
     std::cout<<"    solid_electrical_conductivity="<<electrode_solid_electrical_conductivity_values[0]<<"\n";
     std::cout<<"    liquid_electrical_conductivity="<<electrode_liquid_electrical_conductivity_values[0]<<"\n";
+    std::cout<<"    exchange_current_density="<<electrode_exchange_current_density_values[0]<<"\n";
     std::cout<<"    width="<<electrode_width<<"\n";
     std::cout<<"    cross_sectional_area="<<cross_sectional_area<<"\n";
     // separator
@@ -120,6 +124,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
 
     std::cout<<"electrode_capacitance="<<electrode_capacitance<<"\n";
     std::cout<<"electrode_resistance="<<electrode_resistance<<"\n";
+    std::cout<<"electrode_leakage_resistance="<<electrode_leakage_resistance<<"\n";
     std::cout<<"separator_resistance="<<separator_resistance<<"\n";
     std::cout<<"collector_resistance="<<collector_resistance<<"\n";
 
@@ -130,6 +135,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
 //    double const sandwich_resistance = 59.96;
     double const sandwich_capacitance = electrode_capacitance / 2.0;
     double const sandwich_resistance = 2.0 * electrode_resistance + separator_resistance + 2.0 * collector_resistance;
+    double const sandwich_leakage_resistance = 2.0 * electrode_leakage_resistance;
     double const charge_current_density = database->get<double>("boundary_values.charge_current_density");
     double const discharge_current_density = database->get<double>("boundary_values.discharge_current_density");
     double const charge_current = charge_current_density * (collector_width * 1.0); // TODO: tab cross section
@@ -137,6 +143,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> database)
     double const initial_voltage =  database->get<double>("boundary_values.initial_potential");
     std::cout<<"sandwich_capacitance="<<sandwich_capacitance<<"\n";
     std::cout<<"sandwich_resistance="<<sandwich_resistance<<"\n";
+    std::cout<<"sandwich_leakage_resistance="<<sandwich_leakage_resistance<<"\n";
     std::cout<<"charge_current="<<charge_current<<"\n";
     std::cout<<"discharge_current="<<discharge_current<<"\n";
     std::cout<<"initial_voltage="<<initial_voltage<<"\n";
