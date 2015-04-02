@@ -62,7 +62,7 @@
         <separator_tortuosity_factor>         1.29     </separator_tortuosity_factor>
         <pores_characteristic_dimension>      1.5e-9   </pores_characteristic_dimension>
         <pores_geometry_factor>               2.0      </pores_geometry_factor>
-        <exchange_current_density>            1.0e4    </exchange_current_density>
+        <exchange_current_density>            0.7463e-5</exchange_current_density>
     </material_properties>
 
     <boundary_values>
