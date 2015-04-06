@@ -86,6 +86,7 @@ protected:
     double bruggemans_coefficient;
     double pores_characteristic_dimension;
     double pores_geometry_factor;
+    double specific_surface_area_per_unit_volume;
 
     double anodic_charge_transfer_coefficient;
     double cathodic_charge_transfer_coefficient;

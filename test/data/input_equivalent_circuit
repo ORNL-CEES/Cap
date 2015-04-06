@@ -1,24 +1,13 @@
-<operating_conditions>
-    <charge_time>15.0</charge_time>
-    <relaxation_time>45.0</relaxation_time>
-    <time_step>0.5</time_step>
-    <charge_current>300.0</charge_current>
-</operating_conditions>
-
 <device>
-    <capacitance>3.0</capacitance>
-    <parallel_resistance>2.5e6</parallel_resistance>
-    <series_resistance>50.0e-3</series_resistance>
-
     <type>NoName</type>
     <dim>2</dim>
+
     <geometry>
         <mesh_file>mesh_2d.ucd</mesh_file>
         <electrode_width>50.0e-6</electrode_width>
         <separator_width>25.0e-6</separator_width>
         <collector_width>5.0e-6</collector_width>
         <sandwich_height>25.0e-6</sandwich_height>
-        <sandwich_depth>50.0e-6</sandwich_depth>
         <tab_height>5.0e-6</tab_height>
         <separator_material_id>3</separator_material_id>
         <anode_electrode_material_id>4</anode_electrode_material_id>
@@ -89,7 +78,15 @@
     </boundary_values>
 </device>
 
-<initial_voltage>1.9</initial_voltage>
-<initial_current>0.0016</initial_current>
-<tolerance>1.0e-4</tolerance>
-<time_step>15.0</time_step>
+<cycling_charge_discharge>
+    <charge_current>5.0e-3</charge_current>
+    <discharge_current>-5.0e-3</discharge_current>
+    <voltage_upper_limit>2.7</voltage_upper_limit>
+    <voltage_lower_limit>1.1</voltage_lower_limit>
+    <initial_voltage>1.5</initial_voltage>
+    <charge_hold_time>3.0</charge_hold_time>
+    <discharge_rest_time>10.0</discharge_rest_time>
+    <time_step>0.05</time_step>
+    <cycles>2</cycles>
+</cycling_charge_discharge>
+

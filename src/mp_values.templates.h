@@ -72,6 +72,8 @@ SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const & parameters)
     this->bruggemans_coefficient           = database->get<double>("bruggemans_coefficient"          );
     this->pores_characteristic_dimension   = database->get<double>("pores_characteristic_dimension"  );
     this->pores_geometry_factor            = database->get<double>("pores_geometry_factor"           );
+    this->specific_surface_area_per_unit_volume =
+        (1.0 + this->pores_geometry_factor) * this->electrode_void_volume_fraction / this->pores_characteristic_dimension;
                                                                                                                  
     this->anodic_charge_transfer_coefficient   = database->get<double>("anodic_charge_transfer_coefficient"  ,   0.5         );
     this->cathodic_charge_transfer_coefficient = database->get<double>("cathodic_charge_transfer_coefficient",   0.5         );
@@ -129,7 +131,7 @@ get_values(std::string const &          key,
             std::fill(values.begin(), values.end(), 0.0);
         } else if ((cell->material_id() == this->anode_electrode_material_id)
             || (cell->material_id() == this->cathode_electrode_material_id)) {
-            std::fill(values.begin(), values.end(), (1.0+this->pores_geometry_factor)*this->electrode_void_volume_fraction/this->pores_characteristic_dimension*this->differential_capacitance);
+            std::fill(values.begin(), values.end(), this->specific_surface_area_per_unit_volume*this->differential_capacitance);
         } else if ((cell->material_id() == this->anode_collector_material_id)
             || (cell->material_id() == this->cathode_collector_material_id)) {
             std::fill(values.begin(), values.end(), 0.0);
@@ -169,7 +171,8 @@ get_values(std::string const &          key,
         } else if ((cell->material_id() == this->anode_electrode_material_id) 
             || (cell->material_id() == this->cathode_electrode_material_id)) {
             std::fill(values.begin(), values.end(),
-                this->exchange_current_density * (this->anodic_charge_transfer_coefficient + this->cathodic_charge_transfer_coefficient)
+                this->specific_surface_area_per_unit_volume
+                    * this->exchange_current_density * (this->anodic_charge_transfer_coefficient + this->cathodic_charge_transfer_coefficient)
                     * this->faraday_constant / (this->gas_constant * this->temperature)
                 );
         } else if ((cell->material_id() == this->anode_collector_material_id) 
