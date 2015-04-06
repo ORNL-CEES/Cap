@@ -12,10 +12,17 @@
 
 namespace cap {
 
-void report(double const t, std::shared_ptr<cap::EnergyStorageDevice const> dev, std::ostream & os = std::cout)
+void report(double const time, std::shared_ptr<cap::EnergyStorageDevice const> dev, std::ostream & os = std::cout)
 {
-    os<<boost::format("%10.5f  ") % t;
-    dev->print_data(os);
+    double current;
+    double voltage;
+    dev->get_current(current);
+    dev->get_voltage(voltage);
+    os<<boost::format("  %22.15e  %22.15e  %22.15e  ")
+        % time
+        % current
+        % voltage
+        ;
 }
 
 
@@ -55,6 +62,8 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
 }
 
 } // end namespace cap
+
+
 
 BOOST_AUTO_TEST_CASE( test_cyclic_voltammetry )
 {
