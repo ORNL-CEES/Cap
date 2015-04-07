@@ -133,6 +133,9 @@ void report(double const time, std::shared_ptr<EnergyStorageDevice const> dev, s
         % current
         % voltage
         ;
+    // debug output of the solution fields and fluxes
+    std::ostream null_sink(0);
+    dev->print_data(null_sink);
 }
 
 
