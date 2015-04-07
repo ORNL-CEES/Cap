@@ -18,7 +18,7 @@ void report(double const time, std::shared_ptr<cap::EnergyStorageDevice const> d
     double voltage;
     dev->get_current(current);
     dev->get_voltage(voltage);
-    os<<boost::format("  %22.15e  %22.15e  %22.15e  ")
+    os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
         % time
         % current
         % voltage
