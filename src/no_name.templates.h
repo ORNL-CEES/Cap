@@ -4,11 +4,14 @@
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/data_out.h>
 #include <deal.II/lac/sparse_direct.h>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <tuple>
+#include <fstream>
 
 namespace cap {
 
@@ -236,7 +239,7 @@ evolve_one_time_step(double const time_step)
 
     inverse_electrochemical_system_matrix.vmult(solution_electrochemical_block, system_rhs_electrochemical_block);
 
-    this->post_processor->reset(this->post_processor_params);
+    (*this->post_processor).reset(this->post_processor_params);
 }
 
 
@@ -258,7 +261,7 @@ void
 NoName<dim>::
 get_current(double & current) const
 {
-    this->post_processor->get("current", current);
+    (*this->post_processor).get("current", current);
 }
 
 
@@ -268,7 +271,7 @@ void
 NoName<dim>::
 get_voltage(double & voltage) const
 {
-    this->post_processor->get("voltage", voltage);
+    (*this->post_processor).get("voltage", voltage);
 }
 
 
@@ -280,12 +283,28 @@ print_data(std::ostream & os) const
 {
     double current;
     double voltage;
-    this->post_processor->get("voltage", voltage);
-    this->post_processor->get("current", current);
+    (*this->post_processor).get("voltage", voltage);
+    (*this->post_processor).get("current", current);
     os<<boost::format("  %10.5f  %10.7f  \n")
         % current
         % voltage
         ;
+
+    static int i = 0;
+    std::vector<std::string> keys = (*this->post_processor).get_vector_keys();
+    std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
+        (*this->geometry).get_triangulation();
+    if (!keys.empty()) {
+        dealii::DataOut<dim> data_out;
+        data_out.attach_triangulation(*triangulation);
+        BOOST_FOREACH(std::string const & key, keys)
+            data_out.add_data_vector((*this->post_processor).get(key), key);
+        data_out.build_patches();
+        std::string const filename = "solution-" + dealii::Utilities::int_to_string(i++, 4) + ".vtk";
+        std::ofstream fout(filename.c_str());
+        data_out.write_vtk(fout);
+        fout.close();
+    }
 }
 
 
