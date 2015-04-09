@@ -52,8 +52,12 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
     double const electrode_resistivity =
         ( 1.0 / electrode_solid_electrical_conductivity_values[0]
           +
-          1.0 / electrode_liquid_electrical_conductivity_values[0] )
-        / 3.0
+          1.0 / electrode_liquid_electrical_conductivity_values[0] 
+          +
+          1.0 / ( electrode_solid_electrical_conductivity_values[0]
+                  +
+                  electrode_liquid_electrical_conductivity_values[0] )
+        ) / 3.0
         ;
     double const electrode_resistance = electrode_resistivity * electrode_width / cross_sectional_area;
     std::vector<double> electrode_specific_capacitance_values(1);
