@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestCyclicVoltammetry
+#define BOOST_TEST_MODULE TestCyclicChargeDischarge
 #define BOOST_TEST_MAIN
 #include <cap/resistor_capacitor.h>
 #include <boost/format.hpp>
@@ -18,7 +18,7 @@ void report(double const time, std::shared_ptr<cap::EnergyStorageDevice const> d
     double voltage;
     dev->get_current(current);
     dev->get_voltage(voltage);
-    os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+    os<<boost::format("  %22.15e  %22.15e  %22.15e  ")
         % time
         % current
         % voltage
@@ -35,6 +35,10 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
     double const upper_voltage_limit = database->get<double>("upper_voltage_limit");
     double const lower_voltage_limit = database->get<double>("lower_voltage_limit");
     double const final_voltage       = database->get<double>("final_voltage"      );
+    double const rest_time           = database->get<double>("rest_time"          );
+    double const voltage_finish      = database->get<double>("voltage_finish"     );
+    double const current_charge      = database->get<double>("current_charge"     );
+    double const current_discharge   = database->get<double>("current_discharge"  );
     int    const cycles              = database->get<int   >("cycles"             );
 
     double const time_step = step_size / scan_rate;
@@ -65,12 +69,12 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
 
 
 
-BOOST_AUTO_TEST_CASE( test_cyclic_voltammetry )
+BOOST_AUTO_TEST_CASE( test_cyclic_charge_discharge )
 {
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_cyclic_voltammetry", *input_database);
+    read_xml("input_cyclic_charge_discharge", *input_database);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
@@ -80,9 +84,9 @@ BOOST_AUTO_TEST_CASE( test_cyclic_voltammetry )
 
     // scan the system
     std::fstream fout;
-    fout.open("cyclic_voltammetry_data", std::fstream::out);
+    fout.open("cyclic_charge_discharge_data", std::fstream::out);
 
     std::shared_ptr<boost::property_tree::ptree> cyclic_voltammetry_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("cyclic_voltammetry"));
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("cyclic_charge_discharge"));
     cap::scan(device, cyclic_voltammetry_database, fout);
 }    

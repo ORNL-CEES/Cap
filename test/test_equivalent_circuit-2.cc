@@ -50,11 +50,14 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
     mp_values->get_values("solid_electrical_conductivity", cell, electrode_solid_electrical_conductivity_values);
     mp_values->get_values("liquid_electrical_conductivity", cell, electrode_liquid_electrical_conductivity_values);
     double const electrode_resistivity =
-        // TODO: 0.5 for both is what I would compute but this seems to yield a better approximation.
-        // This need further inverstigation.
-        ( 2.0/3.0 / electrode_solid_electrical_conductivity_values[0]
+        ( 1.0 / electrode_solid_electrical_conductivity_values[0]
           +
-          1.0/3.0 / electrode_liquid_electrical_conductivity_values[0] )
+          1.0 / electrode_liquid_electrical_conductivity_values[0] 
+          +
+          1.0 / ( electrode_solid_electrical_conductivity_values[0]
+                  +
+                  electrode_liquid_electrical_conductivity_values[0] )
+        ) / 3.0
         ;
     double const electrode_resistance = electrode_resistivity * electrode_width / cross_sectional_area;
     std::vector<double> electrode_specific_capacitance_values(1);
@@ -133,6 +136,9 @@ void report(double const time, std::shared_ptr<EnergyStorageDevice const> dev, s
         % current
         % voltage
         ;
+    // debug output of the solution fields and fluxes
+    std::ostream null_sink(0);
+    dev->print_data(null_sink);
 }
 
 

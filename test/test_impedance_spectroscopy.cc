@@ -42,6 +42,7 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
     double const time_step = 1.0 / frequency / steps_per_cycle;
     double const phase     = std::asin(initial_voltage / amplitude);
     double const pi        = std::acos(-1.0);
+    double const angular_frequency = 2.0 * pi * frequency;
     dev->reset_voltage(initial_voltage);
     double voltage;
     double current;
@@ -50,7 +51,7 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
     for (int n = 0; n < cycles*steps_per_cycle; ++n)
     {
           time += time_step;
-          voltage = amplitude*std::sin(2.0*pi*frequency*time+phase);
+          voltage = amplitude * std::sin(angular_frequency * time + phase);
           dev->evolve_one_time_step_changing_voltage(time_step, voltage);
           dev->get_current(current);
           if (n >= steps_per_cycle)
