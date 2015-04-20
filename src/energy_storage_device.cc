@@ -26,6 +26,8 @@ buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
         throw std::runtime_error("invalid energy storage type ``"+type+"''\n");
 }
 
+
+
 void
 EnergyStorageDevice::
 evolve_one_time_step_changing_voltage(double const time_step, double const voltage)
@@ -33,6 +35,24 @@ evolve_one_time_step_changing_voltage(double const time_step, double const volta
     // this is meant to be a linear change of the voltage over the time step (ramp)
     // TODO: if not implemented use the step version
     this->evolve_one_time_step_constant_voltage(time_step, voltage);
+}
+
+
+
+void
+EnergyStorageDevice::
+evolve_one_time_step_changing_current(double const time_step, double const current)
+{
+    this->evolve_one_time_step_constant_current(time_step, current);
+}
+
+
+
+void
+EnergyStorageDevice::
+evolve_one_time_step_changing_power(double const time_step, double const power)
+{
+    this->evolve_one_time_step_constant_power(time_step, power);
 }
 
 } // end namespace cap

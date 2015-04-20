@@ -74,8 +74,20 @@ void
 SeriesRC::
 evolve_one_time_step_constant_current(double const delta_t, double const constant_current)
 {
+    U_C += constant_current * delta_t / C;
     I = constant_current;
+    U = R * I + U_C;
+}
+
+
+
+void
+SeriesRC::
+evolve_one_time_step_changing_current(double const delta_t, double const changing_current)
+{
     U_C += I * delta_t / C;
+    U_C += (changing_current - I) * 0.5 * delta_t / C;
+    I = changing_current;
     U = R * I + U_C;
 }
 
@@ -94,11 +106,11 @@ evolve_one_time_step_constant_voltage(double const delta_t, double const constan
 
 void
 SeriesRC::
-evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage)
+evolve_one_time_step_changing_voltage(double const delta_t, double const changing_voltage)
 {
     U_C -= (U - U_C) * std::expm1(-delta_t/(R*C));
-    U_C += (constant_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C)));
-    U = constant_voltage;
+    U_C += (changing_voltage - U) / delta_t * (delta_t + R*C * std::expm1(-delta_t/(R*C)));
+    U = changing_voltage;
     I = (U - U_C) / R;
 }
 
@@ -197,8 +209,20 @@ void
 ParallelRC::
 evolve_one_time_step_constant_current(double const delta_t, double const constant_current)
 {
+    U_C = R_parallel * constant_current + (U_C - R_parallel * constant_current) * std::exp(- delta_t / (R_parallel * C));
     I   = constant_current;
+    U   = R_series * I + U_C;
+}
+
+
+
+void
+ParallelRC::
+evolve_one_time_step_changing_current(double const delta_t, double const changing_current)
+{
     U_C = R_parallel * I + (U_C - R_parallel * I) * std::exp(- delta_t / (R_parallel * C));
+    U_C += R_parallel * (changing_current - I) / delta_t * (delta_t + (R_parallel * C) * std::expm1(- delta_t / (R_parallel * C)));
+    I   = changing_current;
     U   = R_series * I + U_C;
 }
 

@@ -15,8 +15,9 @@ public:
     void reset_current(double const current) override;
     void evolve_one_time_step_constant_current(double const delta_t, double const constant_current) override;
     void evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage) override;
-    void evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage) override;
     void evolve_one_time_step_constant_power  (double const delta_t, double const constant_power  ) override;
+    void evolve_one_time_step_changing_current(double const delta_t, double const changing_current) override;
+    void evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage) override;
     inline void get_voltage(double & voltage) const override { voltage = U; }
     inline void get_current(double & current) const override { current = I; }
     // TODO:
@@ -39,8 +40,9 @@ public:
     void reset_current(double const current) override;
     void evolve_one_time_step_constant_current(double const delta_t, double const constant_current) override;
     void evolve_one_time_step_constant_voltage(double const delta_t, double const constant_voltage) override;
-    void evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage) override;
     void evolve_one_time_step_constant_power  (double const delta_t, double const constant_power  ) override;
+    void evolve_one_time_step_changing_current(double const delta_t, double const changing_current) override;
+    void evolve_one_time_step_changing_voltage(double const delta_t, double const constant_voltage) override;
     inline void get_voltage(double & voltage) const override { voltage = U; }
     inline void get_current(double & current) const override { current = I; }
     // TODO:
