@@ -65,7 +65,7 @@ void
 SeriesRC::
 evolve_one_time_step_constant_power(double const delta_t, double const constant_power)
 {
-    evolve_one_time_step_constant_power(delta_t, constant_power, "toto");
+    evolve_one_time_step_constant_power(delta_t, constant_power, "NEWTON");
 }
 
 
