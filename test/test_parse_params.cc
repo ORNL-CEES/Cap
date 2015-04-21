@@ -35,4 +35,22 @@ BOOST_AUTO_TEST_CASE( test_parse_params )
    BOOST_FOREACH(std::string const & val, yes) 
        BOOST_CHECK_EQUAL( val, "yes" );
    BOOST_CHECK( empty.empty() );
+
+   // ensure entry is overwritten
+   std::string const default_value("default");
+   std::string const path("some.path");
+   params.put(path, default_value);
+   BOOST_CHECK_EQUAL(default_value.compare(params.get<std::string>(path)), 0);
+   std::string const new_value("new");
+   params.put(path, new_value);
+   BOOST_CHECK_EQUAL(new_value.compare(params.get<std::string>(path)), 0);
+   BOOST_CHECK_THROW(params.get<double>(path), boost::property_tree::ptree_bad_data);
+   double const pi = 3.14159265359;
+   params.put(path, pi);
+   BOOST_CHECK_EQUAL(params.get<double>(path), pi);
+   std::string const pi_to_string = std::to_string(pi);
+   std::size_t const precision = 6;
+   BOOST_CHECK_EQUAL(pi_to_string.compare(0, precision+1, params.get<std::string>(path), 0, precision+1), 0);
+    
+   
 }
