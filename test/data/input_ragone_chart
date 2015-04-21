@@ -2,15 +2,27 @@
     <type>ParallelRC</type>
     <capacitance>3.0</capacitance>
     <series_resistance>50.0e-3</series_resistance>
-    <parallel_resistance>2.5e6</parallel_resistance>
+    <parallel_resistance>2.5e+6</parallel_resistance>
 </device>
 
-<ragone_chart>
-    <steps>1000</steps>
-    <ratio>1.05</ratio>
-    <initial_voltage>2.7</initial_voltage>
-    <final_voltage>1.2</final_voltage>
-    <energy_limit>1.0e-1</energy_limit>
+<ragone_chart_constant_power>
     <power_lower_limit>1.0e-6</power_lower_limit>
     <power_upper_limit>1.0e2</power_upper_limit>
-</ragone_chart>
+    <ratio>1.5</ratio>
+    <initial_voltage>2.7</initial_voltage>
+    <final_voltage>1.2</final_voltage>
+    <time_step>1800.0</time_step>
+    <min_steps>200</min_steps>
+    <max_steps>300</max_steps>
+</ragone_chart_constant_power>
+
+<ragone_chart_constant_current>
+    <current_lower_limit>5.0e-7</current_lower_limit>
+    <current_upper_limit>5.0e1</current_upper_limit>
+    <ratio>1.5</ratio>
+    <initial_voltage>2.7</initial_voltage>
+    <final_voltage>1.2</final_voltage>
+    <time_step>1800.0</time_step>
+    <min_steps>200</min_steps>
+    <max_steps>300</max_steps>
+</ragone_chart_constant_current>
