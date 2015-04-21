@@ -149,7 +149,7 @@ public:
         max_duration = database->get<double>("max_duration", std::nan("")                   );
     }
     virtual ~Stage() { }
-    virtual int run(double & time, std::shared_ptr<cap::EnergyStorageDevice> dev, std::ostream & os);
+    virtual int run(double & time, double & time_step, std::shared_ptr<cap::EnergyStorageDevice> dev, std::ostream & os);
 private:
     std::shared_ptr<OperatingConditions> operating_conditions;
     std::shared_ptr<EndCriterion       > end_criterion       ;
@@ -172,10 +172,9 @@ void report_data(double const time, std::shared_ptr<cap::EnergyStorageDevice con
 
 int
 Stage::
-run(double & time, std::shared_ptr<cap::EnergyStorageDevice> dev, std::ostream & os)
+run(double & time, double & time_step, std::shared_ptr<cap::EnergyStorageDevice> dev, std::ostream & os)
 {
     double const tick = time;
-    double time_step = 0.1;
     int    step = 0;
     end_criterion->reset(time, dev);
     while (true)
@@ -205,14 +204,17 @@ void operate(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boos
     }
 
 
+    double const initial_voltage = database->get<double>("initial_voltage");
+    double       time_step       = database->get<double>("time_step"      );
+    dev->reset_voltage(initial_voltage);
     double const initial_time = 0.0;
-    double time = initial_time;
+    double       time         = initial_time;
     int const cycles = database->get<int>("cycles");
     for (int n = 0; n < cycles; ++n)
     {
         double const cycle_tick = time;
         BOOST_FOREACH(std::shared_ptr<cap::Stage> stage, list)
-            stage->run(time, dev, os);
+            stage->run(time, time_step, dev, os);
         double const cycle_duration = time - cycle_tick;
         std::cout<<"cycle_"<<n<<" duration = "<<cycle_duration<<"\n";
     }

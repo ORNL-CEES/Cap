@@ -8,33 +8,30 @@
 <operating_conditions>
     <type>multi_stage</type>
 
-    <cycles>3</cycles>
-    <stages>5</stages>
+    <initial_voltage>1.5</initial_voltage>
+    <time_step>0.1</time_step>
+    <cycles>2</cycles>
+    <stages>4</stages>
     <stage_0>
         <type>galvanostatic</type>
-        <current>+1.0e-3</current>
+        <current>+5.0e-3</current>
         <end_criterion>voltage_greater_than</end_criterion>
         <voltage_limit>2.7</voltage_limit>
     </stage_0>
     <stage_1>
         <type>hold</type>
         <end_criterion>time</end_criterion>
-        <duration>5.0</duration>
+        <duration>3.0</duration>
     </stage_1>
     <stage_2>
         <type>galvanostatic</type>
-        <current>-1.0e-3</current>
+        <current>-5.0e-3</current>
         <end_criterion>voltage_less_than</end_criterion>
         <voltage_limit>1.1</voltage_limit>
     </stage_2>
     <stage_3>
-        <type>hold</type>
-        <end_criterion>time</end_criterion>
-        <duration>30.0</duration>
-    </stage_3>
-    <stage_4>
         <type>rest</type>
         <end_criterion>time</end_criterion>
-        <duration>120.0</duration>
-    </stage_4>
+        <duration>10.0</duration>
+    </stage_3>
 </operating_conditions>
