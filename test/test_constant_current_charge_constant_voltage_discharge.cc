@@ -12,6 +12,8 @@ void put_default_parameters(boost::property_tree::ptree & params);
 
 int main(int argc, char *argv[])
 {
+    std::ignore = argc;
+    std::ignore = argv;
     cap::SuperCapacitorProblem<2> super_capacitor(initialize_database());
 
     // SETTING PROBLEM PARAMETERS
