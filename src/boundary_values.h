@@ -17,7 +17,7 @@ public:
     BoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d) 
         : database(d)
     { }
-    virtual ~BoundaryValuesParameters() { }
+    virtual ~BoundaryValuesParameters() = default;
 // keep public for now
     std::shared_ptr<boost::property_tree::ptree> database;
 
@@ -29,7 +29,7 @@ class BoundaryValues {
 public:
     typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
     BoundaryValues(BoundaryValuesParameters<dim, spacedim> const & ) { }
-    virtual ~BoundaryValues() { }
+    virtual ~BoundaryValues() = default;
     virtual void get_values(std::string const &          key,
                             active_cell_iterator const & cell,
                             unsigned int const           face,

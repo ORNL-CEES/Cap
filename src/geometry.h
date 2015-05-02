@@ -13,8 +13,7 @@ class Geometry
 {
 public:
     Geometry(std::shared_ptr<boost::property_tree::ptree const> const & database);
-    virtual ~Geometry()
-        { }
+    virtual ~Geometry() = default;
     inline std::shared_ptr<dealii::Triangulation<dim> const> get_triangulation() const
         { return this->triangulation; }
     virtual void reset(std::shared_ptr<boost::property_tree::ptree const> const & database) = 0;

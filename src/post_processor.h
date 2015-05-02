@@ -20,7 +20,7 @@ public:
     PostprocessorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
         : database(d)
     { }
-    virtual ~PostprocessorParameters() { }
+    virtual ~PostprocessorParameters() = default;
 
     std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
     dealii::BlockVector<double> const * solution;
@@ -36,7 +36,7 @@ template <int dim>
 class Postprocessor {
 public:
     Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
-    virtual ~Postprocessor() { }
+    virtual ~Postprocessor() = default;
     virtual void reset(std::shared_ptr<PostprocessorParameters<dim> const> ) { }
 
     dealii::Vector<double> const & get(std::string const & key) const;

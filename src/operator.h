@@ -22,7 +22,7 @@ public:
     OperatorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
         : database(d)
     {  }
-    virtual ~OperatorParameters() { }
+    virtual ~OperatorParameters() = default;
 
     std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
     std::shared_ptr<dealii::ConstraintMatrix const> constraint_matrix;
@@ -40,7 +40,7 @@ template <int dim>
 class Operator {
 public:
     Operator(std::shared_ptr<OperatorParameters<dim> const> parameters);
-    virtual ~Operator() { }
+    virtual ~Operator() = default;
     virtual void reset(std::shared_ptr<OperatorParameters<dim> const> ) { }
 
     inline dealii::SparseMatrix<double> const & get_mass_matrix() const { return this->mass_matrix; }

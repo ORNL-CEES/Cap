@@ -17,8 +17,7 @@ public:
     MPValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
         : database(d)
     { }
-    virtual ~MPValuesParameters() 
-    { }
+    virtual ~MPValuesParameters() = default;
 // keep public for now
     std::shared_ptr<boost::property_tree::ptree> database;
 
@@ -30,7 +29,7 @@ class MPValues {
 public:
     typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
     MPValues(MPValuesParameters<dim, spacedim> const & ) { }
-    virtual ~MPValues() { }
+    virtual ~MPValues() = default;
     virtual void get_values(std::string const &          key,
                             active_cell_iterator const & cell,
                             std::vector<double> &        values) const;
