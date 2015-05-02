@@ -17,11 +17,6 @@
 namespace cap {
 
 std::complex<double>
-measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database);
-
-
-
-std::complex<double>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
 {
     double const frequency       = database->get<double>("frequency"      );
