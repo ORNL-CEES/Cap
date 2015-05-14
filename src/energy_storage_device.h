@@ -17,8 +17,7 @@ public:
 class EnergyStorageDevice
 {
 public:
-    EnergyStorageDevice()          = default;
-    virtual ~EnergyStorageDevice() = default;
+    virtual ~EnergyStorageDevice();
     virtual void print_data(std::ostream & os) const = 0;
     virtual void get_voltage(double & voltage) const = 0;
     virtual void get_current(double & current) const = 0;

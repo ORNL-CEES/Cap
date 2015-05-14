@@ -28,6 +28,11 @@ buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
 
 
 
+EnergyStorageDevice::
+~EnergyStorageDevice() = default;
+
+
+
 void
 EnergyStorageDevice::
 evolve_one_time_step_changing_voltage(double const time_step, double const voltage)
