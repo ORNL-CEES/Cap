@@ -32,8 +32,8 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
     double const scan_rate           = database->get<double>("scan_rate"          );
     double const step_size           = database->get<double>("step_size"          );
     double const initial_voltage     = database->get<double>("initial_voltage"    );
-    double const upper_voltage_limit = database->get<double>("upper_voltage_limit");
-    double const lower_voltage_limit = database->get<double>("lower_voltage_limit");
+    double const voltage_upper_limit = database->get<double>("voltage_upper_limit");
+    double const voltage_lower_limit = database->get<double>("voltage_lower_limit");
     double const final_voltage       = database->get<double>("final_voltage"      );
     int    const cycles              = database->get<int   >("cycles"             );
 
@@ -43,12 +43,12 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
     for (int n = 0; n < cycles; ++n)
     {
         double voltage = initial_voltage;
-        for ( ; voltage <= upper_voltage_limit; voltage += step_size, time+=time_step)
+        for ( ; voltage <= voltage_upper_limit; voltage += step_size, time+=time_step)
         {
             dev->evolve_one_time_step_constant_voltage(time_step, voltage);
             report(time, dev, os);
         }
-        for ( ; voltage >= lower_voltage_limit; voltage -= step_size, time+=time_step)
+        for ( ; voltage >= voltage_lower_limit; voltage -= step_size, time+=time_step)
         {
             dev->evolve_one_time_step_constant_voltage(time_step, voltage);
             report(time, dev, os);

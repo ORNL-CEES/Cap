@@ -9,8 +9,8 @@
     <scan_rate>100.0e-3</scan_rate>
     <step_size>5.0e-3</step_size>
     <initial_voltage>0.0</initial_voltage>
-    <upper_voltage_limit>3.5</upper_voltage_limit>
-    <lower_voltage_limit>-2.0</lower_voltage_limit>
+    <voltage_upper_limit>3.5</voltage_upper_limit>
+    <voltage_lower_limit>-2.0</voltage_lower_limit>
     <final_voltage>0.0</final_voltage>
     <cycles>1</cycles>
 </cyclic_voltammetry>
