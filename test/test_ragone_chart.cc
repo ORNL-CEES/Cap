@@ -96,7 +96,7 @@ find_power_energy_for_constant_current_discharge(std::shared_ptr<cap::EnergyStor
 
 void scan_constant_power(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
-    double const ratio             = database->get<double>("ratio"            );
+    int    const steps_per_decade  = database->get<int   >("steps_per_decade" );
     double const power_lower_limit = database->get<double>("power_lower_limit");
     double const power_upper_limit = database->get<double>("power_upper_limit");
 
@@ -105,7 +105,7 @@ void scan_constant_power(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sha
     int    steps;
     std::shared_ptr<boost::property_tree::ptree> dummy_database =
         std::make_shared<boost::property_tree::ptree>(*database);
-    for (double power = power_lower_limit; power <= power_upper_limit; power *= ratio)
+    for (double power = power_lower_limit; power <= power_upper_limit; power *= std::pow(10.0, 1.0/steps_per_decade))
     {
         dummy_database->put("discharge_power", power);
 try
@@ -135,7 +135,7 @@ catch(std::exception & e)
 
 void scan_constant_current(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
-    double const ratio               = database->get<double>("ratio"            );
+    int    const steps_per_decade    = database->get<int   >("steps_per_decade" );
     double const current_lower_limit = database->get<double>("current_lower_limit");
     double const current_upper_limit = database->get<double>("current_upper_limit");
 
@@ -145,7 +145,7 @@ void scan_constant_current(std::shared_ptr<cap::EnergyStorageDevice> dev, std::s
     int    steps;
     std::shared_ptr<boost::property_tree::ptree> dummy_database =
         std::make_shared<boost::property_tree::ptree>(*database);
-    for (double current = current_lower_limit; current <= current_upper_limit; current *= ratio)
+    for (double current = current_lower_limit; current <= current_upper_limit; current *= std::pow(10.0, 1.0/steps_per_decade))
     {
         dummy_database->put("discharge_current", current);
         std::tie(power, energy) =
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_power )
 
     double const power_lower_limit   = input_database->get<double>("ragone_chart_constant_power.power_lower_limit");
     double const power_upper_limit   = input_database->get<double>("ragone_chart_constant_power.power_upper_limit");
-    double const ratio               = input_database->get<double>("ragone_chart_constant_power.ratio"            );
+    int    const steps_per_decade    = input_database->get<int   >("ragone_chart_constant_power.steps_per_decade" );
     double const initial_voltage     = input_database->get<double>("ragone_chart_constant_power.initial_voltage"  );
     double const final_voltage       = input_database->get<double>("ragone_chart_constant_power.final_voltage"    );
     double const series_resistance   = input_database->get<double>("device.series_resistance"                     );
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_power )
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_power"));
     std::fstream fout;
     fout.open("ragone_chart_data3", std::fstream::out);
-    for (double power = power_lower_limit; power <= power_upper_limit; power *= ratio)
+    for (double power = power_lower_limit; power <= power_upper_limit; power *= std::pow(10.0, 1.0/steps_per_decade))
     {
         ragone_chart_database->put("discharge_power", power);
         double const tmp = 0.5 * initial_voltage + std::sqrt(initial_voltage*initial_voltage / 4.0 + series_resistance * (-1.0 * power));
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_current )
 
     double const current_lower_limit   = input_database->get<double>("ragone_chart_constant_current.current_lower_limit");
     double const current_upper_limit   = input_database->get<double>("ragone_chart_constant_current.current_upper_limit");
-    double const ratio                 = input_database->get<double>("ragone_chart_constant_current.ratio"              );
+    int    const steps_per_decade      = input_database->get<int   >("ragone_chart_constant_current.steps_per_decade"   );
     double const initial_voltage       = input_database->get<double>("ragone_chart_constant_current.initial_voltage"    );
     double const final_voltage         = input_database->get<double>("ragone_chart_constant_current.final_voltage"      );
     double const series_resistance     = input_database->get<double>("device.series_resistance"                         );
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_current )
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_current"));
     std::fstream fout;
     fout.open("ragone_chart_data4", std::fstream::out);
-    for (double current = current_lower_limit; current <= current_upper_limit; current *= ratio)
+    for (double current = current_lower_limit; current <= current_upper_limit; current *= std::pow(10.0, 1.0/steps_per_decade))
     {
         ragone_chart_database->put("discharge_current", current);
         double const time =
