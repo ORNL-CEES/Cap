@@ -7,17 +7,21 @@
 
 <impedance_spectroscopy>
     <mode>potentiostatic</mode>
+    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
+    <frequency_upper_limit>1.0e+6</frequency_upper_limit>
+    <steps_per_decade>6</steps_per_decade>
+
     <cycles>3</cycles>
     <ignore_cycles>2</ignore_cycles>
     <steps_per_cycle>4096</steps_per_cycle>
-    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
-    <frequency_upper_limit>1.0e+6</frequency_upper_limit>
-    <ratio>1.5</ratio>
+
     <dc_voltage>1.1</dc_voltage>
-    <ac_components>1,2,4,8,16,32,64,128,256,512,1024</ac_components>
+    <harmonics>1</harmonics>
     <amplitudes>50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3</amplitudes>
     <phases>0.0,15.0,30.0,45.0,60.0,75.0,90.0,105.0,120.0,135.0,150.0,165.0</phases>
     <ac_component>50.0e-3</ac_component>
+
     <percent_tolerance>1.0e-0</percent_tolerance>
 </impedance_spectroscopy>
 
+    <harmonics>1,2,4,8,16,32,64,128,256,512,1024</harmonics>

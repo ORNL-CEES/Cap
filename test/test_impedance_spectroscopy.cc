@@ -68,56 +68,54 @@ std::vector<std::complex<double>>
 measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
 {
     std::string const mode = database->get<std::string>("mode");
+    if ((mode.compare("galvanostatic") != 0)
+        && (mode.compare("potentiostatic") != 0))
+        throw std::runtime_error("invalide mode "+mode+" in EIS measurement");
+
+    std::vector<int   > const harmonics  = cap::to_vector<int   >(database->get<std::string>("harmonics" ));
+    std::vector<double> const amplitudes = cap::to_vector<double>(database->get<std::string>("amplitudes"));
+    std::vector<double> const phases     = cap::to_vector<double>(database->get<std::string>("phases"    ));
+    double const frequency   = database->get<double>("frequency");
+    double const pi          = std::acos(-1.0);
+    int    const n_harmonics = harmonics.size();
+    std::vector<double> angular_frequencies(n_harmonics);
+    std::transform(
+        harmonics.begin(), harmonics.end(),
+        angular_frequencies.begin(),
+        [&pi,&frequency](int k) { return 2.0 * pi * k * frequency; }
+        );
+    auto compute_ac_excitation_signal =
+        [n_harmonics,&amplitudes,&angular_frequencies,&phases](double time)
+        {
+            double excitation_signal = 0.0;
+            for (int n = 0; n < n_harmonics; ++n)
+                excitation_signal += amplitudes[n] * std::sin(angular_frequencies[n] * time + phases[n]);
+            return excitation_signal;
+        };
     auto evolve_one_time_step =
         (
             (mode.compare("galvanostatic") == 0)
         ?
-            [](std::shared_ptr<cap::EnergyStorageDevice> device, double time_step, double & voltage, double & current)
+            [](std::shared_ptr<cap::EnergyStorageDevice> device, double time, double time_step, double & voltage, double & current, decltype(compute_ac_excitation_signal) & compute_ac_excitation_signal)
             {
+                current += compute_ac_excitation_signal(time);
                 device->evolve_one_time_step_changing_current(time_step, current);
                 device->get_voltage(voltage);
             }
         :
-            [](std::shared_ptr<cap::EnergyStorageDevice> device, double time_step, double & voltage, double & current)
+            [](std::shared_ptr<cap::EnergyStorageDevice> device, double time, double time_step, double & voltage, double & current, decltype(compute_ac_excitation_signal) & compute_ac_excitation_signal)
             {
+                voltage += compute_ac_excitation_signal(time);
                 device->evolve_one_time_step_changing_voltage(time_step, voltage);
                 device->get_current(current);
             }
         );
-    if (mode.compare("galvanostatic") == 0)
-        std::cout<<"MODE=GALVANOSTATIC\n";
-    else if (mode.compare("potentiostatic") == 0)
-        std::cout<<"MODE=POTENTIOSTATIC\n";
-    else
-        throw std::runtime_error("invalide mode "+mode+" in EIS measurement");
-
-
-    double const frequency       = database->get<double>("frequency"      );
-    std::vector<int   > const ac_components = cap::to_vector<int   >(database->get<std::string>("ac_components"));
-    int const n_ac_components = ac_components.size();
-    std::vector<double> const amplitudes    = cap::to_vector<double>(database->get<std::string>("amplitudes"   ));
-    std::vector<double> const phases        = cap::to_vector<double>(database->get<std::string>("phases"       ));
-    std::vector<double> angular_frequencies(n_ac_components);
-    double const pi        = std::acos(-1.0);
-    std::transform(
-        ac_components.begin(),  ac_components.end(),
-        angular_frequencies.begin(),
-        [&pi,&frequency](int n) { return 2.0 * pi * n * frequency; }
-        );
-    auto compute_ac_excitation_signal =
-        [n_ac_components,&amplitudes,&angular_frequencies,&phases](double time)
-        {
-            double excitation_signal = 0.0;
-            for (int component = 0; component < n_ac_components; ++component)
-                excitation_signal += amplitudes[component] * std::sin(angular_frequencies[component] * time + phases[component]);
-            return excitation_signal;
-        };
 
     double const dc_voltage      = database->get<double>("dc_voltage"     );
     int    const cycles          = database->get<int   >("cycles"         );
     int    const ignore_cycles   = database->get<int   >("ignore_cycles"  );
     int    const steps_per_cycle = database->get<int   >("steps_per_cycle");
-    double const initial_voltage = dc_voltage;
+    double const initial_voltage = dc_voltage + compute_ac_excitation_signal(0.0);
     std::vector<int> const powers_of_two =
         { 1, 2 ,4, 8, 16,
           32, 64, 128, 256, 512,
@@ -137,7 +135,6 @@ measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_pt
 
     double       time      = 0.0;
     double const time_step = 1.0 / frequency / steps_per_cycle;
-    double const angular_frequency = 2.0 * pi * frequency;
     dev->reset_voltage(initial_voltage);
     std::vector<double> voltage;
     std::vector<double> current;
@@ -152,24 +149,17 @@ measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_pt
           voltage.push_back(dc_voltage);
           current.push_back(0.0);
           time += time_step;
-          for (int component = 0; component < n_ac_components; ++component)
-//              current.back() += amplitudes[component] * std::sin(ac_components[component] * angular_frequency * time + phases[component]);
-              voltage.back() += amplitudes[component] * std::sin(ac_components[component] * angular_frequency * time + phases[component]);
-          evolve_one_time_step(dev, time_step, voltage.back(), current.back());
-//          dev->evolve_one_time_step_changing_voltage(time_step, voltage.back());
-//          dev->get_current(current.back());
-//          dev->get_voltage(voltage.back());
+          evolve_one_time_step(dev, time, time_step, voltage.back(), current.back(), compute_ac_excitation_signal);
     }
     size_t const n = voltage.size();
     gsl_fft_real_radix2_transform(&(voltage[0]), 1, n);
     gsl_fft_real_radix2_transform(&(current[0]), 1, n);
 
     // compute signal-to-noise ratio
-    std::vector<int> dummy_components(ac_components);
-    for(int & x : dummy_components) {
-         x*= (cycles-ignore_cycles);
-         std::cout<<"**  "<<x<<"\n";
-    }
+    std::vector<int> dummy_components(harmonics);
+    for(int & x : dummy_components)
+         x *= (cycles-ignore_cycles);
+
     std::cout<<"voltage signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(voltage, dummy_components)[0]<<"\n";
     std::cout<<"current signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(current, dummy_components)[0]<<"\n";
 
@@ -243,11 +233,11 @@ void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::
 {
     double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
     double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
-    double const ratio                 = database->get<double>("ratio"                );
+    int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
     double const pi                    = boost::math::constants::pi<double>();
     std::shared_ptr<boost::property_tree::ptree> tmp =
         std::make_shared<boost::property_tree::ptree>(*database);
-    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= ratio)
+    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= std::pow(10.0, 1.0/steps_per_decade))
     {
         tmp->put("frequency", frequency);
         std::complex<double> impedance =
@@ -300,8 +290,8 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance2 )
     std::cout<<"###############\n";
     std::cout<<"# SINGLE FREQ #\n";
     std::cout<<"###############\n";
-    std::vector<int> ac_components = cap::to_vector<int>(input_database->get<std::string>("impedance_spectroscopy.ac_components"));
-    for (int k : ac_components) {
+    std::vector<int> const harmonics = cap::to_vector<int>(input_database->get<std::string>("impedance_spectroscopy.harmonics"));
+    for (int k : harmonics) {
         impedance_spectroscopy_database->put("frequency", k*base_frequency);
         std::cout<<cap::measure_impedance(device, impedance_spectroscopy_database)<<"\n";
     }
@@ -328,9 +318,11 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
+    input_database->put("impedance_spectroscopy.harmonics", "1");
+
     double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     double const frequency_upper_limit = input_database->get<double>("impedance_spectroscopy.frequency_upper_limit");
-    double const ratio                 = input_database->get<double>("impedance_spectroscopy.ratio"                );
+    int    const steps_per_decade      = input_database->get<int   >("impedance_spectroscopy.steps_per_decade"     );
     double const percent_tolerance     = input_database->get<double>("impedance_spectroscopy.percent_tolerance"    );
     double const series_resistance     = input_database->get<double>("device.series_resistance"                    );
     double const parallel_resistance   = input_database->get<double>("device.parallel_resistance"                  );
@@ -340,11 +332,11 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
     std::fstream fout("computed_vs_exact_impedance_spectroscopy_data", std::fstream::out);
-    for (double frequency = frequency_lower_limit; frequency < frequency_upper_limit; frequency *= ratio)
+    for (double frequency = frequency_lower_limit; frequency < frequency_upper_limit; frequency *= std::pow(10.0, 1.0/steps_per_decade))
     {
         double const angular_frequency = 2.0 * pi * frequency;
         impedance_spectroscopy_database->put("frequency", frequency);
-        std::complex<double> computed_impedance = cap::measure_impedance(device, impedance_spectroscopy_database);
+        std::complex<double> computed_impedance = cap::measure_impedance2(device, impedance_spectroscopy_database)[0];
         std::complex<double> exact_impedance    =
             (
                 (type.compare("SeriesRC") == 0)
