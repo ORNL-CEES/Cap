@@ -231,18 +231,26 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
 
 void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
-    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
     double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
+    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
     int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
     double const pi                    = boost::math::constants::pi<double>();
     std::shared_ptr<boost::property_tree::ptree> tmp =
         std::make_shared<boost::property_tree::ptree>(*database);
-    for (double frequency = frequency_lower_limit; frequency <= frequency_upper_limit; frequency *= std::pow(10.0, 1.0/steps_per_decade))
+    os<<"# impedance Z(f) = R + i X \n";
+    os<<boost::format( "# %22s  %22s  %22s  %22s  %22s  \n")
+        % "frequency f [Hz]"
+        % "resistance R [ohms]"
+        % "reactance X [ohms]"
+        % "magnitude |Z| [ohms]"
+        % "phase arg(Z) [degrees]"
+        ;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
         tmp->put("frequency", frequency);
         std::complex<double> impedance =
             measure_impedance(dev, tmp);
-        os<<boost::format( "  %20.15e  %20.15e  %20.15e  %20.15e  %20.15e  \n")
+        os<<boost::format( "  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
             % frequency
             % impedance.real()
             % impedance.imag()
@@ -274,8 +282,8 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance2 )
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
-    double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     double const frequency_upper_limit = input_database->get<double>("impedance_spectroscopy.frequency_upper_limit");
+    double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
 
@@ -320,8 +328,8 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
 
     input_database->put("impedance_spectroscopy.harmonics", "1");
 
-    double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     double const frequency_upper_limit = input_database->get<double>("impedance_spectroscopy.frequency_upper_limit");
+    double const frequency_lower_limit = input_database->get<double>("impedance_spectroscopy.frequency_lower_limit");
     int    const steps_per_decade      = input_database->get<int   >("impedance_spectroscopy.steps_per_decade"     );
     double const percent_tolerance     = input_database->get<double>("impedance_spectroscopy.percent_tolerance"    );
     double const series_resistance     = input_database->get<double>("device.series_resistance"                    );
@@ -332,7 +340,7 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
     std::fstream fout("computed_vs_exact_impedance_spectroscopy_data", std::fstream::out);
-    for (double frequency = frequency_lower_limit; frequency < frequency_upper_limit; frequency *= std::pow(10.0, 1.0/steps_per_decade))
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
         double const angular_frequency = 2.0 * pi * frequency;
         impedance_spectroscopy_database->put("frequency", frequency);

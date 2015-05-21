@@ -7,8 +7,8 @@
 
 <impedance_spectroscopy>
     <mode>potentiostatic</mode>
-    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
     <frequency_upper_limit>1.0e+6</frequency_upper_limit>
+    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
     <steps_per_decade>6</steps_per_decade>
 
     <cycles>3</cycles>
