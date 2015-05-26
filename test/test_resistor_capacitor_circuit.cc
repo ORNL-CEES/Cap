@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE ButlerVolmerKinetics
+#define BOOST_TEST_MODULE ResistorCapacitorCircuit
 #define BOOST_TEST_MAIN
 #include <cap/resistor_capacitor.h>
 #include <boost/test/unit_test.hpp>
@@ -29,6 +29,8 @@ std::shared_ptr<boost::property_tree::ptree> initialize_database()
     database->put("capacitance"        , C         );
     return database;
 }
+
+
 
 BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
 {
@@ -141,6 +143,30 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
 
 
 
+BOOST_AUTO_TEST_CASE( test_series_rc_constant_load )
+{
+    double const TAU     = R_SERIES * C;
+    double const DELTA_T = 0.1 * TAU;
+    double const R_LOAD  = 5.0 * R_SERIES;
+
+    std::vector<double> time;
+    for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
+        time.push_back(t);
+
+    cap::SeriesRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+
+    // DISCHARGE
+    rc.reset_voltage(U);
+    BOOST_FOREACH(double const & t, time)
+    {
+        BOOST_CHECK_CLOSE(rc.U, U * std::exp(- t / ((R_SERIES + R_LOAD) * C)) * (1.0 - ((t > 0.0) ? R_SERIES / (R_SERIES + R_LOAD) : 0.0)), TOLERANCE);
+        rc.evolve_one_time_step_constant_load(DELTA_T, R_LOAD);
+    }
+
+}
+
+
+
 BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_current )
 {
     double const TAU     = R_PARALLEL * C;
@@ -245,5 +271,28 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_power )
         BOOST_CHECK_CLOSE(rc_newton.U_C, rc_fixed_point.U_C, TOLERANCE);
         rc_newton     .evolve_one_time_step_constant_power(DELTA_T, -P, "NEWTON"     );
         rc_fixed_point.evolve_one_time_step_constant_power(DELTA_T, -P, "FIXED_POINT");
+    }
+}
+
+
+
+BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_load )
+{
+    double const TAU     = R_PARALLEL * C;
+    double const DELTA_T = 0.1 * TAU;
+    double const R_LOAD  = 5.0 * R_SERIES;
+    std::vector<double> time;
+    for (double t = 0.0; t <= 5.0 * TAU; t += 0.1*TAU)
+        time.push_back(t);
+
+    cap::ParallelRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    rc.R_series = 0.0;
+
+    // DISCHARGE
+    rc.reset_voltage(U);
+    BOOST_FOREACH(double const & t, time)
+    {
+        BOOST_CHECK_CLOSE(rc.U, U * std::exp(- t * (1.0 + (R_SERIES + R_LOAD)/R_PARALLEL) / ((R_SERIES + R_LOAD) * C)) * (1.0 - ((t > 0.0) ? R_SERIES * (1.0 + (R_SERIES + R_LOAD)/R_PARALLEL) / (R_SERIES + R_LOAD) : 0.0)), TOLERANCE);
+        rc.evolve_one_time_step_constant_load(DELTA_T, R_LOAD);
     }
 }
