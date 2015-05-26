@@ -60,5 +60,14 @@ evolve_one_time_step_changing_power(double const time_step, double const power)
     this->evolve_one_time_step_constant_power(time_step, power);
 }
 
+
+
+void
+EnergyStorageDevice::
+evolve_one_time_step_changing_load(double const time_step, double const load)
+{
+    this->evolve_one_time_step_constant_load(time_step, load);
+}
+
 } // end namespace cap
 

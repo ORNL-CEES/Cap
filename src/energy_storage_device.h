@@ -26,9 +26,11 @@ public:
     virtual void evolve_one_time_step_constant_current(double const time_step, double const constant_current) = 0;
     virtual void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) = 0;
     virtual void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) = 0;
+    virtual void evolve_one_time_step_constant_load   (double const time_step, double const constant_load   ) = 0;
     virtual void evolve_one_time_step_changing_current(double const time_step, double const changing_current);
     virtual void evolve_one_time_step_changing_voltage(double const time_step, double const changing_voltage);
     virtual void evolve_one_time_step_changing_power  (double const time_step, double const changing_power  );
+    virtual void evolve_one_time_step_changing_load   (double const time_step, double const changing_load   );
 };
 
 
