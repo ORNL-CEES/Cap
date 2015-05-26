@@ -63,6 +63,17 @@ reset(double const capacitor_voltage)
 
 void
 SeriesRC::
+evolve_one_time_step_constant_load(double const delta_t, double const constant_load)
+{
+    U_C *= std::exp(-delta_t/((R+constant_load)*C));
+    I = - U_C / (R+constant_load);
+    U = U_C + R * I;
+}
+
+
+
+void
+SeriesRC::
 evolve_one_time_step_constant_power(double const delta_t, double const constant_power)
 {
     evolve_one_time_step_constant_power(delta_t, constant_power, "NEWTON");
@@ -247,6 +258,17 @@ evolve_one_time_step_changing_voltage(double const delta_t, double const constan
     U_C += (constant_voltage - U) / delta_t * R_parallel / (R_series + R_parallel) * (delta_t + (R_series * R_parallel * C) / (R_series + R_parallel) * std::expm1(- delta_t * (R_series + R_parallel) / (R_series * R_parallel * C)));
     U   = constant_voltage;
     I   = (U - U_C) / R_series;
+}
+
+
+
+void
+ParallelRC::
+evolve_one_time_step_constant_load(double const delta_t, double const constant_load)
+{
+    U_C *= std::exp(-delta_t*(1.0+(R_series+constant_load)/R_parallel)/((R_series+constant_load)*C));
+    I = - U_C / (R_series+constant_load);
+    U = U_C + R_series * I;
 }
 
 
