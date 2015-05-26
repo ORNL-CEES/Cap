@@ -29,6 +29,7 @@ public:
     void evolve_one_time_step_constant_current(double const time_step, double const constant_current) override;
     void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) override;
     void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) override;
+    void evolve_one_time_step_constant_load   (double const time_step, double const constant_load   ) override;
 
     void evolve_one_time_step(double const time_step);
 private:

@@ -247,6 +247,18 @@ evolve_one_time_step(double const time_step)
 template <int dim>
 void
 NoName<dim>::
+evolve_one_time_step_constant_load(double const time_step, double const constant_load)
+{
+    std::ignore = time_step;
+    std::ignore = constant_load;
+    throw std::runtime_error("not implemented");
+}
+
+
+
+template <int dim>
+void
+NoName<dim>::
 evolve_one_time_step_constant_power(double const time_step, double const constant_power)
 {
     std::ignore = time_step;
