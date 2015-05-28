@@ -75,6 +75,8 @@ reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
         this->compute_neumann_boundary_contribution(electrochemical_parameters->custom_constant_current_density);
     } else if (this->capacitor_state == CustomConstantVoltage) {
         this->compute_dirichlet_boundary_values(electrochemical_parameters->custom_constant_voltage);
+    } else if (this->capacitor_state == CustomConstantLoad) {
+        this->compute_robin_boundary_contribution(electrochemical_parameters->custom_constant_load_density);
     } else {
         throw std::runtime_error("State of the capacitor undetermined");
     } // end if
@@ -111,6 +113,78 @@ if (dof_shift != 0) {
     (this->boundary_values).swap(tmp_boundary_values);
 }
 }
+
+template <int dim>
+void 
+ElectrochemicalOperator<dim>::
+compute_robin_boundary_contribution(double const load_density) {
+    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
+    dealii::ConstraintMatrix const & constraint_matrix = *(this->constraint_matrix);
+{
+    unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
+    std::vector<bool> mask(n_components, false);
+    mask[this->solid_potential_component] = true;
+    dealii::ComponentMask component_mask(mask);
+    dealii::VectorTools::interpolate_boundary_values(dof_handler, this->anode_boundary_id, dealii::ConstantFunction<dim>(0.0, n_components), this->boundary_values, component_mask);
+dealii::types::global_dof_index const dof_shift = this->dof_shift;
+if (dof_shift != 0) {
+    std::map<dealii::types::global_dof_index, double> tmp_boundary_values;
+    std::for_each((this->boundary_values).begin(), (this->boundary_values).end(),
+        [&tmp_boundary_values, &dof_shift](std::pair<dealii::types::global_dof_index, double> const & p) { tmp_boundary_values[p.first - dof_shift] = p.second; }
+        );
+    (this->boundary_values).swap(tmp_boundary_values);
+}
+}
+
+    dealii::FEValuesExtractors::Scalar const solid_potential(this->solid_potential_component);
+    dealii::FiniteElement<dim> const & fe = dof_handler.get_fe();
+    dealii::QGauss<dim-1> face_quadrature_rule(fe.degree+1); // TODO: maybe use fe extractor
+    dealii::FEFaceValues<dim> fe_face_values(fe, face_quadrature_rule,
+        dealii::update_values | dealii::update_JxW_values);
+    unsigned int const dofs_per_cell = fe.dofs_per_cell;
+    unsigned int const n_face_q_points = face_quadrature_rule.size();
+    dealii::FullMatrix<double> cell_stiffness_matrix(dofs_per_cell, dofs_per_cell);
+    std::vector<double> load_electrical_conductance_values(n_face_q_points);
+    std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
+unsigned int const n_components = dealii::DoFTools::n_components(dof_handler);
+dealii::ComponentMask mask(n_components, false);
+mask.set(this->solid_potential_component, true);
+mask.set(this->liquid_potential_component, true);
+DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
+    typename dealii::DoFHandler<dim>::active_cell_iterator
+        cell = dof_handler.begin_active(),
+        end_cell = dof_handler.end();
+    for ( ; cell != end_cell; ++cell) {
+        cell_stiffness_matrix = 0.0;
+        if (cell->at_boundary()) {
+            for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
+                if (cell->face(face)->at_boundary()) {
+                    fe_face_values.reinit(cell, face);
+                    std::fill(load_electrical_conductance_values.begin(), load_electrical_conductance_values.end(),
+                        ((cell->face(face)->boundary_indicator() == this->cathode_boundary_id) ? 1.0 / load_density : 0.0));
+                    for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
+                        for (unsigned int i = 0; i < dofs_per_cell; ++i) {
+                            for (unsigned int j = 0; j < dofs_per_cell; ++j) {
+                                cell_stiffness_matrix(i, j) += load_electrical_conductance_values[q_point] *
+                                    fe_face_values[solid_potential].value(i, q_point) *
+                                    fe_face_values[solid_potential].value(j, q_point) *
+                                    fe_face_values.JxW(q_point);
+                            } // end for j
+                        } // end for i
+                    } // end for face quadrature point
+                } // end if face at boundary
+            } // end for face
+        } // end if cell at boundary
+        cell->get_dof_indices(local_dof_indices);
+std::vector<dealii::types::global_dof_index> tmp_indices = dof_extractor.extract_row_indices(local_dof_indices);        
+dealii::FullMatrix<double> tmp_stiffness_matrix = dof_extractor.extract_matrix(cell_stiffness_matrix);
+std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std::bind2nd(std::minus<dealii::types::global_dof_index>(), this->dof_shift));
+        constraint_matrix.distribute_local_to_global(tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
+    } // end for cell
+
+}
+
+
 
 template <int dim>
 void 

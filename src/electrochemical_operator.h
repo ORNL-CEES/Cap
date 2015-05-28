@@ -6,7 +6,7 @@
 namespace cap {
 
 //////////////////////// ELECTROCHEMICAL OPERATOR PARAMETERS ////////////////////////////
-enum CapacitorState { GalvanostaticCharge, GalvanostaticDischarge, PotentiostaticCharge, PotentiostaticDischarge, Initialize, Relaxation, CustomConstantCurrent, CustomConstantVoltage };
+enum CapacitorState { GalvanostaticCharge, GalvanostaticDischarge, PotentiostaticCharge, PotentiostaticDischarge, Initialize, Relaxation, CustomConstantCurrent, CustomConstantVoltage, CustomConstantLoad };
 template <int dim>
 class ElectrochemicalOperatorParameters : public OperatorParameters<dim> {
 public:
@@ -16,6 +16,7 @@ public:
     CapacitorState capacitor_state;
     double custom_constant_current_density;
     double custom_constant_voltage;
+    double custom_constant_load_density;
 };
 
 //////////////////////// ELECTROCHEMICAL OPERATOR ////////////////////////////
@@ -31,6 +32,7 @@ protected:
     void compute_electrical_operator_contribution();
     void compute_dirichlet_boundary_values(double const);
     void compute_neumann_boundary_contribution(double const);
+    void compute_robin_boundary_contribution(double const);
 
     CapacitorState capacitor_state;
     unsigned int solid_potential_component;
