@@ -263,9 +263,26 @@ void
 NoName<dim>::
 evolve_one_time_step_constant_power(double const time_step, double const constant_power)
 {
-    std::ignore = time_step;
-    std::ignore = constant_power;
-    throw std::runtime_error("not implemented");
+    double surface_area;
+    (*this->post_processor).get("surface_area", surface_area);
+    (*this->electrochemical_operator_params).capacitor_state = CustomConstantCurrent;
+    dealii::BlockVector<double> old_solution(*this->solution);
+    int    const max_iterations    = 10;
+    double const percent_tolerance = 1.0e-2;
+    double current;
+    double voltage;
+    this->get_voltage(voltage);
+    for (int k = 0; k < max_iterations; ++k) {
+        current = constant_power / voltage;
+        (*this->electrochemical_operator_params).custom_constant_current_density = current/surface_area;
+        this->evolve_one_time_step(time_step);
+        this->get_voltage(voltage);
+        if (boost::test_tools::check_is_close(constant_power, voltage*current,
+            boost::test_tools::percent_tolerance(percent_tolerance)))
+            return;
+        *this->solution = old_solution;
+    }
+    throw std::runtime_error("fixed point iteration did not converge in "+std::to_string(max_iterations)+" iterations");
 }
 
 
