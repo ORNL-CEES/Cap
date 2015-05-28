@@ -254,6 +254,9 @@ std::transform(tmp_indices.begin(), tmp_indices.end(), tmp_indices.begin(), std:
     } // end for cell
 
 }
+
+
+
 template <int dim>
 void 
 ElectrochemicalOperator<dim>::

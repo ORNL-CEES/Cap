@@ -252,7 +252,7 @@ evolve_one_time_step_constant_load(double const time_step, double const constant
     double surface_area;
     (*this->post_processor).get("surface_area", surface_area);
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantLoad;
-    (*this->electrochemical_operator_params).custom_constant_current_density = constant_load/surface_area;
+    (*this->electrochemical_operator_params).custom_constant_load_density = constant_load*surface_area;
     this->evolve_one_time_step(time_step);
 }
 
