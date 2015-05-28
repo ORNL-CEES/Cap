@@ -1,0 +1,100 @@
+<device>
+    <type>ParallelRC</type>
+
+    <capacitance>0.0262473</capacitance> <!-- farads -->
+    <parallel_resistance>4136.15</parallel_resistance> <!-- ohms -->
+    <series_resistance>100.456</series_resistance> <!-- ohms -->
+
+    <dim>2</dim>
+
+    <geometry>
+        <mesh_file>mesh_2d.ucd</mesh_file>
+        <electrode_width>50.0e-6</electrode_width>
+        <separator_width>25.0e-6</separator_width>
+        <collector_width>5.0e-6</collector_width>
+        <sandwich_height>25.0e-6</sandwich_height>
+        <tab_height>5.0e-6</tab_height>
+        <separator_material_id>3</separator_material_id>
+        <anode_electrode_material_id>4</anode_electrode_material_id>
+        <anode_collector_material_id>5</anode_collector_material_id>
+        <cathode_electrode_material_id>6</cathode_electrode_material_id>
+        <cathode_collector_material_id>7</cathode_collector_material_id>
+    </geometry>
+
+    <temperature_component>0</temperature_component>
+    <solid_potential_component>1</solid_potential_component>
+    <liquid_potential_component>2</liquid_potential_component>
+    <thermal_block>0</thermal_block>
+    <electrochemical_block>1</electrochemical_block>
+    <n_blocks>2</n_blocks>
+
+    <material_properties>
+        <separator_material_id>3</separator_material_id>
+        <anode_electrode_material_id>4</anode_electrode_material_id>
+        <anode_collector_material_id>5</anode_collector_material_id>
+        <cathode_electrode_material_id>6</cathode_electrode_material_id>
+        <cathode_collector_material_id>7</cathode_collector_material_id>
+        <separator_heat_capacity>             1.2528e3 </separator_heat_capacity>
+        <electrode_heat_capacity>             0.93e3   </electrode_heat_capacity>
+        <collector_heat_capacity>             2.7e3    </collector_heat_capacity>
+        <separator_density>                   3.2e3    </separator_density>
+        <electrode_density>                   2.3e3    </electrode_density>
+        <collector_density>                   2.70e3   </collector_density>
+        <electrolyte_mass_density>            1.2e3    </electrolyte_mass_density>
+        <separator_thermal_conductivity>      0.0019e2 </separator_thermal_conductivity>
+        <electrode_thermal_conductivity>      0.0011e2 </electrode_thermal_conductivity>
+        <collector_thermal_conductivity>    237.0      </collector_thermal_conductivity>
+        <alpha>                               0.0      </alpha>
+        <differential_capacitance>            0.03134  </differential_capacitance>
+        <separator_void_volume_fraction>      0.6      </separator_void_volume_fraction>
+        <electrode_void_volume_fraction>      0.67     </electrode_void_volume_fraction>
+        <electrolyte_conductivity>            0.067    </electrolyte_conductivity>
+        <solid_phase_conductivity>           52.1      </solid_phase_conductivity>
+        <collector_electrical_resistivity>   28.2e-9   </collector_electrical_resistivity>
+        <bruggemans_coefficient>              1.5      </bruggemans_coefficient>
+        <electrode_tortuosity_factor>         2.3      </electrode_tortuosity_factor>
+        <separator_tortuosity_factor>         1.29     </separator_tortuosity_factor>
+        <pores_characteristic_dimension>      1.5e-9   </pores_characteristic_dimension>
+        <pores_geometry_factor>               2.0      </pores_geometry_factor>
+        <exchange_current_density>            0.7463e-5</exchange_current_density>
+    </material_properties>
+
+    <boundary_values>
+        <charge_potential>                    2.2      </charge_potential>
+        <discharge_potential>                 1.4      </discharge_potential>
+        <charge_current_density>            324.65     </charge_current_density>
+        <discharge_current_density>        -324.65     </discharge_current_density>
+        <initial_potential>                   1.6      </initial_potential>
+
+        <ambient_temperature>               300.0      </ambient_temperature>
+        <heat_transfer_coefficient>           8.0e-2   </heat_transfer_coefficient>
+
+        <cathode_boundary_id>1</cathode_boundary_id>
+        <anode_boundary_id>2</anode_boundary_id>
+        <upper_boundary_id>3</upper_boundary_id>
+        <lower_boundary_id>4</lower_boundary_id>
+        <other_boundary_id>5</other_boundary_id>
+
+        <separator_material_id>3</separator_material_id>
+        <anode_electrode_material_id>4</anode_electrode_material_id>
+        <anode_collector_material_id>5</anode_collector_material_id>
+        <cathode_electrode_material_id>6</cathode_electrode_material_id>
+        <cathode_collector_material_id>7</cathode_collector_material_id>
+    </boundary_values>
+</device>
+
+<discharge_curve>
+    <discharge_mode>constant_power</discharge_mode>
+
+    <discharge_load>700.0</discharge_load> <!-- ohms -->
+    <discharge_current>2.0e-3</discharge_current> <!-- amperes -->
+    <discharge_power>2.75e-3</discharge_power> <!-- watts -->
+
+    <discharge_stop_at>voltage_lower_than</discharge_stop_at>
+    <discharge_voltage_limit>1.1</discharge_voltage_limit> <!-- volts -->
+
+    <max_discharge_time>3600.0</max_discharge_time> <!-- seconds -->
+
+    <initial_voltage>2.2</initial_voltage> <!-- volts -->
+    <time_step>0.05</time_step> <!-- seconds -->
+</discharge_curve>
