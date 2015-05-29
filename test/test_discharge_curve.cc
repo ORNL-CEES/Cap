@@ -6,12 +6,9 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/math/constants/constants.hpp>
 #include <boost/test/unit_test.hpp>
-#include <gsl/gsl_fft_real.h>
 #include <iostream>
 #include <fstream>
-#include <complex>
 #include <iterator>
 #include <algorithm>
 
@@ -47,7 +44,7 @@ void report(double const time, std::shared_ptr<EnergyStorageDevice const> dev, s
 
 
 std::function<void(double const, double const, std::shared_ptr<cap::EnergyStorageDevice>)>
-get_evolve_one_time_step(std::string const & discharge_mode, std::shared_ptr<boost::property_tree::ptree const> database)
+get_discharge_evolve_one_time_step(std::string const & discharge_mode, std::shared_ptr<boost::property_tree::ptree const> database)
 {
     if (discharge_mode.compare("constant_current") == 0) {
         double const discharge_current = database->get<double>("discharge_current");
@@ -69,9 +66,9 @@ get_evolve_one_time_step(std::string const & discharge_mode, std::shared_ptr<boo
 
 
 std::function<bool(double const, std::shared_ptr<cap::EnergyStorageDevice>)>
-get_end_criterion(std::string const & discharge_stop_at, std::shared_ptr<boost::property_tree::ptree const> database)
+get_discharge_end_criterion(std::string const & discharge_stop_at, std::shared_ptr<boost::property_tree::ptree const> database)
 {
-    if (discharge_stop_at.compare("voltage_lower_than") == 0) {
+    if (discharge_stop_at.compare("voltage_less_than") == 0) {
         double const discharge_voltage_limit = database->get<double>("discharge_voltage_limit");
         return [discharge_voltage_limit](double const, std::shared_ptr<cap::EnergyStorageDevice> dev)
             { double voltage; dev->get_voltage(voltage); return (voltage <= discharge_voltage_limit); };
@@ -89,9 +86,9 @@ get_end_criterion(std::string const & discharge_stop_at, std::shared_ptr<boost::
 void discharge_curve(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
     std::string const discharge_mode    = database->get<std::string>("discharge_mode"   );
-    auto evolve_one_time_step = get_evolve_one_time_step(discharge_mode, database);
+    auto evolve_one_time_step = get_discharge_evolve_one_time_step(discharge_mode, database);
     std::string const discharge_stop_at = database->get<std::string>("discharge_stop_at");
-    auto end_criterion = get_end_criterion(discharge_stop_at, database);
+    auto end_criterion = get_discharge_end_criterion(discharge_stop_at, database);
 
     double const max_discharge_time = database->get<double>("max_discharge_time");
     double const time_step          = database->get<double>("time_step"         );
@@ -136,4 +133,5 @@ BOOST_AUTO_TEST_CASE( test_discharge_curve )
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("discharge_curve"));
     cap::discharge_curve(device, discharge_curve_database, fout);
 
+    fout.close();
 }    

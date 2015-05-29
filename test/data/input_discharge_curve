@@ -90,7 +90,7 @@
     <discharge_current>2.0e-3</discharge_current> <!-- amperes -->
     <discharge_power>2.75e-3</discharge_power> <!-- watts -->
 
-    <discharge_stop_at>voltage_lower_than</discharge_stop_at>
+    <discharge_stop_at>voltage_less_than</discharge_stop_at>
     <discharge_voltage_limit>1.1</discharge_voltage_limit> <!-- volts -->
 
     <max_discharge_time>3600.0</max_discharge_time> <!-- seconds -->
