@@ -64,7 +64,7 @@ double compute_signal_to_noise_ratio(std::vector<double> const & data, size_t i)
 
 
 
-std::vector<std::complex<double>>
+std::vector<std::tuple<double,std::complex<double>>>
 measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
 {
     std::string const mode = database->get<std::string>("mode");
@@ -115,7 +115,8 @@ measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_pt
     int    const cycles          = database->get<int   >("cycles"         );
     int    const ignore_cycles   = database->get<int   >("ignore_cycles"  );
     int    const steps_per_cycle = database->get<int   >("steps_per_cycle");
-    double const initial_voltage = dc_voltage + compute_ac_excitation_signal(0.0);
+    double const initial_voltage = dc_voltage
+        + (mode.compare("potentiostatic") == 0 ? compute_ac_excitation_signal(0.0) : 0.0);
     std::vector<int> const powers_of_two =
         { 1, 2 ,4, 8, 16,
           32, 64, 128, 256, 512,
@@ -160,16 +161,21 @@ measure_impedance2(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_pt
     for(int & x : dummy_components)
          x *= (cycles-ignore_cycles);
 
-    std::cout<<"voltage signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(voltage, dummy_components)[0]<<"\n";
-    std::cout<<"current signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(current, dummy_components)[0]<<"\n";
+//    std::cout<<"voltage signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(voltage, dummy_components)[0]<<"\n";
+//    std::cout<<"current signal-to-noise ratio = "<<compute_signal_to_noise_ratio2(current, dummy_components)[0]<<"\n";
 
-    std::vector<std::complex<double>> results;
+    std::vector<std::tuple<double,std::complex<double>>> results;
     for (auto const & k : dummy_components)
         results.push_back(
-            std::complex<double>(voltage[k], voltage[n-k])
-            /
-            std::complex<double>(current[k], current[n-k])
+            std::make_tuple(
+                0.0,
+                std::complex<double>(voltage[k], voltage[n-k])
+                /
+                std::complex<double>(current[k], current[n-k])
+            )
         );
+    for (int k = 0; k < n_harmonics; ++k)
+        std::get<0>(results[k]) = harmonics[k] * frequency;
     return results;
 }
 
@@ -183,7 +189,8 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
     int    const ignore_cycles   = database->get<int   >("ignore_cycles"  );
     int    const steps_per_cycle = database->get<int   >("steps_per_cycle");
     double const dc_voltage      = database->get<double>("dc_voltage"     );
-    double const ac_component    = database->get<double>("ac_component"   );
+//    double const ac_component    = database->get<double>("ac_component"   );
+    double const ac_component    = cap::to_vector<double>(database->get<std::string>("amplitudes"))[0];
     double const initial_voltage = dc_voltage;
     std::vector<int> const powers_of_two =
         { 1, 2 ,4, 8, 16, 
@@ -293,7 +300,7 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance2 )
     double const base_frequency = 0.5 * (frequency_lower_limit + frequency_upper_limit);
     impedance_spectroscopy_database->put("frequency", base_frequency);
     for (auto const & impedance : cap::measure_impedance2(device, impedance_spectroscopy_database))
-        std::cout<<impedance<<"\n";
+        std::cout<<std::get<0>(impedance)<<"  "<<std::get<1>(impedance)<<"\n";
 
     std::cout<<"###############\n";
     std::cout<<"# SINGLE FREQ #\n";
@@ -344,7 +351,8 @@ BOOST_AUTO_TEST_CASE( test_measure_impedance )
     {
         double const angular_frequency = 2.0 * pi * frequency;
         impedance_spectroscopy_database->put("frequency", frequency);
-        std::complex<double> computed_impedance = cap::measure_impedance2(device, impedance_spectroscopy_database)[0];
+        std::complex<double> computed_impedance;
+        std::tie(std::ignore, computed_impedance) = cap::measure_impedance2(device, impedance_spectroscopy_database)[0];
         std::complex<double> exact_impedance    =
             (
                 (type.compare("SeriesRC") == 0)
@@ -395,4 +403,5 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
     cap::impedance_spectroscopy(device, impedance_spectroscopy_database, fout);
 
+    fout.close();
 }    

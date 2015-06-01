@@ -1,8 +1,8 @@
 <device>
     <type>ParallelRC</type>
-    <capacitance>3.0</capacitance>
-    <parallel_resistance>2.5e2</parallel_resistance>
-    <series_resistance>50.0e-1</series_resistance>
+    <capacitance>0.0262473</capacitance> <!-- farads -->
+    <parallel_resistance>41361.5</parallel_resistance> <!-- ohms -->
+    <series_resistance>100.456</series_resistance> <!-- ohms -->
 </device>
 
 <impedance_spectroscopy>
@@ -12,16 +12,14 @@
     <steps_per_decade>6</steps_per_decade>
 
     <cycles>3</cycles>
-    <ignore_cycles>2</ignore_cycles>
+    <ignore_cycles>1</ignore_cycles>
     <steps_per_cycle>4096</steps_per_cycle>
 
     <dc_voltage>1.1</dc_voltage>
-    <harmonics>1</harmonics>
-    <amplitudes>50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3,50.0e-3</amplitudes>
-    <phases>0.0,15.0,30.0,45.0,60.0,75.0,90.0,105.0,120.0,135.0,150.0,165.0</phases>
-    <ac_component>50.0e-3</ac_component>
+    <harmonics>5</harmonics>
+    <amplitudes>50.0e-3</amplitudes>
+    <phases>0.0</phases>
 
     <percent_tolerance>1.0e-0</percent_tolerance>
 </impedance_spectroscopy>
 
-    <harmonics>1,2,4,8,16,32,64,128,256,512,1024</harmonics>
