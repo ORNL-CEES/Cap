@@ -1,0 +1,26 @@
+<device>
+    <type>ParallelRC</type>
+    <capacitance>0.0262473</capacitance> <!-- farads -->
+    <parallel_resistance>4136.15</parallel_resistance> <!-- ohms -->
+    <series_resistance>100.456</series_resistance> <!-- ohms -->
+</device>
+
+<charge_curve>
+    <charge_mode>constant_current</charge_mode>
+
+    <charge_current>10.0e-3</charge_current> <!-- amperes -->
+    <charge_power>2.75e-3</charge_power> <!-- watts -->
+
+    <charge_stop_at>voltage_greater_than</charge_stop_at>
+    <charge_voltage_limit>2.1</charge_voltage_limit> <!-- volts -->
+
+    <charge_voltage_finish>true</charge_voltage_finish> <!-- true or false -->
+    <charge_voltage_finish_max_time>300.0</charge_voltage_finish_max_time> <!-- seconds -->
+    <charge_voltage_finish_current_limit>2.0e-3</charge_voltage_finish_current_limit> <!-- amperes -->
+
+    <max_charge_time>1800.0</max_charge_time> <!-- seconds -->
+
+    <initial_voltage>0.0</initial_voltage> <!-- volts -->
+    <time_step>0.01</time_step> <!-- seconds -->
+</charge_curve>
+
