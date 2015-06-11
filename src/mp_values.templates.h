@@ -168,13 +168,25 @@ get_values(std::string const &          key,
     } else if (key.compare("faradaic_reaction_coefficient") == 0) {
         if (cell->material_id() == this->separator_material_id) {
             std::fill(values.begin(), values.end(), 0.0);
-        } else if ((cell->material_id() == this->anode_electrode_material_id) 
+        } else if ((cell->material_id() == this->anode_electrode_material_id)
             || (cell->material_id() == this->cathode_electrode_material_id)) {
             std::fill(values.begin(), values.end(),
                 this->specific_surface_area_per_unit_volume
                     * this->exchange_current_density * (this->anodic_charge_transfer_coefficient + this->cathodic_charge_transfer_coefficient)
                     * this->faraday_constant / (this->gas_constant * this->temperature)
                 );
+        } else if ((cell->material_id() == this->anode_collector_material_id)
+            || (cell->material_id() == this->cathode_collector_material_id)) {
+            std::fill(values.begin(), values.end(), 0.0);
+        } else {
+            throw std::runtime_error("Invalid material id");
+        } // end if material id
+    } else if (key.compare("electron_thermal_voltage") == 0) {
+        if (cell->material_id() == this->separator_material_id) {
+            std::fill(values.begin(), values.end(), 0.0);
+        } else if ((cell->material_id() == this->anode_electrode_material_id)
+            || (cell->material_id() == this->cathode_electrode_material_id)) {
+            std::fill(values.begin(), values.end(), this->gas_constant * this->temperature / this->faraday_constant);
         } else if ((cell->material_id() == this->anode_collector_material_id) 
             || (cell->material_id() == this->cathode_collector_material_id)) {
             std::fill(values.begin(), values.end(), 0.0);
