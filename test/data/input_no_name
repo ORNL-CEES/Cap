@@ -66,12 +66,6 @@
     </material_properties>
 
     <boundary_values>
-        <charge_potential>                    2.2      </charge_potential>
-        <discharge_potential>                 1.4      </discharge_potential>
-        <charge_current_density>            324.65     </charge_current_density>
-        <discharge_current_density>        -324.65     </discharge_current_density>
-        <initial_potential>                   1.6      </initial_potential>
-
         <ambient_temperature>               300.0      </ambient_temperature>
         <heat_transfer_coefficient>           8.0e-2   </heat_transfer_coefficient>
 

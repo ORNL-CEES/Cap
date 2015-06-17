@@ -58,12 +58,6 @@ SuperCapacitorBoundaryValues(BoundaryValuesParameters<dim, spacedim> const & par
     this->lower_boundary_id              = database->get<dealii::types::boundary_id>("lower_boundary_id"            );      
     this->other_boundary_id              = database->get<dealii::types::boundary_id>("other_boundary_id"            );      
 
-    this->charge_potential          = database->get<double>("charge_potential"         );        
-    this->discharge_potential       = database->get<double>("discharge_potential"      );     
-    this->charge_current_density    = database->get<double>("charge_current_density"   );  
-    this->discharge_current_density = database->get<double>("discharge_current_density");
-    this->initial_potential         = database->get<double>("initial_potential"        );   
-
     this->upper_ambient_temperature       = database->get<double>("ambient_temperature"      ); 
     this->lower_ambient_temperature       = database->get<double>("ambient_temperature"      ); 
     this->upper_heat_transfer_coefficient = database->get<double>("heat_transfer_coefficient"); 
@@ -79,31 +73,7 @@ get_values(std::string const &          key,
            unsigned int const           face,
            std::vector<double> &        values) const
 {
-    if (key.compare("charge_current_density") == 0) {
-        if (cell->face(face)->boundary_indicator() == this->anode_boundary_id) {
-            std::fill(values.begin(), values.end(), 0.0);
-        } else if (cell->face(face)->boundary_indicator() == this->cathode_boundary_id) {
-            std::fill(values.begin(), values.end(), this->charge_current_density);
-        } else if ((cell->face(face)->boundary_indicator() == this->upper_boundary_id) 
-            || (cell->face(face)->boundary_indicator() == this->lower_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->other_boundary_id)) {
-            std::fill(values.begin(), values.end(), 0.0);
-        } else {
-            throw std::runtime_error("Invalid boundary id");
-        } // end if boundary id
-    } else if (key.compare("discharge_current_density") == 0) {
-        if (cell->face(face)->boundary_indicator() == this->anode_boundary_id) {
-            std::fill(values.begin(), values.end(), 0.0);
-        } else if (cell->face(face)->boundary_indicator() == this->cathode_boundary_id) {
-            std::fill(values.begin(), values.end(), this->discharge_current_density);
-        } else if ((cell->face(face)->boundary_indicator() == this->upper_boundary_id) 
-            || (cell->face(face)->boundary_indicator() == this->lower_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->other_boundary_id)) {
-            std::fill(values.begin(), values.end(), 0.0);
-        } else {
-            throw std::runtime_error("Invalid boundary id");
-        } // end if boundary id
-    } else if (key.compare("ambient_temperature") == 0) {
+    if (key.compare("ambient_temperature") == 0) {
         if ((cell->face(face)->boundary_indicator() == this->anode_boundary_id)
             || (cell->face(face)->boundary_indicator() == this->cathode_boundary_id)
             || (cell->face(face)->boundary_indicator() == this->other_boundary_id)) {
