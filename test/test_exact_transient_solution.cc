@@ -20,11 +20,8 @@ namespace cap {
 void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input_database,
                         std::shared_ptr<boost::property_tree::ptree      > output_database)
 {
-    // TODO: of course we could clear the database or just overwrite but for
-    // now let's just throw an exception if it is not empty
-    if (!output_database->empty())
-        throw std::runtime_error("output_database was not empty...");
-
+    double const sandwich_height = input_database->get<double>("geometry.sandwich_height");
+    double const cross_sectional_area = sandwich_height * 1.0;
     double const electrode_width = input_database->get<double>("geometry.electrode_width");
     double const separator_width = input_database->get<double>("geometry.separator_width");
 
@@ -52,7 +49,7 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     mp_values->get_values("specific_capacitance"          , cell, electrode_specific_capacitance_values          );
     mp_values->get_values("faradaic_reaction_coefficient" , cell, electrode_exchange_current_density_values      );
     mp_values->get_values("electron_thermal_voltage"      , cell, electrode_electron_thermal_voltage_values      );
-    double const total_current = -200.0;
+    double const total_current = -1.0; // normalized
     double const dimensionless_exchange_current_density = electrode_exchange_current_density_values[0]
         * std::pow(electrode_width,2) 
         * ( 1.0 / electrode_solid_electrical_conductivity_values[0]
@@ -63,21 +60,10 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
         / electrode_electron_thermal_voltage_values[0];
     double const ratio_of_solution_phase_to_matrix_phase_conductivities =
         electrode_liquid_electrical_conductivity_values[0] / electrode_solid_electrical_conductivity_values[0];
-    
-    std::cout<<"delta="<<dimensionless_current_density<<"\n";
-    std::cout<<"nu2="<<dimensionless_exchange_current_density<<"\n";
-    std::cout<<"beta="<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
 
     output_database->put("dimensionless_current_density"                         , dimensionless_current_density                         );
     output_database->put("dimensionless_exchange_current_density"                , dimensionless_exchange_current_density                );
     output_database->put("ratio_of_solution_phase_to_matrix_phase_conductivities", ratio_of_solution_phase_to_matrix_phase_conductivities);
-
-    std::cout<<"time_normalization_factor="<<
-        electrode_specific_capacitance_values[0] 
-            * ( 1.0 / electrode_solid_electrical_conductivity_values[0]
-              + 1.0 / electrode_liquid_electrical_conductivity_values[0] )
-            * std::pow(electrode_width,2)
-        <<"\n";
 
     output_database->put("position_normalization_factor", electrode_width);
     output_database->put("time_normalization_factor"    ,
@@ -93,9 +79,10 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     mp_values->get_values("liquid_electrical_conductivity", cell, separator_liquid_electrical_conductivity_values);
 
     double const potential_drop_across_the_separator = -total_current * separator_width / separator_liquid_electrical_conductivity_values[0];
-    std::cout<<"potential_drop_across_the_separator="<<potential_drop_across_the_separator<<"\n";
-    
-    std::cout<<"electron_thermal_voltage="<<electrode_electron_thermal_voltage_values[0]<<"\n";
+    double const voltage_normalization_factor        = electrode_electron_thermal_voltage_values[0];
+    output_database->put("potential_drop_across_the_separator", potential_drop_across_the_separator);
+    output_database->put("voltage_normalization_factor"       , voltage_normalization_factor       );
+    output_database->put("cross_sectional_area"               , cross_sectional_area               );
 }
 
 void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
@@ -185,27 +172,40 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         };
 
 
-    //
-    double const charge_time = database->get<double>("charge_time");
-    double const time_step   = database->get<double>("time_step"  );
-    double const epsilon     = time_step * 1.0e-4;
+    // exact vs computed
+    double const charge_current = database->get<double>("charge_current");
+    double const charge_time    = database->get<double>("charge_time"   );
+    double const time_step      = database->get<double>("time_step"     );
+    double const epsilon        = time_step * 1.0e-4;
+    double const cross_sectional_area                = database->get<double>("cross_sectional_area"               );
     double const time_normalization_factor           = database->get<double>("time_normalization_factor"          );
     double const voltage_normalization_factor        = database->get<double>("voltage_normalization_factor"       );
-    double const potential_drop_across_the_separator = database->get<double>("potential_drop_across_the_separator");
+    double       potential_drop_across_the_separator = database->get<double>("potential_drop_across_the_separator");
+    potential_drop_across_the_separator *= charge_current / cross_sectional_area;
+    dimensionless_current_density *= charge_current / cross_sectional_area;
+
+    std::cout<<"delta="<<dimensionless_current_density<<"\n";
+    std::cout<<"nu2="<<dimensionless_exchange_current_density<<"\n";
+    std::cout<<"beta="<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
+
     dev->reset_voltage(0.0);
+    double computed_voltage;
+    double exact_voltage;
     for (double time = 0.0; time <= charge_time+epsilon; time += time_step)
     {
         double const dimensionless_time = (time+time_step) / time_normalization_factor;
-        double const dimensionless_potential_drop = compute_dimensionless_potential_drop_across_the_electrode(dimensionless_time);
-        dev->evolve_one_time_step_constant_current(time_step, 5.0e-3);
-        double voltage;
-        dev->get_voltage(voltage);
+        double const dimensionless_potential_drop_across_the_electrode = compute_dimensionless_potential_drop_across_the_electrode(dimensionless_time);
+        exact_voltage = 2.0 * dimensionless_potential_drop_across_the_electrode * voltage_normalization_factor + potential_drop_across_the_separator;
+        dev->evolve_one_time_step_constant_current(time_step, charge_current);
+        dev->get_voltage(computed_voltage);
         os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
                 % time 
-                % (2.0 * dimensionless_potential_drop * voltage_normalization_factor + potential_drop_across_the_separator)
-                % voltage
+                % exact_voltage
+                % computed_voltage
                 ;
     }
+    double const percent_tolerance = database->get<double>("percent_tolerance");
+    BOOST_CHECK_CLOSE(computed_voltage, exact_voltage, percent_tolerance);
 
     // figure 2
     dimensionless_current_density                          = -1.0; 
@@ -395,10 +395,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     std::shared_ptr<boost::property_tree::ptree> verification_problem_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("verification_problem"));
 
-    std::shared_ptr<boost::property_tree::ptree> empty_database =
-        std::make_shared<boost::property_tree::ptree>();
-
-    cap::compute_parameters(device_database, empty_database);
+    cap::compute_parameters(device_database, verification_problem_database);
 
     cap::verification_problem(device, verification_problem_database, fout);
 
