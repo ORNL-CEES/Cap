@@ -13,7 +13,7 @@ template <int dim>
 Postprocessor<dim>::
 Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters) 
   : dof_handler(parameters->dof_handler)
-  , solution(*(parameters->solution))
+  , solution(parameters->solution)
   , mp_values(parameters->mp_values)
   , boundary_values(parameters->boundary_values)
 { }
@@ -117,7 +117,9 @@ void
 SuperCapacitorPostprocessor<dim>::
 reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 {
-    dealii::DoFHandler<dim> const & dof_handler = *(this->dof_handler);
+    dealii::DoFHandler<dim>     const & dof_handler = *(this->dof_handler);
+    dealii::BlockVector<double> const & solution    = *(this->solution   );
+
     std::for_each(this->values.begin(), this->values.end(), 
         [] (std::unordered_map<std::string, double>::value_type & p) { p.second = 0.0; });
     this->values["max_temperature"] = -std::numeric_limits<double>::max();
@@ -171,12 +173,12 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         this->mp_values->get_values("solid_electrical_conductivity",  cell, solid_electrical_conductivity_values );
         this->mp_values->get_values("liquid_electrical_conductivity", cell, liquid_electrical_conductivity_values);
         this->mp_values->get_values("density",                        cell, density_values                       );
-        fe_values[temperature     ].get_function_gradients(this->solution, temperature_gradients     );
-        fe_values[solid_potential ].get_function_gradients(this->solution, solid_potential_gradients );
-        fe_values[liquid_potential].get_function_gradients(this->solution, liquid_potential_gradients);
-        fe_values[temperature     ].get_function_values   (this->solution, temperature_values        );
-        fe_values[solid_potential ].get_function_values   (this->solution, solid_potential_values    );
-        fe_values[liquid_potential].get_function_values   (this->solution, liquid_potential_values   );
+        fe_values[temperature     ].get_function_gradients(solution, temperature_gradients     );
+        fe_values[solid_potential ].get_function_gradients(solution, solid_potential_gradients );
+        fe_values[liquid_potential].get_function_gradients(solution, liquid_potential_gradients);
+        fe_values[temperature     ].get_function_values   (solution, temperature_values        );
+        fe_values[solid_potential ].get_function_values   (solution, solid_potential_values    );
+        fe_values[liquid_potential].get_function_values   (solution, liquid_potential_values   );
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point) {
             this->values["joule_heating"] += 
               ( solid_electrical_conductivity_values [q_point] * solid_potential_gradients [q_point] * solid_potential_gradients [q_point]
@@ -290,8 +292,8 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 if (cell->face(face)->boundary_indicator() == cathode_boundary_id) {
                     fe_face_values.reinit(cell, face);
                     this->mp_values->get_values("solid_electrical_conductivity", cell, face_solid_electrical_conductivity_values); // TODO: should take face as an argument...
-                    fe_face_values[solid_potential].get_function_gradients(this->solution, face_solid_potential_gradients);
-                    fe_face_values[solid_potential].get_function_values   (this->solution, face_solid_potential_values   );
+                    fe_face_values[solid_potential].get_function_gradients(solution, face_solid_potential_gradients);
+                    fe_face_values[solid_potential].get_function_values   (solution, face_solid_potential_values   );
                     normal_vectors = fe_face_values.get_normal_vectors();
                     for (unsigned int face_q_point = 0; face_q_point < n_face_q_points; ++face_q_point) {
                         this->values["current"     ] += 

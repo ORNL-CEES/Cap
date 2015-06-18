@@ -123,7 +123,7 @@ NoName(std::shared_ptr<Parameters const> parameters)
     this->post_processor_params =
         std::make_shared<SuperCapacitorPostprocessorParameters<dim> >(database);
     (*this->post_processor_params).dof_handler     = this->dof_handler;
-    (*this->post_processor_params).solution        = this->solution.get(); // TODO:
+    (*this->post_processor_params).solution        = this->solution   ;
     (*this->post_processor_params).mp_values       = std::dynamic_pointer_cast<MPValues      <dim> const>(mp_values      );
     (*this->post_processor_params).boundary_values = std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
     this->post_processor =

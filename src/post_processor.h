@@ -22,10 +22,10 @@ public:
     { }
     virtual ~PostprocessorParameters() = default;
 
-    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-    dealii::BlockVector<double> const * solution;
+    std::shared_ptr<dealii::DoFHandler<dim>     const> dof_handler;
+    std::shared_ptr<dealii::BlockVector<double> const> solution;
 
-    std::shared_ptr<MPValues<dim> const>       mp_values;
+    std::shared_ptr<MPValues<dim>       const> mp_values;
     std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 
     std::shared_ptr<boost::property_tree::ptree const> database;
@@ -45,8 +45,8 @@ public:
     
 
 protected:
-    std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-    dealii::BlockVector<double> const & solution;
+    std::shared_ptr<dealii::DoFHandler<dim>     const> dof_handler;
+    std::shared_ptr<dealii::BlockVector<double> const> solution;
 
     std::shared_ptr<MPValues<dim>       const> mp_values;
     std::shared_ptr<BoundaryValues<dim> const> boundary_values;
