@@ -1,16 +1,16 @@
 <device>
     <type>ParallelRC</type>
-    <capacitance>3.0</capacitance>
-    <parallel_resistance>2.5e6</parallel_resistance>
-    <series_resistance>50.0e-3</series_resistance>
+    <capacitance>3.0</capacitance> <!-- farad -->
+    <parallel_resistance>2.5e6</parallel_resistance> <!-- ohm -->
+    <series_resistance>50.0e-3</series_resistance> <!-- ohm -->
 </device>
 
 <cyclic_voltammetry>
-    <scan_rate>100.0e-3</scan_rate>
-    <step_size>5.0e-3</step_size>
-    <initial_voltage>0.0</initial_voltage>
-    <voltage_upper_limit>3.5</voltage_upper_limit>
-    <voltage_lower_limit>-2.0</voltage_lower_limit>
-    <final_voltage>0.0</final_voltage>
+    <scan_rate>100.0e-3</scan_rate> <!-- volt per second -->
+    <step_size>5.0e-3</step_size> <!-- volt -->
+    <initial_voltage>0.0</initial_voltage> <!-- volt -->
+    <voltage_upper_limit>3.5</voltage_upper_limit> <!-- volt -->
+    <voltage_lower_limit>-2.0</voltage_lower_limit> <!-- volt -->
+    <final_voltage>0.0</final_voltage> <!-- volt -->
     <cycles>1</cycles>
 </cyclic_voltammetry>
