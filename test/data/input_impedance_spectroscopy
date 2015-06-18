@@ -1,24 +1,24 @@
 <device>
     <type>ParallelRC</type>
-    <capacitance>0.0262473</capacitance> <!-- farads -->
-    <parallel_resistance>41361.5</parallel_resistance> <!-- ohms -->
-    <series_resistance>100.456</series_resistance> <!-- ohms -->
+    <capacitance>0.0262473</capacitance> <!-- farad -->
+    <parallel_resistance>41361.5</parallel_resistance> <!-- ohm -->
+    <series_resistance>100.456</series_resistance> <!-- ohm -->
 </device>
 
 <impedance_spectroscopy>
     <mode>potentiostatic</mode>
-    <frequency_upper_limit>1.0e+6</frequency_upper_limit>
-    <frequency_lower_limit>1.0e-9</frequency_lower_limit>
+    <frequency_upper_limit>1.0e+6</frequency_upper_limit> <!-- hertz -->
+    <frequency_lower_limit>1.0e-9</frequency_lower_limit> <!-- hertz -->
     <steps_per_decade>6</steps_per_decade>
 
     <cycles>3</cycles>
     <ignore_cycles>1</ignore_cycles>
     <steps_per_cycle>4096</steps_per_cycle>
 
-    <dc_voltage>1.1</dc_voltage>
+    <dc_voltage>1.1</dc_voltage> <!-- volt -->
     <harmonics>5</harmonics>
     <amplitudes>50.0e-3</amplitudes>
-    <phases>0.0</phases>
+    <phases>0.0</phases> <!-- degree -->
 
     <percent_tolerance>1.0e-0</percent_tolerance>
 </impedance_spectroscopy>
