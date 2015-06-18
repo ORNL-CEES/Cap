@@ -1,28 +1,28 @@
 <device>
     <type>ParallelRC</type>
-    <capacitance>3.0</capacitance>
-    <series_resistance>50.0e-3</series_resistance>
-    <parallel_resistance>2.5e+6</parallel_resistance>
+    <capacitance>3.0</capacitance> <!-- farad -->
+    <series_resistance>50.0e-3</series_resistance> <!-- ohm -->
+    <parallel_resistance>2.5e+6</parallel_resistance> <!-- ohm -->
 </device>
 
 <ragone_chart_constant_power>
-    <power_lower_limit>1.0e-6</power_lower_limit>
-    <power_upper_limit>1.0e2</power_upper_limit>
+    <power_lower_limit>1.0e-6</power_lower_limit> <!-- watt -->
+    <power_upper_limit>1.0e2</power_upper_limit> <!-- watt -->
     <steps_per_decade>5</steps_per_decade>
-    <initial_voltage>2.7</initial_voltage>
-    <final_voltage>1.2</final_voltage>
-    <time_step>1800.0</time_step>
+    <initial_voltage>2.7</initial_voltage> <!-- volt -->
+    <final_voltage>1.2</final_voltage> <!-- volt -->
+    <time_step>1800.0</time_step> <!-- second -->
     <min_steps>200</min_steps>
     <max_steps>300</max_steps>
 </ragone_chart_constant_power>
 
 <ragone_chart_constant_current>
-    <current_lower_limit>5.0e-7</current_lower_limit>
-    <current_upper_limit>5.0e1</current_upper_limit>
+    <current_lower_limit>5.0e-7</current_lower_limit> <!-- ampere -->
+    <current_upper_limit>5.0e1</current_upper_limit> <!-- ampere -->
     <steps_per_decade>5</steps_per_decade>
-    <initial_voltage>2.7</initial_voltage>
-    <final_voltage>1.2</final_voltage>
-    <time_step>1800.0</time_step>
+    <initial_voltage>2.7</initial_voltage> <!-- volt -->
+    <final_voltage>1.2</final_voltage> <!-- volt -->
+    <time_step>1800.0</time_step> <!-- second -->
     <min_steps>200</min_steps>
     <max_steps>300</max_steps>
 </ragone_chart_constant_current>
