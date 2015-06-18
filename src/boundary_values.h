@@ -72,12 +72,6 @@ protected:
     dealii::types::boundary_id lower_boundary_id;
     dealii::types::boundary_id other_boundary_id;
 
-    double charge_potential; 
-    double discharge_potential; 
-    double charge_current_density; 
-    double discharge_current_density;
-    double initial_potential;
-
     double upper_ambient_temperature;
     double lower_ambient_temperature;
     double upper_heat_transfer_coefficient;

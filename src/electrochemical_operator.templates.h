@@ -26,12 +26,6 @@ ElectrochemicalOperator(std::shared_ptr<OperatorParameters<dim> const> parameter
     dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
     this->dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[std::min(this->solid_potential_component, this->liquid_potential_component)]), 0);
 
-    this->charge_potential           = database->get<double>("boundary_values.charge_potential"         );
-    this->discharge_potential        = database->get<double>("boundary_values.discharge_potential"      );
-    this->charge_current_density     = database->get<double>("boundary_values.charge_current_density"   );
-    this->discharge_current_density  = database->get<double>("boundary_values.discharge_current_density");
-    this->initial_potential          = database->get<double>("boundary_values.initial_potential"        );
-                                              
     this->alpha                      = database->get<double>("material_properties.alpha");
                                               
     this->anode_boundary_id          = database->get<dealii::types::boundary_id>("boundary_values.anode_boundary_id"  );
@@ -60,17 +54,23 @@ reset(std::shared_ptr<OperatorParameters<dim> const> parameters)
     this->compute_electrical_operator_contribution();
 
     if (this->capacitor_state == GalvanostaticCharge) {
-        this->compute_neumann_boundary_contribution(this->charge_current_density);
+//        this->compute_neumann_boundary_contribution(this->charge_current_density);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == GalvanostaticDischarge) {
-        this->compute_neumann_boundary_contribution(this->discharge_current_density);
+//        this->compute_neumann_boundary_contribution(this->discharge_current_density);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == Relaxation) {
-        this->compute_neumann_boundary_contribution(0.0);
+//        this->compute_neumann_boundary_contribution(0.0);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == PotentiostaticCharge) {
-        this->compute_dirichlet_boundary_values(this->charge_potential);
+//        this->compute_dirichlet_boundary_values(this->charge_potential);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == PotentiostaticDischarge) {
-        this->compute_dirichlet_boundary_values(this->discharge_potential);
+//        this->compute_dirichlet_boundary_values(this->discharge_potential);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == Initialize) {
-        this->compute_dirichlet_boundary_values(this->initial_potential);
+//        this->compute_dirichlet_boundary_values(this->initial_potential);
+        throw std::runtime_error("deprecated stuff");
     } else if (this->capacitor_state == CustomConstantCurrent) {
         this->compute_neumann_boundary_contribution(electrochemical_parameters->custom_constant_current_density);
     } else if (this->capacitor_state == CustomConstantVoltage) {

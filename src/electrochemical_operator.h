@@ -38,11 +38,6 @@ protected:
     unsigned int solid_potential_component;
     unsigned int liquid_potential_component;
     unsigned int temperature_component;
-    double charge_potential; 
-    double discharge_potential; 
-    double charge_current_density; 
-    double discharge_current_density;
-    double initial_potential;
     double alpha;
     dealii::types::boundary_id anode_boundary_id;
     dealii::types::boundary_id cathode_boundary_id; 
