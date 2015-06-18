@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE MyFirstTest
+#define BOOST_TEST_MODULE TestPostProcessor
 #define BOOST_TEST_MAIN
 #include <cap/post_processor.h>
 #include <cap/utils.h>

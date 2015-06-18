@@ -1,7 +1,10 @@
+#define BOOST_TEST_MODULE TestGeometry
+#define BOOST_TEST_MAIN
 #include <cap/utils.h>
 #include <cap/geometry.h>
 #include <deal.II/grid/grid_out.h>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/test/unit_test.hpp>
 #include <fstream>
 
 template <int dim>
@@ -20,11 +23,8 @@ write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<
     fout.close();
 }
 
-int main(int argc, char *argv[])
+BOOST_AUTO_TEST_CASE( test_reset_geometry )
 {
-    std::ignore =  argc;
-    std::ignore =  argv;
-
     std::shared_ptr<boost::property_tree::ptree> params(new boost::property_tree::ptree);
     params->put("electrode_width"              ,  50.0e-6     );
     params->put("separator_width"              ,  25.0e-6     );
@@ -54,6 +54,4 @@ int main(int argc, char *argv[])
 
     geo.reset(params);
     write_mesh("output_test_geometry_1.vtk", geo.get_triangulation());
-
-    return 0;
 }
