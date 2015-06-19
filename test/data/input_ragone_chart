@@ -6,23 +6,25 @@
 </device>
 
 <ragone_chart_constant_power>
-    <power_lower_limit>1.0e-6</power_lower_limit> <!-- watt -->
-    <power_upper_limit>1.0e2</power_upper_limit> <!-- watt -->
+    <discharge_mode>constant_power</discharge_mode>
+    <discharge_power_lower_limit>1.0e-6</discharge_power_lower_limit> <!-- watt -->
+    <discharge_power_upper_limit>1.0e2</discharge_power_upper_limit> <!-- watt -->
     <steps_per_decade>5</steps_per_decade>
     <initial_voltage>2.7</initial_voltage> <!-- volt -->
     <final_voltage>1.2</final_voltage> <!-- volt -->
     <time_step>1800.0</time_step> <!-- second -->
-    <min_steps>200</min_steps>
-    <max_steps>300</max_steps>
+    <min_steps_per_discharge>200</min_steps_per_discharge>
+    <max_steps_per_discharge>300</max_steps_per_discharge>
 </ragone_chart_constant_power>
 
 <ragone_chart_constant_current>
-    <current_lower_limit>5.0e-7</current_lower_limit> <!-- ampere -->
-    <current_upper_limit>5.0e1</current_upper_limit> <!-- ampere -->
+    <discharge_mode>constant_current</discharge_mode>
+    <discharge_current_lower_limit>5.0e-7</discharge_current_lower_limit> <!-- ampere -->
+    <discharge_current_upper_limit>5.0e1</discharge_current_upper_limit> <!-- ampere -->
     <steps_per_decade>5</steps_per_decade>
     <initial_voltage>2.7</initial_voltage> <!-- volt -->
     <final_voltage>1.2</final_voltage> <!-- volt -->
     <time_step>1800.0</time_step> <!-- second -->
-    <min_steps>200</min_steps>
-    <max_steps>300</max_steps>
+    <min_steps_per_discharge>200</min_steps_per_discharge>
+    <max_steps_per_discharge>300</max_steps_per_discharge>
 </ragone_chart_constant_current>
