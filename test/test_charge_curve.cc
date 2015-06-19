@@ -20,9 +20,9 @@ void print_headers(std::string const & charge_mode, std::ostream & os)
 {
     os<<"# charge curve (charge_mode="<<charge_mode<<")\n";
     os<<boost::format( "# %22s  %22s  %22s  \n")
-        % "time t [seconds]"
-        % "current I [amperes]"
-        % "voltage U [volts]"
+        % "time t [second]"
+        % "current I [ampere]"
+        % "voltage U [volt]"
         ;
 }
 
