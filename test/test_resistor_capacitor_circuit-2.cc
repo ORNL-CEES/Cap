@@ -8,7 +8,6 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/cos_pi.hpp>
 #include <boost/test/unit_test.hpp>
-#include <gsl/gsl_fft_real.h>
 #include <iostream>
 #include <fstream>
 
