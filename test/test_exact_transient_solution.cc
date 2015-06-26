@@ -28,8 +28,12 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     // getting the material parameters values
     std::shared_ptr<boost::property_tree::ptree> material_properties_database = 
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("material_properties"));
-    std::shared_ptr<cap::SuperCapacitorMPValues<2> > mp_values = std::shared_ptr<cap::SuperCapacitorMPValues<2> >
-        (new cap::SuperCapacitorMPValues<2>(cap::SuperCapacitorMPValuesParameters<2>(material_properties_database)));
+    cap::MPValuesParameters<2> mp_values_params(material_properties_database);
+    std::shared_ptr<boost::property_tree::ptree> geometry_database = 
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("geometry"));
+    mp_values_params.geometry = std::make_shared<cap::DummyGeometry<2>>(geometry_database);
+    std::shared_ptr<cap::MPValues<2> > mp_values = std::shared_ptr<cap::MPValues<2> >
+        (new cap::MPValues<2>(mp_values_params));
     // build dummy cell itertor and set its material id
     dealii::Triangulation<2> triangulation;
     dealii::GridGenerator::hyper_cube (triangulation);
