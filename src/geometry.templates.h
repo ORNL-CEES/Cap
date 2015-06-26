@@ -1,4 +1,5 @@
 #include <cap/geometry.h>
+#include <cap/utils.h>
 #include <deal.II/grid/grid_in.h>
 #include <fstream>
 #include <tuple>
@@ -170,7 +171,7 @@ template <int dim>
 Geometry<dim>::
 Geometry(std::shared_ptr<boost::property_tree::ptree const> const & database)
 {
-    this->triangulation = std::make_shared<dealii::Triangulation<dim> >();
+    this->triangulation = std::make_shared<dealii::Triangulation<dim>>();
     std::string const mesh_file = database->get<std::string>("mesh_file");
     dealii::GridIn<dim> mesh_reader;
     mesh_reader.attach_triangulation(*(this->triangulation));
@@ -183,6 +184,16 @@ Geometry(std::shared_ptr<boost::property_tree::ptree const> const & database)
         throw std::runtime_error("Bad mesh file extension ."+file_extension+" in mesh file "+mesh_file);
     }
     fin.close();
+
+    this->materials = std::make_shared<std::unordered_map<std::string, std::vector<dealii::types::material_id>>>();
+    int const n_materials = database->get<int>("materials");
+    for (int m = 0; m < n_materials; ++m) {
+        boost::property_tree::ptree material_database = database->get_child("material_"+std::to_string(m));
+        std::vector<dealii::types::material_id> const material_ids =
+            to_vector<dealii::types::material_id>(material_database.get<std::string>("material_id"));
+        std::string const material_name = material_database.get<std::string>("name");
+        (*this->materials).emplace(material_name, material_ids);
+    }
 }
 
 

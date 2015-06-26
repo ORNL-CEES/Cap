@@ -5,6 +5,7 @@
 #include <deal.II/grid/tria.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
+#include <unordered_map>
 
 namespace cap {
 
@@ -17,8 +18,24 @@ public:
     inline std::shared_ptr<dealii::Triangulation<dim> const> get_triangulation() const
         { return this->triangulation; }
     virtual void reset(std::shared_ptr<boost::property_tree::ptree const> const & database) = 0;
+    inline std::shared_ptr<std::unordered_map<std::string, std::vector<dealii::types::material_id>> const> get_materials() const
+        { return this->materials; }
 protected:
-    std::shared_ptr<dealii::Triangulation<dim> > triangulation;
+    std::shared_ptr<dealii::Triangulation<dim>> triangulation;
+    std::shared_ptr<std::unordered_map<std::string, std::vector<dealii::types::material_id>>> materials;
+};
+
+
+
+template <int dim>
+class DummyGeometry : public Geometry<dim>
+{
+public:
+    DummyGeometry(std::shared_ptr<boost::property_tree::ptree const> const & database)
+        : Geometry<dim>(database)
+    {}
+    void reset(std::shared_ptr<boost::property_tree::ptree const> const & ) override
+    {}
 };
 
 
