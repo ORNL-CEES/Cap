@@ -26,7 +26,7 @@ ElectrochemicalOperator(std::shared_ptr<OperatorParameters<dim> const> parameter
     dealii::DoFTools::count_dofs_per_component(dof_handler, dofs_per_component);
     this->dof_shift = std::accumulate(&(dofs_per_component[0]), &(dofs_per_component[std::min(this->solid_potential_component, this->liquid_potential_component)]), 0);
 
-    this->alpha                      = database->get<double>("material_properties.alpha");
+    this->alpha                      = database->get<double>("material_properties.alpha", 0.0); // going to regret this!
                                               
     this->anode_boundary_id          = database->get<dealii::types::boundary_id>("boundary_values.anode_boundary_id"  );
     this->cathode_boundary_id        = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id");
