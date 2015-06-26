@@ -79,8 +79,10 @@ NoName(std::shared_ptr<Parameters const> parameters)
     // read material properties
     std::shared_ptr<boost::property_tree::ptree> material_properties_database =
         std::make_shared<boost::property_tree::ptree>(database->get_child("material_properties"));
-    std::shared_ptr<SuperCapacitorMPValues<dim> > mp_values =
-        std::make_shared<SuperCapacitorMPValues<dim> >(SuperCapacitorMPValuesParameters<dim>(material_properties_database));
+    MPValuesParameters<dim> params(material_properties_database);
+    params.geometry = geometry;
+    std::shared_ptr<MPValues<dim> > mp_values =
+        std::make_shared<MPValues<dim> >(params);
 
     std::shared_ptr<boost::property_tree::ptree> boundary_values_database =
         std::make_shared<boost::property_tree::ptree>(database->get_child("boundary_values")    );
