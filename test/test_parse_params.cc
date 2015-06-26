@@ -35,6 +35,12 @@ BOOST_AUTO_TEST_CASE( test_parse_params )
    BOOST_FOREACH(std::string const & val, yes) 
        BOOST_CHECK_EQUAL( val, "yes" );
    BOOST_CHECK( empty.empty() );
+   params.put("material_ids", "0,1,2,3");
+   std::vector<dealii::types::material_id> material_ids = cap::to_vector<dealii::types::material_id>(params.get<std::string>(("material_ids")));
+   BOOST_CHECK_EQUAL( material_ids[0], dealii::types::material_id(0) );
+   BOOST_CHECK_EQUAL( material_ids[1], dealii::types::material_id(1) );
+   BOOST_CHECK_EQUAL( material_ids[2], dealii::types::material_id(2) );
+   BOOST_CHECK_EQUAL( material_ids[3], dealii::types::material_id(3) );
 
    // ensure entry is overwritten
    std::string const default_value("default");
