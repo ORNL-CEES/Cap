@@ -246,11 +246,11 @@ void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::
         std::make_shared<boost::property_tree::ptree>(*database);
     os<<"# impedance Z(f) = R + i X \n";
     os<<boost::format( "# %22s  %22s  %22s  %22s  %22s  \n")
-        % "frequency f [Hz]"
-        % "resistance R [ohms]"
-        % "reactance X [ohms]"
-        % "magnitude |Z| [ohms]"
-        % "phase arg(Z) [degrees]"
+        % "frequency_f_[Hz]"
+        % "resistance_R_[ohm]"
+        % "reactance_X_[ohm]"
+        % "magnitude_|Z|_[ohm]"
+        % "phase_arg(Z)_[degree]"
         ;
     for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
