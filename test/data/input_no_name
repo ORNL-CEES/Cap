@@ -25,6 +25,11 @@
         <anode_collector_material_id>5</anode_collector_material_id>
         <cathode_electrode_material_id>6</cathode_electrode_material_id>
         <cathode_collector_material_id>7</cathode_collector_material_id>
+        <materials>1</materials>
+        <material_0>
+            <name>all</name>
+            <material_id>3,4,5,6,7</material_id>
+        </material_0>
     </geometry>
 
     <temperature_component>0</temperature_component>
@@ -63,6 +68,9 @@
         <pores_characteristic_dimension>      1.5e-9   </pores_characteristic_dimension>
         <pores_geometry_factor>               2.0      </pores_geometry_factor>
         <exchange_current_density>            0.7463e-5</exchange_current_density>
+        <all>
+            <type>deprecated_stuff</type>
+        </all>
     </material_properties>
 
     <boundary_values>

@@ -14,6 +14,23 @@
         <anode_collector_material_id>5</anode_collector_material_id>
         <cathode_electrode_material_id>6</cathode_electrode_material_id>
         <cathode_collector_material_id>7</cathode_collector_material_id>
+        <materials>4</materials>
+        <material_0>
+            <name>anode</name>
+            <material_id>4</material_id>
+        </material_0>
+        <material_1>
+            <name>cathode</name>
+            <material_id>6</material_id>
+        </material_1>
+        <material_2>
+            <name>separator</name>
+            <material_id>3</material_id>
+        </material_2>
+        <material_3>
+            <name>collector</name>
+            <material_id>5,7</material_id>
+        </material_3>
     </geometry>
 
     <temperature_component>0</temperature_component>
@@ -24,34 +41,65 @@
     <n_blocks>2</n_blocks>
 
     <material_properties>
+        <anode>
+            <type>porous_electrode</type>
+            <matrix_phase>electrode_material</matrix_phase>
+            <solution_phase>electrolyte</solution_phase>
+        </anode>
+        <cathode>
+            <type>porous_electrode</type>
+            <matrix_phase>electrode_material</matrix_phase>
+            <solution_phase>electrolyte</solution_phase>
+        </cathode>
+        <separator>
+            <type>permeable_membrane</type>
+            <matrix_phase>separator_material</matrix_phase>
+            <solution_phase>electrolyte</solution_phase>
+        </separator>
+        <collector>
+            <type>current_collector</type>
+            <metal_foil>collector_material</metal_foil>
+        </collector>
+
+        <separator_material>
+            <void_volume_fraction>0.6</void_volume_fraction>
+            <tortuosity_factor>1.29</tortuosity_factor>
+            <pores_characteristic_dimension>1.5e-9</pores_characteristic_dimension> <!-- meter -->
+            <pores_geometry_factor>2.0</pores_geometry_factor>
+            <mass_density>3.2e3</mass_density> <!-- kilogram per cubic meter -->
+            <heat_capacity>1.2528e3</heat_capacity> <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>0.0019e2</thermal_conductivity> <!-- watt per meter kelvin -->
+        </separator_material>
+        <electrode_material>
+            <differential_capacitance>0.03134</differential_capacitance> <!-- farad per square meter -->
+            <exchange_current_density>0.7463e-5</exchange_current_density> <!-- ampere per square meter -->
+            <void_volume_fraction>0.67</void_volume_fraction>
+            <tortuosity_factor>2.3</tortuosity_factor>
+            <pores_characteristic_dimension>1.5e-9</pores_characteristic_dimension> <!-- meter -->
+            <pores_geometry_factor>2.0</pores_geometry_factor>
+            <mass_density>2.3e3</mass_density> <!-- kilogram per cubic meter -->
+            <electrical_conductivity>52.1</electrical_conductivity> <!-- siemens per meter -->
+            <heat_capacity>0.93e3</heat_capacity> <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>0.0011e2</thermal_conductivity> <!-- watt per meter kelvin -->
+        </electrode_material>
+        <collector_material>
+            <mass_density>2.7e3</mass_density> <!-- kilogram per cubic meter -->
+            <electrical_resistivity>28.2e-9</electrical_resistivity> <!-- ohm meter -->
+            <heat_capacity>2.7e3</heat_capacity> <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>237.0</thermal_conductivity> <!-- watt per meter kelvin -->
+        </collector_material>
+        <electrolyte>
+            <mass_density>1.2e3</mass_density> <!-- kilogram per cubic meter -->
+            <conductivity>0.067</conductivity> <!-- siemens per meter -->
+            <heat_capacity>0.0</heat_capacity> <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>0.0</thermal_conductivity> <!-- watt per meter kelvin -->
+        </electrolyte>
+
         <separator_material_id>3</separator_material_id>
         <anode_electrode_material_id>4</anode_electrode_material_id>
         <anode_collector_material_id>5</anode_collector_material_id>
         <cathode_electrode_material_id>6</cathode_electrode_material_id>
         <cathode_collector_material_id>7</cathode_collector_material_id>
-        <separator_heat_capacity>             1.2528e3 </separator_heat_capacity>
-        <electrode_heat_capacity>             0.93e3   </electrode_heat_capacity>
-        <collector_heat_capacity>             2.7e3    </collector_heat_capacity>
-        <separator_density>                   3.2e3    </separator_density>
-        <electrode_density>                   2.3e3    </electrode_density>
-        <collector_density>                   2.70e3   </collector_density>
-        <electrolyte_mass_density>            1.2e3    </electrolyte_mass_density>
-        <separator_thermal_conductivity>      0.0019e2 </separator_thermal_conductivity>
-        <electrode_thermal_conductivity>      0.0011e2 </electrode_thermal_conductivity>
-        <collector_thermal_conductivity>    237.0      </collector_thermal_conductivity>
-        <alpha>                               0.0      </alpha>
-        <differential_capacitance>            0.03134  </differential_capacitance>
-        <separator_void_volume_fraction>      0.6      </separator_void_volume_fraction>
-        <electrode_void_volume_fraction>      0.67     </electrode_void_volume_fraction>
-        <electrolyte_conductivity>            0.067    </electrolyte_conductivity>
-        <solid_phase_conductivity>           52.1      </solid_phase_conductivity>
-        <collector_electrical_resistivity>   28.2e-9   </collector_electrical_resistivity>
-        <bruggemans_coefficient>              1.5      </bruggemans_coefficient>
-        <electrode_tortuosity_factor>         2.3      </electrode_tortuosity_factor>
-        <separator_tortuosity_factor>         1.29     </separator_tortuosity_factor>
-        <pores_characteristic_dimension>      1.5e-9   </pores_characteristic_dimension>
-        <pores_geometry_factor>               2.0      </pores_geometry_factor>
-        <exchange_current_density>            0.7463e-5</exchange_current_density>
     </material_properties>
 
     <boundary_values>
