@@ -37,6 +37,11 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
     params->put("cathode_electrode_material_id",   6          );
     params->put("cathode_collector_material_id",   7          );
     params->put("mesh_file"                    , "mesh_2d.ucd");
+    params->put("materials"                    ,   2          );
+    params->put("material_0.name"              , "electrode"  );
+    params->put("material_0.material_id"       , "4,6"        );
+    params->put("material_1.name"              , "separator"  );
+    params->put("material_1.material_id"       , "3"          );
 
     cap::SuperCapacitorGeometry<2> geo(params);
     write_mesh("output_test_geometry_0.vtk", geo.get_triangulation());
