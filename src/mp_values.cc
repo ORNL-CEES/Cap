@@ -10,5 +10,9 @@ template class MPValuesParameters<3>;
 template class MPValues<3>;
 template class SuperCapacitorMPValuesParameters<3>;
 template class SuperCapacitorMPValues<3>;
+template class PorousElectrodeMPValues<2>;
+template class PorousElectrodeMPValues<3>;
+template class MetalFoilMPValues<2>;
+template class MetalFoilMPValues<3>;
 
 } // end samespace cap
