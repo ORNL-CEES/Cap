@@ -4,16 +4,22 @@
 
     <geometry>
         <mesh_file>mesh_2d.ucd</mesh_file>
-        <electrode_width>50.0e-6</electrode_width>
-        <separator_width>25.0e-6</separator_width>
-        <collector_width>5.0e-6</collector_width>
-        <sandwich_height>25.0e-6</sandwich_height>
-        <tab_height>5.0e-6</tab_height>
-        <separator_material_id>3</separator_material_id>
-        <anode_electrode_material_id>4</anode_electrode_material_id>
-        <anode_collector_material_id>5</anode_collector_material_id>
-        <cathode_electrode_material_id>6</cathode_electrode_material_id>
-        <cathode_collector_material_id>7</cathode_collector_material_id>
+        
+        <anode_collector_width>    5.0e-6 </anode_collector_width>   <!-- meter -->
+        <anode_electrode_width>   50.0e-6 </anode_electrode_width>   <!-- meter -->
+        <separator_width>         25.0e-6 </separator_width>         <!-- meter -->
+        <cathode_electrode_width> 50.0e-6 </cathode_electrode_width> <!-- meter -->
+        <cathode_collector_width>  5.0e-6 </cathode_collector_width> <!-- meter -->
+        <sandwich_height>         25.0e-6 </sandwich_height>         <!-- meter -->
+        <sandwich_depth>          50.0e-6 </sandwich_depth>          <!-- meter -->
+        <tab_height>               5.0e-6 </tab_height>              <!-- meter -->
+
+        <anode_collector_material_id>   4 </anode_collector_material_id>
+        <anode_electrode_material_id>   1 </anode_electrode_material_id>
+        <separator_material_id>         2 </separator_material_id>
+        <cathode_electrode_material_id> 3 </cathode_electrode_material_id>
+        <cathode_collector_material_id> 5 </cathode_collector_material_id>
+
         <materials>4</materials>
         <material_0>
             <name>anode</name>
@@ -95,11 +101,11 @@
             <thermal_conductivity>0.0</thermal_conductivity> <!-- watt per meter kelvin -->
         </electrolyte>
 
-        <separator_material_id>3</separator_material_id>
-        <anode_electrode_material_id>4</anode_electrode_material_id>
-        <anode_collector_material_id>5</anode_collector_material_id>
-        <cathode_electrode_material_id>6</cathode_electrode_material_id>
-        <cathode_collector_material_id>7</cathode_collector_material_id>
+        <anode_collector_material_id>   4 </anode_collector_material_id>
+        <anode_electrode_material_id>   1 </anode_electrode_material_id>
+        <separator_material_id>         2 </separator_material_id>
+        <cathode_electrode_material_id> 3 </cathode_electrode_material_id>
+        <cathode_collector_material_id> 5 </cathode_collector_material_id>
     </material_properties>
 
     <boundary_values>
