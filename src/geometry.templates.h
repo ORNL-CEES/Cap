@@ -275,8 +275,6 @@ SuperCapacitorGeometry(std::shared_ptr<boost::property_tree::ptree const> const 
         for (int vertex = 0; vertex < vertices_per_cell; ++vertex)
             add_vertex_to_bbox(cell->vertex(vertex), bboxes[material_id]);
     }
-    for (auto x : bboxes)
-        std::cout<<"  "<<std::to_string(x.first)<<"  "<<x.second.first<<"  "<<x.second.second<<"\n";
 
     this->anode_tab_bbox         = bboxes[this->anode_collector_material_id  ];
     this->anode_collector_bbox   = bboxes[this->anode_collector_material_id  ];
