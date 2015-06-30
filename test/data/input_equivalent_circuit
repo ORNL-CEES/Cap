@@ -4,32 +4,38 @@
 
     <geometry>
         <mesh_file>mesh_2d.ucd</mesh_file>
-        <electrode_width>50.0e-6</electrode_width>
-        <separator_width>25.0e-6</separator_width>
-        <collector_width>5.0e-6</collector_width>
-        <sandwich_height>25.0e-6</sandwich_height>
-        <tab_height>5.0e-6</tab_height>
-        <separator_material_id>3</separator_material_id>
-        <anode_electrode_material_id>4</anode_electrode_material_id>
-        <anode_collector_material_id>5</anode_collector_material_id>
-        <cathode_electrode_material_id>6</cathode_electrode_material_id>
-        <cathode_collector_material_id>7</cathode_collector_material_id>
+        
+        <anode_collector_width>    5.0e-6 </anode_collector_width>   <!-- meter -->
+        <anode_electrode_width>   50.0e-6 </anode_electrode_width>   <!-- meter -->
+        <separator_width>         25.0e-6 </separator_width>         <!-- meter -->
+        <cathode_electrode_width> 50.0e-6 </cathode_electrode_width> <!-- meter -->
+        <cathode_collector_width>  5.0e-6 </cathode_collector_width> <!-- meter -->
+        <sandwich_height>         25.0e-6 </sandwich_height>         <!-- meter -->
+        <sandwich_depth>          50.0e-6 </sandwich_depth>          <!-- meter -->
+        <tab_height>               5.0e-6 </tab_height>              <!-- meter -->
+
+        <anode_collector_material_id>   4 </anode_collector_material_id>
+        <anode_electrode_material_id>   1 </anode_electrode_material_id>
+        <separator_material_id>         2 </separator_material_id>
+        <cathode_electrode_material_id> 3 </cathode_electrode_material_id>
+        <cathode_collector_material_id> 5 </cathode_collector_material_id>
+
         <materials>4</materials>
         <material_0>
             <name>anode</name>
-            <material_id>4</material_id>
+            <material_id>1</material_id>
         </material_0>
         <material_1>
-            <name>cathode</name>
-            <material_id>6</material_id>
+            <name>separator</name>
+            <material_id>2</material_id>
         </material_1>
         <material_2>
-            <name>separator</name>
+            <name>cathode</name>
             <material_id>3</material_id>
         </material_2>
         <material_3>
             <name>collector</name>
-            <material_id>5,7</material_id>
+            <material_id>4,5</material_id>
         </material_3>
     </geometry>
 
@@ -62,52 +68,53 @@
         </collector>
 
         <separator_material>
-            <void_volume_fraction>0.6</void_volume_fraction>
-            <tortuosity_factor>1.29</tortuosity_factor>
-            <pores_characteristic_dimension>1.5e-9</pores_characteristic_dimension> <!-- meter -->
-            <pores_geometry_factor>2.0</pores_geometry_factor>
-            <mass_density>3.2e3</mass_density> <!-- kilogram per cubic meter -->
-            <heat_capacity>1.2528e3</heat_capacity> <!-- joule per kilogram kelvin -->
-            <thermal_conductivity>0.0019e2</thermal_conductivity> <!-- watt per meter kelvin -->
+            <void_volume_fraction>           0.6       </void_volume_fraction>
+            <tortuosity_factor>              1.29      </tortuosity_factor>
+            <pores_characteristic_dimension> 1.5e-9    </pores_characteristic_dimension> <!-- meter -->
+            <pores_geometry_factor>          2.0       </pores_geometry_factor>
+            <mass_density>                   3.2e3     </mass_density>                   <!-- kilogram per cubic meter -->
+            <heat_capacity>                  1.2528e3  </heat_capacity>                  <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>           0.0019e2  </thermal_conductivity>           <!-- watt per meter kelvin -->
         </separator_material>
         <electrode_material>
-            <differential_capacitance>0.03134</differential_capacitance> <!-- farad per square meter -->
-            <exchange_current_density>0.7463e-5</exchange_current_density> <!-- ampere per square meter -->
-            <void_volume_fraction>0.67</void_volume_fraction>
-            <tortuosity_factor>2.3</tortuosity_factor>
-            <pores_characteristic_dimension>1.5e-9</pores_characteristic_dimension> <!-- meter -->
-            <pores_geometry_factor>2.0</pores_geometry_factor>
-            <mass_density>2.3e3</mass_density> <!-- kilogram per cubic meter -->
-            <electrical_conductivity>52.1</electrical_conductivity> <!-- siemens per meter -->
-            <heat_capacity>0.93e3</heat_capacity> <!-- joule per kilogram kelvin -->
-            <thermal_conductivity>0.0011e2</thermal_conductivity> <!-- watt per meter kelvin -->
+            <differential_capacitance>       0.03134   </differential_capacitance>       <!-- farad per square meter -->
+            <exchange_current_density>       0.7463e-5 </exchange_current_density>       <!-- ampere per square meter -->
+            <void_volume_fraction>           0.67      </void_volume_fraction>
+            <tortuosity_factor>              2.3       </tortuosity_factor>
+            <pores_characteristic_dimension> 1.5e-9    </pores_characteristic_dimension> <!-- meter -->
+            <pores_geometry_factor>          2.0       </pores_geometry_factor>
+            <mass_density>                   2.3e3     </mass_density>                   <!-- kilogram per cubic meter -->
+            <electrical_conductivity>       52.1       </electrical_conductivity>        <!-- siemens per meter -->
+            <heat_capacity>                  0.93e3    </heat_capacity>                  <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>           0.0011e2  </thermal_conductivity>           <!-- watt per meter kelvin -->
         </electrode_material>
         <collector_material>
-            <mass_density>2.7e3</mass_density> <!-- kilogram per cubic meter -->
-            <electrical_resistivity>28.2e-9</electrical_resistivity> <!-- ohm meter -->
-            <heat_capacity>2.7e3</heat_capacity> <!-- joule per kilogram kelvin -->
-            <thermal_conductivity>237.0</thermal_conductivity> <!-- watt per meter kelvin -->
+             <mass_density>                  2.7e3     </mass_density>                   <!-- kilogram per cubic meter -->
+            <electrical_resistivity>        28.2e-9    </electrical_resistivity>         <!-- ohm meter -->
+            <heat_capacity>                  2.7e3     </heat_capacity>                  <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>         237.0       </thermal_conductivity>           <!-- watt per meter kelvin -->
         </collector_material>
         <electrolyte>
-            <mass_density>1.2e3</mass_density> <!-- kilogram per cubic meter -->
-            <conductivity>0.067</conductivity> <!-- siemens per meter -->
-            <heat_capacity>0.0</heat_capacity> <!-- joule per kilogram kelvin -->
-            <thermal_conductivity>0.0</thermal_conductivity> <!-- watt per meter kelvin -->
+            <mass_density>                   1.2e3     </mass_density>                   <!-- kilogram per cubic meter -->
+            <conductivity>                   0.067     </conductivity>                   <!-- siemens per meter -->
+            <heat_capacity>                  0.0       </heat_capacity>                  <!-- joule per kilogram kelvin -->
+            <thermal_conductivity>           0.0       </thermal_conductivity>           <!-- watt per meter kelvin -->
         </electrolyte>
 
-        <separator_material_id>3</separator_material_id>
-        <anode_electrode_material_id>4</anode_electrode_material_id>
-        <anode_collector_material_id>5</anode_collector_material_id>
-        <cathode_electrode_material_id>6</cathode_electrode_material_id>
-        <cathode_collector_material_id>7</cathode_collector_material_id>
+        <anode_collector_material_id>   4 </anode_collector_material_id>
+        <anode_electrode_material_id>   1 </anode_electrode_material_id>
+        <separator_material_id>         2 </separator_material_id>
+        <cathode_electrode_material_id> 3 </cathode_electrode_material_id>
+        <cathode_collector_material_id> 5 </cathode_collector_material_id>
     </material_properties>
 
     <boundary_values>
+        <anode_boundary_id>   1 </anode_boundary_id>
+        <cathode_boundary_id> 2 </cathode_boundary_id>
+        
         <ambient_temperature>               300.0      </ambient_temperature>
         <heat_transfer_coefficient>           8.0e-2   </heat_transfer_coefficient>
 
-        <cathode_boundary_id>1</cathode_boundary_id>
-        <anode_boundary_id>2</anode_boundary_id>
         <upper_boundary_id>3</upper_boundary_id>
         <lower_boundary_id>4</lower_boundary_id>
         <other_boundary_id>5</other_boundary_id>
