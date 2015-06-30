@@ -27,9 +27,9 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
 
     double const sandwich_height = input_database->get<double>("geometry.sandwich_height");
     double const cross_sectional_area = sandwich_height * 1.0;
-    double const electrode_width = input_database->get<double>("geometry.electrode_width");
+    double const electrode_width = input_database->get<double>("geometry.anode_electrode_width");
     double const separator_width = input_database->get<double>("geometry.separator_width");
-    double const collector_width = input_database->get<double>("geometry.collector_width");
+    double const collector_width = input_database->get<double>("geometry.anode_collector_width");
 
     // getting the material parameters values
     std::shared_ptr<boost::property_tree::ptree> material_properties_database = 

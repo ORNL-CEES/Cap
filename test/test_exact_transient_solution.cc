@@ -22,7 +22,7 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
 {
     double const sandwich_height = input_database->get<double>("geometry.sandwich_height");
     double const cross_sectional_area = sandwich_height * 1.0;
-    double const electrode_width = input_database->get<double>("geometry.electrode_width");
+    double const electrode_width = input_database->get<double>("geometry.anode_electrode_width");
     double const separator_width = input_database->get<double>("geometry.separator_width");
 
     // getting the material parameters values
