@@ -23,19 +23,19 @@
         <materials>4</materials>
         <material_0>
             <name>anode</name>
-            <material_id>4</material_id>
+            <material_id>1</material_id>
         </material_0>
         <material_1>
             <name>cathode</name>
-            <material_id>6</material_id>
+            <material_id>3</material_id>
         </material_1>
         <material_2>
             <name>separator</name>
-            <material_id>3</material_id>
+            <material_id>2</material_id>
         </material_2>
         <material_3>
             <name>collector</name>
-            <material_id>5,7</material_id>
+            <material_id>4,5</material_id>
         </material_3>
     </geometry>
 
@@ -109,11 +109,12 @@
     </material_properties>
 
     <boundary_values>
+        <anode_boundary_id>   1 </anode_boundary_id>
+        <cathode_boundary_id> 2 </cathode_boundary_id>
+        
         <ambient_temperature>               300.0      </ambient_temperature>
         <heat_transfer_coefficient>           8.0e-2   </heat_transfer_coefficient>
 
-        <cathode_boundary_id>1</cathode_boundary_id>
-        <anode_boundary_id>2</anode_boundary_id>
         <upper_boundary_id>3</upper_boundary_id>
         <lower_boundary_id>4</lower_boundary_id>
         <other_boundary_id>5</other_boundary_id>
