@@ -5,6 +5,18 @@
     <parallel_resistance>2.5e+6</parallel_resistance> <!-- ohm -->
 </device>
 
+<ragone_chart>
+    <discharge_mode>constant_power</discharge_mode>
+    <discharge_power_lower_limit>1.0e-6</discharge_power_lower_limit> <!-- watt -->
+    <discharge_power_upper_limit>1.0e2</discharge_power_upper_limit> <!-- watt -->
+    <steps_per_decade>5</steps_per_decade>
+    <initial_voltage>2.7</initial_voltage> <!-- volt -->
+    <final_voltage>1.2</final_voltage> <!-- volt -->
+    <time_step>1800.0</time_step> <!-- second -->
+    <min_steps_per_discharge>200</min_steps_per_discharge>
+    <max_steps_per_discharge>300</max_steps_per_discharge>
+</ragone_chart>
+
 <ragone_chart_constant_power>
     <discharge_mode>constant_power</discharge_mode>
     <discharge_power_lower_limit>1.0e-6</discharge_power_lower_limit> <!-- watt -->
