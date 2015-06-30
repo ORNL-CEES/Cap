@@ -1,6 +1,7 @@
 #include <cap/geometry.h>
 #include <cap/utils.h>
 #include <deal.II/grid/grid_in.h>
+#include <deal.II/base/geometry_info.h>
 #include <fstream>
 #include <tuple>
 
@@ -32,11 +33,13 @@ std::tuple
   >
 foo<2>(std::shared_ptr<boost::property_tree::ptree const> const & database)
 {
-    double const electrode_width = database->get<double>("electrode_width");
-    double const separator_width = database->get<double>("separator_width");
-    double const collector_width = database->get<double>("collector_width");
-    double const sandwich_height = database->get<double>("sandwich_height");
-    double const tab_height      = database->get<double>("tab_height"     ); 
+    double const anode_collector_width   = database->get<double>("anode_collector_width"  );
+    double const anode_electrode_width   = database->get<double>("anode_electrode_width"  );
+    double const separator_width         = database->get<double>("separator_width"        );
+    double const cathode_electrode_width = database->get<double>("cathode_electrode_width");
+    double const cathode_collector_width = database->get<double>("cathode_collector_width");
+    double const sandwich_height         = database->get<double>("sandwich_height"        );
+    double const tab_height              = database->get<double>("tab_height"             );
 
     std::pair<dealii::Point<2>,dealii::Point<2> > anode_tab_bbox;
     std::pair<dealii::Point<2>,dealii::Point<2> > anode_collector_bbox;
@@ -48,38 +51,38 @@ foo<2>(std::shared_ptr<boost::property_tree::ptree const> const & database)
 
     anode_tab_bbox = 
         std::make_pair(
-            dealii::Point<2>(-collector_width                                               , sandwich_height           ), 
-            dealii::Point<2>(0.0                                                            , sandwich_height+tab_height)
+            dealii::Point<2>(-anode_collector_width                                                               , sandwich_height           ),
+            dealii::Point<2>(0.0                                                                                  , sandwich_height+tab_height)
         );
     anode_collector_bbox =
         std::make_pair(
-            dealii::Point<2>(-collector_width                                               , 0.0                       ), 
-            dealii::Point<2>(0.0                                                            , sandwich_height           )
+            dealii::Point<2>(-anode_collector_width                                                               , 0.0                       ),
+            dealii::Point<2>(0.0                                                                                  , sandwich_height           )
         );
     anode_electrode_bbox =
         std::make_pair(
-            dealii::Point<2>(0.0                                                            , 0.0                       ), 
-            dealii::Point<2>(electrode_width                                                , sandwich_height           )
+            dealii::Point<2>(0.0                                                                                  , 0.0                       ),
+            dealii::Point<2>(anode_electrode_width                                                                , sandwich_height           )
         );
     separator_bbox =
         std::make_pair(
-            dealii::Point<2>(electrode_width                                                , 0.0                       ), 
-            dealii::Point<2>(electrode_width+separator_width                                , sandwich_height           )
+            dealii::Point<2>(anode_electrode_width                                                                , 0.0                       ),
+            dealii::Point<2>(anode_electrode_width+separator_width                                                , sandwich_height           )
         );
     cathode_electrode_bbox =
         std::make_pair(
-            dealii::Point<2>(electrode_width+separator_width                                , 0.0                       ), 
-            dealii::Point<2>(electrode_width+separator_width+electrode_width                , sandwich_height           )
+            dealii::Point<2>(anode_electrode_width+separator_width                                                , 0.0                       ),
+            dealii::Point<2>(anode_electrode_width+separator_width+cathode_electrode_width                        , sandwich_height           )
         );
     cathode_collector_bbox =
         std::make_pair(
-            dealii::Point<2>(electrode_width+separator_width+electrode_width                , 0.0                       ), 
-            dealii::Point<2>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           )
+            dealii::Point<2>(anode_electrode_width+separator_width+cathode_electrode_width                        , 0.0                       ),
+            dealii::Point<2>(anode_electrode_width+separator_width+cathode_electrode_width+cathode_collector_width, sandwich_height           )
         );
     cathode_tab_bbox =
         std::make_pair(
-            dealii::Point<2>(electrode_width+separator_width+electrode_width                , -tab_height               ), 
-            dealii::Point<2>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       )
+            dealii::Point<2>(anode_electrode_width+separator_width+cathode_electrode_width                        , -tab_height               ),
+            dealii::Point<2>(anode_electrode_width+separator_width+cathode_electrode_width+cathode_collector_width, 0.0                       )
         );
     return std::make_tuple
         ( anode_tab_bbox
@@ -106,12 +109,14 @@ std::tuple
   >
 foo<3>(std::shared_ptr<boost::property_tree::ptree const> const & database)
 {
-    double const electrode_width = database->get<double>("electrode_width");
-    double const separator_width = database->get<double>("separator_width");
-    double const collector_width = database->get<double>("collector_width");
-    double const sandwich_height = database->get<double>("sandwich_height");
-    double const sandwich_depth  = database->get<double>("sandwich_depth" );
-    double const tab_height      = database->get<double>("tab_height"     ); 
+    double const anode_collector_width   = database->get<double>("anode_collector_width"  );
+    double const anode_electrode_width   = database->get<double>("anode_electrode_width"  );
+    double const separator_width         = database->get<double>("separator_width"        );
+    double const cathode_electrode_width = database->get<double>("cathode_electrode_width");
+    double const cathode_collector_width = database->get<double>("cathode_collector_width");
+    double const sandwich_height         = database->get<double>("sandwich_height"        );
+    double const sandwich_depth          = database->get<double>("sandwich_depth"         );
+    double const tab_height              = database->get<double>("tab_height"             );
 
     std::pair<dealii::Point<3>,dealii::Point<3> > anode_tab_bbox;
     std::pair<dealii::Point<3>,dealii::Point<3> > anode_collector_bbox;
@@ -123,38 +128,38 @@ foo<3>(std::shared_ptr<boost::property_tree::ptree const> const & database)
 
     anode_tab_bbox = 
         std::make_pair(
-            dealii::Point<3>(-collector_width                                               , sandwich_height           , 0.0           ), 
-            dealii::Point<3>(0.0                                                            , sandwich_height+tab_height, sandwich_depth)
+            dealii::Point<3>(-anode_collector_width                                                               , sandwich_height           , 0.0           ),
+            dealii::Point<3>(0.0                                                                                  , sandwich_height+tab_height, sandwich_depth)
         );
     anode_collector_bbox =
         std::make_pair(
-            dealii::Point<3>(-collector_width                                               , 0.0                       , 0.0           ),
-            dealii::Point<3>(0.0                                                            , sandwich_height           , sandwich_depth) 
+            dealii::Point<3>(-anode_collector_width                                                               , 0.0                       , 0.0           ),
+            dealii::Point<3>(0.0                                                                                  , sandwich_height           , sandwich_depth)
         );
     anode_electrode_bbox =
         std::make_pair(
-            dealii::Point<3>(0.0                                                            , 0.0                       , 0.0           ),
-            dealii::Point<3>(electrode_width                                                , sandwich_height           , sandwich_depth) 
+            dealii::Point<3>(0.0                                                                                  , 0.0                       , 0.0           ),
+            dealii::Point<3>(anode_electrode_width                                                                , sandwich_height           , sandwich_depth)
         );
     separator_bbox =
         std::make_pair(
-            dealii::Point<3>(electrode_width                                                , 0.0                       , 0.0           ),
-            dealii::Point<3>(electrode_width+separator_width                                , sandwich_height           , sandwich_depth) 
+            dealii::Point<3>(anode_electrode_width                                                                , 0.0                       , 0.0           ),
+            dealii::Point<3>(anode_electrode_width+separator_width                                                , sandwich_height           , sandwich_depth)
         );
     cathode_electrode_bbox =
         std::make_pair(
-            dealii::Point<3>(electrode_width+separator_width                                , 0.0                       , 0.0           ),
-            dealii::Point<3>(electrode_width+separator_width+electrode_width                , sandwich_height           , sandwich_depth) 
+            dealii::Point<3>(anode_electrode_width+separator_width                                                , 0.0                       , 0.0           ),
+            dealii::Point<3>(anode_electrode_width+separator_width+cathode_electrode_width                        , sandwich_height           , sandwich_depth)
         );
     cathode_collector_bbox =
         std::make_pair(
-            dealii::Point<3>(electrode_width+separator_width+electrode_width                , 0.0                       , 0.0           ),
-            dealii::Point<3>(electrode_width+separator_width+electrode_width+collector_width, sandwich_height           , sandwich_depth) 
+            dealii::Point<3>(anode_electrode_width+separator_width+cathode_electrode_width                        , 0.0                       , 0.0           ),
+            dealii::Point<3>(anode_electrode_width+separator_width+cathode_electrode_width+cathode_collector_width, sandwich_height           , sandwich_depth)
         );
     cathode_tab_bbox =
         std::make_pair(
-            dealii::Point<3>(electrode_width+separator_width+electrode_width                , -tab_height               , 0.0           ),
-            dealii::Point<3>(electrode_width+separator_width+electrode_width+collector_width, 0.0                       , sandwich_depth) 
+            dealii::Point<3>(anode_electrode_width+separator_width+cathode_electrode_width                        , -tab_height               , 0.0           ),
+            dealii::Point<3>(anode_electrode_width+separator_width+cathode_electrode_width+cathode_collector_width, 0.0                       , sandwich_depth)
         );
     return std::make_tuple
         ( anode_tab_bbox
@@ -222,52 +227,86 @@ SuperCapacitorGeometry(std::shared_ptr<boost::property_tree::ptree const> const 
     this->cathode_electrode_material_id  = database->get<dealii::types::material_id>("cathode_electrode_material_id");
     this->cathode_collector_material_id  = database->get<dealii::types::material_id>("cathode_collector_material_id");
 
-    std::tie
-        ( this->anode_tab_bbox
-        , this->anode_collector_bbox
-        , this->anode_electrode_bbox
-        , this->separator_bbox
-        , this->cathode_electrode_bbox
-        , this->cathode_collector_bbox
-        , this->cathode_tab_bbox
-        ) = foo<dim>(database);
-        
-    std::map<dealii::types::material_id, std::function<bool(dealii::Point<dim> const &)> > point_in_material_id;
-    point_in_material_id[this->anode_collector_material_id] =
-        std::bind(
-            std::logical_or<bool>(),
-            std::bind(point_in_bbox<dim>, std::placeholders::_1, anode_collector_bbox),
-            std::bind(point_in_bbox<dim>, std::placeholders::_1, anode_tab_bbox)
-        );
-    point_in_material_id[this->anode_electrode_material_id] =
-        std::bind(point_in_bbox<dim>, std::placeholders::_1, anode_electrode_bbox);
-    point_in_material_id[this->separator_material_id] =
-        std::bind(point_in_bbox<dim>, std::placeholders::_1, separator_bbox);
-    point_in_material_id[this->cathode_electrode_material_id] =
-        std::bind(point_in_bbox<dim>, std::placeholders::_1, cathode_electrode_bbox);
-    point_in_material_id[this->cathode_collector_material_id] =
-        std::bind(
-            std::logical_or<bool>(),
-            std::bind(point_in_bbox<dim>, std::placeholders::_1, cathode_collector_bbox),
-            std::bind(point_in_bbox<dim>, std::placeholders::_1, cathode_tab_bbox)
-        );
-
-    typename dealii::Triangulation<dim>::active_cell_iterator cell     = (this->triangulation)->begin_active();
-    typename dealii::Triangulation<dim>::active_cell_iterator end_cell = (this->triangulation)->end();
-    for ( ; cell != end_cell; ++cell) {
-        bool found_it = false;
-        for (typename std::map<dealii::types::material_id, std::function<bool(dealii::Point<dim> const &)> >::const_iterator it = point_in_material_id.begin();
-            it != point_in_material_id.end();
-            ++it)
+    std::unordered_map<
+        dealii::types::material_id,
+        std::pair<dealii::Point<dim>, dealii::Point<dim>>
+        > bboxes;
+    auto initialize_bbox =
+        [](void)
         {
-            if (it->second(cell->center())) {
-                found_it = true;
-                cell->set_material_id(it->first);  
+            double const max = std::numeric_limits<double>::max   ();
+            double const min = std::numeric_limits<double>::lowest();
+            if (dim > 2)
+            return std::make_pair(
+                dealii::Point<dim>(max, max, max),
+                dealii::Point<dim>(min, min, min)
+                );
+            else
+            return std::make_pair(
+                dealii::Point<dim>(max, max),
+                dealii::Point<dim>(min, min)
+                );
+       };
+    for (dealii::types::material_id material_id : {
+       this->separator_material_id        ,
+       this->anode_electrode_material_id  ,
+       this->anode_collector_material_id  ,
+       this->cathode_electrode_material_id,
+       this->cathode_collector_material_id,
+       })
+        bboxes.emplace(material_id, initialize_bbox());
+    auto add_vertex_to_bbox =
+        [](dealii::Point<dim> const & p, std::pair<dealii::Point<dim>, dealii::Point<dim>> & bbox)
+        {
+            for (int d = 0; d < dim; ++d)
+            {
+                if (p[d] < bbox.first [d])
+                    bbox.first [d] = p[d];
+                if (p[d] > bbox.second[d])
+                    bbox.second[d] = p[d];
             }
-        }
-        if (!found_it)
-            throw std::runtime_error("Error while setting material ids");
+        };
+    int const vertices_per_cell = dealii::GeometryInfo<dim>::vertices_per_cell;
+    auto cell     = (*this->triangulation).begin_active();
+    auto end_cell = (*this->triangulation).end         ();
+    for ( ; cell != end_cell; ++cell)
+    {
+        auto material_id = cell->material_id();
+        for (int vertex = 0; vertex < vertices_per_cell; ++vertex)
+            add_vertex_to_bbox(cell->vertex(vertex), bboxes[material_id]);
     }
+    for (auto x : bboxes)
+        std::cout<<"  "<<std::to_string(x.first)<<"  "<<x.second.first<<"  "<<x.second.second<<"\n";
+
+    this->anode_tab_bbox         = bboxes[this->anode_collector_material_id  ];
+    this->anode_collector_bbox   = bboxes[this->anode_collector_material_id  ];
+    this->anode_electrode_bbox   = bboxes[this->anode_electrode_material_id  ];
+    this->separator_bbox         = bboxes[this->separator_material_id        ];
+    this->cathode_electrode_bbox = bboxes[this->cathode_electrode_material_id];
+    this->cathode_collector_bbox = bboxes[this->cathode_collector_material_id];
+    this->cathode_tab_bbox       = bboxes[this->cathode_collector_material_id];
+    AssertThrow( (this->anode_electrode_bbox  ).second[0] == (this->separator_bbox        ).first[0],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    AssertThrow( (this->anode_electrode_bbox  ).first [1] == (this->separator_bbox        ).first[1],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    AssertThrow( (this->separator_bbox        ).second[0] == (this->cathode_electrode_bbox).first[0],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    AssertThrow( (this->separator_bbox        ).first [1] == (this->cathode_electrode_bbox).first[1],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    (this->anode_tab_bbox        ).first [1] = (this->anode_electrode_bbox  ).second[1];
+    (this->anode_collector_bbox  ).second[1] = (this->anode_electrode_bbox  ).second[1];
+    AssertThrow( (this->anode_collector_bbox  ).second[0] == (this->anode_electrode_bbox  ).first[0],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    AssertThrow( (this->anode_collector_bbox  ).first [1] == (this->anode_electrode_bbox  ).first[1],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    (this->cathode_collector_bbox).first [1] = (this->cathode_electrode_bbox).first[1];
+    (this->cathode_tab_bbox      ).second[1] = (this->cathode_electrode_bbox).first[1];
+    AssertThrow( (this->cathode_electrode_bbox).second[0] == (this->cathode_collector_bbox).first[0],
+        dealii::StandardExceptions::ExcMessage("duh") );
+    AssertThrow( (this->cathode_electrode_bbox).first [1] == (this->cathode_collector_bbox).first[1],
+        dealii::StandardExceptions::ExcMessage("duh") );
+
+    this->reset(database);
 }
 
 
@@ -316,26 +355,26 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
                 } // end if vertex 
             } // end for vertex
         };
-    auto conditional_move =
-        [](active_cell_iterator & cell, 
-            std::function<bool(active_cell_iterator const &)> const & cond,
-            std::function<void(active_cell_iterator &)> const & foo,
-            std::function<void(active_cell_iterator &)> const & bar)
-        {
-            if (cond(cell))
-                foo(cell);
-            else
-                bar(cell);
-        };
-    auto cell_in_bbox =
-        [](active_cell_iterator const & cell,
-            std::pair<dealii::Point<dim>,dealii::Point<dim> > bbox)
-//            std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox)
-        {
-            return point_in_bbox(cell->center(), bbox);
-        };
-    auto always_true = [] (active_cell_iterator const &) { return true; };
-    auto do_nothing = [] (active_cell_iterator &) { };
+//    auto conditional_move =
+//        [](active_cell_iterator & cell,
+//            std::function<bool(active_cell_iterator const &)> const & cond,
+//            std::function<void(active_cell_iterator &)> const & foo,
+//            std::function<void(active_cell_iterator &)> const & bar)
+//        {
+//            if (cond(cell))
+//                foo(cell);
+//            else
+//                bar(cell);
+//        };
+//    auto cell_in_bbox =
+//        [](active_cell_iterator const & cell,
+//            std::pair<dealii::Point<dim>,dealii::Point<dim> > bbox)
+////            std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox)
+//        {
+//            return point_in_bbox(cell->center(), bbox);
+//        };
+//    auto always_true = [] (active_cell_iterator const &) { return true; };
+//    auto do_nothing = [] (active_cell_iterator &) { };
 
     std::map<dealii::types::material_id, std::function<void(active_cell_iterator &)> >  cell_transform;
     cell_transform[this->anode_collector_material_id] =
