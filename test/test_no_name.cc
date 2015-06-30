@@ -36,23 +36,23 @@ void charge_and_chill(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared
 void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
 
 {
-    double const initial_voltage = database->get<double>("initial_voltage");
+    double const initial_voltage   = database->get<double>("initial_voltage"  );
     double       initial_current;
     double       voltage;
     double       current;
-    double const tolerance       = database->get<double>("tolerance"      );
-    double const time_step       = database->get<double>("time_step"      );
+    double const percent_tolerance = database->get<double>("percent_tolerance");
+    double const time_step         = database->get<double>("time_step"        );
 
     dev->reset_voltage(initial_voltage);
     dev->get_current(initial_current);
     dev->get_voltage(voltage);
-    BOOST_CHECK_CLOSE(voltage, initial_voltage, tolerance);
+    BOOST_CHECK_CLOSE(voltage, initial_voltage, percent_tolerance);
 
     dev->evolve_one_time_step_constant_voltage(time_step, initial_voltage);
     dev->get_current(current);
     BOOST_CHECK_CLOSE(current, initial_current, 1.0e-2); // matches percent_tolerance in NoName::reset_voltage()
     dev->get_voltage(voltage);
-    BOOST_CHECK_CLOSE(voltage, initial_voltage, tolerance);
+    BOOST_CHECK_CLOSE(voltage, initial_voltage, percent_tolerance);
 
     initial_current = database->get<double>("initial_current");
     dev->evolve_one_time_step_constant_current(time_step, initial_current);
