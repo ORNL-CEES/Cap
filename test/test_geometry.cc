@@ -26,22 +26,22 @@ write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<
 BOOST_AUTO_TEST_CASE( test_reset_geometry )
 {
     std::shared_ptr<boost::property_tree::ptree> params(new boost::property_tree::ptree);
-    params->put("electrode_width"              ,  50.0e-6     );
+    params->put("anode_collector_width"        ,   5.0e-6     );
+    params->put("anode_electrode_width"        ,  50.0e-6     );
     params->put("separator_width"              ,  25.0e-6     );
-    params->put("collector_width"              ,   5.0e-6     );
+    params->put("cathode_electrode_width"      ,  50.0e-6     );
+    params->put("cathode_collector_width"      ,   5.0e-6     );
     params->put("sandwich_height"              ,  25.0e-6     );
     params->put("tab_height"                   ,   5.0e-6     );
-    params->put("separator_material_id"        ,   3          );
-    params->put("anode_electrode_material_id"  ,   4          );
-    params->put("anode_collector_material_id"  ,   5          );
-    params->put("cathode_electrode_material_id",   6          );
-    params->put("cathode_collector_material_id",   7          );
+    params->put("separator_material_id"        ,   2          );
+    params->put("anode_electrode_material_id"  ,   1          );
+    params->put("anode_collector_material_id"  ,   4          );
+    params->put("cathode_electrode_material_id",   3          );
+    params->put("cathode_collector_material_id",   5          );
     params->put("mesh_file"                    , "mesh_2d.ucd");
-    params->put("materials"                    ,   2          );
-    params->put("material_0.name"              , "electrode"  );
-    params->put("material_0.material_id"       , "4,6"        );
-    params->put("material_1.name"              , "separator"  );
-    params->put("material_1.material_id"       , "3"          );
+    params->put("materials"                    ,   1          );
+    params->put("material_0.name"              , "all"  );
+    params->put("material_0.material_id"       , "1,2,3,4,5"  );
 
     cap::SuperCapacitorGeometry<2> geo(params);
     write_mesh("output_test_geometry_0.vtk", geo.get_triangulation());
@@ -51,11 +51,13 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
         <<"faces="<<tria.n_active_faces()<<"  "
         <<"vertices="<<tria.n_used_vertices()<<"\n";
 
-    params->put("electrode_width"              , 150.0e-6     );
-    params->put("separator_width"              ,  25.0e-6     );
-    params->put("collector_width"              ,  50.0e-6     );
-    params->put("sandwich_height"              ,  75.0e-6     );
-    params->put("tab_height"                   ,   2.5e-6     );
+    params->put("anode_collector_width"        ,  45.0e-6     );
+    params->put("anode_electrode_width"        ,  50.0e-6     );
+    params->put("separator_width"              ,   5.0e-6     );
+    params->put("cathode_electrode_width"      , 250.0e-6     );
+    params->put("cathode_collector_width"      ,  15.0e-6     );
+    params->put("sandwich_height"              ,  25.0e-6     );
+    params->put("tab_height"                   ,   5.0e-6     );
 
     geo.reset(params);
     write_mesh("output_test_geometry_1.vtk", geo.get_triangulation());
