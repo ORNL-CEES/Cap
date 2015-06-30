@@ -42,10 +42,12 @@ get_values(std::string const &          key,
     auto got = (this->materials).find(material_id);
     if (got == (this->materials).end())
     {
-        std::cout<<material_id<<static_cast<int>(material_id)<<"\n";
+        std::cerr<<"failed to find\n";
+        std::cerr<<"id="<<material_id<<"  int="<<static_cast<int>(material_id)<<"  to_string="<<std::to_string(material_id)<<"\n";
+        std::cerr<<"in\n";
         for (auto x : this->materials)
-            std::cout<<x.first<<"\n";
-        throw std::runtime_error("Invalid material id");
+            std::cerr<<"id="<<x.first<<"  int="<<static_cast<int>(x.first)<<"  to_string="<<std::to_string(x.first)<<"\n";
+        throw std::runtime_error("Invalid material id "+std::to_string(material_id));
     }
     auto material = got->second;
     material->get_values(key, cell, values);
