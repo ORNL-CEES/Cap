@@ -340,17 +340,6 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
                 } // end if vertex 
             } // end for vertex
         };
-    auto conditional_move =
-        [](active_cell_iterator & cell,
-            std::function<bool(active_cell_iterator const &)> const & cond,
-            std::function<void(active_cell_iterator &)> const & foo,
-            std::function<void(active_cell_iterator &)> const & bar)
-        {
-            if (cond(cell))
-                foo(cell);
-            else
-                bar(cell);
-        };
     auto point_in_bbox =
         [](dealii::Point<dim> const & p, std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox)
     {
