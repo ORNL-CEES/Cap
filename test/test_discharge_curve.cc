@@ -20,9 +20,9 @@ void print_headers(std::string const & discharge_mode, std::ostream & os)
 {
     os<<"# discharge curve (discharge_mode="<<discharge_mode<<")\n";
     os<<boost::format( "# %22s  %22s  %22s  \n")
-        % "time t [second]"
-        % "current I [ampere]"
-        % "voltage U [volt]"
+        % "time_t_[second]"
+        % "current_I_[ampere]"
+        % "voltage_U_[volt]"
         ;
 }
 
