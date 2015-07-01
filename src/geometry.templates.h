@@ -204,19 +204,6 @@ Geometry(std::shared_ptr<boost::property_tree::ptree const> const & database)
 
 
 template <int dim>
-bool point_in_bbox(dealii::Point<dim> const & p, 
-    std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox) 
-{
-    double const tol = 1.0e-10 * (bbox.second - bbox.first).norm();
-    for (int d = 0; d < dim; ++d)
-        if ((bbox.first[d] - tol > p[d]) || (p[d] > bbox.second[d] + tol))
-            return false;
-    return true;
-}
-
-
-
-template <int dim>
 SuperCapacitorGeometry<dim>::
 SuperCapacitorGeometry(std::shared_ptr<boost::property_tree::ptree const> const & database)
 : Geometry<dim>(database)
@@ -339,7 +326,7 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
                 q[d] = (q_1[d] - q_0[d]) / (p_1[d] - p_0[d]) * (p[d] - p_0[d]) + q_0[d];
             } // end for d
         };
-    std::vector<bool> vertex_visited((this->triangulation)->n_vertices(), false);
+    std::vector<bool> vertex_visited((*this->triangulation).n_vertices(), false);
     typedef typename dealii::Triangulation<dim, spacedim>::active_cell_iterator active_cell_iterator;
     auto move_vertices_in_cell =
         [& transform_point, & vertex_visited](active_cell_iterator & cell,
@@ -353,52 +340,49 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
                 } // end if vertex 
             } // end for vertex
         };
-//    auto conditional_move =
-//        [](active_cell_iterator & cell,
-//            std::function<bool(active_cell_iterator const &)> const & cond,
-//            std::function<void(active_cell_iterator &)> const & foo,
-//            std::function<void(active_cell_iterator &)> const & bar)
-//        {
-//            if (cond(cell))
-//                foo(cell);
-//            else
-//                bar(cell);
-//        };
-//    auto cell_in_bbox =
-//        [](active_cell_iterator const & cell,
-//            std::pair<dealii::Point<dim>,dealii::Point<dim> > bbox)
-////            std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox)
-//        {
-//            return point_in_bbox(cell->center(), bbox);
-//        };
-//    auto always_true = [] (active_cell_iterator const &) { return true; };
-//    auto do_nothing = [] (active_cell_iterator &) { };
+    auto conditional_move =
+        [](active_cell_iterator & cell,
+            std::function<bool(active_cell_iterator const &)> const & cond,
+            std::function<void(active_cell_iterator &)> const & foo,
+            std::function<void(active_cell_iterator &)> const & bar)
+        {
+            if (cond(cell))
+                foo(cell);
+            else
+                bar(cell);
+        };
+    auto point_in_bbox =
+        [](dealii::Point<dim> const & p, std::pair<dealii::Point<dim>,dealii::Point<dim> > const & bbox)
+    {
+        double const tol = 1.0e-10 * (bbox.second - bbox.first).norm();
+        for (int d = 0; d < dim; ++d)
+            if ((bbox.first[d] - tol > p[d]) || (p[d] > bbox.second[d] + tol))
+                return false;
+        return true;
+    };
+
+    for (auto cell = (*this->triangulation).begin_active() ; cell != (*this->triangulation).end(); ++cell)
+        if (point_in_bbox(cell->center(), this->anode_tab_bbox)
+            || point_in_bbox(cell->center(), this->cathode_tab_bbox))
+            cell->set_user_flag();
+
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > const & old_anode_collector_bbox   = this->anode_collector_bbox  ;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > const & old_anode_tab_bbox         = this->anode_tab_bbox        ;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > const & old_cathode_collector_bbox = this->cathode_collector_bbox;
+    std::pair<dealii::Point<dim>,dealii::Point<dim> > const & old_cathode_tab_bbox       = this->cathode_tab_bbox      ;
 
     std::map<dealii::types::material_id, std::function<void(active_cell_iterator &)> >  cell_transform;
     cell_transform[this->anode_collector_material_id] =
-        std::bind(
-            move_vertices_in_cell, std::placeholders::_1,
-            this->anode_collector_bbox,
-            new_anode_collector_bbox
-        );
-//        std::bind(
-//            conditional_move,
-//            std::placeholders::_1,
-//            always_true,
-////            std::bind(cell_in_bbox, std::placeholders::_1, this->anode_collector_bbox),
-//            do_nothing,
-//            do_nothing
-////            std::bind(
-////                move_vertices_in_cell, std::placeholders::_1,
-////                this->anode_collector_bbox,
-////                new_anode_collector_bbox
-////            ),
-////            std::bind(
-////                move_vertices_in_cell, std::placeholders::_1,
-////                this->anode_tab_bbox,
-////                new_anode_tab_bbox
-////            )
-//        );
+          [&move_vertices_in_cell,
+          &old_anode_tab_bbox      , &new_anode_tab_bbox,
+          &old_anode_collector_bbox, &new_anode_collector_bbox]
+          (active_cell_iterator & cell)
+          {
+              if (cell->user_flag_set())
+                  move_vertices_in_cell(cell, old_anode_tab_bbox      , new_anode_tab_bbox      );
+              else
+                  move_vertices_in_cell(cell, old_anode_collector_bbox, new_anode_collector_bbox);
+          };
     cell_transform[this->anode_electrode_material_id] =
         std::bind(
             move_vertices_in_cell, std::placeholders::_1,
@@ -418,14 +402,19 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
             new_cathode_electrode_bbox
         );
     cell_transform[this->cathode_collector_material_id] =
-        std::bind(
-            move_vertices_in_cell, std::placeholders::_1,
-            this->cathode_collector_bbox,
-            new_cathode_collector_bbox
-        );
+          [&move_vertices_in_cell,
+          &old_cathode_tab_bbox      , &new_cathode_tab_bbox,
+          &old_cathode_collector_bbox, &new_cathode_collector_bbox]
+          (active_cell_iterator & cell)
+          {
+              if (cell->user_flag_set())
+                  move_vertices_in_cell(cell, old_cathode_tab_bbox      , new_cathode_tab_bbox      );
+              else
+                  move_vertices_in_cell(cell, old_cathode_collector_bbox, new_cathode_collector_bbox);
+          };
             
-    typename dealii::Triangulation<dim>::active_cell_iterator cell     = (this->triangulation)->begin_active();
-    typename dealii::Triangulation<dim>::active_cell_iterator end_cell = (this->triangulation)->end();
+    typename dealii::Triangulation<dim>::active_cell_iterator cell     = (*this->triangulation).begin_active();
+    typename dealii::Triangulation<dim>::active_cell_iterator end_cell = (*this->triangulation).end();
     for ( ; cell != end_cell; ++cell) {
         bool found_it = false;
         for (typename std::map<dealii::types::material_id, std::function<void(active_cell_iterator & cell)> >::iterator it = cell_transform.begin();
@@ -447,6 +436,8 @@ reset(std::shared_ptr<boost::property_tree::ptree const> const & database)
     this->cathode_collector_bbox = new_cathode_collector_bbox;
     this->cathode_electrode_bbox = new_cathode_electrode_bbox;
     this->cathode_tab_bbox       = new_cathode_tab_bbox;
+
+    (*this->triangulation).clear_user_flags();
 }
 
 } // end namespace cap

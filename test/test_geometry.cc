@@ -6,6 +6,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <unordered_map>
 
 template <int dim>
 void
@@ -26,16 +27,16 @@ write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<
 BOOST_AUTO_TEST_CASE( test_reset_geometry )
 {
     std::shared_ptr<boost::property_tree::ptree> params(new boost::property_tree::ptree);
-    params->put("anode_collector_width"        ,   5.0e-6     );
+    params->put("anode_collector_width"        ,  45.0e-6     );
     params->put("anode_electrode_width"        ,  50.0e-6     );
-    params->put("separator_width"              ,  25.0e-6     );
-    params->put("cathode_electrode_width"      ,  50.0e-6     );
-    params->put("cathode_collector_width"      ,   5.0e-6     );
+    params->put("separator_width"              ,   5.0e-6     );
+    params->put("cathode_electrode_width"      , 250.0e-6     );
+    params->put("cathode_collector_width"      ,  15.0e-6     );
     params->put("sandwich_height"              ,  25.0e-6     );
-    params->put("tab_height"                   ,   5.0e-6     );
-    params->put("separator_material_id"        ,   2          );
-    params->put("anode_electrode_material_id"  ,   1          );
+    params->put("tab_height"                   ,  20.0e-6     );
     params->put("anode_collector_material_id"  ,   4          );
+    params->put("anode_electrode_material_id"  ,   1          );
+    params->put("separator_material_id"        ,   2          );
     params->put("cathode_electrode_material_id",   3          );
     params->put("cathode_collector_material_id",   5          );
     params->put("mesh_file"                    , "mesh_2d.ucd");
@@ -51,11 +52,36 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
         <<"faces="<<tria.n_active_faces()<<"  "
         <<"vertices="<<tria.n_used_vertices()<<"\n";
 
-    params->put("anode_collector_width"        ,  45.0e-6     );
+    std::unordered_map<dealii::types::material_id, double> measure;
+    auto cell     = tria.begin_active();
+    auto end_cell = tria.end         ();
+    for ( ; cell != end_cell; ++cell)
+    {
+       measure[cell->material_id()] += cell->measure();
+    }
+
+    for (auto x : measure)
+        std::cout<<std::to_string(x.first)<<"  "<<x.second<<"\n";
+
+    double const percent_tolerance = 1.0e-12;
+    for (std::string const layer : { "separator", "anode_electrode", "cathode_electrode" })
+    BOOST_CHECK_CLOSE(
+        measure[params->get<dealii::types::material_id>(layer+"_material_id")],
+        params->get<double>(layer+"_width")*params->get<double>("sandwich_height"),
+        percent_tolerance
+        );
+    for (std::string const layer : { "anode_collector", "cathode_collector" })
+    BOOST_CHECK_CLOSE(
+        measure[params->get<dealii::types::material_id>(layer+"_material_id")],
+        params->get<double>(layer+"_width")*(params->get<double>("sandwich_height")+params->get<double>("tab_height")),
+        percent_tolerance
+        );
+
+    params->put("anode_collector_width"        ,   5.0e-6     );
     params->put("anode_electrode_width"        ,  50.0e-6     );
-    params->put("separator_width"              ,   5.0e-6     );
-    params->put("cathode_electrode_width"      , 250.0e-6     );
-    params->put("cathode_collector_width"      ,  15.0e-6     );
+    params->put("separator_width"              ,  25.0e-6     );
+    params->put("cathode_electrode_width"      ,  50.0e-6     );
+    params->put("cathode_collector_width"      ,   5.0e-6     );
     params->put("sandwich_height"              ,  25.0e-6     );
     params->put("tab_height"                   ,   5.0e-6     );
 
