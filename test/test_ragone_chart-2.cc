@@ -162,46 +162,7 @@ get_increase(std::shared_ptr<boost::property_tree::ptree const> database)
 
 
 
-void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
-{
-    auto initialize = get_initialize(database);
-    auto condition  = get_condition (database);
-    auto increase   = get_increase  (database);
-    double time;
-    double power;
-    double energy;
-    int    steps;
-    std::shared_ptr<boost::property_tree::ptree> dummy_database =
-        std::make_shared<boost::property_tree::ptree>(*database);
-    for (initialize(dummy_database); condition(dummy_database); increase(dummy_database))
-    {
-         try
-        {
-            std::tie(power, energy) =
-                cap::find_power_energy(dev, dummy_database);
-        }
-        catch(std::exception & e)
-        {
-            std::cerr<<power<<"  "<<e.what()<<"\n";
-            break;
-        }
-        time  = dummy_database->get<double>("discharge_time");
-        steps = dummy_database->get<int   >("steps"         );
-        if (steps <= 1)
-            break;
-
-        os<<boost::format("  %10.7e  %10.7e  %10.7e  %10d \n")
-            % power
-            % energy
-            % time
-            % steps
-            ;
-    }
-}
-
-
-
-std::function<std::tuple<double, double>(double const)>
+std::function<std::tuple<double, double>(std::shared_ptr<boost::property_tree::ptree const>)>
 get_compute_exact(
      std::shared_ptr<boost::property_tree::ptree const> device_database,
      std::shared_ptr<boost::property_tree::ptree const> ragone_database
@@ -220,8 +181,9 @@ get_compute_exact(
             return
                 [series_resistance, capacitance,
                 initial_voltage, final_voltage]
-                (double const discharge_current)
+                (std::shared_ptr<boost::property_tree::ptree const> database)
                 {
+                    double const discharge_current = database->get<double>("discharge_current");
                     double const current = -1.0 * discharge_current;
                     double const discharge_time =
                         (final_voltage - initial_voltage - series_resistance * current) * capacitance / current;
@@ -234,8 +196,9 @@ get_compute_exact(
             return
                 [series_resistance, parallel_resistance, capacitance,
                 initial_voltage, final_voltage]
-                (double const discharge_current)
+                (std::shared_ptr<boost::property_tree::ptree const> database)
                 {
+                    double const discharge_current = database->get<double>("discharge_current");
                     double const current = -1.0 * discharge_current;
                     double const discharge_time = 
                         - parallel_resistance * capacitance * std::log(
@@ -260,8 +223,9 @@ get_compute_exact(
             return
                 [series_resistance, capacitance,
                 initial_voltage, final_voltage]
-                (double const discharge_power)
+                (std::shared_ptr<boost::property_tree::ptree const> database)
                 {
+                    double const discharge_power = database->get<double>("discharge_power");
                     double const power = -1.0 * discharge_power;
                     double const tmp = 0.5 * initial_voltage + std::sqrt(initial_voltage*initial_voltage / 4.0 + series_resistance * power);
                     double const tmp2 = tmp * tmp;
@@ -274,8 +238,9 @@ get_compute_exact(
             return
                 [series_resistance, parallel_resistance, capacitance,
                 initial_voltage, final_voltage]
-                (double const discharge_power)
+                (std::shared_ptr<boost::property_tree::ptree const> database)
                 {
+                    double const discharge_power = database->get<double>("discharge_power");
                     double const power = -1.0 * discharge_power;
                     double const tmp = 0.5 * initial_voltage + std::sqrt(initial_voltage*initial_voltage / 4.0 + series_resistance * power);
                     double const tmp2 = tmp * tmp;
@@ -302,6 +267,61 @@ get_compute_exact(
     }
 }
 
+
+
+void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> device_database,
+    std::shared_ptr<boost::property_tree::ptree const> ragone_database, std::ostream & os = std::cout)
+{
+    auto initialize = get_initialize(ragone_database);
+    auto condition  = get_condition (ragone_database);
+    auto increase   = get_increase  (ragone_database);
+    double expe_time;
+    double expe_power;
+    double expe_energy;
+    double time_step;
+    int    steps;
+    double theo_time;
+    double theo_power;
+    double theo_energy;
+    std::shared_ptr<boost::property_tree::ptree> dummy_database =
+        std::make_shared<boost::property_tree::ptree>(*ragone_database);
+    auto compute_exact = get_compute_exact(device_database, ragone_database);
+    for (initialize(dummy_database); condition(dummy_database); increase(dummy_database))
+    {
+         try
+        {
+            std::tie(expe_power, expe_energy) =
+                find_power_energy(dev, dummy_database);
+            std::tie(theo_time, theo_energy) =
+                compute_exact(dummy_database);
+        }
+        catch(std::exception & e)
+        {
+            std::cerr<<e.what()<<"\n";
+            break;
+        }
+        expe_time  = dummy_database->get<double>("discharge_time");
+        theo_power = theo_energy / theo_time;
+        int const min_steps = dummy_database->get<int>("min_steps_per_discharge");
+        steps = dummy_database->get<int   >("steps");
+        time_step = dummy_database->get<double>("time_step");
+        if (steps <= 1)
+            break;
+
+        BOOST_CHECK_GE(steps, min_steps);
+        BOOST_CHECK_SMALL(expe_time  - theo_time  , time_step);
+        BOOST_CHECK_CLOSE(expe_power , theo_power , 100.0 * std::sqrt(2.0) * time_step / theo_time);
+        BOOST_CHECK_CLOSE(expe_energy, theo_energy, 100.0 * time_step / theo_time);
+
+        os<<boost::format("  %10.7e  %10.7e  %10.7e  %10d \n")
+            % theo_power
+            % theo_energy
+            % theo_time
+            % 0
+            ;
+    }
+}
+
 } // end namespace cap
 
 
@@ -319,55 +339,15 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_power )
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
-    double const power_lower_limit   = input_database->get<double>("ragone_chart_constant_power.discharge_power_lower_limit");
-    double const power_upper_limit   = input_database->get<double>("ragone_chart_constant_power.discharge_power_upper_limit");
-    int    const steps_per_decade    = input_database->get<int   >("ragone_chart_constant_power.steps_per_decade" );
-
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_power"));
 
-    auto compute_exact = cap::get_compute_exact(device_database, ragone_chart_database);
-
     std::fstream fout;
     fout.open("ragone_chart_data3", std::fstream::out);
-    for (double power = power_lower_limit; power <= power_upper_limit; power *= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        ragone_chart_database->put("discharge_power", power);
 
-        double exact_time;
-        double exact_energy;
-        std::tie(exact_time, exact_energy) = compute_exact(power);
-        double const exact_power = exact_energy / exact_time;
-        double       computed_energy;
-        double       computed_power;
-        ragone_chart_database->put("discharge_power", power);
-try
-{
-        std::tie(computed_power, computed_energy) =
-            cap::find_power_energy(device, ragone_chart_database);
-}
-catch(std::exception & e)
-{
-    std::cerr<<power<<"  "<<e.what()<<"\n";
-    break;
-}
-        double const computed_time = computed_energy / computed_power;
-        double const time_step     = ragone_chart_database->get<double>("time_step");
-        int    const steps         = ragone_chart_database->get<double>("steps"    );
-        int    const min_steps     = ragone_chart_database->get<double>("min_steps_per_discharge");
-        BOOST_CHECK_GE(steps, min_steps);
-        BOOST_CHECK_SMALL(computed_time  - exact_time  , time_step);
-        BOOST_CHECK_CLOSE(computed_power , exact_power , 1.0e-6);
-        BOOST_CHECK_CLOSE(computed_power , power       , 1.0e-6);
-        BOOST_CHECK_CLOSE(computed_energy, exact_energy, 100.0 * time_step / exact_time);
-        fout<<boost::format("  %10.7e  %10.7e  %10.7e  %10d \n")
-            % exact_power
-            % exact_energy
-            % exact_time
-            % 0
-            ;
-    }
+    cap::scan(device, device_database, ragone_chart_database, fout);
 
+    fout.close();
 }    
 
 
@@ -385,47 +365,14 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_current )
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
-    double const current_lower_limit   = input_database->get<double>("ragone_chart_constant_current.discharge_current_lower_limit");
-    double const current_upper_limit   = input_database->get<double>("ragone_chart_constant_current.discharge_current_upper_limit");
-    int    const steps_per_decade      = input_database->get<int   >("ragone_chart_constant_current.steps_per_decade"   );
-
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_current"));
 
-    auto compute_exact = cap::get_compute_exact(device_database, ragone_chart_database);
-
     std::fstream fout;
     fout.open("ragone_chart_data4", std::fstream::out);
-    for (double current = current_lower_limit; current <= current_upper_limit; current *= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        ragone_chart_database->put("discharge_current", current);
 
-        double exact_time;
-        double exact_energy;
-        std::tie(exact_time, exact_energy) = compute_exact(current);
-        double const exact_power = exact_energy / exact_time;
-        double       computed_energy;
-        double       computed_power;
-        ragone_chart_database->put("discharge_current", current);
-        std::tie(computed_power, computed_energy) =
-            cap::find_power_energy(device, ragone_chart_database);
-        double const computed_time = computed_energy / computed_power;
-        double const time_step     = ragone_chart_database->get<double>("time_step");
-        int    const steps         = ragone_chart_database->get<double>("steps"    );
-        int    const min_steps     = ragone_chart_database->get<double>("min_steps_per_discharge");
-        if (steps == 1)
-            break;
-        BOOST_CHECK_GE(steps, min_steps);
-        BOOST_CHECK_SMALL(computed_time  - exact_time  , time_step);
-        BOOST_CHECK_CLOSE(computed_power , exact_power , 100.0 * std::sqrt(2.0) * time_step / exact_time);
-        BOOST_CHECK_CLOSE(computed_energy, exact_energy, 100.0 * time_step / exact_time);
-        fout<<boost::format("  %10.7e  %10.7e  %10.7e  %10d \n")
-            % exact_power
-            % exact_energy
-            % exact_time
-            % 0
-            ;
-    }
+    cap::scan(device, device_database, ragone_chart_database, fout);
 
+    fout.close();
 }    
 
