@@ -89,6 +89,8 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     output_database->put("cross_sectional_area"               , cross_sectional_area               );
 }
 
+
+
 void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
 {
     double dimensionless_current_density                          = database->get<double>("dimensionless_current_density"                         );
