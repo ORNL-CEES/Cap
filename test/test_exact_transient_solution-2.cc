@@ -185,7 +185,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
 
     std::cout<<"I^*   = "<<dimensionless_cell_current_density<<"\n";
     std::cout<<"gamma = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
-    std::cout<<"beta = "<<ratio_of_separator_to_electrode_resistances<<"\n";
+    std::cout<<"beta  = "<<ratio_of_separator_to_electrode_resistances<<"\n";
 
     dev->reset_voltage(initial_voltage);
     double computed_voltage;
@@ -207,7 +207,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     BOOST_CHECK_CLOSE(computed_voltage, exact_voltage, percent_tolerance);
 
     // figure 2
-    dimensionless_cell_current_density                     = 1.0; 
+    dimensionless_cell_current_density                     = 1.0;
     ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
     ratio_of_separator_to_electrode_resistances            = 0.0;
     int const n = 100;
@@ -224,7 +224,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
             std::transform(zeta.cbegin(), zeta.cend(), tau.begin(), [I_star](double const x) { return x / I_star; });
             dimensionless_cell_current_density = I_star;
             fout.open("Srinivasan_fig2_"+std::to_string(beta)+"_"+std::to_string(I_star), std::fstream::out);
-            for (double const & dimensionless_time : tau) 
+            for (double const & dimensionless_time : tau)
             {
                 double const relative_utilization = dimensionless_time * dimensionless_cell_current_density;
                 double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
@@ -238,7 +238,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     }
 
     // figure 3
-    dimensionless_cell_current_density                     = 1.0; 
+    dimensionless_cell_current_density                     = 1.0;
     ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
     ratio_of_separator_to_electrode_resistances            = 0.0;
 
@@ -257,7 +257,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     }
 
     // figure 4
-    dimensionless_cell_current_density                     = 1.0; 
+    dimensionless_cell_current_density                     = 1.0;
     ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
     ratio_of_separator_to_electrode_resistances            = 0.0;
     for (double const & dimensionless_time : { 0.02, 0.04, 0.1, 0.2, 0.4, 0.65 })
@@ -274,98 +274,47 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         fout.close();
     }
 
-//    // figure 5
-//    dimensionless_current_density                          = -1.0;
-//    dimensionless_exchange_current_density                 = 1.0;
-//    ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-//    tau.clear();
-//    tau = std::vector<double> { 0.01, 0.02, 0.04, 0.1, 0.15, 0.2 };
-//    for (double const & dimensionless_time : tau)
-//    {
-//        fout.open("fig5_"+std::to_string(dimensionless_time), std::fstream::out);
-//        for (double const & dimensionless_position : x) 
-//        {
-//            double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
-//            fout<<boost::format("  %22.15e  %22.15e  \n")
-//                % dimensionless_position
-//                % dimensionless_interfacial_current_density
-//                ;
-//        }
-//        fout.close();
-//    }
-//
-//    // figure 6
-//    dimensionless_current_density                          = -1.0;
-//    dimensionless_exchange_current_density                 = 0.01;
-//    ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-//    for (double const & dimensionless_time : tau)
-//    {
-//        fout.open("fig6_"+std::to_string(dimensionless_time), std::fstream::out);
-//        for (double const & dimensionless_position : x) 
-//        {
-//            double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
-//            fout<<boost::format("  %22.15e  %22.15e  \n")
-//                % dimensionless_position
-//                % dimensionless_interfacial_current_density
-//                ;
-//        }
-//        fout.close();
-//    }
-//
-//    // figure 7
-//    for (double const & delta : { 0.5, 1.0, 2.0, 2.5 })
-//    {
-//        dimensionless_current_density                          = -delta;
-//        dimensionless_exchange_current_density                 = 1.0;
-//        ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-//        fout.open("fig7_"+std::to_string(delta), std::fstream::out);
-//        double const dimensionless_time = 0.2;
-//        for (double const & dimensionless_position : x) 
-//        {
-//            double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
-//            fout<<boost::format("  %22.15e  %22.15e  \n")
-//                % dimensionless_position
-//                % dimensionless_interfacial_current_density
-//                ;
-//        }
-//        fout.close();
-//    }
-//
-//    // figure 8
-//    dimensionless_current_density                          = -1.0;
-//    dimensionless_exchange_current_density                 = 1.0;
-//    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
-//    for (double const & dimensionless_time : tau)
-//    {
-//        fout.open("fig8_"+std::to_string(dimensionless_time), std::fstream::out);
-//        for (double const & dimensionless_position : x) 
-//        {
-//            double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
-//            fout<<boost::format("  %22.15e  %22.15e  \n")
-//                % dimensionless_position
-//                % dimensionless_interfacial_current_density
-//                ;
-//        }
-//        fout.close();
-//    }
-//
-//    // figure 9
-//    dimensionless_current_density                          = -1.0;
-//    dimensionless_exchange_current_density                 = 1.0;
-//    ratio_of_solution_phase_to_matrix_phase_conductivities = 10.0;
-//    for (double const & dimensionless_time : tau)
-//    {
-//        fout.open("fig9_"+std::to_string(dimensionless_time), std::fstream::out);
-//        for (double const & dimensionless_position : x) 
-//        {
-//            double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
-//            fout<<boost::format("  %22.15e  %22.15e  \n")
-//                % dimensionless_position
-//                % dimensionless_interfacial_current_density
-//                ;
-//        }
-//        fout.close();
-//    }
+    // figure 5
+    ratio_of_separator_to_electrode_resistances            = 0.0;
+    for (double const & gamma : {0.0, 0.1, 1.0, 10.0, 1.0e6})
+    {
+        ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
+        for (double const & I_star : { 1.0, 2.0 })
+        {
+            std::transform(zeta.cbegin(), zeta.cend(), tau.begin(), [I_star](double const x) { return x / I_star; });
+            dimensionless_cell_current_density = I_star;
+            fout.open("Srinivasan_fig5_"+std::to_string(gamma)+"_"+std::to_string(I_star), std::fstream::out);
+            for (double const & dimensionless_time : tau)
+            {
+                double const relative_utilization = dimensionless_time * dimensionless_cell_current_density;
+                double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
+                fout<<boost::format("  %22.15e  %22.15e  \n")
+                    % relative_utilization
+                    % dimensionless_cell_voltage
+                    ;
+            }
+            fout.close();
+        }
+    }
+
+    // figure 6
+    dimensionless_cell_current_density                     = 1.0;
+    ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
+    ratio_of_separator_to_electrode_resistances            = 0.0;
+    for (double const & dimensionless_time : { 0.02, 0.04, 0.1, 0.2, 0.4, 0.65 })
+    {
+        fout.open("Srinivasan_fig6_"+std::to_string(dimensionless_time), std::fstream::out);
+        for (double const & dimensionless_position : zeta)
+        {
+            double const dimensionless_double_layer_current_density = compute_dimensionless_double_layer_current_density(dimensionless_time, dimensionless_position);
+            fout<<boost::format("  %22.15e  %22.15e  \n")
+                % dimensionless_position
+                % dimensionless_double_layer_current_density
+                ;
+        }
+        fout.close();
+    }
+
 }
 
 } // end namespace cap
