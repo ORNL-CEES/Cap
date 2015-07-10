@@ -175,7 +175,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
 //    double const voltage_normalization_factor = database->get<double>("voltage_normalization_factor");
     double const initial_voltage              = database->get<double>("initial_voltage"             );
     dimensionless_cell_current_density *= discharge_current / cross_sectional_area;
-    dimensionless_cell_current_density /= initial_voltage;
+    dimensionless_cell_current_density /= 0.5 * initial_voltage;
 
     std::cout<<"I^*   = "<<dimensionless_cell_current_density<<"\n";
     std::cout<<"gamma = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
@@ -188,7 +188,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     {
         double const dimensionless_time = (time+time_step) / time_normalization_factor;
         double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
-        exact_voltage = 2.0 * initial_voltage * dimensionless_cell_voltage - initial_voltage;
+        exact_voltage = initial_voltage * dimensionless_cell_voltage;
         dev->evolve_one_time_step_constant_current(time_step, -discharge_current);
         dev->get_voltage(computed_voltage);
         os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
