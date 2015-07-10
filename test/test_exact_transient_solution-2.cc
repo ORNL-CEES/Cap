@@ -68,6 +68,8 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     double const dimensionless_position =
         position / electrode_width;
     std::cout<<"I* = "<<dimensionless_cell_current_density<<"\n";
+    if (electrode_exchange_current_density_values[0] != 0.0)
+        throw std::runtime_error("test assumes no faradaic processes, exchange_current_density has to be zero");
         
     output_database->put("dimensionless_cell_current_density"                    , dimensionless_cell_current_density                    );
     output_database->put("ratio_of_solution_phase_to_matrix_phase_conductivities", ratio_of_solution_phase_to_matrix_phase_conductivities);
@@ -90,8 +92,8 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     double const separator_resitance = separator_width / separator_liquid_electrical_conductivity_values[0];
 
     double const ratio_of_separator_to_electrode_resistances = separator_resitance / electrode_resistance;
-    output_database->put("ratio_of_separator_to_electrode_resistances", ratio_of_separator_to_electrode_resistances);
-    output_database->put("cross_sectional_area"                       , cross_sectional_area               );
+    output_database->put("ratio_of_separator_to_electrode_resistances", ratio_of_separator_to_electrode_resistances );
+    output_database->put("cross_sectional_area"                       , cross_sectional_area                        );
 }
 
 
@@ -194,7 +196,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     {
         double const dimensionless_time = (time+time_step) / time_normalization_factor;
         double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
-        exact_voltage = 2.0 * initial_voltage * dimensionless_cell_voltage;
+        exact_voltage = 2.0 * initial_voltage * dimensionless_cell_voltage - initial_voltage;
         dev->evolve_one_time_step_constant_current(time_step, -discharge_current);
         dev->get_voltage(computed_voltage);
         os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")

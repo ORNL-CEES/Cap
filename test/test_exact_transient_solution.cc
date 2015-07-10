@@ -225,7 +225,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     std::fstream fout;
     for (double const & dimensionless_time : tau)
     {
-        fout.open("fig2_"+std::to_string(dimensionless_time), std::fstream::out);
+        fout.open("Subramanian_fig2_"+std::to_string(dimensionless_time), std::fstream::out);
         for (double const & dimensionless_position : x) 
         {
             double const dimensionless_overpotential = compute_dimensionless_overpotential(dimensionless_time, dimensionless_position);
@@ -248,7 +248,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         dimensionless_current_density                          = -delta;
         dimensionless_exchange_current_density                 = 1.0;
         ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-        fout.open("fig3_"+std::to_string(delta), std::fstream::out);
+        fout.open("Subramanian_fig3_"+std::to_string(delta), std::fstream::out);
         for (double const & dimensionless_time : tau)
         {
             double const dimensionless_potential_drop = compute_dimensionless_potential_drop_across_the_electrode(dimensionless_time);
@@ -272,7 +272,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
             dimensionless_current_density                          = -delta;
             dimensionless_exchange_current_density                 = nu2;
             ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
-            fout.open("fig4_"+std::to_string(delta)+"_"+std::to_string(nu2), std::fstream::out);
+            fout.open("Subramanian_fig4_"+std::to_string(delta)+"_"+std::to_string(nu2), std::fstream::out);
             for (double const & dimensionless_time : tau)
             {
                 double const dimensionless_potential_drop = compute_dimensionless_potential_drop_across_the_electrode(dimensionless_time);
@@ -293,7 +293,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     tau = std::vector<double> { 0.01, 0.02, 0.04, 0.1, 0.15, 0.2 };
     for (double const & dimensionless_time : tau)
     {
-        fout.open("fig5_"+std::to_string(dimensionless_time), std::fstream::out);
+        fout.open("Subramanian_fig5_"+std::to_string(dimensionless_time), std::fstream::out);
         for (double const & dimensionless_position : x) 
         {
             double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
@@ -311,7 +311,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
     for (double const & dimensionless_time : tau)
     {
-        fout.open("fig6_"+std::to_string(dimensionless_time), std::fstream::out);
+        fout.open("Subramanian_fig6_"+std::to_string(dimensionless_time), std::fstream::out);
         for (double const & dimensionless_position : x) 
         {
             double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
@@ -329,7 +329,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         dimensionless_current_density                          = -delta;
         dimensionless_exchange_current_density                 = 1.0;
         ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-        fout.open("fig7_"+std::to_string(delta), std::fstream::out);
+        fout.open("Subramanian_fig7_"+std::to_string(delta), std::fstream::out);
         double const dimensionless_time = 0.2;
         for (double const & dimensionless_position : x) 
         {
@@ -348,7 +348,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
     for (double const & dimensionless_time : tau)
     {
-        fout.open("fig8_"+std::to_string(dimensionless_time), std::fstream::out);
+        fout.open("Subramanian_fig8_"+std::to_string(dimensionless_time), std::fstream::out);
         for (double const & dimensionless_position : x) 
         {
             double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
@@ -366,7 +366,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     ratio_of_solution_phase_to_matrix_phase_conductivities = 10.0;
     for (double const & dimensionless_time : tau)
     {
-        fout.open("fig9_"+std::to_string(dimensionless_time), std::fstream::out);
+        fout.open("Subramanian_fig9_"+std::to_string(dimensionless_time), std::fstream::out);
         for (double const & dimensionless_position : x) 
         {
             double const dimensionless_interfacial_current_density = compute_dimensionless_interfacial_current_density(dimensionless_time, dimensionless_position);
