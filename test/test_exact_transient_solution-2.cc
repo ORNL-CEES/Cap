@@ -164,6 +164,33 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
                 1.0 + 2.0 / (1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities) * std::accumulate(&(coefficients[1]), &(coefficients[infty]), 0.0);
         };
 
+    auto compute_dimensionless_complex_impedance =
+        [&ratio_of_solution_phase_to_matrix_phase_conductivities, &ratio_of_separator_to_electrode_resistances]
+        (double const dimensionless_angular_frequency)
+        {
+            double const dimensionless_real_impedance =
+                (1.0 + std::pow(ratio_of_solution_phase_to_matrix_phase_conductivities,2))
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * dimensionless_angular_frequency)
+                    * (std::sinh(dimensionless_angular_frequency) * std::cosh(dimensionless_angular_frequency) - std::sin(dimensionless_angular_frequency) * std::cos(dimensionless_angular_frequency))
+                    / (std::pow(std::cosh(dimensionless_angular_frequency),2) - std::pow(std::cos(dimensionless_angular_frequency),2))
+                + 2.0 * ratio_of_solution_phase_to_matrix_phase_conductivities
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * dimensionless_angular_frequency)
+                    * (std::sinh(dimensionless_angular_frequency) * std::cos(dimensionless_angular_frequency) - std::cosh(dimensionless_angular_frequency) * std::sin(dimensionless_angular_frequency))
+                    / (std::pow(std::cosh(dimensionless_angular_frequency),2) - std::pow(std::cos(dimensionless_angular_frequency),2))
+                + 2.0 * ratio_of_solution_phase_to_matrix_phase_conductivities
+                    / std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2)
+                + ratio_of_separator_to_electrode_resistances;
+            double const dimensionless_imaginary_impedance =
+                (1.0 + std::pow(ratio_of_solution_phase_to_matrix_phase_conductivities,2))
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * dimensionless_angular_frequency)
+                    * (std::sinh(dimensionless_angular_frequency) * std::cosh(dimensionless_angular_frequency) + std::sin(dimensionless_angular_frequency) * std::cos(dimensionless_angular_frequency))
+                    / (std::pow(std::cosh(dimensionless_angular_frequency),2) - std::pow(std::cos(dimensionless_angular_frequency),2))
+                + 2.0 * ratio_of_solution_phase_to_matrix_phase_conductivities
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * dimensionless_angular_frequency)
+                    * (std::sinh(dimensionless_angular_frequency) * std::cos(dimensionless_angular_frequency) + std::cosh(dimensionless_angular_frequency) * std::sin(dimensionless_angular_frequency))
+                    / (std::pow(std::cosh(dimensionless_angular_frequency),2) - std::pow(std::cos(dimensionless_angular_frequency),2));
+            return std::complex<double>(dimensionless_real_impedance, dimensionless_imaginary_impedance);
+        };
 
     // exact vs computed
     double const discharge_current = database->get<double>("discharge_current");
@@ -304,6 +331,28 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
             fout<<boost::format("  %22.15e  %22.15e  \n")
                 % dimensionless_position
                 % dimensionless_double_layer_current_density
+                ;
+        }
+        fout.close();
+    }
+
+    // figure 11
+    ratio_of_separator_to_electrode_resistances = 0.0;
+    int const m = 1000;
+    std::vector<double> omega_star(m+1);
+    for (int i = 0; i < m+1; ++i)
+        omega_star[i] = 1.0 + 99.0 * static_cast<double>(i) / m;
+    for (double const & gamma : { 0.0, 0.1, 1.0, 10.0, 1.0e6})
+    {
+        fout.open("Srinivasan_fig11_"+std::to_string(gamma), std::fstream::out);
+        ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
+        for (double const & dimensionless_angular_frequency : omega_star)
+        {
+            std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+            fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+                % dimensionless_angular_frequency
+                % dimensionless_complex_impedance.real()
+                % dimensionless_complex_impedance.imag()
                 ;
         }
         fout.close();
