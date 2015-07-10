@@ -54,20 +54,12 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     mp_values->get_values("faradaic_reaction_coefficient" , cell, electrode_exchange_current_density_values      );
     double const cell_current_density = 1.0;
     double const initial_voltage      = 1.0;
-    double const time                 = 1.0;
-    double const position             = 1.0;
     double const dimensionless_cell_current_density =
         cell_current_density * electrode_width *
         (electrode_liquid_electrical_conductivity_values[0] + electrode_solid_electrical_conductivity_values[0])
         / (electrode_liquid_electrical_conductivity_values[0] * electrode_solid_electrical_conductivity_values[0] * initial_voltage);
-    double const dimensionless_time =
-        time * (electrode_liquid_electrical_conductivity_values[0] + electrode_solid_electrical_conductivity_values[0])
-        / (electrode_specific_capacitance_values[0] * std::pow(electrode_width,2) * electrode_liquid_electrical_conductivity_values[0] * electrode_solid_electrical_conductivity_values[0]);
     double const ratio_of_solution_phase_to_matrix_phase_conductivities =
         electrode_liquid_electrical_conductivity_values[0] / electrode_solid_electrical_conductivity_values[0];
-    double const dimensionless_position =
-        position / electrode_width;
-    std::cout<<"I* = "<<dimensionless_cell_current_density<<"\n";
     if (electrode_exchange_current_density_values[0] != 0.0)
         throw std::runtime_error("test assumes no faradaic processes, exchange_current_density has to be zero");
         
@@ -92,8 +84,8 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     double const separator_resitance = separator_width / separator_liquid_electrical_conductivity_values[0];
 
     double const ratio_of_separator_to_electrode_resistances = separator_resitance / electrode_resistance;
-    output_database->put("ratio_of_separator_to_electrode_resistances", ratio_of_separator_to_electrode_resistances );
-    output_database->put("cross_sectional_area"                       , cross_sectional_area                        );
+    output_database->put("ratio_of_separator_to_electrode_resistances", ratio_of_separator_to_electrode_resistances);
+    output_database->put("cross_sectional_area"                       , cross_sectional_area                       );
 }
 
 
@@ -328,6 +320,9 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
         std::make_shared<boost::property_tree::ptree>();
     read_xml("input_verification_problem", *input_database);
 
+    // remove faradaic processes
+    input_database->put("device.material_properties.electrode_material.exchange_current_density", 0.0);
+
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
@@ -339,7 +334,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     fout.open("verification_problem_data", std::fstream::out);
 
     std::shared_ptr<boost::property_tree::ptree> verification_problem_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("verification_problem"));
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("verification_problem_srinivasan"));
 
     cap::compute_parameters(device_database, verification_problem_database);
 

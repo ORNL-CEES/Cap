@@ -53,6 +53,8 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
     mp_values->get_values("specific_capacitance"          , cell, electrode_specific_capacitance_values          );
     mp_values->get_values("faradaic_reaction_coefficient" , cell, electrode_exchange_current_density_values      );
     mp_values->get_values("electron_thermal_voltage"      , cell, electrode_electron_thermal_voltage_values      );
+    if (electrode_exchange_current_density_values[0] == 0.0)
+        throw std::runtime_error("test assumes faradaic processes are present, exchange_current_density has to be non zero");
     double const total_current = -1.0; // normalized
     double const dimensionless_exchange_current_density = electrode_exchange_current_density_values[0]
         * std::pow(electrode_width,2) 
@@ -191,8 +193,8 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     dimensionless_current_density *= charge_current / cross_sectional_area;
 
     std::cout<<"delta="<<dimensionless_current_density<<"\n";
-    std::cout<<"nu2="<<dimensionless_exchange_current_density<<"\n";
-    std::cout<<"beta="<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
+    std::cout<<"nu2  ="<<dimensionless_exchange_current_density<<"\n";
+    std::cout<<"beta ="<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
 
     dev->reset_voltage(0.0);
     double computed_voltage;
@@ -399,7 +401,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     fout.open("verification_problem_data", std::fstream::out);
 
     std::shared_ptr<boost::property_tree::ptree> verification_problem_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("verification_problem"));
+        std::make_shared<boost::property_tree::ptree>(input_database->get_child("verification_problem_subramanian"));
 
     cap::compute_parameters(device_database, verification_problem_database);
 

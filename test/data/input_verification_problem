@@ -127,12 +127,23 @@
     </boundary_values>
 </device>
 
-<verification_problem>
+<verification_problem_subramanian>
     <terms_in_truncation_of_infinite_series>10000</terms_in_truncation_of_infinite_series>
 
-    <charge_current>5.0e-3</charge_current> <!-- ampere -->
-    <charge_time>2.0</charge_time> <!--second -->
-    <time_step>0.01</time_step> <!-- second -->
+    <charge_current>      5.0e-3 </charge_current>    <!-- ampere -->
+    <charge_time>         2.0    </charge_time>       <!-- second -->
+    <time_step>           0.01   </time_step>         <!-- second -->
 
     <percent_tolerance>0.1</percent_tolerance>
-</verification_problem>
+</verification_problem_subramanian>
+
+<verification_problem_srinivasan>
+    <terms_in_truncation_of_infinite_series>10000</terms_in_truncation_of_infinite_series>
+
+    <initial_voltage>     2.5    </initial_voltage>   <!-- volt -->
+    <discharge_current>   5.0e-3 </discharge_current> <!-- ampere -->
+    <discharge_time>      2.0    </discharge_time>    <!-- second -->
+    <time_step>           0.01   </time_step>         <!-- second -->
+
+    <percent_tolerance>0.1</percent_tolerance>
+</verification_problem_srinivasan>
