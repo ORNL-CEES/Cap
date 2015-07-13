@@ -200,6 +200,8 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     double const cross_sectional_area         = database->get<double>("cross_sectional_area"        );
     double const time_normalization_factor    = database->get<double>("time_normalization_factor"   );
 //    double const voltage_normalization_factor = database->get<double>("voltage_normalization_factor");
+    double const frequency_normalization_factor = 2.0 / time_normalization_factor;
+    double const impedance_normalization_factor = dimensionless_cell_current_density;
     double const initial_voltage              = database->get<double>("initial_voltage"             );
     dimensionless_cell_current_density *= discharge_current / cross_sectional_area;
     dimensionless_cell_current_density /= initial_voltage;
@@ -227,6 +229,36 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     double const percent_tolerance = database->get<double>("percent_tolerance");
     BOOST_CHECK_CLOSE(computed_voltage, exact_voltage, percent_tolerance);
 
+    // impedance spectroscopy
+    std::fstream fout;
+    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
+    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
+    int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
+    fout.open("impedance_spectroscopy_data_verification", std::fstream::out);
+    fout<<"# impedance Z(f) = R + i X \n";
+    fout<<boost::format( "# %22s  %22s  %22s  %22s  %22s  \n")
+        % "frequency_f_[Hz]"
+        % "resistance_R_[ohm]"
+        % "reactance_X_[ohm]"
+        % "magnitude_|Z|_[ohm]"
+        % "phase_arg(Z)_[degree]"
+        ;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
+    {
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        std::complex<double> const impedance = std::conj(impedance_normalization_factor * dimensionless_complex_impedance);
+        fout<<boost::format( "  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
+            % frequency
+            % impedance.real()
+            % impedance.imag()
+            % std::abs(impedance)
+            % (std::arg(impedance) * 180.0 / pi)
+            ;
+    }
+    fout.close();
+
     // figure 2
     dimensionless_cell_current_density                     = 1.0;
     ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
@@ -236,7 +268,6 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     for (int i = 0; i < n+1; ++i)
         zeta[i] = static_cast<double>(i) / n;
     std::vector<double> tau(zeta);
-    std::fstream fout;
     for (double beta : { 0.0, 1.0 })
     {
         ratio_of_separator_to_electrode_resistances = beta;
