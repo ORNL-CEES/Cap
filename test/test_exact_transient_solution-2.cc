@@ -248,7 +248,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         double const dimensionless_angular_frequency =
             std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
         std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        std::complex<double> const impedance = std::conj(impedance_normalization_factor * dimensionless_complex_impedance);
+        std::complex<double> const impedance = std::conj(impedance_normalization_factor * dimensionless_complex_impedance) / cross_sectional_area;
         fout<<boost::format( "  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
             % frequency
             % impedance.real()
