@@ -150,4 +150,7 @@
     <frequency_upper_limit> 1.0e+6 </frequency_upper_limit> <!-- hertz -->
     <frequency_lower_limit> 1.0e-9 </frequency_lower_limit> <!-- hertz -->
     <steps_per_decade>      6      </steps_per_decade>
+
+    <discharge_current_lower_limit> 1.0e-2 </discharge_current_lower_limit> <!-- ampere -->
+    <discharge_current_upper_limit> 1.0e+1 </discharge_current_upper_limit> <!-- ampere -->
 </verification_problem_srinivasan>

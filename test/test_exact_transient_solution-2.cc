@@ -10,6 +10,7 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/math/tools/roots.hpp>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -233,7 +234,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     std::fstream fout;
     double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
     double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
-    int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
+    int          steps_per_decade      = database->get<int   >("steps_per_decade"     );
     fout.open("impedance_spectroscopy_data_verification", std::fstream::out);
     fout<<"# impedance Z(f) = R + i X \n";
     fout<<boost::format( "# %22s  %22s  %22s  %22s  %22s  \n")
@@ -258,6 +259,82 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
             ;
     }
     fout.close();
+
+    // energy efficiency
+    double const cutoff_voltage = 0.0;
+    auto compute_cutoff_time =
+        [&compute_dimensionless_cell_voltage, &dimensionless_cell_current_density,
+        &cutoff_voltage]
+        (double const I_star)
+        {
+            double const tolerance = 1.0e-10;
+            boost::uintmax_t iterations = 100;
+            dimensionless_cell_current_density = I_star;
+            auto min_max = 
+                boost::math::tools::bisect(
+                    [&compute_dimensionless_cell_voltage, cutoff_voltage]
+                    (double const & dimensionless_time)
+                    { return cutoff_voltage - compute_dimensionless_cell_voltage(dimensionless_time); },
+                    0.0,
+                    3600.0,
+                    [tolerance](double min, double max) { return std::abs(min - max) <= tolerance; },
+                    iterations
+                );
+           return 0.5 * (min_max.first + min_max.second);
+        };
+
+    auto compute_energy_efficiency =
+        [infty, pi,
+        &compute_cutoff_time, &ratio_of_solution_phase_to_matrix_phase_conductivities, &ratio_of_separator_to_electrode_resistances]
+        (double const I_star, double const cutoff_time)
+        {
+            std::vector<double> coefficients(infty);
+            for (int n = 0; n < infty; ++n) {
+                coefficients[n] =
+                std::pow(
+                    ((n % 2 == 0 ? 1.0 : -1.0) * ratio_of_solution_phase_to_matrix_phase_conductivities + 1.0)
+                    / (ratio_of_solution_phase_to_matrix_phase_conductivities + 1.0)
+                  , 2)
+                / (std::pow(n,4) * std::pow(pi,4))
+                * std::expm1( - std::pow(n,2) * std::pow(pi,2) * cutoff_time );
+            }
+            return
+                I_star * cutoff_time * (1.0 - I_star / 3.0 - 0.5 * I_star * cutoff_time - 0.5 * ratio_of_separator_to_electrode_resistances * I_star) 
+                    - 2.0 * std::pow(I_star,2) * std::accumulate(&(coefficients[1]), &(coefficients[infty]), 0.0);
+        };
+
+    // figure 7
+    double const discharge_current_lower_limit = database->get<double>("discharge_current_lower_limit");
+    double const discharge_current_upper_limit = database->get<double>("discharge_current_upper_limit");
+    steps_per_decade = 100;
+    for (double const & beta : {0.0, 1.0})
+    {
+        ratio_of_separator_to_electrode_resistances = beta;
+        for (double const & gamma : {0.0, 0.1, 1.0, 10.0, 1.0e6})
+        {
+            ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
+            fout.open("Srinivasan_fig7_"+std::to_string(beta)+"_"+std::to_string(gamma), std::fstream::out);
+            for (double I_star = discharge_current_lower_limit; I_star <= discharge_current_upper_limit; I_star *=  std::pow(10.0, 1.0/steps_per_decade))
+            {
+                try
+                {
+                    double const cutoff_time = compute_cutoff_time(I_star);
+                    double const energy_efficiency = compute_energy_efficiency(I_star, cutoff_time);
+                    fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+                        % I_star
+                        % cutoff_time
+                        % energy_efficiency
+                        ;
+                }
+                catch (std::exception& e)
+                {
+//                    std::cout<<I_star<<"  "<<e.what()<<"\n";
+                    break;
+                }
+            }
+            fout.close();
+        }
+    }
 
     // figure 2
     dimensionless_cell_current_density                     = 1.0;
