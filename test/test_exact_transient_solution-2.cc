@@ -11,6 +11,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/math/tools/roots.hpp>
+#include <boost/math/distributions/beta.hpp>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -466,6 +467,90 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         fout.close();
     }
 
+    // beta distribution
+    boost::math::beta_distribution<double> distribution(2.0, 5.0);
+//    std::cout<<"mean     = "<<boost::math::mean    (distribution)<<"\n";
+//    std::cout<<"variance = "<<boost::math::variance(distribution)<<"\n";
+//    for (double x = 0.0; x <= 1.0; x += 0.01)
+//        std::cout<<x<<"  "<<boost::math::pdf(distribution, x)<<"\n";
+std::vector<double> weights = {
+    2.02885361528226970e-13,
+    3.19399435825903036e-12,
+    1.31884857666896856e-11,
+    2.14427290678139316e-11,
+    1.41703849013192275e-11,
+    2.72679997462327945e-12,
+};
+std::vector<double> points = {
+    1.93948613582756620e-02,
+    3.51031699847934725e-02,
+    5.18279611518872516e-02,
+    6.80824111772377338e-02,
+    8.23184617017602982e-02,
+    9.31678714681508646e-02,
+};
+
+    double const a = 0.001;
+    double const b = 0.1;
+    size_t const n_points = 6;
+
+    fout.open("impedance_spectroscopy_data_beta_distribution", std::fstream::out);
+    for (double const & dimensionless_angular_frequency : omega_star)
+    {
+        std::complex<double> dimensionless_complex_impedance = 0.0;
+        for (size_t q = 0; q < n_points; ++q)
+        {
+            ratio_of_solution_phase_to_matrix_phase_conductivities = points[q];
+            dimensionless_complex_impedance += weights[q] * compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        }
+        dimensionless_complex_impedance /= std::accumulate(weights.begin(), weights.end(), 0.0);    
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
+
+    fout.open("impedance_spectroscopy_data_mean", std::fstream::out);
+    ratio_of_solution_phase_to_matrix_phase_conductivities = a + (b - a) * boost::math::mean(distribution);
+    std::cout<<"mean = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
+    for (double const & dimensionless_angular_frequency : omega_star)
+    {
+        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
+    fout.open("impedance_spectroscopy_data_min", std::fstream::out);
+    ratio_of_solution_phase_to_matrix_phase_conductivities = a;
+    std::cout<<"min = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
+    for (double const & dimensionless_angular_frequency : omega_star)
+    {
+        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
+    fout.open("impedance_spectroscopy_data_max", std::fstream::out);
+    ratio_of_solution_phase_to_matrix_phase_conductivities = b;
+    std::cout<<"max = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
+    for (double const & dimensionless_angular_frequency : omega_star)
+    {
+        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
 }
 
 } // end namespace cap
