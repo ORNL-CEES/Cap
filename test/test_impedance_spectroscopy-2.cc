@@ -260,7 +260,7 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
         tmp->put("frequency", frequency);
         auto expe_results = measure_impedance2(dev, tmp);
         auto theo_results = compute_exact(tmp);
-        for (int k = 0; k < harmonics.size(); ++k)
+        for (size_t k = 0; k < harmonics.size(); ++k)
         {
             std::tie(expe_frequency, expe_impedance) = expe_results[k];
             std::tie(theo_frequency, theo_impedance) = theo_results[k];
