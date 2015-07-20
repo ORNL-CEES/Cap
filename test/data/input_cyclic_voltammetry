@@ -6,11 +6,11 @@
 </device>
 
 <cyclic_voltammetry>
-    <scan_rate>100.0e-3</scan_rate> <!-- volt per second -->
-    <step_size>5.0e-3</step_size> <!-- volt -->
-    <initial_voltage>0.0</initial_voltage> <!-- volt -->
-    <voltage_upper_limit>3.5</voltage_upper_limit> <!-- volt -->
-    <voltage_lower_limit>-2.0</voltage_lower_limit> <!-- volt -->
-    <final_voltage>0.0</final_voltage> <!-- volt -->
-    <cycles>1</cycles>
+    <scan_rate>           100.0e-3 </scan_rate>           <!-- volt per second -->
+    <step_size>             5.0e-3 </step_size>           <!-- volt -->
+    <initial_voltage>       0.0    </initial_voltage>     <!-- volt -->
+    <voltage_upper_limit>  +3.5    </voltage_upper_limit> <!-- volt -->
+    <voltage_lower_limit>  -2.0    </voltage_lower_limit> <!-- volt -->
+    <final_voltage>         0.0    </final_voltage>       <!-- volt -->
+    <cycles>                1      </cycles>
 </cyclic_voltammetry>
