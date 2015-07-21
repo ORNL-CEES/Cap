@@ -153,4 +153,10 @@
 
     <discharge_current_lower_limit> 1.0e-2 </discharge_current_lower_limit> <!-- ampere -->
     <discharge_current_upper_limit> 1.0e+1 </discharge_current_upper_limit> <!-- ampere -->
+
+    <alpha> 2.0  </alpha>
+    <beta>  5.0  </beta>
+    <a>     0.01 </a>
+    <b>     1.0  </b>
+    <depth> 6    </depth>
 </verification_problem_srinivasan>
