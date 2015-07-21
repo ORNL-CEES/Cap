@@ -100,7 +100,7 @@
             <thermal_conductivity>           0.0011e2  </thermal_conductivity>           <!-- watt per meter kelvin -->
         </electrode_material>
         <collector_material>
-             <mass_density>                  2.7e3     </mass_density>                   <!-- kilogram per cubic meter -->
+            <mass_density>                   2.7e3     </mass_density>                   <!-- kilogram per cubic meter -->
             <electrical_resistivity>        28.2e-9    </electrical_resistivity>         <!-- ohm meter -->
             <heat_capacity>                  2.7e3     </heat_capacity>                  <!-- joule per kilogram kelvin -->
             <thermal_conductivity>         237.0       </thermal_conductivity>           <!-- watt per meter kelvin -->
