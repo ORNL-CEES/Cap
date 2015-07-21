@@ -19,7 +19,8 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_resistor_capacitor", *input_database);
+    boost::property_tree::xml_parser::read_xml("input_resistor_capacitor", *input_database,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
@@ -169,7 +170,8 @@ BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_resistor_capacitor", *input_database);
+    boost::property_tree::xml_parser::read_xml("input_resistor_capacitor", *input_database,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build two energy storage systems
     // one of them will be operated with steps

@@ -294,7 +294,8 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_impedance_spectroscopy", *input_database);
+    boost::property_tree::xml_parser::read_xml("input_impedance_spectroscopy", *input_database,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =

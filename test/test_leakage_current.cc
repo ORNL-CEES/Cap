@@ -76,7 +76,8 @@ BOOST_AUTO_TEST_CASE( test_leakage_current )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_leakage_current", *input_database);
+    boost::property_tree::xml_parser::read_xml("input_leakage_current", *input_database,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
