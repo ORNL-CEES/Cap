@@ -2,6 +2,9 @@
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
 #include <cap/mp_values.h>
+#ifdef WITH_TASMANIAN
+#include <tasmanian/TasmanianSparseGrid.hpp>
+#endif
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -202,7 +205,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     double const cross_sectional_area         = database->get<double>("cross_sectional_area"        );
     double const time_normalization_factor    = database->get<double>("time_normalization_factor"   );
 //    double const voltage_normalization_factor = database->get<double>("voltage_normalization_factor");
-    double const frequency_normalization_factor = 2.0 / time_normalization_factor;
+    double       frequency_normalization_factor = 2.0 / time_normalization_factor;
     double const impedance_normalization_factor = dimensionless_cell_current_density;
     double const initial_voltage              = database->get<double>("initial_voltage"             );
     dimensionless_cell_current_density *= discharge_current / cross_sectional_area;
@@ -233,8 +236,8 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
 
     // impedance spectroscopy
     std::fstream fout;
-    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
-    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
+    double       frequency_upper_limit = database->get<double>("frequency_upper_limit");
+    double       frequency_lower_limit = database->get<double>("frequency_lower_limit");
     int          steps_per_decade      = database->get<int   >("steps_per_decade"     );
     fout.open("impedance_spectroscopy_data_verification", std::fstream::out);
     fout<<"# impedance Z(f) = R + i X \n";
@@ -467,57 +470,43 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         fout.close();
     }
 
+#ifdef WITH_TASMANIAN
     // beta distribution
-    boost::math::beta_distribution<double> distribution(2.0, 5.0);
-//    std::cout<<"mean     = "<<boost::math::mean    (distribution)<<"\n";
-//    std::cout<<"variance = "<<boost::math::variance(distribution)<<"\n";
-//    for (double x = 0.0; x <= 1.0; x += 0.01)
-//        std::cout<<x<<"  "<<boost::math::pdf(distribution, x)<<"\n";
-std::vector<double> weights = {
-    2.02885361528226970e-13,
-    3.19399435825903036e-12,
-    1.31884857666896856e-11,
-    2.14427290678139316e-11,
-    1.41703849013192275e-11,
-    2.72679997462327945e-12,
-};
-std::vector<double> points = {
-    1.93948613582756620e-02,
-    3.51031699847934725e-02,
-    5.18279611518872516e-02,
-    6.80824111772377338e-02,
-    8.23184617017602982e-02,
-    9.31678714681508646e-02,
-};
-
-    double const a = 0.001;
-    double const b = 0.1;
-    size_t const n_points = 6;
-
-    fout.open("impedance_spectroscopy_data_beta_distribution", std::fstream::out);
-    for (double const & dimensionless_angular_frequency : omega_star)
+    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.1;
+    double const alpha = database->get<double>("alpha");
+    double const beta  = database->get<double>("beta" );
+    double const a     = database->get<double>("a"    );
+    double const b     = database->get<double>("b"    );
+    int    const depth = database->get<int   >("depth");
+    boost::math::beta_distribution<double> distribution(alpha, beta);
+    TasGrid::TasmanianSparseGrid grid;
+    grid.makeGlobalGrid(1, 0, depth, TasGrid::type_level, TasGrid::rule_gaussjacobi, 0, alpha, beta);
+    grid.setDomainTransform(&a, &b);
+//    grid.updateGlobalGrid(depth, TasGrid::type_level, 0);
+    std::cout<<grid.getNumPoints()<<"  "<<grid.getNumDimensions()+1<<"\n";
+    std::cout<<"alpha = "<<alpha<<"\n";
+    std::cout<<"beta  = "<<beta<<"\n";
+    std::cout<<"[a b] = ["<<a<<" "<<b<<"]\n";
+    int    const   n_points = grid.getNumPoints        ();
+    double const * weights  = grid.getQuadratureWeights();
+    double const * points   = grid.getPoints           ();
+    for (int q = 0; q < n_points; ++q)
     {
-        std::complex<double> dimensionless_complex_impedance = 0.0;
-        for (size_t q = 0; q < n_points; ++q)
-        {
-            ratio_of_solution_phase_to_matrix_phase_conductivities = points[q];
-            dimensionless_complex_impedance += weights[q] * compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        }
-        dimensionless_complex_impedance /= std::accumulate(weights.begin(), weights.end(), 0.0);    
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
+        std::cout<<"  "<<weights[q]<<"  "<<points[q]<<"\n";
+        BOOST_CHECK_GE(points[q], a);
+        BOOST_CHECK_LE(points[q], b);
     }
-    fout.close();
+
+    frequency_upper_limit = 1.0e+3;
+    frequency_lower_limit = 1.0e-3;
 
     fout.open("impedance_spectroscopy_data_mean", std::fstream::out);
-    ratio_of_solution_phase_to_matrix_phase_conductivities = a + (b - a) * boost::math::mean(distribution);
-    std::cout<<"mean = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
-    for (double const & dimensionless_angular_frequency : omega_star)
+    frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
-        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
         fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
             % dimensionless_angular_frequency
             % dimensionless_complex_impedance.real()
@@ -526,11 +515,12 @@ std::vector<double> points = {
     }
     fout.close();
     fout.open("impedance_spectroscopy_data_min", std::fstream::out);
-    ratio_of_solution_phase_to_matrix_phase_conductivities = a;
-    std::cout<<"min = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
-    for (double const & dimensionless_angular_frequency : omega_star)
+    frequency_normalization_factor = a;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
-        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
         fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
             % dimensionless_angular_frequency
             % dimensionless_complex_impedance.real()
@@ -539,11 +529,12 @@ std::vector<double> points = {
     }
     fout.close();
     fout.open("impedance_spectroscopy_data_max", std::fstream::out);
-    ratio_of_solution_phase_to_matrix_phase_conductivities = b;
-    std::cout<<"max = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
-    for (double const & dimensionless_angular_frequency : omega_star)
+    frequency_normalization_factor = b;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
-        std::complex<double> dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
         fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
             % dimensionless_angular_frequency
             % dimensionless_complex_impedance.real()
@@ -551,6 +542,53 @@ std::vector<double> points = {
             ;
     }
     fout.close();
+    fout.open("impedance_spectroscopy_data_series", std::fstream::out);
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
+    {
+        std::complex<double> dimensionless_complex_impedance = 0.0;
+        for (int q = 0; q < n_points; ++q)
+        {
+            frequency_normalization_factor = points[q];
+            double const dimensionless_angular_frequency =
+                std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+            dimensionless_complex_impedance += weights[q] * compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        }
+        dimensionless_complex_impedance /= std::accumulate(&(weights[0]), &(weights[n_points]), 0.0);
+        frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
+    fout.open("impedance_spectroscopy_data_parallel", std::fstream::out);
+    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.1;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
+    {
+        std::complex<double> dimensionless_complex_admittance = 0.0;
+        for (int q = 0; q < n_points; ++q)
+        {
+            frequency_normalization_factor = points[q];
+            double const dimensionless_angular_frequency =
+                std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+            dimensionless_complex_admittance += weights[q] / compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
+        }
+        dimensionless_complex_admittance /= std::accumulate(&(weights[0]), &(weights[n_points]), 0.0);
+        std::complex<double> const dimensionless_complex_impedance = 1.0 / dimensionless_complex_admittance;
+        frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
+        double const dimensionless_angular_frequency =
+            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
+        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
+            % dimensionless_angular_frequency
+            % dimensionless_complex_impedance.real()
+            % dimensionless_complex_impedance.imag()
+            ;
+    }
+    fout.close();
+#endif
 }
 
 } // end namespace cap
@@ -560,7 +598,8 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    read_xml("input_verification_problem", *input_database);
+    boost::property_tree::xml_parser::read_xml("input_verification_problem", *input_database,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // remove faradaic processes
     input_database->put("device.material_properties.electrode_material.exchange_current_density", 0.0);
