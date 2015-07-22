@@ -169,7 +169,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
                 1.0 + 2.0 / (1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities) * std::accumulate(&(coefficients[1]), &(coefficients[infty]), 0.0);
         };
 
-    auto compute_dimensionless_complex_impedance =
+    auto compute_dimensionless_complex_impedance_eq_24ab =
         [&ratio_of_solution_phase_to_matrix_phase_conductivities, &ratio_of_separator_to_electrode_resistances]
         (double const dimensionless_angular_frequency)
         {
@@ -196,6 +196,21 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
                     / (std::pow(std::cosh(dimensionless_angular_frequency),2) - std::pow(std::cos(dimensionless_angular_frequency),2));
             return std::complex<double>(dimensionless_real_impedance, dimensionless_imaginary_impedance);
         };
+    auto compute_dimensionless_complex_impedance_eq22 =
+        [&ratio_of_solution_phase_to_matrix_phase_conductivities, &ratio_of_separator_to_electrode_resistances]
+        (double const dimensionless_angular_frequency)
+        {
+            std::complex<double> sqrt_j_omega_star = std::sqrt(std::complex<double>(0.0, dimensionless_angular_frequency));
+            return
+                4.0 * ratio_of_solution_phase_to_matrix_phase_conductivities
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * sqrt_j_omega_star * std::sinh(sqrt_j_omega_star))
+                + 2.0 * (1.0 + std::pow(ratio_of_solution_phase_to_matrix_phase_conductivities,2)) * std::cosh(sqrt_j_omega_star)
+                    / (std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2) * sqrt_j_omega_star * std::sinh(sqrt_j_omega_star))
+                + 2.0 * ratio_of_solution_phase_to_matrix_phase_conductivities
+                    / std::pow(1.0 + ratio_of_solution_phase_to_matrix_phase_conductivities,2)
+                + ratio_of_separator_to_electrode_resistances;
+        };
+    auto const & compute_dimensionless_complex_impedance = compute_dimensionless_complex_impedance_eq22;
 
     // exact vs computed
     double const discharge_current = database->get<double>("discharge_current");
