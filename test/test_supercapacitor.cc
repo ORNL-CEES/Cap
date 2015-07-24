@@ -64,12 +64,12 @@ void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
 
 
 
-BOOST_AUTO_TEST_CASE( test_no_name )
+BOOST_AUTO_TEST_CASE( test_supercapacitor )
 {
     // read input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::xml_parser::read_xml("input_no_name", *input_database,
+    boost::property_tree::xml_parser::read_xml("input_supercapacitor", *input_database,
         boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage device
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( test_no_name )
 
     // charge and then relax
     std::fstream fout;
-    fout.open("no_name_data", std::fstream::out);
+    fout.open("supercapacitor_data", std::fstream::out);
     std::shared_ptr<boost::property_tree::ptree> operating_conditions_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("operating_conditions"));
     cap::charge_and_chill(device, operating_conditions_database, fout);
