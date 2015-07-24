@@ -2,7 +2,7 @@
 
 namespace cap {
 
-template class NoName<2>;
-template class NoName<3>;
+template class SuperCapacitor<2>;
+template class SuperCapacitor<3>;
 
 } // end namespace cap

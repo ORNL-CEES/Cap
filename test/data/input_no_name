@@ -10,7 +10,7 @@
     <parallel_resistance>2.5e6</parallel_resistance>
     <series_resistance>50.0e-3</series_resistance>
 
-    <type>NoName</type>
+    <type>SuperCapacitor</type>
     <dim>2</dim>
 
     <geometry>

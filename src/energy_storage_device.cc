@@ -12,13 +12,13 @@ buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
         return std::make_shared<cap::SeriesRC>(params);
     else if (type.compare("ParallelRC") == 0)
         return std::make_shared<cap::ParallelRC>(params);
-    else if (type.compare("NoName") == 0)
+    else if (type.compare("SuperCapacitor") == 0)
     {
         int const dim = database->get<int>("dim");
         if (dim == 2)
-            return std::make_shared<cap::NoName<2> >(params);
+            return std::make_shared<cap::SuperCapacitor<2>>(params);
         else if (dim ==3)
-            return std::make_shared<cap::NoName<3> >(params);
+            return std::make_shared<cap::SuperCapacitor<3>>(params);
         else
             throw std::runtime_error("dim="+std::to_string(dim)+" must be 2 or 3");
     }

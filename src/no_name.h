@@ -1,5 +1,5 @@
-#ifndef CAP_NO_NAME_H
-#define CAP_NO_NAME_H
+#ifndef CAP_SUPER_CAPACITOR_H
+#define CAP_SUPER_CAPACITOR_H
 
 #include <cap/energy_storage_device.h>
 #include <cap/geometry.h>
@@ -17,10 +17,10 @@
 namespace cap {
 
 template <int dim>
-class NoName : public EnergyStorageDevice
+class SuperCapacitor : public EnergyStorageDevice
 {
 public:
-    NoName(std::shared_ptr<Parameters const> parameters);
+    SuperCapacitor(std::shared_ptr<Parameters const> parameters);
     void print_data(std::ostream & os) const override;
     void get_voltage(double & voltage) const override;
     void get_current(double & current) const override;
@@ -56,4 +56,4 @@ private:
 
 } // end namespace cap
 
-#endif // CAP_NO_NAME_H
+#endif // CAP_SUPER_CAPACITOR_H

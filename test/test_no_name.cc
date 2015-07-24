@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE NoName
+#define BOOST_TEST_MODULE SuperCapacitor:
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
 #include <boost/test/unit_test.hpp>
@@ -50,7 +50,7 @@ void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
 
     dev->evolve_one_time_step_constant_voltage(time_step, initial_voltage);
     dev->get_current(current);
-    BOOST_CHECK_CLOSE(current, initial_current, 1.0e-2); // matches percent_tolerance in NoName::reset_voltage()
+    BOOST_CHECK_CLOSE(current, initial_current, 1.0e-2); // matches percent_tolerance in SuperCapacitor::reset_voltage()
     dev->get_voltage(voltage);
     BOOST_CHECK_CLOSE(voltage, initial_voltage, percent_tolerance);
 
