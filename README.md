@@ -2,7 +2,7 @@ cap
 ===
 DEPENDENCIES
 ------------
-deal.II version 8.2 compiled with C++11 support. The development sources can be found 
+deal.II version 8.3 compiled with C++11 support. The development sources can be found 
 [here](https://github.com/dealii/dealii).
 
 boost version at least 1.49.0.  Boost Unit Test Framework (UTF) is required only for building all the unit tests.
