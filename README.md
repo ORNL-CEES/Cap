@@ -16,11 +16,11 @@ CONFIGURE, BUILD, INSTALL
 Install deal.II
 
     $ cd ${PREFIX}/source
-    $ wget https://github.com/dealii/dealii/releases/download/v8.2.1/dealii-8.2.1.tar.gz
-    $ tar -xf dealii-8.2.1.tar.gz
+    $ wget https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
+    $ tar -xf dealii-8.3.0.tar.gz
     $ mkdir -p ${PREFIX}/build/dealii
     $ cd ${PREFIX}/build/dealii
-    $ cmake -DCMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii -DCMAKE_CXX_FLAGS="-std=c++11" ${PREFIX}/source/dealii-8.2.1
+    $ cmake -DCMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii -DCMAKE_CXX_FLAGS="-std=c++11" ${PREFIX}/source/dealii-8.3.0
     $ make install    (alternatively $ make -j<N> install)
 
 Configure, build, and install cap
