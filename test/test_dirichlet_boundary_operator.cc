@@ -46,7 +46,7 @@ void initialize_system(
     std::cout << "Number of degrees of freedom: "
               << dof_handler.n_dofs()
               << std::endl;
-    dealii::CompressedSparsityPattern c_sparsity(dof_handler.n_dofs());
+    dealii::DynamicSparsityPattern c_sparsity(dof_handler.n_dofs());
     dealii::DoFTools::make_sparsity_pattern (dof_handler, c_sparsity);
     sparsity_pattern.copy_from(c_sparsity);
     system_matrix.reinit (sparsity_pattern);
