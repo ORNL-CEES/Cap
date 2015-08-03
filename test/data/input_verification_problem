@@ -1,5 +1,5 @@
 <device>
-    <type>NoName</type>
+    <type>SuperCapacitor</type>
     <dim>2</dim>
 
     <geometry>

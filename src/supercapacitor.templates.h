@@ -1,4 +1,4 @@
-#include <cap/no_name.h>
+#include <cap/supercapacitor.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -16,8 +16,8 @@
 namespace cap {
 
 template <int dim>
-NoName<dim>::
-NoName(std::shared_ptr<Parameters const> parameters)
+SuperCapacitor<dim>::
+SuperCapacitor(std::shared_ptr<Parameters const> parameters)
 {
     // get database
     std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
@@ -139,7 +139,7 @@ NoName(std::shared_ptr<Parameters const> parameters)
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
@@ -151,7 +151,7 @@ evolve_one_time_step_constant_voltage(double const time_step, double const const
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 evolve_one_time_step_constant_current(double const time_step, double const constant_current)
 {
     double surface_area;
@@ -163,7 +163,7 @@ evolve_one_time_step_constant_current(double const time_step, double const const
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 evolve_one_time_step(double const time_step)
 {
     bool const symmetric_correction = true;
@@ -248,7 +248,7 @@ evolve_one_time_step(double const time_step)
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 evolve_one_time_step_constant_load(double const time_step, double const constant_load)
 {
     double surface_area;
@@ -262,7 +262,7 @@ evolve_one_time_step_constant_load(double const time_step, double const constant
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 evolve_one_time_step_constant_power(double const time_step, double const constant_power)
 {
     double surface_area;
@@ -291,7 +291,7 @@ evolve_one_time_step_constant_power(double const time_step, double const constan
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 get_current(double & current) const
 {
     (*this->post_processor).get("current", current);
@@ -301,7 +301,7 @@ get_current(double & current) const
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 get_voltage(double & voltage) const
 {
     (*this->post_processor).get("voltage", voltage);
@@ -311,7 +311,7 @@ get_voltage(double & voltage) const
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 print_data(std::ostream & os) const
 {
     double current;
@@ -344,7 +344,7 @@ print_data(std::ostream & os) const
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 reset_voltage(double const voltage)
 {
     (*this->electrochemical_operator_params).capacitor_state = CustomConstantVoltage;
@@ -368,14 +368,14 @@ reset_voltage(double const voltage)
        current_previous_time_step = current;
     }
     throw std::runtime_error("Failed to converge at "+std::to_string(percent_tolerance)
-        +" percent within "+std::to_string(max_steps)+" steps.  See NoName::reset_voltage.");
+        +" percent within "+std::to_string(max_steps)+" steps.  See SuperCapacitor::reset_voltage.");
 }
 
 
 
 template <int dim>
 void
-NoName<dim>::
+SuperCapacitor<dim>::
 reset_current(double const current)
 {
     std::ignore = current;
