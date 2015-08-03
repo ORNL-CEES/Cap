@@ -5,6 +5,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/lac/block_vector.h>
 #include <numeric>
 
 namespace cap {
@@ -161,7 +162,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
                 if (cell->face(face)->at_boundary()) {
                     fe_face_values.reinit(cell, face);
                     std::fill(load_electrical_conductance_values.begin(), load_electrical_conductance_values.end(),
-                        ((cell->face(face)->boundary_indicator() == this->cathode_boundary_id) ? 1.0 / load_density : 0.0));
+                        ((cell->face(face)->boundary_id() == this->cathode_boundary_id) ? 1.0 / load_density : 0.0));
                     for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
                         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                             for (unsigned int j = 0; j < dofs_per_cell; ++j) {
@@ -233,7 +234,7 @@ DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
                 if (cell->face(face)->at_boundary()) {
                     fe_face_values.reinit(cell, face);
                     std::fill(current_density_values.begin(), current_density_values.end(),
-                        ((cell->face(face)->boundary_indicator() == this->cathode_boundary_id) ? current_density : 0.0));
+                        ((cell->face(face)->boundary_id() == this->cathode_boundary_id) ? current_density : 0.0));
                     for (unsigned int q_point = 0; q_point < n_face_q_points; ++q_point) {
                         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
                             cell_load_vector(i) += (

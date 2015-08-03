@@ -74,25 +74,25 @@ get_values(std::string const &          key,
            std::vector<double> &        values) const
 {
     if (key.compare("ambient_temperature") == 0) {
-        if ((cell->face(face)->boundary_indicator() == this->anode_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->cathode_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->other_boundary_id)) {
+        if ((cell->face(face)->boundary_id() == this->anode_boundary_id)
+            || (cell->face(face)->boundary_id() == this->cathode_boundary_id)
+            || (cell->face(face)->boundary_id() == this->other_boundary_id)) {
             std::fill(values.begin(), values.end(), 0.0);
-        } else if (cell->face(face)->boundary_indicator() == this->upper_boundary_id) {
+        } else if (cell->face(face)->boundary_id() == this->upper_boundary_id) {
             std::fill(values.begin(), values.end(), this->upper_ambient_temperature);
-        } else if (cell->face(face)->boundary_indicator() == this->lower_boundary_id) {
+        } else if (cell->face(face)->boundary_id() == this->lower_boundary_id) {
             std::fill(values.begin(), values.end(), this->lower_ambient_temperature);
         } else {
             throw std::runtime_error("Invalid boundary id");
         } // end if boundary id
     } else if (key.compare("heat_transfer_coefficient") == 0) {
-        if ((cell->face(face)->boundary_indicator() == this->anode_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->cathode_boundary_id)
-            || (cell->face(face)->boundary_indicator() == this->other_boundary_id)) {
+        if ((cell->face(face)->boundary_id() == this->anode_boundary_id)
+            || (cell->face(face)->boundary_id() == this->cathode_boundary_id)
+            || (cell->face(face)->boundary_id() == this->other_boundary_id)) {
             std::fill(values.begin(), values.end(), 0.0);
-        } else if (cell->face(face)->boundary_indicator() == this->upper_boundary_id) {
+        } else if (cell->face(face)->boundary_id() == this->upper_boundary_id) {
             std::fill(values.begin(), values.end(), this->upper_heat_transfer_coefficient);
-        } else if (cell->face(face)->boundary_indicator() == this->lower_boundary_id) {
+        } else if (cell->face(face)->boundary_id() == this->lower_boundary_id) {
             std::fill(values.begin(), values.end(), this->lower_heat_transfer_coefficient);
         } else {
             throw std::runtime_error("Invalid boundary id");

@@ -289,7 +289,7 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
         if (cell->at_boundary()) {
             for (unsigned int face = 0; face < dealii::GeometryInfo<dim>::faces_per_cell; ++face) {
                 if (cell->face(face)->at_boundary()) {
-if (cell->face(face)->boundary_indicator() == cathode_boundary_id) {
+if (cell->face(face)->boundary_id() == cathode_boundary_id) {
                     fe_face_values.reinit(cell, face);
                     this->mp_values->get_values("solid_electrical_conductivity", cell, face_solid_electrical_conductivity_values); // TODO: should take face as an argument...
                     fe_face_values[solid_potential].get_function_gradients(solution, face_solid_potential_gradients);
