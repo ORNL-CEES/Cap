@@ -84,10 +84,19 @@ ENDIF()
 
 IF(DEFINED BOOST_INSTALL_DIR)
     MESSAGE("BOOST_INSTALL_DIR = ${BOOST_INSTALL_DIR}")
-    FIND_LIBRARY(Boost_LIBRARIES 
-        NAMES boost_unit_test_framework
+    FIND_LIBRARY(Boost_UTF_LIB
+        NAMES boost_unit_test_framework 
         PATHS ${BOOST_INSTALL_DIR}/lib
         NO_DEFAULT_PATH
+        )
+    FIND_LIBRARY(Boost_PYTHON_LIB
+        NAMES boost_python
+        PATHS ${BOOST_INSTALL_DIR}/lib
+        NO_DEFAULT_PATH
+        )
+    SET(Boost_LIBRARIES 
+        ${Boost_UTF_LIB}
+        ${Boost_PYTHON_LIB}
         )
     FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
         PATHS ${BOOST_INSTALL_DIR}/include
@@ -103,6 +112,7 @@ ENDIF()
 
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(python)
 IF(MAKE_DOC)
     ADD_SUBDIRECTORY(doc)
 ENDIF()
