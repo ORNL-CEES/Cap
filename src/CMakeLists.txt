@@ -1,0 +1,20 @@
+SET(CAP_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.cc
+    )
+IF(ENABLE_DEAL_II)
+    SET(CAP_SOURCES
+        ${CAP_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/dof_extractor.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/operator.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/thermal_operator.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_operator.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/post_processor.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.cc
+        )
+ENDIF()
+SET(CAP_SOURCES ${CAP_SOURCES} PARENT_SCOPE)
