@@ -1,16 +1,13 @@
 #define BOOST_TEST_MODULE TestMultistage
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
-#include <cap/mp_values.h>
 #include <cap/utils.h>
-#include <deal.II/base/types.h>
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/dofs/dof_handler.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 #include <memory>
 #include <limits>
 #include <cmath>

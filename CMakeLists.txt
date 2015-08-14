@@ -2,12 +2,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 PROJECT(cap)
 
-IF(NOT DEFINED DEAL_II_INSTALL_DIR)
-    MESSAGE(FATAL_ERROR "\n"
-        "You must pass a flag -DDEAL_II_INSTALL_DIR=/path/to/your/install\n"
-        "to cmake.\n"
-        )
-ENDIF()
 IF(NOT DEFINED CAP_DATA_DIR)
     MESSAGE(FATAL_ERROR "\n"
         "You must pass a flag -DCAP_DATA_DIR=/path/to/dir/with/meshes\n"
@@ -15,29 +9,13 @@ IF(NOT DEFINED CAP_DATA_DIR)
         )
 ENDIF()
 
-INCLUDE_DIRECTORIES(include)
-
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
-ADD_LIBRARY(cap
-    src/mp_values.cc
-    src/boundary_values.cc
-    src/dof_extractor.cc
-    src/operator.cc
-    src/thermal_operator.cc
-    src/electrochemical_operator.cc
-    src/post_processor.cc
-    src/utils.cc
-    src/energy_storage_device.cc
-    src/resistor_capacitor.cc
-    src/geometry.cc
-    src/supercapacitor.cc
-    )
-
-FIND_PACKAGE(deal.II 8.3 REQUIRED PATHS ${DEAL_II_INSTALL_DIR} NO_DEFAULT_PATH)
-INCLUDE(${DEAL_II_TARGET_CONFIG})
-INCLUDE_DIRECTORIES(SYSTEM ${DEAL_II_INCLUDE_DIRS})
-ADD_DEFINITIONS(-DWITH_DEAL_II)
+IF(DEFINED DEAL_II_INSTALL_DIR)
+    FIND_PACKAGE(deal.II 8.3 REQUIRED PATHS ${DEAL_II_INSTALL_DIR} NO_DEFAULT_PATH)
+    INCLUDE(${DEAL_II_TARGET_CONFIG})
+    INCLUDE_DIRECTORIES(SYSTEM ${DEAL_II_INCLUDE_DIRS})
+    SET(ENABLE_DEAL_II ON)
+    ADD_DEFINITIONS(-DWITH_DEAL_II)
+ENDIF()
 
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
 IF(DEFINED TASMANIAN_INSTALL_DIR)
@@ -84,35 +62,39 @@ ENDIF()
 
 IF(DEFINED BOOST_INSTALL_DIR)
     MESSAGE("BOOST_INSTALL_DIR = ${BOOST_INSTALL_DIR}")
-    FIND_LIBRARY(Boost_UTF_LIB
-        NAMES boost_unit_test_framework 
-        PATHS ${BOOST_INSTALL_DIR}/lib
-        NO_DEFAULT_PATH
+    SET(BOOST_ROOT ${BOOST_INSTALL_DIR})
+    SET(Boost_NO_SYSTEM_PATHS ON)
+    FIND_PACKAGE(Boost 1.49.0 REQUIRED 
+        COMPONENTS 
+        python 
+        unit_test_framework
         )
-    FIND_LIBRARY(Boost_PYTHON_LIB
-        NAMES boost_python
-        PATHS ${BOOST_INSTALL_DIR}/lib
-        NO_DEFAULT_PATH
-        )
-    SET(Boost_LIBRARIES 
-        ${Boost_UTF_LIB}
-        ${Boost_PYTHON_LIB}
-        )
-    FIND_PATH(Boost_INCLUDE_DIR boost/version.hpp
-        PATHS ${BOOST_INSTALL_DIR}/include
-        NO_DEFAULT_PATH
-        )
-    SET(Boost_LIBRARY_DIR ${BOOST_INSTALL_DIR}/lib)
-    MESSAGE("Boost_LIBRARIES = ${Boost_LIBRARIES}")
-    MESSAGE("Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}")
-    MESSAGE("Boost_LIBRARY_DIR = ${Boost_LIBRARY_DIR}")
-    INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIR})
-    LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
+    MESSAGE("Boost_LIBRARIES=${Boost_LIBRARIES}")
+    MESSAGE("Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+    MESSAGE("Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}")
+    MESSAGE("Boost_VERSION=${Boost_VERSION}")
+    MESSAGE("Boost_LIB_VERSION=${Boost_LIB_VERSION}")
+    INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 ENDIF()
+
+SET(ENABLE_PYTHON ON)
+
+INCLUDE_DIRECTORIES(include)
+
+ADD_SUBDIRECTORY(src)
+
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
+ADD_LIBRARY(cap
+    ${CAP_SOURCES}
+    )
+
 
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)
-ADD_SUBDIRECTORY(python)
+IF(ENABLE_PYTHON)
+    ADD_SUBDIRECTORY(python)
+ENDIF()
 IF(MAKE_DOC)
     ADD_SUBDIRECTORY(doc)
 ENDIF()

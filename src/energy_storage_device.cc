@@ -1,5 +1,7 @@
 #include <cap/resistor_capacitor.h>
-#include <cap/supercapacitor.h>
+#ifdef WITH_DEAL_II
+  #include <cap/supercapacitor.h>
+#endif
 
 namespace cap {
 
@@ -14,6 +16,7 @@ buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
         return std::make_shared<cap::ParallelRC>(params);
     else if (type.compare("SuperCapacitor") == 0)
     {
+#ifdef WITH_DEAL_II
         int const dim = database->get<int>("dim");
         if (dim == 2)
             return std::make_shared<cap::SuperCapacitor<2>>(params);
@@ -21,6 +24,9 @@ buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
             return std::make_shared<cap::SuperCapacitor<3>>(params);
         else
             throw std::runtime_error("dim="+std::to_string(dim)+" must be 2 or 3");
+#else
+        throw std::runtime_error("reconfigure with deal.II");
+#endif
     }
     else
         throw std::runtime_error("invalid energy storage type ``"+type+"''\n");
