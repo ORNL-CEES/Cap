@@ -28,15 +28,5 @@ IF(ENABLE_DEAL_II)
 ENDIF()
 INSTALL(TARGETS pycap DESTINATION ${CMAKE_INSTALL_PREFIX}/python)
 
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/test_python_wrappers.py
-    DEPENDS ${PROJECT_SOURCE_DIR}/python/test_python_wrappers.py
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy ${PROJECT_SOURCE_DIR}/python/test_python_wrappers.py ${CMAKE_CURRENT_BINARY_DIR}/test_python_wrappers.py
-    COMMENT "Copying test_python_wrappers.py"
-)
-ADD_CUSTOM_TARGET(
-    test_python_wrappers.py ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/test_python_wrappers.py
-    )
-ADD_TEST(test_python_wrappers ${PYTHON_EXECUTABLE} test_python_wrappers.py)
+ADD_CAP_PYTHON_TEST(test_python_wrappers)
+COPY_CAP_INPUT_FILE(device.xml)
