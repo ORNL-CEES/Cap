@@ -279,8 +279,7 @@ evolve_one_time_step_constant_power(double const time_step, double const constan
         (*this->electrochemical_operator_params).custom_constant_current_density = current/surface_area;
         this->evolve_one_time_step(time_step);
         this->get_voltage(voltage);
-        if (boost::test_tools::check_is_close(constant_power, voltage*current,
-            boost::test_tools::percent_tolerance(percent_tolerance)))
+        if (std::abs(constant_power - voltage*current) / std::abs(constant_power) < percent_tolerance)
             return;
         *this->solution = old_solution;
     }
@@ -360,10 +359,9 @@ reset_voltage(double const voltage)
         this->evolve_one_time_step(time_step);
         this->get_current(current);
         std::cout<<boost::format("  %3d  %20.15e  \n") % step % current;
-        if (boost::test_tools::check_is_close(current, current_previous_time_step, 
-            boost::test_tools::percent_tolerance(percent_tolerance)))
+        if (std::abs(current - current_previous_time_step) / std::abs(current) < percent_tolerance)
             return;
-        if (boost::test_tools::check_is_small(current, tolerance))
+        if (std::abs(current) < tolerance)
             return;
        current_previous_time_step = current;
     }

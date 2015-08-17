@@ -6,6 +6,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 
@@ -38,7 +39,7 @@ void measure_direct_leakage_current(std::shared_ptr<cap::EnergyStorageDevice> de
             % voltage
             ;
         dev->evolve_one_time_step_constant_voltage(time_step, dc_voltage);
-        if (boost::test_tools::check_is_close(current, current_previous_time_step, boost::test_tools::percent_tolerance(percent_tolerance)))
+        if (std::abs(current - current_previous_time_step) / std::abs(current) < percent_tolerance)
             break;
         current_previous_time_step = current;
     }
