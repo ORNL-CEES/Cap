@@ -5,7 +5,8 @@ DEPENDENCIES
 deal.II version 8.3 compiled with C++11 support. The development sources can be found 
 [here](https://github.com/dealii/dealii).
 
-boost version at least 1.49.0.  Boost Unit Test Framework (UTF) is required only for building all the unit tests.
+boost version at least 1.59.0.  Boost Unit Test Framework (UTF) is required only for building all the unit tests
+and Boost Python is optional for using the Python wrappers for energy storage devices.
 
 CONFIGURE, BUILD, INSTALL
 -------------------------
@@ -39,9 +40,9 @@ TEST
 
 Install boost
 
-    $ wget http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.bz2
-    $ tar -xf boost_1_57_0.tar.bz2
-    $ cd ${PREFIX}/source/boost_1_57_0
+    $ wget http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.bz2
+    $ tar -xf boost_1_59_0.tar.bz2
+    $ cd ${PREFIX}/source/boost_1_59_0
     $ ./bootstrap.sh --prefix=${PREFIX}/install/boost
     $ ./b2 install -j<N> variant=release cxxflags="-std=c++11"
     
