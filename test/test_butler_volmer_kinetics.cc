@@ -9,10 +9,6 @@
 #include <iostream>
 #include <fstream>
 
-
-double const TOLERANCE = 1.0e-6;
-
-
 BOOST_AUTO_TEST_CASE( test_butler_volmer_kinetic )
 {
     double const faraday_constant                     =   9.64853365e4;
@@ -22,10 +18,10 @@ BOOST_AUTO_TEST_CASE( test_butler_volmer_kinetic )
     double const anodic_charge_transfer_coefficient   =   0.5;
     double const cathodic_charge_transfer_coefficient =   0.5;
     double const exchange_current_density             =   1.0;
-    BOOST_CHECK_CLOSE(
-        faraday_constant/(gas_constant*temperature),
+    BOOST_TEST(
+        faraday_constant/(gas_constant*temperature) ==
         1.0/(boltzmann_constant*temperature),
-        TOLERANCE);
+        boost::test_tools::tolerance(1.0e-6));
     std::cout<<boost::format("  %15.7e  %15.7e  \n")
         % static_cast<double>(faraday_constant/(gas_constant*temperature))
         % static_cast<double>(1.0/(boltzmann_constant*temperature))
