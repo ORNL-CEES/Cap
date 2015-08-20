@@ -46,6 +46,12 @@ BOOST_AUTO_TEST_CASE( test_parse_params )
    BOOST_FOREACH(std::string const & val, yes) 
        BOOST_CHECK_EQUAL( val, "yes" );
    BOOST_CHECK( empty.empty() );
+   // no space allowed
+   std::vector<double> bugfixme = { 1.234, 5.678 };
+   params.put("bugfixme", "1.234,5.678");
+   std::vector<double> fixed =
+       cap::to_vector<double>(params.get<std::string>("bugfixme"));
+   BOOST_TEST(bugfixme == fixed);
 
    // ensure entry is overwritten
    std::string const default_value("default");
