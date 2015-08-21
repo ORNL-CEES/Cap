@@ -8,7 +8,7 @@
 
 namespace cap {
 
-struct EnergyStorageDeviceWrap: EnergyStorageDevice, boost::python::wrapper<EnergyStorageDevice>
+struct EnergyStorageDeviceWrap : EnergyStorageDevice, boost::python::wrapper<EnergyStorageDevice>
 {
     void get_voltage(double & voltage) const
     {
@@ -50,6 +50,42 @@ double get_voltage(EnergyStorageDevice const & dev)
     return voltage;
 }
 
+double get_double(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return ptree.get<double>(path);
+}
+
+std::string get_string(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return ptree.get<std::string>(path);
+}
+
+int get_int(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return ptree.get<int>(path);
+}
+
+void put_double(boost::property_tree::ptree & ptree, std::string const & path, double const & value)
+{
+    ptree.put(path, value);
+}
+
+void put_string(boost::property_tree::ptree & ptree, std::string const & path, std::string const & value)
+{
+    ptree.put(path, value);
+}
+
+void put_int(boost::property_tree::ptree & ptree, std::string const & path, int const & value)
+{
+    ptree.put(path, value);
+}
+
+void parse_xml(boost::property_tree::ptree & ptree, std::string const & filename)
+{
+    boost::property_tree::xml_parser::read_xml(filename, ptree,
+        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+}
+
 std::shared_ptr<EnergyStorageDevice>
 build_energy_storage_device(std::string const & filename)
 {
@@ -78,4 +114,14 @@ BOOST_PYTHON_MODULE(pycap)
 
     boost::python::def("get_current", cap::get_current);
     boost::python::def("get_voltage", cap::get_voltage);
+
+    boost::python::class_<boost::property_tree::ptree, std::shared_ptr<boost::property_tree::ptree>>("PropertyTree")
+        .def("get_double", &cap::get_double)
+        .def("get_string", &cap::get_string)
+        .def("get_int"   , &cap::get_int   )
+        .def("put_double", &cap::put_double)
+        .def("put_string", &cap::put_string)
+        .def("put_int"   , &cap::put_int   )
+        .def("parse_xml" , &cap::parse_xml )
+        ;
 }
