@@ -6,13 +6,10 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/math/constants/constants.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <fstream>
 #include <complex>
-#include <iterator>
-#include <algorithm>
 
 BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
 {
