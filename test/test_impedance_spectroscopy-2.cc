@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE TestImpedanceSpectroscopy
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
+#include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
@@ -258,11 +259,13 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
     for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
     {
         tmp->put("frequency", frequency);
-        auto expe_results = measure_impedance2(dev, tmp);
+        auto expe_results = measure_impedance(dev, tmp);
         auto theo_results = compute_exact(tmp);
         for (size_t k = 0; k < harmonics.size(); ++k)
         {
-            std::tie(expe_frequency, expe_impedance) = expe_results[k];
+            auto it = expe_results.begin();
+            std::advance(it, k);
+            std::tie(expe_frequency, expe_impedance) = *it;
             std::tie(theo_frequency, theo_impedance) = theo_results[k];
 
             BOOST_CHECK_CLOSE(expe_frequency       , theo_frequency       , percent_tolerance);
