@@ -113,6 +113,24 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device, std::shared_
             excited_harmonics.push_back(i);
         else
             unexcited_harmonics.push_back(i);
+
+//    double dc_power = std::pow(data[0], 2);
+//    double ac_power = 0.0;
+//    for (size_t k : excited_harmonics)
+//        ac_power += std::pow(data[k], 2) + std::pow(data[n-k], 2);
+//    double noise_power = std::pow(data[n/2], 2);
+//    for (size_t k : unexcited_harmonics)
+//        noise_power += std::pow(data[k], 2) + std::pow(data[n-k], 2);
+//    double total_power = dc_power + ac_power + noise_power;
+//    std::ignore = total_power;
+//    // TODO:  definition is a bit shaky for multiple frequency
+//    // should compute for each individual excited freq vs nearby unex freq
+//    std::vector<double> ratios;
+//    double harmonics_power;
+//    for (size_t k : excited_harmonics) {
+//        harmonics_power = std::pow(data[k], 2) + std::pow(data[n-k], 2);
+//        ratios.push_back(harmonics_power / noise_power);
+//    }
      
     // return complex impedance
     std::map<double,std::complex<double>> impedance;
