@@ -85,6 +85,7 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device, std::shared_
     double const time_step = 1.0 / frequency / steps_per_cycle;
     for (int step = 0; step < cycles*steps_per_cycle; ++step)
     {
+          time[step] = (step+1) * time_step;
           evolve_one_time_step(device, time[step], time_step);
           device->get_current(current[step]);
           device->get_voltage(voltage[step]);
@@ -107,7 +108,8 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device, std::shared_
     std::vector<int> unexcited_harmonics;
 // TODO
     for (int i = 1; i < n/2; ++i)
-        if (std::find(harmonics.begin(), harmonics.end(), i/(cycles-ignore_cycles)) != harmonics.end())
+        if ((std::find(harmonics.begin(), harmonics.end(), i/(cycles-ignore_cycles)) != harmonics.end())
+            && (i%(cycles-ignore_cycles) == 0))
             excited_harmonics.push_back(i);
         else
             unexcited_harmonics.push_back(i);
