@@ -11,8 +11,8 @@
     <frequency_lower_limit>1.0e-9</frequency_lower_limit> <!-- hertz -->
     <steps_per_decade>6</steps_per_decade>
 
-    <cycles>3</cycles>
-    <ignore_cycles>1</ignore_cycles>
+    <cycles>5</cycles>
+    <ignore_cycles>4</ignore_cycles>
     <steps_per_cycle>4096</steps_per_cycle>
 
     <dc_voltage>1.1</dc_voltage> <!-- volt -->

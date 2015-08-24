@@ -29,6 +29,22 @@ class constantChargeTestCase(unittest.TestCase):
         self.assertAlmostEqual(not pycap.get_current(device),0.0)
         self.assertAlmostEqual(pycap.get_voltage(device),2.0)
 
+class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
+    def test_property_tree(self):
+        ptree=pycap.PropertyTree()
+        ptree.put_int('dim',3)
+        self.assertEqual(ptree.get_int('dim'),3)
+        ptree.put_double('path.to.pi',3.14)
+        self.assertEqual(ptree.get_double('path.to.pi'),3.14)
+        ptree.put_string('good.news','it works')
+        self.assertEqual(ptree.get_string('good.news'),'it works')
+
+class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
+    def test_energy_storage_device(self):
+        device_database=pycap.PropertyTree()
+        device_database.parse_xml('device.xml')
+#        device=pycap.EnergyStorageDevice(device_database)
+
 if __name__ == '__main__':
     unittest.main()
 

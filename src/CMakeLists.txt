@@ -17,4 +17,10 @@ IF(ENABLE_DEAL_II)
         ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.cc
         )
 ENDIF()
+IF(ENABLE_GSL)
+    SET(CAP_SOURCES
+        ${CAP_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_impedance_spectroscopy.cc
+        )
+ENDIF()
 SET(CAP_SOURCES ${CAP_SOURCES} PARENT_SCOPE)
