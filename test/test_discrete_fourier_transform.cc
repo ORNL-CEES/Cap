@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
     double const pi = acos(-1.0);
     std::vector<double> y(n);
     for (size_t i = 0; i < n; ++i)
-        y[i] = std::sin(2*pi*k*x[i]);
+        y[i] = 1.0 + std::sin(2*pi*k*x[i]);
     auto fft_data = cap::compute_fft(&(y[0]), n);
     auto fft_freq = cap::compute_fft_frequencies(n, 1.0/n);
     for (size_t i = 0; i < fft_data.size(); ++i)
@@ -29,8 +29,8 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
 // import numpy
 // n=32
 // k=3
-// x=numpy.linspace(0.0,1.0,n)
-// y=numpy.sin(k*2*numpy.pi*x)
+// x=numpy.linspace(0,1,n)
+// y=1+numpy.sin(k*2*numpy.pi*x)
 // fft_data=numpy.fft.rfft(y)
 // fft_freq=numpy.fft.rfftfreq(n)
 // #for i in range(len(fft_data)):
@@ -39,17 +39,16 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
 // print numpy.imag(fft_data)
 // print fft_freq
     std::vector<double> real = {
-         5.55111512e-16,  3.42976891e-02,  2.10855566e-01,  4.49628784e+00,
-        -7.36079110e-01, -4.78686090e-01, -4.02498775e-01, -3.67459701e-01,
-        -3.48010271e-01, -3.36031199e-01, -3.28175308e-01, -3.22831537e-01,
-        -3.19142238e-01, -3.16620096e-01, -3.14978836e-01, -3.14051920e-01,
-        -3.13752024e-01
+        32.        ,  0.03429769,  0.21085557,  4.49628784, -0.73607911,
+        -0.47868609, -0.40249877, -0.3674597 , -0.34801027, -0.3360312 ,
+        -0.32817531, -0.32283154, -0.31914224, -0.3166201 , -0.31497884,
+        -0.31405192, -0.31375202,
     };
     std::vector<double> imag = {
-        0.        , -0.34823028, -1.06004251,-14.82227458,  1.77705217,
-        0.89555868,  0.60238199,  0.44775094,  0.34801027,  0.27577368,
-        0.21927973,  0.17255705,  0.13219304,  0.09604566,  0.06265319,
-        0.03093141,  0.
+        0.        ,  -0.34823028,  -1.06004251, -14.82227458,   1.77705217,
+        0.89555868,   0.60238199,   0.44775094,   0.34801027,   0.27577368,
+        0.21927973,   0.17255705,   0.13219304,   0.09604566,   0.06265319,
+        0.03093141,   0.        ,
     };
     std::vector<double> freq = {
         0.  ,    0.03125, 0.0625,  0.09375, 0.125,   0.15625, 0.1875,  0.21875,
