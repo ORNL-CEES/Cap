@@ -1,4 +1,5 @@
 #include <cap/energy_storage_device.h>
+#include <cap/electrochemical_impedance_spectroscopy.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/python.hpp>
@@ -103,20 +104,59 @@ void parse_xml(boost::property_tree::ptree & ptree, std::string const & filename
 }
 
 std::shared_ptr<EnergyStorageDevice>
-build_energy_storage_device(std::string const & filename)
+build_energy_storage_device(boost::python::object & python_object)
 {
-    boost::property_tree::ptree input_database;
-    boost::property_tree::xml_parser::read_xml(filename, input_database,
-        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+    boost::property_tree::ptree const & ptree =
+        boost::python::extract<boost::property_tree::ptree const &>(python_object);
     std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(input_database.get_child("device"));
+        std::make_shared<boost::property_tree::ptree>(ptree.get_child("device"));
     return buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 }
+
+struct ElectrochemicalImpedanceSpectroscopyData {
+    ElectrochemicalImpedanceSpectroscopyData(std::map<double,std::complex<double>> const & d)
+        : data(d)
+    { }
+    boost::python::list get_frequencies()
+    {
+        boost::python::list frequencies;
+        for (auto p : data)
+            frequencies.append(p.first);
+        return frequencies;
+    }
+    boost::python::list get_complex_impedance()
+    {
+        boost::python::list frequencies;
+        for (auto p : data)
+            frequencies.append(p.second);
+        return frequencies;
+    }
+    std::map<double,std::complex<double>> data;
+};
+
+std::shared_ptr<ElectrochemicalImpedanceSpectroscopyData>
+measure_complex_impedance(boost::python::object & python_device, boost::python::object & python_database)
+{
+    std::ignore = python_database;
+    std::shared_ptr<cap::EnergyStorageDevice> device =
+        boost::python::extract<std::shared_ptr<cap::EnergyStorageDevice>>(python_device);
+    boost::property_tree::ptree const & ptree =
+        boost::python::extract<boost::property_tree::ptree const &>(python_database);
+    std::shared_ptr<boost::property_tree::ptree> eis_database =
+        std::make_shared<boost::property_tree::ptree>(ptree.get_child("impedance_spectroscopy"));
+    return std::make_shared<ElectrochemicalImpedanceSpectroscopyData>(impedance_spectroscopy(device, eis_database));
+}
+
 
 } // end namespace cap
 
 BOOST_PYTHON_MODULE(pycap)
 {
+    boost::python::class_<cap::ElectrochemicalImpedanceSpectroscopyData, std::shared_ptr<cap::ElectrochemicalImpedanceSpectroscopyData>, boost::noncopyable>("ElectrochemicalImpedanceSpectroscopyData", boost::python::no_init)
+        .def("__init__", boost::python::make_constructor(&cap::measure_complex_impedance) )
+        .def("get_frequencies", &cap::ElectrochemicalImpedanceSpectroscopyData::get_frequencies)
+        .def("get_complex_impedance", &cap::ElectrochemicalImpedanceSpectroscopyData::get_complex_impedance)
+        ;
     boost::python::class_<cap::EnergyStorageDeviceWrap, std::shared_ptr<cap::EnergyStorageDeviceWrap>, boost::noncopyable>("EnergyStorageDevice", boost::python::no_init)
         .def("__init__", boost::python::make_constructor(&cap::build_energy_storage_device) )
         .def("get_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::get_voltage) )

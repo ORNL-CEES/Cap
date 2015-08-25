@@ -18,5 +18,8 @@ compute_fft_frequencies(size_t const n, double const f);
 std::map<double,std::complex<double>>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database);
 
+std::map<double,std::complex<double>>
+impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database);
+
 } // end namespace cap
 #endif
