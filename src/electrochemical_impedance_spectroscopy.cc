@@ -144,4 +144,22 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device, std::shared_
     return impedance;
 }
 
+std::map<double,std::complex<double>>
+impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> device, std::shared_ptr<boost::property_tree::ptree const> database)
+{
+    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
+    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
+    int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
+    std::shared_ptr<boost::property_tree::ptree> tmp_database =
+        std::make_shared<boost::property_tree::ptree>(*database);
+    std::map<double,std::complex<double>> data;
+    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
+    {
+        tmp_database->put("frequency", frequency);
+        auto const impedance = measure_impedance(device, tmp_database);
+        data.insert(impedance.begin(), impedance.end());
+    }
+    return data;
+}
+
 } // end namespace cap
