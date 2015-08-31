@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
         0.25,    0.28125, 0.3125,  0.34375, 0.375,   0.40625, 0.4375,  0.46875,
         0.5 ,
     };
-    double const percent_tolerance = 1.0e-4;
+    double const percent_tolerance = 1.0e-6;
     for (size_t i = 0; i < n/2+1; ++i)
     {
         BOOST_TEST( std::real(fft_data[i]) == real[i], boost::test_tools::tolerance(percent_tolerance) );
