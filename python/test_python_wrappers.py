@@ -40,6 +40,15 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertEqual(ptree.get_double('path.to.pi'),3.14)
         ptree.put_string('good.news','it works')
         self.assertEqual(ptree.get_string('good.news'),'it works')
+        # property tree will throw if the specified path does not exist
+        def throw_exception_bad_path(ptree):
+            ptree.get_int('path.does.not.exist')
+        self.assertRaises(RuntimeError, throw_exception_bad_path,ptree)
+        # or if the translation fails
+        def throw_exception_bad_data(ptree):
+            ptree.put_string('some.path.to.a.string','not a double')
+            ptree.get_double('some.path.to.a.string')
+        self.assertRaises(RuntimeError, throw_exception_bad_data,ptree)
 
 class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
     def test_energy_storage_device_parse_xml_input(self):
