@@ -18,14 +18,14 @@
 
 namespace cap {
 
-void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+void run_eis(std::shared_ptr<cap::EnergyStorageDevice> device,
+    std::shared_ptr<boost::property_tree::ptree const> eis_database,
+    std::ostream & os = std::cout)
 {
-    double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
-    double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
-    int    const steps_per_decade      = database->get<int   >("steps_per_decade"     );
-    double const pi                    = boost::math::constants::pi<double>();
-    std::shared_ptr<boost::property_tree::ptree> tmp =
-        std::make_shared<boost::property_tree::ptree>(*database);
+    std::map<double,std::complex<double>> eis_data =
+        impedance_spectroscopy(device, eis_database);
+
+    double const pi = boost::math::constants::pi<double>();
     os<<"# impedance Z(f) = R + i X \n";
     os<<boost::format( "# %22s  %22s  %22s  %22s  %22s  \n")
         % "frequency_f_[Hz]"
@@ -36,20 +36,16 @@ void impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::
         ;
     double frequency;
     std::complex<double> impedance;
-    for (double f= frequency_upper_limit; f>= frequency_lower_limit; f /= std::pow(10.0, 1.0/steps_per_decade))
+    for (auto const & data : eis_data)
     {
-        tmp->put("frequency", f);
-        for (auto const & data : measure_impedance(dev, tmp))
-        {
-            std::tie(frequency, impedance) = data;
-            os<<boost::format( "  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
-                % frequency
-                % impedance.real()
-                % impedance.imag()
-                % std::abs(impedance)
-                % (std::arg(impedance) * 180.0 / pi)
-                ;
-        }
+        std::tie(frequency, impedance) = data;
+        os<<boost::format( "  %22.15e  %22.15e  %22.15e  %22.15e  %22.15e  \n")
+            % frequency
+            % impedance.real()
+            % impedance.imag()
+            % std::abs(impedance)
+            % (std::arg(impedance) * 180.0 / pi)
+            ;
     }
 }
 
@@ -77,7 +73,7 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
 
     std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("impedance_spectroscopy"));
-    cap::impedance_spectroscopy(device, impedance_spectroscopy_database, fout);
+    cap::run_eis(device, impedance_spectroscopy_database, fout);
 
     fout.close();
 }
