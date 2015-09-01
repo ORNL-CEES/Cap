@@ -6,7 +6,7 @@
 #include <boost/python.hpp>
 #include <string>
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 
 namespace pycap {
@@ -176,7 +176,7 @@ struct ElectrochemicalImpedanceSpectroscopyData {
     {
         data.clear();
     }
-    std::unordered_multimap<double,std::complex<double>> data;
+    std::map<double,std::complex<double>> data;
 };
 
 } // end namespace pycap
