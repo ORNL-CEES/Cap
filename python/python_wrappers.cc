@@ -82,6 +82,11 @@ int get_int(boost::property_tree::ptree const & ptree, std::string const & path)
     return ptree.get<int>(path);
 }
 
+bool get_bool(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return ptree.get<bool>(path);
+}
+
 void put_double(boost::property_tree::ptree & ptree, std::string const & path, double const & value)
 {
     ptree.put(path, value);
@@ -93,6 +98,11 @@ void put_string(boost::property_tree::ptree & ptree, std::string const & path, s
 }
 
 void put_int(boost::property_tree::ptree & ptree, std::string const & path, int const & value)
+{
+    ptree.put(path, value);
+}
+
+void put_bool(boost::property_tree::ptree & ptree, std::string const & path, bool const & value)
 {
     ptree.put(path, value);
 }
@@ -179,9 +189,11 @@ BOOST_PYTHON_MODULE(pycap)
         .def("get_double", &cap::get_double)
         .def("get_string", &cap::get_string)
         .def("get_int"   , &cap::get_int   )
+        .def("get_bool"  , &cap::get_bool  )
         .def("put_double", &cap::put_double)
         .def("put_string", &cap::put_string)
         .def("put_int"   , &cap::put_int   )
+        .def("put_bool"  , &cap::put_bool  )
         .def("parse_xml" , &cap::parse_xml )
         ;
 }

@@ -40,6 +40,8 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertEqual(ptree.get_double('path.to.pi'),3.14)
         ptree.put_string('good.news','it works')
         self.assertEqual(ptree.get_string('good.news'),'it works')
+        ptree.put_bool('is.that.a.good.idea',False)                   
+        self.assertEqual(ptree.get_bool('is.that.a.good.idea'),False)
         # property tree will throw if the specified path does not exist
         def throw_exception_bad_path(ptree):
             ptree.get_int('path.does.not.exist')
