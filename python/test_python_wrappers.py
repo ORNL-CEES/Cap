@@ -81,7 +81,7 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         device_database.put_double('device.parallel_resistance',4000.0)
         # build the new energy device
         device=pycap.EnergyStorageDevice(device_database)
-        # get child and build esd
+        # build esd from get child
         device_database.put_string('child.device.type','SeriesRC')
         device_database.put_double('child.device.capacitance',3.0)
         device_database.put_double('child.device.series_resistance',100.0)
@@ -95,10 +95,11 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         # measure its impedance
         eis_database=pycap.PropertyTree()
         eis_database.parse_xml('eis.xml')
-        data=pycap.ElectrochemicalImpedanceSpectroscopyData(device,eis_database)
-        freq=numpy.array(data.get_frequencies())
+        data=pycap.ElectrochemicalImpedanceSpectroscopyData()
+        data.impedance_spectroscopy(device,eis_database)
+        frequency=numpy.array(data.get_frequency())
         impedance=numpy.array(data.get_complex_impedance())
-        w=2*numpy.pi*freq
+        w=2*numpy.pi*frequency
         # the following assume the device is a parallel rc circuit
         self.assertEqual(device_database.get_string('device.type'),'ParallelRC')
         C=device_database.get_double('device.capacitance')
