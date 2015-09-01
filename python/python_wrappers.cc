@@ -113,6 +113,11 @@ void parse_xml(boost::property_tree::ptree & ptree, std::string const & filename
         boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 }
 
+boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, std::string const & path)
+{
+    return ptree.get_child(path);
+}
+
 std::shared_ptr<EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & python_object)
 {
@@ -195,5 +200,6 @@ BOOST_PYTHON_MODULE(pycap)
         .def("put_int"   , &cap::put_int   )
         .def("put_bool"  , &cap::put_bool  )
         .def("parse_xml" , &cap::parse_xml )
+        .def("get_child" , &cap::get_child )
         ;
 }

@@ -42,6 +42,11 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertEqual(ptree.get_string('good.news'),'it works')
         ptree.put_bool('is.that.a.good.idea',False)                   
         self.assertEqual(ptree.get_bool('is.that.a.good.idea'),False)
+        ptree.put_string('child.name','clement')
+        ptree.put_int('child.age',-2)
+        child=ptree.get_child('child')
+        self.assertEqual(child.get_string('name'),'clement')
+        self.assertEqual(child.get_int('age'),-2)
         # property tree will throw if the specified path does not exist
         def throw_exception_bad_path(ptree):
             ptree.get_int('path.does.not.exist')
@@ -76,6 +81,12 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         device_database.put_double('device.parallel_resistance',4000.0)
         # build the new energy device
         device=pycap.EnergyStorageDevice(device_database)
+        # get child and build esd
+        device_database.put_string('child.device.type','SeriesRC')
+        device_database.put_double('child.device.capacitance',3.0)
+        device_database.put_double('child.device.series_resistance',100.0)
+        child_database=device_database.get_child('child')
+        device=pycap.EnergyStorageDevice(child_database)
     def test_measure_impedance(self):
         # build an energy storage device
         device_database=pycap.PropertyTree()
