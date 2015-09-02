@@ -13,14 +13,6 @@ namespace pycap {
 
 struct EnergyStorageDeviceWrap : cap::EnergyStorageDevice, boost::python::wrapper<cap::EnergyStorageDevice>
 {
-    void get_voltage(double & voltage) const
-    {
-        this->get_override("get_voltage")(voltage);
-    }
-    void get_current(double & current) const
-    {
-        this->get_override("get_current")(current);
-    }
     void evolve_one_time_step_constant_current(double const time_step, double const constant_current)
     {
         this->get_override("evolve_one_time_step_constant_current")(time_step, constant_current);
@@ -192,8 +184,8 @@ BOOST_PYTHON_MODULE(pycap)
         ;
     boost::python::class_<pycap::EnergyStorageDeviceWrap, std::shared_ptr<pycap::EnergyStorageDeviceWrap>, boost::noncopyable>("EnergyStorageDevice", boost::python::no_init)
         .def("__init__", boost::python::make_constructor(&pycap::build_energy_storage_device) )
-        .def("get_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::get_voltage) )
-        .def("get_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::get_current) )
+        .def("get_voltage", (&pycap::get_voltage) )
+        .def("get_current", (&pycap::get_current) )
         .def("evolve_one_time_step_constant_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current) )
         .def("evolve_one_time_step_constant_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_voltage) )
         .def("evolve_one_time_step_constant_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_power  ) )
