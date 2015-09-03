@@ -33,6 +33,7 @@ class constantChargeTestCase(unittest.TestCase):
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
     def test_property_tree(self):
+        # ptree as container to store int, double, string, and bool
         ptree=pycap.PropertyTree()
         ptree.put_int('dim',3)
         self.assertEqual(ptree.get_int('dim'),3)
@@ -42,6 +43,7 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertEqual(ptree.get_string('good.news'),'it works')
         ptree.put_bool('is.that.a.good.idea',False)                   
         self.assertEqual(ptree.get_bool('is.that.a.good.idea'),False)
+        # child nodes on nested trees
         ptree.put_string('child.name','clement')
         ptree.put_int('child.age',-2)
         child=ptree.get_child('child')
