@@ -113,6 +113,13 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         error_norm=numpy.linalg.norm((impedance-Z)/impedance,ord=numpy.inf)
         percent_tolerance=1.0e-2
         self.assertLessEqual(error_norm,percent_tolerance)
+    def test_energy_storage_device_not_copyable(self):
+        device_database=pycap.PropertyTree()
+        device_database.parse_xml('device.xml')
+        device=pycap.EnergyStorageDevice(device_database)
+        from copy import copy,deepcopy
+        self.assertRaises(RuntimeError,copy,device)
+        self.assertRaises(RuntimeError,deepcopy,device)
 
 if __name__ == '__main__':
     unittest.main()
