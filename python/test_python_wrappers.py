@@ -32,6 +32,15 @@ class constantChargeTestCase(unittest.TestCase):
         self.assertAlmostEqual(pycap.get_voltage(device),2.0)
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
+    def test_get_array(self):
+        ptree=pycap.PropertyTree()
+        ptree.put_string('array_double','3.14,1.41')
+        array_double=ptree.get_array_double('array_double')
+        self.assertEqual(array_double,[3.14,1.41])
+        ptree.put_string('array_int','1,2,3')
+        array_int=ptree.get_array_int('array_int')
+        self.assertEqual(array_int,[1,2,3])
+        
     def test_property_tree(self):
         # ptree as container to store int, double, string, and bool
         ptree=pycap.PropertyTree()

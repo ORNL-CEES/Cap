@@ -1,5 +1,6 @@
 #include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
+#include <cap/utils.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -101,6 +102,37 @@ void put_bool(boost::property_tree::ptree & ptree, std::string const & path, boo
     ptree.put(path, value);
 }
 
+template <typename T>
+boost::python::list get_array(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    std::vector<T> vector = 
+        cap::to_vector<T>(ptree.get<std::string>(path));
+    boost::python::list list;
+    for (auto const & x : vector)
+        list.append(x);
+    return list;
+}
+
+boost::python::list get_array_double(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return get_array<double>(ptree, path);
+}
+
+boost::python::list get_array_string(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return get_array<std::string>(ptree, path);
+}
+
+boost::python::list get_array_int(boost::property_tree::ptree const & ptree, std::string const & path)
+{
+    return get_array<int>(ptree, path);
+}
+
+//boost::python::list get_array_bool(boost::property_tree::ptree const & ptree, std::string const & path)
+//{
+//    return get_array<bool>(ptree, path);
+//}
+//
 void parse_xml(boost::property_tree::ptree & ptree, std::string const & filename)
 {
     boost::property_tree::xml_parser::read_xml(filename, ptree,
@@ -212,5 +244,9 @@ BOOST_PYTHON_MODULE(pycap)
         .def("parse_xml" , &pycap::parse_xml )
         .def("parse_json", &pycap::parse_json)
         .def("get_child" , &pycap::get_child )
+        .def("get_array_double", &pycap::get_array_double)
+        .def("get_array_string", &pycap::get_array_string)
+        .def("get_array_int"   , &pycap::get_array_int   )
+//        .def("get_array_bool"  , &pycap::get_array_bool  )
         ;
 }
