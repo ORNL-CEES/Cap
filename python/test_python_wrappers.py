@@ -34,12 +34,22 @@ class constantChargeTestCase(unittest.TestCase):
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
     def test_get_array(self):
         ptree=pycap.PropertyTree()
+        # double
         ptree.put_string('array_double','3.14,1.41')
         array_double=ptree.get_array_double('array_double')
         self.assertEqual(array_double,[3.14,1.41])
+        # string
         ptree.put_string('array_int','1,2,3')
         array_int=ptree.get_array_int('array_int')
         self.assertEqual(array_int,[1,2,3])
+        # int
+        ptree.put_string('array_string','uno,dos,tres,cuatro')
+        array_string=ptree.get_array_string('array_string')
+        self.assertEqual(array_string,['uno','dos','tres','cuatro'])
+        # bool
+        ptree.put_string('array_bool','true,FALSE,False')
+        array_bool=ptree.get_array_bool('array_bool')
+        self.assertEqual(array_bool,[True,False,False])
         
     def test_property_tree(self):
         # ptree as container to store int, double, string, and bool
