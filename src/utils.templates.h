@@ -1,6 +1,8 @@
 #include <cap/utils.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+#include <type_traits>
 
 namespace cap {
 
@@ -10,7 +12,17 @@ std::vector<T> to_vector(std::string const & s)
     std::vector<T> v;
     std::stringstream ss(s);
     std::string item;
-    while (std::getline(ss, item, ',')) { v.push_back(boost::lexical_cast<T>(item)); }
+    while (std::getline(ss, item, ',')) {
+        boost::algorithm::trim(item);
+        if (std::is_same<bool,T>::value)
+        {
+            boost::algorithm::to_lower(item);
+            if (item.compare("true") == 0)
+                item = "1";
+            else if (item.compare("false") == 0)
+                item = "0";
+        }
+        v.push_back(boost::lexical_cast<T>(item)); }
     return v;
 }
 

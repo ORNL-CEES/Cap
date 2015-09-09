@@ -46,9 +46,19 @@ BOOST_AUTO_TEST_CASE( test_parse_params )
    BOOST_FOREACH(std::string const & val, yes) 
        BOOST_CHECK_EQUAL( val, "yes" );
    BOOST_CHECK( empty.empty() );
-   // no space allowed
+   std::vector<bool> vec_in = { true, false, false };
+   params.put("boule", cap::to_string(vec_in));
+   std::vector<bool> vec_out = cap::to_vector<bool>(params.get<std::string>("boule"));
+   BOOST_CHECK_EQUAL_COLLECTIONS(vec_in.begin(), vec_in.end(), vec_out.begin(), vec_out.end());
+
+   params.put("always_true", "    true,true, true  ");
+   std::vector<bool> always_true = cap::to_vector<bool>(params.get<std::string>("always_true"));
+   for (bool const is_true : always_true)
+       BOOST_TEST( is_true );
+   
+   // space allowed
    std::vector<double> bugfixme = { 1.234, 5.678 };
-   params.put("bugfixme", "1.234,5.678");
+   params.put("bugfixme", "1.234 ,    5.678 ");
    std::vector<double> fixed =
        cap::to_vector<double>(params.get<std::string>("bugfixme"));
    BOOST_TEST(bugfixme == fixed);
