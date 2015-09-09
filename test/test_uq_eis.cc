@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE ExactTransientSolution
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
+#include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
 #include <tasmanian/TasmanianSparseGrid.hpp>
 #include <boost/test/unit_test.hpp>
@@ -10,12 +11,23 @@
 #include <boost/math/distributions/beta.hpp>
 #include <iostream>
 #include <fstream>
+#include <numeric>
 
 namespace cap {
 
-double run_code(std::shared_ptr<boost::property_tree::ptree> database)
+std::map<double,std::complex<double>>
+run_code(std::shared_ptr<boost::property_tree::ptree const> database)
 {
-    return std::nan("");
+    // build an energy storage system
+    std::shared_ptr<boost::property_tree::ptree> device_database =
+        std::make_shared<boost::property_tree::ptree>(database->get_child("device"));
+    std::shared_ptr<cap::EnergyStorageDevice> device =
+        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+
+    // measure its impedance
+    std::shared_ptr<boost::property_tree::ptree> eis_database =
+        std::make_shared<boost::property_tree::ptree>(database->get_child("impedance_spectroscopy"));
+    return measure_impedance(device, eis_database);
 }
 
 
@@ -62,7 +74,7 @@ void do_stuff(std::shared_ptr<boost::property_tree::ptree> database)
     boost::math::beta_distribution<double> distribution(alpha, beta);
 
     TasGrid::TasmanianSparseGrid grid;
-    grid.makeGlobalGrid(params, 0, depth, TasGrid::type_level, TasGrid::rule_gaussjacobi, 0, alpha, beta);
+    grid.makeGlobalGrid(params, 2, depth, TasGrid::type_level, TasGrid::rule_gaussjacobi, 0, alpha, beta);
     grid.setDomainTransform(&(mins[0]), &(maxs[0]));
     std::cout<<grid.getNumPoints()<<"  "<<grid.getNumDimensions()+1<<"\n";
     std::cout<<"alpha = "<<alpha<<"\n";
@@ -82,9 +94,10 @@ void do_stuff(std::shared_ptr<boost::property_tree::ptree> database)
             BOOST_CHECK_GE(points[q*params+p], mins[p]);
             BOOST_CHECK_LE(points[q*params+p], maxs[p]);
         }
-        // run the code
     }
-    std::vector<double> results;
+
+    // run the code
+    std::vector<std::map<double,std::complex<double>>> results;
     for (int q = 0; q < n_points; ++q)
     {
         for (int p = 0; p < params; ++p)
@@ -92,7 +105,66 @@ void do_stuff(std::shared_ptr<boost::property_tree::ptree> database)
             database->put(names[p], points[q*params+p]);
         }
         results.emplace_back(run_code(database));
-   }
+        // print results
+        std::cout<<"## "<<q<<" ##\n";
+        for (auto x : results.back())
+            std::cout<<x.first<<"  "<<x.second<<"\n";
+    }
+
+    std::map<double,std::complex<double>> expected_value;
+    for (int q = 0; q < n_points; ++q)
+    {
+        for (auto x : results[q])
+            expected_value[x.first] += weights[q] * x.second;
+    }
+
+    for (auto & x : expected_value)
+        x.second /= std::accumulate(&(weights[0]), &(weights[n_points]), 0.0);
+
+    std::cout<<"#######\n";
+    for (auto x : expected_value)
+        std::cout<<x.first<<"  "<<x.second<<"\n";
+
+    // build an interpolant
+    double frequency;
+    std::complex<double> complex_impedance;
+    std::vector<double> values(2*n_points);
+std::cout<<"needed="<<grid.getNumNeeded()<<"\n";
+std::cout<<"dimesnsions="<<grid.getNumDimensions()<<"\n";
+std::cout<<"points="<<grid.getNumPoints()<<"\n";
+std::cout<<"output="<<grid.getNumOutputs()<<"\n";
+std::cout<<"loaded="<<grid.getNumLoaded()<<"\n";
+    if (grid.getNumNeeded()*grid.getNumOutputs() != values.size())
+        throw std::runtime_error("check outputs number in the grid");
+    for (auto x : expected_value)
+    {
+        std::tie(frequency, complex_impedance) = x;
+        for (int q = 0; q < n_points; ++q)
+        {
+            values[2*q+0] = std::real(results[q][frequency]);
+            values[2*q+1] = std::imag(results[q][frequency]);
+        }
+//        grid.loadNeededPoints(&(values[0]));
+    }
+double const dummy_frequency = expected_value.begin()->first;
+
+    // compute the coefficients
+    if (grid.getNumDimensions() != params)
+        throw std::runtime_error("check dimensions number in the grid");
+    std::vector<std::complex<double>> coefficients(n_points, 0.0);
+    for (int q = 0; q < n_points; ++q)
+    {
+        double const * first = grid.getInterpolationWeights(&(points[q]));
+        double const * last  = first+n_points;
+        std::vector<double> interpolation_weights(first, last);
+        for (auto h : interpolation_weights)
+            std::cout<<h<<"  ";
+        std::cout<<"\n";
+        for (int p = 0; p < n_points; ++p)
+            coefficients[p] += results[q][dummy_frequency] * interpolation_weights[p];
+    }
+    for (auto c : coefficients)
+        std::cout<<c<<"\n";
 }
 
 } // end namespace cap
@@ -104,12 +176,6 @@ BOOST_AUTO_TEST_CASE( test_uq_eis )
         std::make_shared<boost::property_tree::ptree>();
     boost::property_tree::xml_parser::read_xml("input_uq_eis", *input_database,
         boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
-
-    // build an energy storage system
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
-    std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 
     cap::do_stuff(input_database);
 }    

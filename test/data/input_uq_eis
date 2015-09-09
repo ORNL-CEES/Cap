@@ -127,6 +127,26 @@
     </boundary_values>
 </device>
 
+<impedance_spectroscopy>
+    <mode>potentiostatic</mode>
+    <frequency_upper_limit>1.0e+6</frequency_upper_limit> <!-- hertz -->
+    <frequency_lower_limit>1.0e-9</frequency_lower_limit> <!-- hertz -->
+    <steps_per_decade>6</steps_per_decade>
+
+    <frequency>1.0e+1</frequency>
+
+    <cycles>2</cycles>
+    <ignore_cycles>1</ignore_cycles>
+    <steps_per_cycle>256</steps_per_cycle>
+
+    <dc_voltage>1.1</dc_voltage> <!-- volt -->
+    <harmonics>3,5</harmonics>
+    <amplitudes>5.0e-3,5.0e-3</amplitudes>
+    <phases>0.0,30.0</phases> <!-- degree -->
+
+    <percent_tolerance>1.0e-0</percent_tolerance>
+</impedance_spectroscopy>
+
 <uq>
     <alpha>  1.0  </alpha>
     <beta>   1.0  </beta>
