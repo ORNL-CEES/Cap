@@ -2,6 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 PROJECT(cap)
 
+INCLUDE(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG(--std=c++11 COMPILER_SUPPORTS_CXX11)
+IF(COMPILER_SUPPORTS_CXX11)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ELSE()
+    MESSAGE(FATAL_ERROR "Compiler has no C++11 support. Please use a different C++ compiler.")
+ENDIF()
+
 IF(NOT DEFINED CAP_DATA_DIR)
     MESSAGE(FATAL_ERROR "\n"
         "You must pass a flag -DCAP_DATA_DIR=/path/to/dir/with/meshes\n"
