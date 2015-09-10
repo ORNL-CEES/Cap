@@ -2,6 +2,13 @@ cap
 ===
 DEPENDENCIES
 ------------
+| Packages               | Required | Version |
+| -----------------------|:--------:| -------:|
+| deal.II                | Optional | 8.3.0   |
+| Boost                  | Required | 1.59.0  |
+| GNU Scientific Library | Optional | 1.16    |
+| Python                 | Optional | 2.7     |
+
 deal.II version 8.3 compiled with C++11 support. The development sources can be found 
 [here](https://github.com/dealii/dealii).
 
