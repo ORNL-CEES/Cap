@@ -11,6 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   faq
+
 .. math::
    \sum_k \frac{2\pi}{k}
 
