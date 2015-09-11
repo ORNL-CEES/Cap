@@ -1,5 +1,6 @@
 cap
 ===
+[![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
 DEPENDENCIES
 ------------
 | Packages               | Required | Version |
