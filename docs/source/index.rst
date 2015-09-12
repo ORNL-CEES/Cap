@@ -16,6 +16,14 @@ Contents:
 .. math::
    \sum_k \frac{2\pi}{k}
 
+.. figure:: https://github.com/dalg24/cap-notebooks/blob/master/rc_series.png
+
+   Series RC
+   
+.. figure:: https://github.com/dalg24/cap-notebooks/blob/master/rc_parallel.png
+
+   Parallel RC
+
 Grid table:
 
 +------------+------------+-----------+ 
