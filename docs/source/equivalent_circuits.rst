@@ -1,5 +1,5 @@
-Equiavalent circuits
-====================
+Equivalent circuits
+===================
 
 Series RC
 ---------
@@ -8,7 +8,6 @@ Series RC
 
 A resistor and a capacitor are connected in series (denoted $ESR$ and $C$ in the figure above).
 ::
-
    <device>
        <type>              SeriesRC </type>
        <series_resistance>  50.0e-3 </series_resistance> <!-- ohm -->
@@ -31,7 +30,6 @@ An extra resistance is placed in parallel of the capacitor. It can be instantiat
        <capacitance>             3.0    </capacitance>         <!-- farad -->
    </device>
 type has been changed from SeriesRC to ParallelRC. A 2.5 MΩ leakage resistance is specified.
-
 
 Using pycap
 -----------
