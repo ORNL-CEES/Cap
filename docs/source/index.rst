@@ -16,7 +16,8 @@ Contents:
 .. math::
    \sum_k \frac{2\pi}{k}
 
-.. figure:: https://github.com/dalg24/cap-notebooks/blob/master/rc_series.png
+.. download:: https://github.com/dalg24/cap-notebooks/blob/master/rc_series.png
+.. image:: rc_series.png
 
    Series RC
    
