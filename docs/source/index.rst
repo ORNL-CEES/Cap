@@ -47,9 +47,10 @@ type has been changed from SeriesRC to ParallelRC. A 2.5 MΩ leakage resistance 
 
 .. testcode::
 
-    >>> import math
-    >>> print math.sqrt(2.)
-    1.41421356237
+    >>> import pycap
+    >>> device_database=pycap.PropertyTree()
+    >>> device_database.parse_xml('device.xml')
+    >>> device=pycap.EnergyStorageDevice(device_database)
 
 Grid table:
 
