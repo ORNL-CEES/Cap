@@ -16,9 +16,10 @@ Contents:
 .. math::
    \sum_k \frac{2\pi}{k}
 
-.. figure:: series_rc.png
+Series RC
+---------
 
-   Series RC
+.. figure:: series_rc.png
 
 A resistor and a capacitor are connected in series (denoted $ESR$ and $C$ in the figure above).
 ::
@@ -31,9 +32,10 @@ A resistor and a capacitor are connected in series (denoted $ESR$ and $C$ in the
    
 Above is the database to build a 3 F capacitor in series with a 50 mΩ resistance.
 
-.. figure:: parallel_rc.png
+Parallel RC
+-----------
 
-   Parallel RC
+.. figure:: parallel_rc.png
    
 An extra resistance is placed in parallel of the capacitor. It can be instantiated by the following database.
 ::
