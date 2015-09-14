@@ -126,9 +126,9 @@ reset(std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 
     std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
 
-    dealii::types::material_id const anode_electrode_material_id   = database->get<dealii::types::material_id>("material_properties.anode_electrode_material_id"  );
-    dealii::types::material_id const cathode_electrode_material_id = database->get<dealii::types::material_id>("material_properties.cathode_electrode_material_id");
-    dealii::types::boundary_id const cathode_boundary_id           = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id"              );
+    dealii::types::material_id const anode_electrode_material_id   = database->get<dealii::types::material_id>("geometry.anode_electrode_material_id"  );
+    dealii::types::material_id const cathode_electrode_material_id = database->get<dealii::types::material_id>("geometry.cathode_electrode_material_id");
+    dealii::types::boundary_id const cathode_boundary_id           = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id"   );
     dealii::FEValuesExtractors::Scalar const temperature     (database->get<unsigned int>("temperature_component"     ));
     dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component" ));
     dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
