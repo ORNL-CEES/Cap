@@ -30,7 +30,8 @@ An extra resistance is placed in parallel of the capacitor. It can be instantiat
        <series_resistance>      50.0e-3 </series_resistance>   <!-- ohm -->
        <capacitance>             3.0    </capacitance>         <!-- farad -->
    </device>
-`type` has been changed from `SeriesRC` to `ParallelRC`. A :math:`2.5 \mathrm{M\Omega}` leakage resistance is specified.
+``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5 \mathrm{M\Omega}` 
+leakage resistance is specified.
 
 Using pycap
 -----------
