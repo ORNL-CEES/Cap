@@ -15,14 +15,16 @@ and :math:`\mathrm{C}` in the figure above).
        <capacitance>         3.0    </capacitance>       <!-- farad -->
    </device>
    
-Above is the database to build a :math:`\mathrm{3 F}` capacitor in series with a :math:`50 \mathrm{m\Omega}` resistance.
+Above is the database to build a :math:`\mathrm{3\ F}` capacitor in series with a 
+:math:`50\ \mathrm{m\Omega}` resistance.
 
 Parallel RC
 -----------
 
 .. figure:: parallel_rc.png
    
-An extra resistance is placed in parallel of the capacitor. It can be instantiated by the following database.
+An extra resistance is placed in parallel of the capacitor. It can be instantiated 
+by the following database.
 ::
    <device>
        <type>                ParallelRC </type>
@@ -30,7 +32,7 @@ An extra resistance is placed in parallel of the capacitor. It can be instantiat
        <series_resistance>      50.0e-3 </series_resistance>   <!-- ohm -->
        <capacitance>             3.0    </capacitance>         <!-- farad -->
    </device>
-``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5 \mathrm{M\Omega}` 
+``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5 \mathrm{M\ \Omega}` 
 leakage resistance is specified.
 
 Using pycap
