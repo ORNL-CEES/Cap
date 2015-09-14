@@ -14,8 +14,7 @@ Contents:
    equivalent_circuits
    faq
 
-.. math::
-   sum_k \sin(\frac{2\pi k}{T})
+The area of a circle is :math:`A_\text{c} = (\pi/4) d^2`.
 
 Indices and tables
 ==================
