@@ -1,0 +1,6 @@
+<device>
+   <type>                ParallelRC </type>
+   <parallel_resistance>     2.5e+6 </parallel_resistance> <!-- ohm -->
+   <series_resistance>      50.0e-3 </series_resistance>   <!-- ohm -->
+   <capacitance>             3.0    </capacitance>         <!-- farad -->
+</device>
