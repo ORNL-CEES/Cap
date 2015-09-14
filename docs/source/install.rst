@@ -13,6 +13,20 @@ Get the source
 Install third-party libraries
 -----------------------------
 
+cap has a required dependency on C++11.
+
++------------------------+------------+---------+
+| Packages               | Dependency | Version |
++========================+============+=========+
+| Boost                  | Required   | 1.59.0  |
++------------------------+------------+---------+
+| deal.II                | Optional   | 8.3.0   |
++------------------------+------------+---------+
+| GNU Scientific Library | Optional   | 1.16    |
++------------------------+------------+---------+
+| Python                 | Optional   | 2.7     |
++------------------------+------------+---------+
+
 boost
 ^^^^^
 Boost version 1.59.0 or later is required.
@@ -21,14 +35,15 @@ Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
 .. code::
 
     $ ./bootstrap.sh --prefix=${PREFIX}/install/boost
-    $ ./b2 install -j<N> variant=release
+    $ ./b2 install -j<N> variant=release cxxflags="-std=c++11"
 
 deal.II
 ^^^^^^^
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type
 ``SuperCapacitor``.
-Version 8.3.0 or later is required. The development sources can be found
+Version 8.3.0 or later compiled with C++11 support is required.
+The development sources can be found
 `here <https://github.com/dealii/dealii>`_.
 
 It is a good idea to make a `configure_dealii` script such as:

@@ -1,6 +1,9 @@
 Supercapacitor
 ==============
 
+``type`` is set to ``SuperCapacitor``.
+``dim`` is used to select two- or three-dimensional simulations.
+
 .. code:: xml
 
     <device>
