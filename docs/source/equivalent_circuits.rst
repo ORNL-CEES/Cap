@@ -6,7 +6,7 @@ Series RC
 
 .. figure:: series_rc.png
 
-A resistor and a capacitor are connected in series (denoted $ESR$ and $C$ in the figure above).
+A resistor and a capacitor are connected in series (denoted :math:`ESR` and :math:`C` in the figure above).
 ::
    <device>
        <type>              SeriesRC </type>
