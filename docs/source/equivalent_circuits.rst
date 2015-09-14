@@ -8,12 +8,9 @@ Series RC
 
 A resistor and a capacitor are connected in series (denoted :math:`\mathrm{ESR}` 
 and :math:`\mathrm{C}` in the figure above).
-::
-   <device>
-       <type>              SeriesRC </type>
-       <series_resistance>  50.0e-3 </series_resistance> <!-- ohm -->
-       <capacitance>         3.0    </capacitance>       <!-- farad -->
-   </device>
+
+.. literalinclude:: series_rc.xml
+   :language: xml
    
 Above is the database to build a :math:`\mathrm{3\ F}` capacitor in series with a 
 :math:`50\ \mathrm{m\Omega}` resistance.
@@ -28,16 +25,7 @@ by the following database.
 
 .. literalinclude:: parallel_rc.xml
    :language: xml
-   :linenos:
 
-
-::
-   <device>
-       <type>                ParallelRC </type>
-       <parallel_resistance>     2.5e+6 </parallel_resistance> <!-- ohm -->
-       <series_resistance>      50.0e-3 </series_resistance>   <!-- ohm -->
-       <capacitance>             3.0    </capacitance>         <!-- farad -->
-   </device>
 ``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5\ \mathrm{M\Omega}` 
 leakage resistance is specified.
 
