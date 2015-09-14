@@ -1,13 +1,17 @@
 Getting started
 ===============
 
-Get the source
---------------
+This section provide guidelines for installing cap and its TPLs.
+We recommend out-of-source builds.
 
 .. code::
 
     $ export PREFIX=/path/to/some/working/directory/for/the/project
-    $ mkdir -p ${PREFIX}/source
+    $ mkdir -p ${PREFIX}
+    $ mkdir ${PREFIX}/archive
+    $ mkdir ${PREFIX}/source
+    $ mkdir ${PREFIX}/build
+    $ mkdir ${PREFIX}/install
 
 
 Install third-party libraries
@@ -40,11 +44,16 @@ Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
 deal.II
 ^^^^^^^
 The open source finite element library deal.II is optional.
-It is only required to work with energy storage devices of type
-``SuperCapacitor``.
+It is only required to work with energy storage devices of type ``SuperCapacitor``.
 Version 8.3.0 or later compiled with C++11 support is required.
-The development sources can be found
-`here <https://github.com/dealii/dealii>`_.
+The development sources can be found `here <https://github.com/dealii/dealii>`_.
+
+To download the release version 8.3.0, do:
+
+.. code::
+
+    $ wget -output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
+    $ mkdir ${PREFIX}/source/dealii && tar -xf ${PREFIX}/archive/dealii-8.3.0.tar.gz -C ${PREFIX}/source/dealii --strip-components=1
 
 It is a good idea to make a `configure_dealii` script such as:
 
@@ -59,7 +68,9 @@ It is a good idea to make a `configure_dealii` script such as:
         -D DEAL_II_WITH_CXX11=ON                         \
         -D BOOST_DIR=${PREFIX}/install/boost             \
         $EXTRA_ARGS                                      \ 
-        ${PREFIX}/source/dealii-8.3.0
+        ${PREFIX}/source/dealii
+
+Then run:
 
 .. code::
 
@@ -91,7 +102,9 @@ Get the source:
     $ git clone https://github.com/dalg24/cap.git ${PREFIX}/source/cap
     $ git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
 
-[Recommended] Create a `configure_cap` script:
+`cap-data` contains a series of 2-D and 3-D meshes to model batteries or supercapacitors.
+
+Create a `configure_cap` script in `${PREFIX}/build`:
 
 .. code-block:: bash
     :linenos:
@@ -114,6 +127,33 @@ Configure, build and install:
     $ cd ${PREFIX}/build/cap
     $ ../configure_cap
     $ make -j<N> && make install
+
+
+Run the tests:
+
+.. code::
+
+    $ ctest -j<N>
+
+
+Enable the python wrappers
+--------------------------
+
+To build the Python wrappers cap must be configured with an extra flag
+``PYTHON_INSTALL_DIR`` that tells cmake where Python is installed.
+
+Find out where Python is installed:
+
+.. code::
+
+    $ export PYTHON_INSTALL_DIR=`python -c "import sys; print sys.prefix"`
+
+Configure cap to build the python interface and (re)install:
+
+.. code::
+
+    $ cmake -DPYTHON_INSTALL_DIR=${PYTHON_INSTALL_DIR} ${PREFIX}/source/cap
+
 
 Build this documentation
 ------------------------
