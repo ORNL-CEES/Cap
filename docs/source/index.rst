@@ -12,9 +12,9 @@ Contents:
    :maxdepth: 2
 
    equivalent_circuits
+   super_capacitor
+   python_wrappers
    faq
-
-The area of a circle is :math:`A_\text{c} = (\pi/4) d^2`.
 
 Indices and tables
 ==================

@@ -29,12 +29,3 @@ by the following database.
 ``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5\ \mathrm{M\Omega}` 
 leakage resistance is specified.
 
-Using pycap
------------
-
-.. testcode::
-
-    >>> import pycap
-    >>> device_database=pycap.PropertyTree()
-    >>> device_database.parse_xml('device.xml')
-    >>> device=pycap.EnergyStorageDevice(device_database)
