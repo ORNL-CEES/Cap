@@ -25,6 +25,12 @@ Parallel RC
    
 An extra resistance is placed in parallel of the capacitor. It can be instantiated 
 by the following database.
+
+.. literalinclude:: parallel_rc.xml
+   :language: xml
+   :linenos:
+
+
 ::
    <device>
        <type>                ParallelRC </type>
