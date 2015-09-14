@@ -1,4 +1,4 @@
-find_program(SPHINX_EXECUTABLE NAMES sphinx-build
+find_program(SPHINX_EXECUTABLE NAMES sphinx-build sphinx-build-2.7
     HINTS
     $ENV{SPHINX_DIR}
     PATH_SUFFIXES bin
