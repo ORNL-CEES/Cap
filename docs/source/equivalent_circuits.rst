@@ -32,7 +32,7 @@ by the following database.
        <series_resistance>      50.0e-3 </series_resistance>   <!-- ohm -->
        <capacitance>             3.0    </capacitance>         <!-- farad -->
    </device>
-``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5 \mathrm{M\ \Omega}` 
+``type`` has been changed from ``SeriesRC`` to ``ParallelRC``. A :math:`2.5\ \mathrm{M\Omega}` 
 leakage resistance is specified.
 
 Using pycap
