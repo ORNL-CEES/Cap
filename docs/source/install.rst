@@ -10,9 +10,11 @@ Get the source
     $ mkdir -p ${PREFIX}/source
 
 
-Install boost
--------------
+Install third-party libraries
+-----------------------------
 
+boost
+^^^^^
 Boost version 1.59.0 or later is required.
 Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
 
@@ -21,9 +23,8 @@ Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
     $ ./bootstrap.sh --prefix=${PREFIX}/install/boost
     $ ./b2 install -j<N> variant=release
 
-Install deal.II
----------------
-
+deal.II
+^^^^^^^
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type
 ``SuperCapacitor``.
@@ -45,15 +46,29 @@ It is a good idea to make a `configure_dealii` script such as:
         $EXTRA_ARGS                                      \ 
         ${PREFIX}/source/dealii-8.3.0
 
-
-
 .. code::
 
+    $ cd ${PREFIX}/build/dealii
     $ ../configure_dealii
     $ make -j<N> install
 
-Installing cap from source
---------------------------
+gsl
+^^^
+The GNU Scientific Library (GSL) is optional.
+It is only required for electrochemical impedance spectroscopy to perform
+fourier analysis. Note that you don't actually need it if you plan on using
+the Python wrappers since the FFT algorithms from NumPy can be leveraged in
+that case.
+
+.. code::
+
+    $ mkdir ${PREFIX}/build/gsl
+    $ cd ${PREFIX}/build/gsl
+    $ ${PREFIX}/source/gsl/configure --prefix=${PREFIX}/install/gsl
+    $ make -j<N> install
+
+Install cap from source
+-----------------------
 Get the source:
 
 .. code::
