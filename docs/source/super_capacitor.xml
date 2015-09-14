@@ -4,7 +4,7 @@
 
 <!-- geometry begin -->
 <geometry>
-    <mesh_file>/Users/qdi/Projects/cap/source/cap-data/meshes/cap_2d_3.ucd</mesh_file>
+    <mesh_file>mesh_2d.ucd</mesh_file>
 
     <anode_collector_width>    5.0e-6 </anode_collector_width>   <!-- meter -->
     <anode_electrode_width>   50.0e-6 </anode_electrode_width>   <!-- meter -->

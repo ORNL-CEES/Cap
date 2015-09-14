@@ -1,5 +1,5 @@
-Supercapacitor
-==============
+Supercapacitors
+===============
 
 ``type`` is set to ``SuperCapacitor``.
 ``dim`` is used to select two- or three-dimensional simulations.
@@ -26,6 +26,18 @@ Geometry
     :start-after: <!-- geometry begin -->
     :end-before: <!-- geometry end -->
 
+``mesh_file`` give the path to the triangulation. The dimension has to match
+``dim`` or an exception will be thrown.
+The width of each layer in the sandwich (anode collector, anode electrode,
+separator, cathode electrode, cathode current collector) can be adjusted
+independently from one another. The overall sandwich height and depth (in
+3-D) can be changed as well.
+
+.. figure:: sandwich.png
+    :figwidth: 400px
+    :align: center
+
+    This is the caption.
 
 Material properties
 -------------------

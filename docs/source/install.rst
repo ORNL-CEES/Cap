@@ -35,10 +35,14 @@ boost
 ^^^^^
 Boost version 1.59.0 or later is required.
 Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
+Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
+`${PREFIX}/archive` directory, boost may be installed by running:
 
 .. code::
 
-    $ ./bootstrap.sh --prefix=${PREFIX}/install/boost
+    $ mkdir ${PREFIX}/source/boost
+    $ tar -xf ${PREFIX}/archive/boost_1_59_0.tar.bz2 -C ${PREFIX}/source/boost --strip-components=1
+    $ cd ${PREFIX}/source/boost && ./bootstrap.sh --prefix=${PREFIX}/install/boost
     $ ./b2 install -j<N> variant=release cxxflags="-std=c++11"
 
 deal.II
