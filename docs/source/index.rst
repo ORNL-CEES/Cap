@@ -14,6 +14,9 @@ Contents:
    equivalent_circuits
    faq
 
+.. math::
+   sum_k \sin(\frac{2\pi k}{T})
+
 Indices and tables
 ==================
 
