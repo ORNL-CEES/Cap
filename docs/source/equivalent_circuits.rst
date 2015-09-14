@@ -6,7 +6,8 @@ Series RC
 
 .. figure:: series_rc.png
 
-A resistor and a capacitor are connected in series (denoted :math:`ESR` and :math:`C` in the figure above).
+A resistor and a capacitor are connected in series (denoted :math:`\mathrm{ESR}` 
+and :math:`\mathrm{C}` in the figure above).
 ::
    <device>
        <type>              SeriesRC </type>
@@ -14,7 +15,7 @@ A resistor and a capacitor are connected in series (denoted :math:`ESR` and :mat
        <capacitance>         3.0    </capacitance>       <!-- farad -->
    </device>
    
-Above is the database to build a 3 F capacitor in series with a 50 mΩ resistance.
+Above is the database to build a 3 F capacitor in series with a :math:`50 \mili\ohm` resistance.
 
 Parallel RC
 -----------
