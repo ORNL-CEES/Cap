@@ -15,7 +15,7 @@ and :math:`\mathrm{C}` in the figure above).
        <capacitance>         3.0    </capacitance>       <!-- farad -->
    </device>
    
-Above is the database to build a 3 F capacitor in series with a :math:`50 \mili\ohm` resistance.
+Above is the database to build a 3 F capacitor in series with a :math:`50 \mathrm{m\Omega}` resistance.
 
 Parallel RC
 -----------
