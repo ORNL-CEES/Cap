@@ -56,7 +56,7 @@ To download the release version 8.3.0, do:
 
 .. code::
 
-    $ wget -output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
+    $ wget --output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
     $ mkdir ${PREFIX}/source/dealii && tar -xf ${PREFIX}/archive/dealii-8.3.0.tar.gz -C ${PREFIX}/source/dealii --strip-components=1
 
 It is a good idea to make a `configure_dealii` script such as:
@@ -78,7 +78,7 @@ Then run:
 
 .. code::
 
-    $ cd ${PREFIX}/build/dealii
+    $ mkdir ${PREFIX}/build/dealii && cd ${PREFIX}/build/dealii
     $ ../configure_dealii
     $ make -j<N> install
 
@@ -157,6 +157,13 @@ Configure cap to build the python interface and (re)install:
 .. code::
 
     $ cmake -DPYTHON_INSTALL_DIR=${PYTHON_INSTALL_DIR} ${PREFIX}/source/cap
+
+Prepend the `cap/python` directory to the environment variable `PYTHONPATH`
+in order to import the pycap module from your Python interpreter.
+
+.. code::
+
+    $ export PYTHONPATH=${PREFIX}/install/cap/python:${PYTHONPATH}
 
 
 Build this documentation
