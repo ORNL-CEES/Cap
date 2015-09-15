@@ -14,6 +14,7 @@ Contents:
    install
    equivalent_circuits
    super_capacitor
+   battery
    python_wrappers
    faq
 
