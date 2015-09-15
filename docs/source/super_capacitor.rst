@@ -37,7 +37,13 @@ independently from one another. The overall sandwich height and depth (in
     :figwidth: 400px
     :align: center
 
-    This is the caption.
+    Schematic representation of the supercapacitor conventional sandwich-like
+    configuration.
+    1: anode electrode,
+    2: separator,
+    3: cathode electrode,
+    4: anode collector,
+    5: cathode collector.
 
 Material properties
 -------------------
