@@ -56,7 +56,7 @@ To download the release version 8.3.0, do:
 
 .. code::
 
-    $ wget -output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
+    $ wget --output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
     $ mkdir ${PREFIX}/source/dealii && tar -xf ${PREFIX}/archive/dealii-8.3.0.tar.gz -C ${PREFIX}/source/dealii --strip-components=1
 
 It is a good idea to make a `configure_dealii` script such as:
