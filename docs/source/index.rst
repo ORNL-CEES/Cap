@@ -16,6 +16,7 @@ Contents:
    super_capacitor
    battery
    python_wrappers
+   examples
    faq
 
 Indices and tables
