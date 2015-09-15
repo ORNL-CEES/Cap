@@ -210,6 +210,12 @@ struct ElectrochemicalImpedanceSpectroscopyData {
     std::map<double,std::complex<double>> data;
 };
 
+std::string
+git_commit_hash()
+{
+    return "d0e7872279a778a26038a288fb0867a7e60e06b0";
+}
+
 } // end namespace pycap
 
 BOOST_PYTHON_MODULE(pycap)
@@ -238,6 +244,8 @@ BOOST_PYTHON_MODULE(pycap)
 
     boost::python::def("get_current", pycap::get_current);
     boost::python::def("get_voltage", pycap::get_voltage);
+
+    boost::python::scope().attr("__git_commit_hash__") = pycap::git_commit_hash();
 
     boost::python::class_<boost::property_tree::ptree, std::shared_ptr<boost::property_tree::ptree>>("PropertyTree")
         .def("get_double", &pycap::get_double)
