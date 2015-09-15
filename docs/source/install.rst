@@ -158,6 +158,13 @@ Configure cap to build the python interface and (re)install:
 
     $ cmake -DPYTHON_INSTALL_DIR=${PYTHON_INSTALL_DIR} ${PREFIX}/source/cap
 
+Prepend the `cap/python` directory to the environment variable `PYTHONPATH`
+in order to import the pycap module from your Python interpreter.
+
+.. code::
+
+    $ export PYTHONPATH=${PREFIX}/install/cap/python:${PYTHONPATH}
+
 
 Build this documentation
 ------------------------
