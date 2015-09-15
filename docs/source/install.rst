@@ -78,7 +78,7 @@ Then run:
 
 .. code::
 
-    $ cd ${PREFIX}/build/dealii
+    $ mkdir ${PREFIX}/build/dealii && cd ${PREFIX}/build/dealii
     $ ../configure_dealii
     $ make -j<N> install
 
