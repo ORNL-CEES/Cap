@@ -1,0 +1,15 @@
+#include <cap/version.h>
+
+#define CAP_VERSION "@CAP_VERSION@"
+#define GIT_BRANCH "@GIT_BRANCH@"
+#define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
+
+namespace cap {
+
+std::string version() { return CAP_VERSION; }
+
+std::string git_branch() { return GIT_BRANCH; }
+
+std::string git_commit_hash() { return GIT_COMMIT_HASH; }
+
+}

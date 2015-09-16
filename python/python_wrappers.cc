@@ -1,6 +1,7 @@
 #include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
+#include <cap/version.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -240,6 +241,7 @@ BOOST_PYTHON_MODULE(pycap)
     boost::python::def("get_voltage", pycap::get_voltage);
 
     boost::python::scope().attr("__version__"        ) = cap::version()        ;
+    boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
 
     boost::python::class_<boost::property_tree::ptree, std::shared_ptr<boost::property_tree::ptree>>("PropertyTree")
