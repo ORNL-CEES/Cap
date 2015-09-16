@@ -1,7 +1,6 @@
 #include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
-#include <cap/version.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -211,12 +210,6 @@ struct ElectrochemicalImpedanceSpectroscopyData {
     std::map<double,std::complex<double>> data;
 };
 
-std::string
-git_commit_hash()
-{
-    return GIT_COMMIT_HASH;
-}
-
 } // end namespace pycap
 
 BOOST_PYTHON_MODULE(pycap)
@@ -246,7 +239,8 @@ BOOST_PYTHON_MODULE(pycap)
     boost::python::def("get_current", pycap::get_current);
     boost::python::def("get_voltage", pycap::get_voltage);
 
-    boost::python::scope().attr("__git_commit_hash__") = pycap::git_commit_hash();
+    boost::python::scope().attr("__version__")         = cap::version();
+    boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
 
     boost::python::class_<boost::property_tree::ptree, std::shared_ptr<boost::property_tree::ptree>>("PropertyTree")
         .def("get_double", &pycap::get_double)

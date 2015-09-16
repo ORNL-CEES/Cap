@@ -1,6 +1,8 @@
 #ifndef CAP_VERSION_H
 #define CAP_VERSION_H
 
+#define CAP_VERSION "@CAP_VERSION@"
+
 #define GIT_BRANCH "@GIT_BRANCH@"
 #define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
 

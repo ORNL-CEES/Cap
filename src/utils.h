@@ -8,6 +8,10 @@
 
 namespace cap {
 
+std::string version();
+
+std::string git_commit_hash();
+
 template <class InputIterator1, class InputIterator2,
           class OutputIterator, class T>
 void approximate_integral_with_trapezoidal_rule
