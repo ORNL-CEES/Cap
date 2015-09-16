@@ -113,12 +113,18 @@ ENDIF()
 
 FIND_PACKAGE(Git)
 IF(GIT_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
+FILE(WRITE
+    ${CMAKE_BINARY_DIR}/ReloadCache.cmake
+    "SET(CAP_SOURCE_DIR \"${CMAKE_SOURCE_DIR}\")\n"
+    "SET(CAP_BINARY_DIR \"${CMAKE_BINARY_DIR}\")\n"
+)
+INCLUDE(${CMAKE_BINARY_DIR}/ReloadCache.cmake)
 INCLUDE(${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake)
 
 ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_BINARY_DIR}/include/cap/version.h
     DEPENDS ${CMAKE_SOURCE_DIR}/.git/HEAD ${CMAKE_SOURCE_DIR}/.git/${GIT_HEAD_REF}
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake
+    COMMAND ${CMAKE_COMMAND} -C ${CMAKE_BINARY_DIR}/ReloadCache.cmake -P ${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake
     COMMENT "Query git revision"
     )
 ADD_CUSTOM_TARGET(
