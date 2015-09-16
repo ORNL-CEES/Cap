@@ -1,3 +1,4 @@
+INCLUDE(${CMAKE_SOURCE_DIR}/cmake/macros.cmake)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "")
 ADD_LIBRARY(pycap MODULE
     python_wrappers.cc

@@ -1,4 +1,4 @@
-INCLUDE(${PROJECT_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE(${CMAKE_SOURCE_DIR}/cmake/macros.cmake)
 ADD_CAP_BOOST_TEST(test_parse_params                )
 ADD_CAP_BOOST_TEST(test_butler_volmer_kinetics      )
 ADD_CAP_BOOST_TEST(test_resistor_capacitor_circuit  )
