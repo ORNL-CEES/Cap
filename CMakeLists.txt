@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(cap)
 
@@ -113,25 +113,29 @@ ENDIF()
 
 FIND_PACKAGE(Git)
 IF(GIT_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
-
-SET_PROPERTY(GLOBAL APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/.git/HEAD)
-CONFIGURE_FILE(
-    ${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake.in
-    ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake
-    @ONLY
-    )
-INCLUDE(${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake)
-
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_BINARY_DIR}/include/cap/version.h
-    DEPENDS ${CMAKE_SOURCE_DIR}/.git/HEAD ${CMAKE_SOURCE_DIR}/.git/${GIT_HEAD_REF}
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake
-    COMMENT "Query git revision"
-    )
-ADD_CUSTOM_TARGET(
-    CAP_COMMIT_HASH ALL
-    DEPENDS ${CMAKE_BINARY_DIR}/include/cap/version.h
-    )
+    CONFIGURE_FILE(
+        ${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake.in
+        ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake
+        @ONLY
+        )
+    INCLUDE(${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake)
+    MESSAGE("CMAKE_CONFIGURE_DEPENDS=${CMAKE_CONFIGURE_DEPENDS}")
+    SET_PROPERTY(DIRECTORY ${CMAKE_SOURCE_DIR} APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/.git/HEAD)
+    MESSAGE("CMAKE_CONFIGURE_DEPENDS=${CMAKE_CONFIGURE_DEPENDS}")
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_SOURCE_DIR}/include/cap/version.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/.git/${GIT_HEAD_REF}
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake
+        COMMENT "Query git revision"
+        )
+    ADD_CUSTOM_TARGET(
+        CAP_COMMIT_HASH ALL
+        DEPENDS ${CMAKE_SOURCE_DIR}/include/cap/version.h
+        )
+    INSTALL(
+        FILES ${CMAKE_SOURCE_DIR}/include/cap/version.h
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/cap
+        )
 ENDIF()
 
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")

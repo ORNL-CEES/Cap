@@ -1,6 +1,7 @@
 #include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
+#include <cap/version.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -213,7 +214,7 @@ struct ElectrochemicalImpedanceSpectroscopyData {
 std::string
 git_commit_hash()
 {
-    return "d0e7872279a778a26038a288fb0867a7e60e06b0";
+    return GIT_COMMIT_HASH;
 }
 
 } // end namespace pycap
