@@ -15,7 +15,6 @@ Contents:
    equivalent_circuits
    super_capacitor
    battery
-   python_wrappers
    examples
    faq
 
