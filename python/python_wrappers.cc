@@ -239,7 +239,7 @@ BOOST_PYTHON_MODULE(pycap)
     boost::python::def("get_current", pycap::get_current);
     boost::python::def("get_voltage", pycap::get_voltage);
 
-    boost::python::scope().attr("__version__")         = cap::version();
+    boost::python::scope().attr("__version__"        ) = cap::version()        ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
 
     boost::python::class_<boost::property_tree::ptree, std::shared_ptr<boost::property_tree::ptree>>("PropertyTree")
