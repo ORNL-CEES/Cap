@@ -165,6 +165,14 @@ in order to import the pycap module from your Python interpreter.
 
     $ export PYTHONPATH=${PREFIX}/install/cap/python:${PYTHONPATH}
 
+Launch Python and try:
+
+.. testcode::
+
+    >>> import pycap
+    >>> device_database=pycap.PropertyTree()
+    >>> device_database.parse_xml('device.xml')
+    >>> device=pycap.EnergyStorageDevice(device_database)
 
 Build this documentation
 ------------------------
