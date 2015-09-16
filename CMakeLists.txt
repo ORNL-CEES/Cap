@@ -115,8 +115,12 @@ FIND_PACKAGE(Git)
 IF(GIT_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
 
 SET_PROPERTY(GLOBAL APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/.git/HEAD)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake)
-INCLUDE(${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake)
+CONFIGURE_FILE(
+    ${CMAKE_SOURCE_DIR}/cmake/QueryGitRevision.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake
+    @ONLY
+    )
+INCLUDE(${CMAKE_BINARY_DIR}/cmake/QueryGitRevision.cmake)
 
 ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_BINARY_DIR}/include/cap/version.h
