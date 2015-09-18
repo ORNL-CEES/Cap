@@ -35,12 +35,17 @@ FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
         )
 ENDFOREACH()
 INSTALL(
-    FILES ${PYTHON_SOURCES}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/python/pycap
+    DIRECTORY ${CMAKE_BINARY_DIR}/python/pycap
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+    FILES_MATCHING PATTERN "*.py"
     )
 
 
-SET(PYTHON_TESTS test_python_wrappers test_property_tree)
+SET(PYTHON_TESTS
+    test_python_wrappers
+    test_property_tree
+    test_end_criterion
+)
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)
     ADD_CUSTOM_COMMAND(
