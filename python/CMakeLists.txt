@@ -45,6 +45,7 @@ SET(PYTHON_TESTS
     test_python_wrappers
     test_property_tree
     test_end_criterion
+    test_time_evolution
 )
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)

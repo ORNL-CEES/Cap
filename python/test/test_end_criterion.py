@@ -31,7 +31,6 @@ class capEndCriterionTestCase(unittest.TestCase):
     def test_current_limit(self):
         ptree=PropertyTree()
         ptree.put_string('end_criterion','current_smaller_than')
-    
 
 if __name__ == '__main__':
     unittest.main()
