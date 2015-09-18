@@ -62,6 +62,19 @@ class TimeEvolution:
             def evolve_one_time_step_constant_load   (device,time_step):
                 device.evolve_one_time_step_constant_load   (time_step,constant_load   )
             return evolve_one_time_step_constant_load
+
+        elif mode=='hold'            :
+            def evolve_one_time_step_hold            (device,time_step):
+                device.evolve_one_time_step_constant_voltage(time_step,device.get_voltage())
+            return evolve_one_time_step_hold
+        
+        elif mode=='rest'            :
+            def evolve_one_time_step_rest            (device,time_step):
+                device.evolve_one_time_step_constant_current(time_step,0.0)
+            return evolve_one_time_step_rest
+
+        else:
+            raise NameError("invalid TimeEvolution mode '"+mode+"'")
         
     factory=staticmethod(factory)
 
