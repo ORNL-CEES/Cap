@@ -213,7 +213,7 @@ struct ElectrochemicalImpedanceSpectroscopyData {
 
 } // end namespace pycap
 
-BOOST_PYTHON_MODULE(pycap)
+BOOST_PYTHON_MODULE(_pycap)
 {
     boost::python::class_<pycap::ElectrochemicalImpedanceSpectroscopyData, std::shared_ptr<pycap::ElectrochemicalImpedanceSpectroscopyData>>("ElectrochemicalImpedanceSpectroscopyData")
         .def("impedance_spectroscopy", &pycap::ElectrochemicalImpedanceSpectroscopyData::impedance_spectroscopy)
@@ -237,6 +237,7 @@ BOOST_PYTHON_MODULE(pycap)
         ;
     boost::python::register_ptr_to_python<std::shared_ptr<cap::EnergyStorageDevice>>();
 
+    // deprecated
     boost::python::def("get_current", pycap::get_current);
     boost::python::def("get_voltage", pycap::get_voltage);
 
