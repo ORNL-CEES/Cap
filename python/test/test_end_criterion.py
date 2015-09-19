@@ -17,8 +17,9 @@ class capEndCriterionTestCase(unittest.TestCase):
         self.assertTrue(time_limit.check(60.0,device))
     def test_voltage_limit(self):
         ptree=PropertyTree()
-        ptree.put_string('end_criterion','voltage_greater_than')
         ptree.put_double('voltage_limit',1.7)
+        # upper limit
+        ptree.put_string('end_criterion','voltage_greater_than')
         voltage_limit=EndCriterion.factory(ptree)
         voltage_limit.reset(5.0,device)
         device.evolve_one_time_step_constant_voltage(0.2,1.3)
@@ -28,6 +29,16 @@ class capEndCriterionTestCase(unittest.TestCase):
         self.assertTrue(voltage_limit.check(45.0,device))
         device.evolve_one_time_step_constant_voltage(0.2,2.1)
         self.assertTrue(voltage_limit.check(45.0,device))
+        # lower limit
+        ptree.put_string('end_criterion','voltage_less_than')
+        voltage_limit=EndCriterion.factory(ptree)
+        voltage_limit.reset(0.0,device)
+        device.evolve_one_time_step_constant_voltage(0.2,1.3)
+        self.assertTrue(voltage_limit.check(0.0,device))
+        device.evolve_one_time_step_constant_voltage(0.2,1.7)
+        self.assertTrue(voltage_limit.check(45.0,device))
+        device.evolve_one_time_step_constant_voltage(0.2,2.1)
+        self.assertFalse(voltage_limit.check(45.0,device))
     def test_current_limit(self):
         # TODO
         ptree=PropertyTree()
