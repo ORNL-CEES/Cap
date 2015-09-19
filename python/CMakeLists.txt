@@ -19,7 +19,9 @@ INSTALL(TARGETS pycap DESTINATION ${CMAKE_INSTALL_PREFIX}/python/pycap)
 
 SET(PYTHON_SOURCES
     __init__.py
-    extra.py
+    data_helpers.py
+    time_evolution.py
+    end_criterion.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(

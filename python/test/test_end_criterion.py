@@ -43,7 +43,7 @@ class capEndCriterionTestCase(unittest.TestCase):
         # TODO
         ptree=PropertyTree()
         ptree.put_string('end_criterion','current_smaller_than')
-    def test_invalid_criterion(self):
+    def test_invalid_end_criterion(self):
         ptree=PropertyTree()
         ptree.put_string('end_criterion','bad_name')
         self.assertRaises(RuntimeError,EndCriterion.factory,ptree)

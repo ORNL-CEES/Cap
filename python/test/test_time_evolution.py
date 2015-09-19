@@ -5,7 +5,6 @@ device_database=PropertyTree()
 device_database.parse_xml('device.xml')
 device=EnergyStorageDevice(device_database)
 
-
 class capTimeEvolutionTestCase(unittest.TestCase):
     def test_evolve_constant_voltage(self):
         ptree=PropertyTree()
@@ -48,6 +47,10 @@ class capTimeEvolutionTestCase(unittest.TestCase):
         evolve_one_time_step=TimeEvolution.factory(ptree)
         evolve_one_time_step(device,0.1)
         self.assertEqual(device.get_current(),0.0)
+    def test_invalid_time_evolution(self):
+        ptree=PropertyTree()
+        ptree.put_string('type','unexpected_type')
+        self.assertRaises(RuntimeError,TimeEvolution.factory,ptree)
     
 if __name__ == '__main__':
     unittest.main()
