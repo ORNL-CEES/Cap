@@ -29,8 +29,13 @@ class capEndCriterionTestCase(unittest.TestCase):
         device.evolve_one_time_step_constant_voltage(0.2,2.1)
         self.assertTrue(voltage_limit.check(45.0,device))
     def test_current_limit(self):
+        # TODO
         ptree=PropertyTree()
         ptree.put_string('end_criterion','current_smaller_than')
+    def test_invalid_criterion(self):
+        ptree=PropertyTree()
+        ptree.put_string('end_criterion','bad_name')
+        self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
 
 if __name__ == '__main__':
     unittest.main()

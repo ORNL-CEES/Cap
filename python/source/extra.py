@@ -74,7 +74,7 @@ class TimeEvolution:
             return evolve_one_time_step_rest
 
         else:
-            raise NameError("invalid TimeEvolution mode '"+mode+"'")
+            raise RuntimeError("invalid TimeEvolution mode '"+mode+"'")
         
     factory=staticmethod(factory)
 
@@ -100,7 +100,7 @@ class EndCriterion:
         elif type=='current_less_than'   :
             return CurrentLimit(ptree,le)
         else:
-            raise NameError("invalid EndCriterion type '"+type+"'")
+            raise RuntimeError("invalid EndCriterion type '"+type+"'")
 
     factory=staticmethod(factory)
 
