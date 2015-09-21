@@ -3,7 +3,7 @@ import unittest
 
 device_database=PropertyTree()
 device_database.parse_xml('device.xml')
-device=EnergyStorageDevice(device_database)
+device=EnergyStorageDevice(device_database.get_child('device'))
 
 class capTimeEvolutionTestCase(unittest.TestCase):
     def test_evolve_constant_voltage(self):

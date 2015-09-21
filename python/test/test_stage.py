@@ -3,7 +3,7 @@ import unittest
 
 device_database=PropertyTree()
 device_database.parse_xml('device.xml')
-device=EnergyStorageDevice(device_database)
+device=EnergyStorageDevice(device_database.get_child('device'))
 
 class capStageTestCase(unittest.TestCase):
     def test_constant_current_charge_for_given_time(self):

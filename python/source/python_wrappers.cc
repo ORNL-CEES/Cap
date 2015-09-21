@@ -163,7 +163,7 @@ build_energy_storage_device(boost::python::object & python_object)
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(python_object);
     std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(ptree.get_child("device"));
+        std::make_shared<boost::property_tree::ptree>(ptree);
     return cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 }
 
@@ -236,10 +236,6 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("evolve_one_time_step_changing_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_load   ) )
         ;
     boost::python::register_ptr_to_python<std::shared_ptr<cap::EnergyStorageDevice>>();
-
-    // deprecated
-    boost::python::def("get_current", pycap::get_current);
-    boost::python::def("get_voltage", pycap::get_voltage);
 
     boost::python::scope().attr("__version__"        ) = cap::version()        ;
     boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;

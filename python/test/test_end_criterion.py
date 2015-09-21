@@ -4,7 +4,7 @@ import unittest
 
 device_database=PropertyTree()
 device_database.parse_xml('device.xml')
-device=EnergyStorageDevice(device_database)
+device=EnergyStorageDevice(device_database.get_child('device'))
 
 class capEndCriterionTestCase(unittest.TestCase):
     def test_time_limit(self):
