@@ -6,23 +6,10 @@ is to specify complex operating conditions for energy storage devices in
 
 .. code:: python
 
-    import pycap
-    import numpy
+    from pycap import EnergyStorageDevice,PropertyTree
+    from pycap import initialize_data,report_data,plot_data
     from matplotlib import pyplot
     %matplotlib inline
-
-.. code:: python
-
-    def initialize_data():
-        return {
-            'time'   :numpy.array([],dtype=float),
-            'current':numpy.array([],dtype=float),
-            'voltage':numpy.array([],dtype=float),
-        }
-    def report_data(data,time,device):
-        data['time'   ]=numpy.append(data['time'   ],time                )
-        data['current']=numpy.append(data['current'],device.get_current())
-        data['voltage']=numpy.append(data['voltage'],device.get_voltage())
 
 The supercapacitor is initially fully discharged. It is charged to
 :math:`1.7\ \mathrm{V}` at a constant current of
@@ -45,7 +32,7 @@ measurements for the time, current and voltage.
         time_step=0.1 # second
         time=0.0
         data=initialize_data()
-        for charge_voltage in numpy.linspace(1.7,2.4,8):
+        for charge_voltage in [1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4]:
             # constant current charge
             while device.get_voltage()<charge_voltage:
                 time+=time_step
@@ -70,11 +57,11 @@ experiment.
 
 .. code:: python
 
-    device_database=pycap.PropertyTree()
-    device_database.parse_xml('super_capacitor.xml')
+    input_database=PropertyTree()
+    input_database.parse_xml('super_capacitor.xml')
     # no faradaic processes
-    device_database.put_double('device.material_properties.electrode_material.exchange_current_density',0.0)
-    device=pycap.EnergyStorageDevice(device_database)
+    input_database.put_double('device.material_properties.electrode_material.exchange_current_density',0.0)
+    device=EnergyStorageDevice(input_database.get_child('device'))
     # run experiment
     data=run_verbrugge_experiment(device)
 
