@@ -9,3 +9,4 @@ __git_commit_hash__=_pycap.__git_commit_hash__
 from .data_helpers import *
 from .time_evolution import *
 from .end_criterion import *
+from .stage import *

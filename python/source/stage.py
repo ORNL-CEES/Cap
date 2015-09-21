@@ -1,4 +1,4 @@
-__all__=['stage','multi_stage']
+__all__=['Stage','MultiStage']
 
 from .time_evolution import TimeEvolution
 from .end_criterion import EndCriterion

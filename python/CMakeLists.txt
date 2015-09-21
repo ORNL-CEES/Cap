@@ -22,6 +22,7 @@ SET(PYTHON_SOURCES
     data_helpers.py
     time_evolution.py
     end_criterion.py
+    stage.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(
