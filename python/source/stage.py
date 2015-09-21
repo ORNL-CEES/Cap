@@ -18,7 +18,7 @@ class Stage:
             time=0.0
         steps=0
         self.end_criterion.reset(time,device)
-        while not self.end_criterion.check(time,device):
+        while not self.end_criterion.check(time+0.01*self.time_step,device):
             steps+=1
             time+=self.time_step
             self.evolve_one_time_step(device,self.time_step)
