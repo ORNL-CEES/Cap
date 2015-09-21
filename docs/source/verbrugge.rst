@@ -8,7 +8,6 @@ is to specify complex operating conditions for energy storage devices in
 
     from pycap import EnergyStorageDevice,PropertyTree
     from pycap import initialize_data,report_data,plot_data
-    import numpy
     from matplotlib import pyplot
     %matplotlib inline
 
@@ -33,7 +32,7 @@ measurements for the time, current and voltage.
         time_step=0.1 # second
         time=0.0
         data=initialize_data()
-        for charge_voltage in numpy.linspace(1.7,2.4,8):
+        for charge_voltage in [1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4]:
             # constant current charge
             while device.get_voltage()<charge_voltage:
                 time+=time_step
