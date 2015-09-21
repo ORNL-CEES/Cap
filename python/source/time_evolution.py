@@ -1,6 +1,9 @@
 __all__=['TimeEvolution']
 
 class TimeEvolution:
+    def __init__(self):
+        raise RuntimeError('Use TimeEvolution.factory to construct')
+
     def factory(ptree):
         mode=ptree.get_string('type')
     
