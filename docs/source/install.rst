@@ -169,10 +169,11 @@ Launch Python and try:
 
 .. testcode::
 
-    >>> import pycap
-    >>> device_database=pycap.PropertyTree()
-    >>> device_database.parse_xml('device.xml')
-    >>> device=pycap.EnergyStorageDevice(device_database)
+    >>> from pycap import PropertyTree,EnergyStorageDevice
+    >>> input_database=PropertyTree()
+    >>> input_database.parse_xml('device.xml')
+    >>> device_database=input_database.get_child('device')
+    >>> device=EnergyStorageDevice(device_database)
 
 Build this documentation
 ------------------------
