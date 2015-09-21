@@ -19,7 +19,10 @@ INSTALL(TARGETS pycap DESTINATION ${CMAKE_INSTALL_PREFIX}/python/pycap)
 
 SET(PYTHON_SOURCES
     __init__.py
-    extra.py
+    data_helpers.py
+    time_evolution.py
+    end_criterion.py
+    stage.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(
@@ -45,6 +48,8 @@ SET(PYTHON_TESTS
     test_python_wrappers
     test_property_tree
     test_end_criterion
+    test_time_evolution
+    test_stage
 )
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)

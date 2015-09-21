@@ -38,9 +38,6 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         device_database.parse_xml('device.xml')
         device=pycap.EnergyStorageDevice(device_database)
     def test_energy_storage_device_build_database(self):
-        def build_energy_storage_device(device_database):
-            device=pycap.EnergyStorageDevice(device_database)
-            return device
         device_database=pycap.PropertyTree()
         # build a series rc equivalent circuit database
         device_database.put_string('device.type','SeriesRC')
@@ -49,9 +46,7 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         # change it to a parallel rc database
         device_database.put_string('device.type','ParallelRC')
         # database is incomplete at this time so building a device will throw
-        self.assertRaises(RuntimeError,build_energy_storage_device,device_database)
-        def throw_exception_incomplete_database(device_database):
-            device=pycap.EnergyStorageDevice(device_database)
+        self.assertRaises(RuntimeError,pycap.EnergyStorageDevice,device_database)
         # add the missing information to the database
         device_database.put_double('device.parallel_resistance',4000.0)
         # build the new energy device
