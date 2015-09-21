@@ -3,6 +3,8 @@ __all__=['EndCriterion']
 from operator import le,ge
 
 class EndCriterion:
+    def __init__(self):
+        raise RuntimeError('Use EndCriterion.factory to construct')
     def check(self,time,device):
         raise NotImplementedError
     def reset(self,time,device):
@@ -44,8 +46,14 @@ class VoltageLimit(EndCriterion):
 class CurrentLimit(EndCriterion):
     def __init__(self,ptree,compare):
         self.current_limit=ptree.get_double('current_limit')
+        if self.current_limit<=0.0:
+            raise RuntimeError(
+                "CurrentLimit end criterion check for absolute value of the "
+                "current. 'current_limit' (="+str(self.current_limit)+") "
+                "must be greater than zero."
+            )
         self.compare=compare
     def check(self,time,device):
-        return not self.compare(device.get_current(),self.current_limit)
+        return self.compare(abs(device.get_current()),self.current_limit)
     def reset(self,time,device):
         pass

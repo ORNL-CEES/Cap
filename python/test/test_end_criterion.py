@@ -1,4 +1,5 @@
 from pycap import PropertyTree,EnergyStorageDevice,EndCriterion
+from numpy import nan as NaN
 import unittest
 
 device_database=PropertyTree()
@@ -40,13 +41,59 @@ class capEndCriterionTestCase(unittest.TestCase):
         device.evolve_one_time_step_constant_voltage(0.2,2.1)
         self.assertFalse(voltage_limit.check(45.0,device))
     def test_current_limit(self):
-        # TODO
+        # lower
         ptree=PropertyTree()
-        ptree.put_string('end_criterion','current_smaller_than')
+        ptree.put_string('end_criterion','current_less_than')
+        ptree.put_double('current_limit',-5e-3)
+        self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
+        ptree.put_double('current_limit',0.0)
+        self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
+        ptree.put_double('current_limit',5e-3)
+        current_limit=EndCriterion.factory(ptree)
+        device.evolve_one_time_step_constant_current(5.0,0.0)
+        self.assertTrue(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,0.002)
+        self.assertTrue(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,-0.001)
+        self.assertTrue(current_limit.check(180.0,device))
+        device.evolve_one_time_step_constant_current(5.0,0.005)
+        self.assertTrue(current_limit.check(180.0,device))
+        device.evolve_one_time_step_constant_current(5.0,0.007)
+        self.assertFalse(current_limit.check(180.0,device))
+        device.evolve_one_time_step_constant_current(5.0,-15e3)
+        self.assertFalse(current_limit.check(180.0,device))
+        # upper
+        ptree.put_string('end_criterion','current_greater_than')
+        ptree.put_double('current_limit',-5e-3)
+        self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
+        ptree.put_double('current_limit',0.0)
+        self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
+        ptree.put_double('current_limit',5e-3)
+        current_limit=EndCriterion.factory(ptree)
+        device.evolve_one_time_step_constant_current(5.0,-1e-3)
+        self.assertFalse(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,0.002)
+        self.assertFalse(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,0.005)
+        self.assertTrue(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,-0.2)
+        self.assertTrue(current_limit.check(NaN,device))
+        device.evolve_one_time_step_constant_current(5.0,3.0)
+        self.assertTrue(current_limit.check(NaN,device))
     def test_invalid_end_criterion(self):
         ptree=PropertyTree()
         ptree.put_string('end_criterion','bad_name')
         self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
+    def test_constructor(self):
+        self.assertRaises(RuntimeError,EndCriterion)
+        self.assertRaises(TypeError,EndCriterion,PropertyTree())
+    def test_overload(self):
+        class BadCriterion(EndCriterion):
+            def __init__(self):
+                pass
+        bad_criterion=BadCriterion()
+        self.assertRaises(NotImplementedError,bad_criterion.reset,0.0,device)
+        self.assertRaises(NotImplementedError,bad_criterion.check,NaN,device)
 
 if __name__ == '__main__':
     unittest.main()
