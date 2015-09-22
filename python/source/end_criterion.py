@@ -37,6 +37,8 @@ class EndCriterion:
                 logical_operator)
         elif type=='none'                :
             return NeverSatisfied();
+        elif type=='skip'                :
+            return AlwaysSatisfied();
         else:
             raise RuntimeError("invalid EndCriterion type '"+type+"'")
 
@@ -92,5 +94,13 @@ class NeverSatisfied(EndCriterion):
         pass
     def check(self,time,device):
         return False;
+    def reset(self,time,device):
+        pass
+
+class AlwaysSatisfied(EndCriterion):
+    def __init__(self):
+        pass
+    def check(self,time,device):
+        return True;
     def reset(self,time,device):
         pass

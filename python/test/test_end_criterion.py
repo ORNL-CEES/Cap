@@ -124,6 +124,12 @@ class capEndCriterionTestCase(unittest.TestCase):
         never_statisfied=EndCriterion.factory(ptree)
         never_statisfied.reset(0.0,device)
         self.assertFalse(never_statisfied.check(NaN,device))
+    def test_always_statisfied(self):
+        ptree=PropertyTree()
+        ptree.put_string('end_criterion','skip')
+        always_statisfied=EndCriterion.factory(ptree)
+        always_statisfied.reset(0.0,device)
+        self.assertTrue(always_statisfied.check(NaN,device))
     def test_invalid_end_criterion(self):
         ptree=PropertyTree()
         ptree.put_string('end_criterion','bad_name')
