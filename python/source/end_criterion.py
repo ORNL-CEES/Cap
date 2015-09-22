@@ -1,6 +1,6 @@
 __all__=['EndCriterion']
 
-from operator import le,ge
+from operator import le,ge,or_,and_,xor
 
 class EndCriterion:
     def __init__(self):
@@ -21,6 +21,21 @@ class EndCriterion:
             return CurrentLimit(ptree,ge)
         elif type=='current_less_than'   :
             return CurrentLimit(ptree,le)
+        elif type=='compound'            :
+            op=ptree.get_string('logical_operator')
+            if   op=='or' :
+                logical_operator=or_
+            elif op=='and':
+                logical_operator=and_
+            elif op=='xor':
+                logical_operator=xor
+            else:
+                raise RuntimeError("Invalid logical operator '"+op+"' in CompoundCriterion")
+            return CompoundCriterion(
+                EndCriterion.factory(ptree.get_child('criterion_0')),
+                EndCriterion.factory(ptree.get_child('criterion_1')),
+                logical_operator)
+
         else:
             raise RuntimeError("invalid EndCriterion type '"+type+"'")
 
@@ -57,3 +72,16 @@ class CurrentLimit(EndCriterion):
         return self.compare(abs(device.get_current()),self.current_limit)
     def reset(self,time,device):
         pass
+
+class CompoundCriterion(EndCriterion):
+    def __init__(self,a,b,op):
+        self.criterion_0=a
+        self.criterion_1=b
+        self.logical_operator=op
+    def check(self,time,device):
+        return self.logical_operator(
+            self.criterion_0.check(time,device),
+            self.criterion_1.check(time,device))
+    def reset(self,time,device):
+        for end_criterion in [self.criterion_0,self.criterion_1]:
+            end_criterion.reset(time,device)
