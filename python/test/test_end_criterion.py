@@ -118,6 +118,12 @@ class capEndCriterionTestCase(unittest.TestCase):
         device.evolve_one_time_step_constant_voltage(0.1,2.0)
         self.assertTrue(compound_criterion.check(3.0,device))
         self.assertFalse(compound_criterion.check(5.0,device))
+    def test_never_statisfied(self):
+        ptree=PropertyTree()
+        ptree.put_string('end_criterion','none')
+        never_statisfied=EndCriterion.factory(ptree)
+        never_statisfied.reset(0.0,device)
+        self.assertFalse(never_statisfied.check(NaN,device))
     def test_invalid_end_criterion(self):
         ptree=PropertyTree()
         ptree.put_string('end_criterion','bad_name')

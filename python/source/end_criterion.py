@@ -35,7 +35,8 @@ class EndCriterion:
                 EndCriterion.factory(ptree.get_child('criterion_0')),
                 EndCriterion.factory(ptree.get_child('criterion_1')),
                 logical_operator)
-
+        elif type=='none'                :
+            return NeverSatisfied();
         else:
             raise RuntimeError("invalid EndCriterion type '"+type+"'")
 
@@ -85,3 +86,11 @@ class CompoundCriterion(EndCriterion):
     def reset(self,time,device):
         for end_criterion in [self.criterion_0,self.criterion_1]:
             end_criterion.reset(time,device)
+
+class NeverSatisfied(EndCriterion):
+    def __init__(self):
+        pass
+    def check(self,time,device):
+        return False;
+    def reset(self,time,device):
+        pass
