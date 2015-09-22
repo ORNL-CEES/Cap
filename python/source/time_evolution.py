@@ -5,7 +5,7 @@ class TimeEvolution:
         raise RuntimeError('Use TimeEvolution.factory to construct')
 
     def factory(ptree):
-        mode=ptree.get_string('type')
+        mode=ptree.get_string('mode')
     
         if   mode=='constant_voltage' or mode=='potentiostatic':
             constant_voltage=ptree.get_double('voltage')

@@ -26,7 +26,7 @@ class Stage:
                 report_data(data,time,device)
         return steps
 
-class MultiStage:
+class MultiStage(Stage):
     def __init__(self,ptree):
         self.stages=[]
         for stage in range(ptree.get_int('stages')):
@@ -43,4 +43,5 @@ class MultiStage:
         for cycle in range(self.cycles):
             for stage in self.stages:
                 steps+=stage.run(device,data)
-                print steps
+                #print steps
+        return steps

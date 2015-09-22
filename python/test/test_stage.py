@@ -8,7 +8,7 @@ device=EnergyStorageDevice(device_database.get_child('device'))
 class capStageTestCase(unittest.TestCase):
     def test_constant_current_charge_for_given_time(self):
         ptree=PropertyTree()
-        ptree.put_string('type','constant_current')
+        ptree.put_string('mode','constant_current')
         ptree.put_double('current',5e-3)
         ptree.put_string('end_criterion','time')
         ptree.put_double('duration',15.0)
@@ -21,7 +21,7 @@ class capStageTestCase(unittest.TestCase):
         self.assertAlmostEqual(data['current'][-1],5e-3)
     def test_force_discharge(self):
         ptree=PropertyTree()
-        ptree.put_string('type','constant_voltage')
+        ptree.put_string('mode','constant_voltage')
         ptree.put_double('voltage',0.0)
         ptree.put_string('end_criterion','current_less_than')
         ptree.put_double('current_limit',1e-5)
