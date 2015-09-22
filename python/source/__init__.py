@@ -1,4 +1,4 @@
-__all__=['_pycap','data_helpers','time_evolution','end_criterion','stage']
+__all__=['_pycap','data_helpers','time_evolution','end_criterion','stage','charge_discharge']
 
 from _pycap import *
 
@@ -10,3 +10,4 @@ from .data_helpers import *
 from .time_evolution import *
 from .end_criterion import *
 from .stage import *
+from .charge_discharge import *

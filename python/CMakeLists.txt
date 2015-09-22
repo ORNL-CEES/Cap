@@ -23,6 +23,7 @@ SET(PYTHON_SOURCES
     time_evolution.py
     end_criterion.py
     stage.py
+    charge_discharge.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(
