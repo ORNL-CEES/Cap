@@ -2,6 +2,7 @@ __all__=['Charge','Discharge','CyclicChargeDischarge']
 
 from ._pycap import PropertyTree
 from .stage import Stage,MultiStage
+from numpy import nan as NaN
 
 class Charge(MultiStage):
     def __init__(self,ptree):
@@ -11,9 +12,10 @@ class Charge(MultiStage):
         time_step=ptree.get_double('time_step')
         assert time_step>0.0
         other.put_double('time_step',time_step)
-        # charge
+        ### charge
+        # time evolution
         charge_mode=ptree.get_string('charge_mode')
-        voltage_finish=ptree.get_bool('charge_voltage_finish')
+        voltage_finish=ptree.get_bool_with_default_value('charge_voltage_finish',False)
         other.put_string('stage_0.mode',charge_mode)
         if charge_mode=='constant_current'or charge_mode=='galvanostatic':
             charge_current=ptree.get_double('charge_current')
@@ -30,25 +32,30 @@ class Charge(MultiStage):
             assert charge_power>0.0
         else:
             raise RuntimeError("invalid charge mode '"+charge_mode+"'")
+        # end criterion
+        other.put_string('stage_0.end_criterion','compound')
+        other.put_string('stage_0.logical_operator','or')
         charge_stop_at_1=ptree.get_string('charge_stop_at_1')
         if charge_stop_at_1=='voltage_greater_than':
-            other.put_string('stage_0.end_criterion','compound')
-            other.put_string('stage_0.logical_operator','or')
             other.put_string('stage_0.criterion_0.end_criterion',charge_stop_at_1)
             charge_voltage_limit=ptree.get_double('charge_voltage_limit')
             other.put_double('stage_0.criterion_0.voltage_limit',charge_voltage_limit)
+        elif charge_stop_at_1=='current_less_than':
+            other.put_string('stage_0.criterion_0.end_criterion',charge_stop_at_1)
+            charge_current_limit=ptree.get_double('charge_current_limit')
+            other.put_double('stage_0.criterion_0.current_limit',charge_current_limit)
         else:
-            raise RuntimeError('invalid charge_stop_at_1 criterion')
-        try:
-            charge_stop_at_2=ptree.get_string('charge_stop_at_2')
-            other.put_string('stage_0.criterion_1.end_criterion',charge_stop_at_2)
-            charge_max_duration=ptree.get_double('max_charge_duration')
-        except RuntimeError:
-            other.put_string('stage_0.criterion_1.end_criterion','none')
+            raise RuntimeError("invalid charge_stop_at_1 criterion '"+charge_stop_at_1+"'")
+        charge_stop_at_2=ptree.get_string_with_default_value('charge_stop_at_2','none')
+        other.put_string('stage_0.criterion_1.end_criterion',charge_stop_at_2)
+        if charge_stop_at_2!='none':
+            charge_max_duration=ptree.get_double('charge_max_duration')
+            other.put_double('stage_0.criterion_1.duration',charge_max_duration)
         # voltage finish
         other.put_string('stage_1.mode','constant_voltage')
-        other.put_double('stage_1.voltage',charge_voltage_limit)
+        other.put_double('stage_1.voltage',NaN)
         if voltage_finish:
+            other.put_double('stage_1.voltage',charge_voltage_limit)
             charge_voltage_finish_max_time=ptree.get_double('charge_voltage_finish_max_time')
             charge_voltage_finish_current_limit=ptree.get_double('charge_voltage_finish_current_limit')
             other.put_string('stage_1.end_criterion','compound')

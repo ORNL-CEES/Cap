@@ -51,6 +51,7 @@ SET(PYTHON_TESTS
     test_end_criterion
     test_time_evolution
     test_stage
+    test_charge_discharge
 )
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)
