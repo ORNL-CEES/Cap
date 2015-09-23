@@ -102,9 +102,9 @@ SuperCapacitor(std::shared_ptr<Parameters const> parameters)
         std::make_shared<ElectrochemicalOperator<dim> >(this->electrochemical_operator_params);
 
     // set null space
-    dealii::types::material_id separator_material_id         = database->get<dealii::types::material_id>("material_properties.separator_material_id"        );
-    dealii::types::material_id anode_collector_material_id   = database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"  );
-    dealii::types::material_id cathode_collector_material_id = database->get<dealii::types::material_id>("material_properties.cathode_collector_material_id");
+    dealii::types::material_id separator_material_id         = database->get<dealii::types::material_id>("geometry.separator_material_id"        );
+    dealii::types::material_id anode_collector_material_id   = database->get<dealii::types::material_id>("geometry.anode_collector_material_id"  );
+    dealii::types::material_id cathode_collector_material_id = database->get<dealii::types::material_id>("geometry.cathode_collector_material_id");
     (*this->electrochemical_operator).set_null_space(solid_potential_component , separator_material_id        );
     (*this->electrochemical_operator).set_null_space(liquid_potential_component, anode_collector_material_id  );
     (*this->electrochemical_operator).set_null_space(liquid_potential_component, cathode_collector_material_id);
