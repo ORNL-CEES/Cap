@@ -2,6 +2,24 @@ from pycap import PropertyTree
 import unittest
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
+    def test_get_with_default_value(self):
+        ptree=PropertyTree()
+        # double
+        self.assertEqual(ptree.get_double_with_default_value('missing_double',3.14),3.14)
+        ptree.put_double('present_double',1.41)
+        self.assertEqual(ptree.get_double_with_default_value('present_double',3.14),1.41)
+        # string
+        self.assertEqual(ptree.get_string_with_default_value('missing_string','missing'),'missing')
+        ptree.put_string('present_string','present')
+        self.assertEqual(ptree.get_string_with_default_value('present_string','missing'),'present')
+        # int
+        self.assertEqual(ptree.get_int_with_default_value('missing_int',255),255)
+        ptree.put_int('present_int',0)
+        self.assertEqual(ptree.get_int_with_default_value('present_int',255),0)
+        # bool
+        self.assertEqual(ptree.get_bool_with_default_value('missing_bool',True),True)
+        ptree.put_bool('present_bool',False)
+        self.assertEqual(ptree.get_bool_with_default_value('present_bool',True),False)
     def test_get_array(self):
         ptree=PropertyTree()
         # array of double

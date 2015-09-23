@@ -83,6 +83,26 @@ bool get_bool(boost::property_tree::ptree const & ptree, std::string const & pat
     return ptree.get<bool>(path);
 }
 
+double get_double_with_default_value(boost::property_tree::ptree const & ptree, std::string const & path, double const & default_value)
+{
+    return ptree.get<double>(path, default_value);
+}
+
+std::string get_string_with_default_value(boost::property_tree::ptree const & ptree, std::string const & path, std::string const & default_value)
+{
+    return ptree.get<std::string>(path, default_value);
+}
+
+int get_int_with_default_value(boost::property_tree::ptree const & ptree, std::string const & path, int const & default_value)
+{
+    return ptree.get<int>(path, default_value);
+}
+
+bool get_bool_with_default_value(boost::property_tree::ptree const & ptree, std::string const & path, bool const & default_value)
+{
+    return ptree.get<bool>(path, default_value);
+}
+
 void put_double(boost::property_tree::ptree & ptree, std::string const & path, double const & value)
 {
     ptree.put(path, value);
@@ -257,5 +277,9 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("get_array_string", &pycap::get_array_string)
         .def("get_array_int"   , &pycap::get_array_int   )
         .def("get_array_bool"  , &pycap::get_array_bool  )
+        .def("get_double_with_default_value", &pycap::get_double_with_default_value)
+        .def("get_string_with_default_value", &pycap::get_string_with_default_value)
+        .def("get_int_with_default_value"   , &pycap::get_int_with_default_value   )
+        .def("get_bool_with_default_value"  , &pycap::get_bool_with_default_value  )
         ;
 }
