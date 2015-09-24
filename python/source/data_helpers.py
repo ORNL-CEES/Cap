@@ -1,6 +1,7 @@
 __all__=[
     'initialize_data',
     'report_data',
+    'save_data',
     'plot_data',
     'open_file_in_write_mode',
 ]
@@ -19,6 +20,11 @@ def report_data(data,time,device):
     data['time'   ]=append(data['time'   ],time                )
     data['current']=append(data['current'],device.get_current())
     data['voltage']=append(data['voltage'],device.get_voltage())
+
+def save_data(data,path,fout):
+    fout[path+'/time'   ]=data['time'   ]
+    fout[path+'/current']=data['current']
+    fout[path+'/voltage']=data['voltage']
 
 def plot_data(data):
     time   =data['time'   ]
