@@ -15,7 +15,7 @@ def initialize_data():
         'voltage':array([],dtype=float),
     }
 
-def report_data(data,time,dev):
+def report_data(data,time,device):
     data['time'   ]=append(data['time'   ],time                )
     data['current']=append(data['current'],device.get_current())
     data['voltage']=append(data['voltage'],device.get_voltage())
