@@ -4,7 +4,7 @@ from numpy import trapz,count_nonzero,array,append,power
 from matplotlib import pyplot
 from ._pycap import PropertyTree
 from .charge_discharge import Charge,Discharge
-from .data_helpers import initialize_data
+from .data_helpers import initialize_data,save_data
 
 def plot_ragone_chart(data):
     power =data['power' ]
