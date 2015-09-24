@@ -2,6 +2,7 @@ __all__=[
     'initialize_data',
     'report_data',
     'plot_data',
+    'open_file_in_write_mode',
 ]
 
 from matplotlib import pyplot
@@ -14,7 +15,7 @@ def initialize_data():
         'voltage':array([],dtype=float),
     }
 
-def report_data(data,time,device):
+def report_data(data,time,dev):
     data['time'   ]=append(data['time'   ],time                )
     data['current']=append(data['current'],device.get_current())
     data['voltage']=append(data['voltage'],device.get_voltage())
@@ -26,9 +27,33 @@ def plot_data(data):
     plot_linewidth=3
     label_fontsize=20
     f,axarr=pyplot.subplots(2,sharex=True,figsize=(16,12))
-    axarr[0].plot(time,1e3*current,lw=plot_linewidth)
-    axarr[0].set_ylabel(r'$\mathrm{Current\ [mA]}$',fontsize=label_fontsize)
+    axarr[0].plot(time,current,lw=plot_linewidth)
+    axarr[0].set_ylabel(r'$\mathrm{Current\  [A]}$',fontsize=label_fontsize)
+#    axarr[0].plot(time,1e3*current,lw=plot_linewidth)
+#    axarr[0].set_ylabel(r'$\mathrm{Current\ [mA]}$',fontsize=label_fontsize)
     axarr[1].plot(time,voltage,lw=plot_linewidth)
     axarr[1].set_ylabel(r'$\mathrm{Voltage\  [V]}$',fontsize=label_fontsize)
     axarr[1].set_xlabel(r'$\mathrm{Time\     [s]}$',fontsize=label_fontsize)
     pyplot.show()
+
+from h5py import File
+from sys import stdout,exit
+
+def open_file_in_write_mode(filename):
+    try:
+        fout=File(filename,'w-')
+    except IOError:
+        print "file '%s' already exists..."%filename
+        stdout.write('overwrite it? [Y/n] ')
+        yes=set(['yes','y',''])
+        no =set(['no' ,'n'   ])
+        while True:
+            answer=raw_input().lower()
+            if answer in yes:
+                fout=File(filename,'w')
+                break
+            elif answer in no:
+                exit(0)
+            else:
+                stdout.write("Please respond with 'yes' or 'no'")
+    return fout
