@@ -11,3 +11,4 @@ from .time_evolution import *
 from .end_criterion import *
 from .stage import *
 from .charge_discharge import *
+from .ragone_chart import *
