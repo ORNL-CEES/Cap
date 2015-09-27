@@ -1,5 +1,7 @@
 #include <cap/energy_storage_device.h>
+#ifdef WITH_GSL
 #include <cap/electrochemical_impedance_spectroscopy.h>
+#endif
 #include <cap/utils.h>
 #include <cap/version.h>
 #include <boost/property_tree/ptree.hpp>
@@ -196,7 +198,11 @@ struct ElectrochemicalImpedanceSpectroscopyData {
             boost::python::extract<boost::property_tree::ptree const &>(python_database);
         std::shared_ptr<boost::property_tree::ptree> eis_database =
             std::make_shared<boost::property_tree::ptree>(database.get_child("impedance_spectroscopy"));
+#ifdef WITH_GSL
         std::map<double,std::complex<double>> eis_data = cap::impedance_spectroscopy(device, eis_database);
+#else
+        std::map<double,std::complex<double>> eis_data;
+#endif
         data.insert(eis_data.begin(), eis_data.end());
     }
     void measure_impedance(boost::python::object & python_device, boost::python::object & python_database)
@@ -207,7 +213,11 @@ struct ElectrochemicalImpedanceSpectroscopyData {
             boost::python::extract<boost::property_tree::ptree const &>(python_database);
         std::shared_ptr<boost::property_tree::ptree> eis_database =
             std::make_shared<boost::property_tree::ptree>(database.get_child("impedance_spectroscopy"));
+#ifdef WITH_GSL
         std::map<double,std::complex<double>> eis_data = cap::measure_impedance(device, eis_database);
+#else
+        std::map<double,std::complex<double>> eis_data;
+#endif
         data.insert(eis_data.begin(), eis_data.end());
     }
     boost::python::list get_frequency() const
