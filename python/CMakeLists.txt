@@ -25,6 +25,7 @@ SET(PYTHON_SOURCES
     stage.py
     charge_discharge.py
     ragone_chart.py
+    impedance_spectroscopy.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(
@@ -54,6 +55,7 @@ SET(PYTHON_TESTS
     test_stage
     test_charge_discharge
     test_ragone_chart
+    test_impedance_spectroscopy
 )
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)

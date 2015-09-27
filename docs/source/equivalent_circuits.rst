@@ -62,5 +62,5 @@ The circuit complex impedance is given by:
 
 .. math::
 
-    Z = \frac{R_L}{jR_LC\omega} + R
+    Z = \frac{R_L}{1+jR_LC\omega} + R
 
