@@ -1,6 +1,12 @@
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python/pycap)
+
+INCLUDE_DIRECTORIES(include)
 ADD_LIBRARY(pycap MODULE
     source/python_wrappers.cc
+    source/property_tree_wrappers.cc
+    source/property_tree_wrappers.h
+    source/energy_storage_device_wrappers.cc
+    source/energy_storage_device_wrappers.h
     )
 
 SET_TARGET_PROPERTIES(pycap PROPERTIES 
@@ -48,8 +54,8 @@ INSTALL(
 
 
 SET(PYTHON_TESTS
-    test_python_wrappers
-    test_property_tree
+    test_property_tree_wrappers
+    test_energy_storage_device_wrappers
     test_end_criterion
     test_time_evolution
     test_stage
