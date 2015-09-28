@@ -2,7 +2,6 @@ __all__=['Charge','Discharge','CyclicChargeDischarge']
 
 from ._pycap import PropertyTree
 from .stage import Stage,MultiStage
-from numpy import nan as NaN
 
 class Charge(MultiStage):
     def __init__(self,ptree):
@@ -53,7 +52,7 @@ class Charge(MultiStage):
             other.put_double('stage_0.criterion_1.duration',charge_max_duration)
         # voltage finish
         other.put_string('stage_1.mode','constant_voltage')
-        other.put_double('stage_1.voltage',NaN)
+        other.put_double('stage_1.voltage',0.0)
         if voltage_finish:
             other.put_double('stage_1.voltage',charge_voltage_limit)
             charge_voltage_finish_max_time=ptree.get_double('charge_voltage_finish_max_time')
