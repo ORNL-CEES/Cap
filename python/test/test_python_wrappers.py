@@ -36,6 +36,8 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         data.impedance_spectroscopy(device,eis_database)
         frequency=numpy.array(data.get_frequency())
         impedance=numpy.array(data.get_complex_impedance())
+        if not frequency:
+            return
         w=2*numpy.pi*frequency
         # the following assume the device is a parallel rc circuit
         self.assertEqual(device_database.get_string('device.type'),'ParallelRC')
