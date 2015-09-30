@@ -16,6 +16,7 @@ IF(ENABLE_DEAL_II)
         ${CMAKE_CURRENT_SOURCE_DIR}/post_processor.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.cc
         )
 ENDIF()
 IF(ENABLE_GSL)
