@@ -1,4 +1,5 @@
 #include <cap/energy_storage_device.h>
+#include <cap/equivalent_circuit.h>
 #include <boost/python/wrapper.hpp>
 #include <boost/python/object.hpp>
 #include <boost/python/list.hpp>
@@ -32,6 +33,8 @@ struct ElectrochemicalImpedanceSpectroscopyData {
     void clear();
     std::map<double,std::complex<double>> data;
 };
+
+std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object);
 
 } // end namespace pycap
 

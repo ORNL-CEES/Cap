@@ -28,6 +28,8 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("evolve_one_time_step_changing_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_voltage) )
         .def("evolve_one_time_step_changing_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_power  ) )
         .def("evolve_one_time_step_changing_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_load   ) )
+        .def("compute_equivalent_circuit", &pycap::compute_equivalent_circuit)
+        .staticmethod("compute_equivalent_circuit")
         ;
     boost::python::register_ptr_to_python<std::shared_ptr<cap::EnergyStorageDevice>>();
 
