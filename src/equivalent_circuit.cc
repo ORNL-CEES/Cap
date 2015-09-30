@@ -39,7 +39,7 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
         dof_handler.begin_active();
     // electrode
     cell->set_material_id(
-        input_database->get<dealii::types::material_id>("material_properties.anode_electrode_material_id"));
+        input_database->get<dealii::types::material_id>("geometry.anode_electrode_material_id"));
     std::vector<double> electrode_solid_electrical_conductivity_values(1);
     std::vector<double> electrode_liquid_electrical_conductivity_values(1);
     mp_values->get_values("solid_electrical_conductivity", cell, electrode_solid_electrical_conductivity_values);
@@ -71,7 +71,7 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
     std::cout<<"    cross_sectional_area="<<cross_sectional_area<<"\n";
     // separator
     cell->set_material_id(
-        input_database->get<dealii::types::material_id>("material_properties.separator_material_id"));
+        input_database->get<dealii::types::material_id>("geometry.separator_material_id"));
     std::vector<double> separator_liquid_electrical_conductivity_values(1);
     mp_values->get_values("liquid_electrical_conductivity", cell, separator_liquid_electrical_conductivity_values);
     double const separator_resistivity = 
@@ -83,7 +83,7 @@ void compute_equivalent_circuit(std::shared_ptr<boost::property_tree::ptree cons
     std::cout<<"    cross_sectional_area="<<cross_sectional_area<<"\n";
     // collector
     cell->set_material_id(
-        input_database->get<dealii::types::material_id>("material_properties.anode_collector_material_id"));
+        input_database->get<dealii::types::material_id>("geometry.anode_collector_material_id"));
     std::vector<double> collector_solid_electrical_conductivity_values(1);
     mp_values->get_values("solid_electrical_conductivity", cell, collector_solid_electrical_conductivity_values);
     double const collector_resistivity = 
