@@ -1,18 +1,22 @@
-__all__=['measure_impedance_spectrum','plot_nyquist','plot_bode']
+__all__=['measure_impedance_spectrum','plot_nyquist','plot_bode','analyze_data']
 
 from matplotlib import pyplot
 from numpy import real,imag,log10,absolute,angle,array,append,power,sin,pi,sum,isclose,fft
+from warnings import warn
 from .data_helpers import initialize_data,report_data,save_data
 
-def plot_nyquist(data):
+def plot_nyquist(data,figure=None,ls='r-s'):
     impedance=data['impedance']
     resistance=real(impedance)
     reactance =imag(impedance)
     plot_linewidth=3
     label_fontsize=30
     tick_fontsize=20
-    pyplot.figure(figsize=(14,14))
-    pyplot.plot(resistance,-reactance,lw=plot_linewidth)
+    if figure:
+        pyplot.figure(figure.number)
+    else :
+        pyplot.figure(figsize=(14,14))
+    pyplot.plot(resistance,-reactance,ls,lw=plot_linewidth)
     pyplot.axis('equal')
     pyplot.xlabel(r'$\mathrm{Resistance\ [\Omega]}$',fontsize=label_fontsize)
     pyplot.ylabel(r'$\mathrm{-Reactance\ [\Omega]}$',fontsize=label_fontsize)
@@ -50,14 +54,16 @@ def run_one_cycle(device,ptree):
     ac_amplitudes=array(ptree.get_array_double('amplitudes'))
     phases=array(ptree.get_array_double('phases'))*pi/180
     steps_per_cycle=ptree.get_int('steps_per_cycle')
+    cycles=ptree.get_int('cycles')
     time_step=1/(frequency*steps_per_cycle)
     time=0.0
     data=initialize_data()
-    for step in range(steps_per_cycle):
-        time+=time_step
-        excitation_signal=dc_voltage+sum(ac_amplitudes*sin(2*pi*harmonics*frequency*time+phases))
-        device.evolve_one_time_step_changing_voltage(time_step,excitation_signal)
-        report_data(data,time,device)
+    for cycle in range(cycles):
+        for step in range(steps_per_cycle):
+            time+=time_step
+            excitation_signal=dc_voltage+sum(ac_amplitudes*sin(2*pi*harmonics*frequency*time+phases))
+            device.evolve_one_time_step_changing_voltage(time_step,excitation_signal)
+            report_data(data,time,device)
     return data
 
 def analyze_data(data,ptree):
@@ -71,18 +77,40 @@ def analyze_data(data,ptree):
     # check sampling spacing is the same everywhere
     for i in range(n-1):
         assert isclose(time[i+1]-time[i],d,atol=1e-10,rtol=1e-10)
-    harmonics=array(ptree.get_array_int('harmonics'))
+
+    steps_per_cycle=ptree.get_int('steps_per_cycle')
+    cycles=ptree.get_int('cycles')
+    ignore_cycles=ptree.get_int('ignore_cycles')
+    assert cycles>ignore_cycles
+    assert n==cycles*steps_per_cycle
+    def is_power_of_two(x):
+        return (x!=0) and (x&(x-1)==0)
+    if not is_power_of_two(n):
+        warn(
+            "(cycles-ignore_cycles)*steps_per_cycles is not a "
+            "power of 2 (most efficient for the fourier analysis)",
+            RuntimeWarning)
+
+    # truncate signals
+    n=(cycles-ignore_cycles)*steps_per_cycle
+    time   =time   [ignore_cycles*steps_per_cycle:]
+    current=current[ignore_cycles*steps_per_cycle:]
+    voltage=voltage[ignore_cycles*steps_per_cycle:]
+    assert len(time   )==n
+    assert len(current)==n
+    assert len(voltage)==n
     
     fft_current=fft.rfft(current)/n
     fft_voltage=fft.rfft(voltage)/n
     fft_frequency=fft.rfftfreq(n,d)
 
+    harmonics=array(ptree.get_array_int('harmonics'))*(cycles-ignore_cycles)
     frequency=fft_frequency[harmonics]
     impedance=fft_voltage[harmonics]/fft_current[harmonics]
-    
+
     return [frequency,impedance]
 
-def measure_impedance_spectrum(device,ptree,fout={}):
+def measure_impedance_spectrum(device,ptree,fout=None,dummy=None):
     frequency_upper_limit=ptree.get_double('frequency_upper_limit')
     frequency_lower_limit=ptree.get_double('frequency_lower_limit')
     steps_per_decade     =ptree.get_int   ('steps_per_decade'     )
@@ -98,5 +126,7 @@ def measure_impedance_spectrum(device,ptree,fout={}):
         f,Z=analyze_data(data,ptree)
         eis_data['impedance']=append(eis_data['impedance'],Z)
         eis_data['frequency']=append(eis_data['frequency'],f)
+        if dummy:
+            dummy(eis_data)
         frequency/=power(10.0,1.0/steps_per_decade)
     return eis_data
