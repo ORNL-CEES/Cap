@@ -103,10 +103,10 @@ PorousElectrodeMPValues(MPValuesParameters<dim, spacedim> const & parameters)
         }
         );
     (this->properties).emplace("solid_electrical_conductivity",
-        [electrical_conductivity]
+        [electrical_conductivity,void_volume_fraction]
         (active_cell_iterator const &, std::vector<double> & values)
         {
-            std::fill(values.begin(), values.end(), electrical_conductivity);
+            std::fill(values.begin(), values.end(), (1.0 - void_volume_fraction) * electrical_conductivity);
         }
         );
 
