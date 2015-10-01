@@ -1,5 +1,5 @@
-Getting started
-===============
+Installation
+============
 
 This section provide guidelines for installing cap and its TPLs.
 We recommend out-of-source builds.

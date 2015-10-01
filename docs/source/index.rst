@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   overview
    install
    equivalent_circuits
    super_capacitor
