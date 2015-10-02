@@ -10,7 +10,8 @@ def plot_ragone(data,figure=None,ls='r-o'):
     power =data['power' ]
     energy=data['energy']
     plot_linewidth=3
-    label_fontsize=20
+    label_fontsize=30
+    tick_fontsize=20
     if figure:
         pyplot.figure(figure.number)
     else :
@@ -20,6 +21,8 @@ def plot_ragone(data,figure=None,ls='r-o'):
     pyplot.yscale('log')
     pyplot.xlabel(r'$\mathrm{Power\  [W]}$',fontsize=label_fontsize)
     pyplot.ylabel(r'$\mathrm{Energy\ [J]}$',fontsize=label_fontsize)
+    pyplot.gca().get_xaxis().set_tick_params(labelsize=tick_fontsize)
+    pyplot.gca().get_yaxis().set_tick_params(labelsize=tick_fontsize)
 
 def run_discharge(device,ptree):
 
