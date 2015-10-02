@@ -1,25 +1,25 @@
-__all__=['measure_ragone_chart','plot_ragone_chart']
+__all__=['measure_performance','plot_ragone','retrieve_performance_data']
 
-from numpy import trapz,count_nonzero,array,append,power
+from numpy import trapz,count_nonzero,array,append,power,argsort
 from matplotlib import pyplot
 from ._pycap import PropertyTree
 from .charge_discharge import Charge,Discharge
 from .data_helpers import initialize_data,save_data
 
-def plot_ragone_chart(data):
+def plot_ragone(data,figure=None,ls='r-o'):
     power =data['power' ]
     energy=data['energy']
     plot_linewidth=3
     label_fontsize=20
-    fig=pyplot.figure(figsize=(16,12))
-    pyplot.plot(power,energy,'r-o',lw=plot_linewidth)
+    if figure:
+        pyplot.figure(figure.number)
+    else :
+        pyplot.figure(figsize=(16,12))
+    pyplot.plot(power,energy,ls,lw=plot_linewidth)
     pyplot.xscale('log')
     pyplot.yscale('log')
     pyplot.xlabel(r'$\mathrm{Power\  [W]}$',fontsize=label_fontsize)
     pyplot.ylabel(r'$\mathrm{Energy\ [J]}$',fontsize=label_fontsize)
-    pyplot.show()
-
-
 
 def run_discharge(device,ptree):
 
@@ -77,14 +77,14 @@ def examine_discharge(data):
 
 
 
-def measure_ragone_chart(device,ptree,fout={}):
+def measure_performance(device,ptree,fout=None,dummy=None):
     discharge_power_lower_limit=ptree.get_double('discharge_power_lower_limit')
     discharge_power_upper_limit=ptree.get_double('discharge_power_upper_limit')
     steps_per_decade           =ptree.get_int   ('steps_per_decade'           )
     min_steps_per_discharge    =ptree.get_int   ('min_steps_per_discharge'    )
     max_steps_per_discharge    =ptree.get_int   ('max_steps_per_discharge'    )
     discharge_power=discharge_power_lower_limit
-    ragone_chart_data={'energy':array([],dtype=float),'power':array([],dtype=float)}
+    performance_data={'energy':array([],dtype=float),'power':array([],dtype=float)}
     while discharge_power<=discharge_power_upper_limit:
         #print discharge_power
         ptree.put_double('discharge_power',discharge_power)
@@ -108,7 +108,30 @@ def measure_ragone_chart(device,ptree,fout={}):
             print 'Failed to discharge at %f watt'%discharge_power
             break
         # TODO:
-        ragone_chart_data['energy']=append(ragone_chart_data['energy'],-energy_out)
-        ragone_chart_data['power' ]=append(ragone_chart_data['power' ],discharge_power)
+        performance_data['energy']=append(performance_data['energy'],-energy_out)
+        performance_data['power' ]=append(performance_data['power' ],discharge_power)
+        if dummy:
+            dummy(performance_data)
         discharge_power*=power(10.0,1.0/steps_per_decade)
-    return ragone_chart_data
+    return performance_data
+
+
+
+def retrieve_performance_data(fin):
+    path='ragone_chart_data'
+    performance_data={'power':array([],dtype=float),'energy':array([],dtype=float)}
+    for key in fin[path].keys():
+        start=key.find('=')+1
+        end=key.find('W')
+        power=float(key[start:end])
+        for measurement in ['second','first']:
+            if measurement in fin[path][key].keys():
+                discharge_data=fin[path][key][measurement]
+                (energy_in,energy_out)=examine_discharge(discharge_data)
+                performance_data['power' ]=append(performance_data['power' ],power)
+                performance_data['energy']=append(performance_data['energy'],-energy_out)
+                break
+    sort=argsort(performance_data['power'])
+    performance_data['power' ]=performance_data['power' ][sort]
+    performance_data['energy']=performance_data['energy'][sort]
+    return performance_data

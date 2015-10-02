@@ -1,5 +1,5 @@
 from pycap import PropertyTree,EnergyStorageDevice
-from pycap import measure_ragone_chart
+from pycap import measure_performance,retrieve_performance_data
 from numpy import sqrt,log,inf,linalg
 import unittest
 
@@ -21,20 +21,45 @@ def setup_expertiment():
     ragone_database.put_int   ('max_steps_per_discharge'    ,3000)
     return ragone_database
 
-class capRagoneChartTestCase(unittest.TestCase):
+class capRagonePlotTestCase(unittest.TestCase):
+    def testRetrieveData(self):
+        try:
+            from h5py import File
+        except ImportError:
+            print 'module h5py not found'
+            return
+        device_database=PropertyTree()
+        device_database.put_string('type','SeriesRC')
+        device_database.put_double('series_resistance',R)
+        device_database.put_double('capacitance'      ,C)
+        device=EnergyStorageDevice(device_database)
+        ragone_database=setup_expertiment()
+        ragone_database.put_int   ('min_steps_per_discharge', 20)
+        ragone_database.put_int   ('max_steps_per_discharge', 30)
+        ragone_database.put_int   ('steps_per_decade'       ,  2)
+        ragone_database.put_double('time_step'              ,1.5)
+        fout=File('trash.hdf5','w')
+        performance_data=measure_performance(device,ragone_database,fout)
+        fout.close()
+        fin=File('trash.hdf5','r')
+        retrieved_data=retrieve_performance_data(fin)
+        fin.close()
+        # a few digits are lost when power is converted to string
+        self.assertLess(linalg.norm(performance_data['power' ]-retrieved_data['power' ],inf),1e-12)
+        self.assertEqual(linalg.norm(performance_data['energy']-retrieved_data['energy'],inf),0.0)
     def testSeriesRC(self):
         # make series RC equivalent circuit
         device_database=PropertyTree()
         device_database.put_string('type','SeriesRC')
         device_database.put_double('series_resistance',R)
-        device_database.put_double('capacitance'      ,C)      
+        device_database.put_double('capacitance'      ,C)
         device=EnergyStorageDevice(device_database)
         # setup experiment and measure 
         ragone_database=setup_expertiment()
-        ragone_chart_data=measure_ragone_chart(device,ragone_database)
+        performance_data=measure_performance(device,ragone_database)
         # extract data
-        E_computed=ragone_chart_data['energy']
-        P         =ragone_chart_data['power' ]
+        E_computed=performance_data['energy']
+        P         =performance_data['power' ]
         # compute the exact solution
         U_0=U_i/2+sqrt(U_i**2/4-R*P)
         E_exact=C/2*(-R*P*log(U_0**2/U_f**2)+U_0**2-U_f**2)
@@ -47,14 +72,14 @@ class capRagoneChartTestCase(unittest.TestCase):
         device_database.put_string('type','ParallelRC')
         device_database.put_double('series_resistance'  ,R  )
         device_database.put_double('parallel_resistance',R_L)
-        device_database.put_double('capacitance'        ,C  )      
+        device_database.put_double('capacitance'        ,C  )
         device=EnergyStorageDevice(device_database)
         # setup experiment and measure 
         ragone_database=setup_expertiment()
-        ragone_chart_data=measure_ragone_chart(device,ragone_database)
+        performance_data=measure_performance(device,ragone_database)
         # extract data
-        E_computed=ragone_chart_data['energy']
-        P         =ragone_chart_data['power' ]
+        E_computed=performance_data['energy']
+        P         =performance_data['power' ]
         # compute the exact solution
         U_0=U_i/2+sqrt(U_i**2/4-R*P)
         tmp=(U_f**2/R_L+P*(1+R/R_L))/(U_0**2/R_L+P*(1+R/R_L))
