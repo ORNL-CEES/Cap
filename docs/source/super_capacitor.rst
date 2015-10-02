@@ -45,44 +45,8 @@ independently from one another. The overall sandwich height and depth (in
     4: anode collector,
     5: cathode collector.
 
-Material properties
+Governing equations
 -------------------
-
-.. literalinclude:: super_capacitor.xml
-    :language: xml
-    :start-after: <!-- material_properties begin -->
-    :end-before: <!-- material_properties end -->
-
-
-The specific surface area per unit volume :math:`a` is estimated using
-
-.. math::
-
-    a = \varepsilon \frac{1+\zeta}{r}
-
-where :math:`\zeta` is the pore's geometry factor (:math:`\zeta=2` for
-spheres, :math:`1` for cylinders, and :math:`0` for slabs) and :math:`r` is
-the pore's characteristic dimension.
-[M. W. Verbrugge and B. J. Koch, J. Electrochem. Soc., 150, A374 2003]
-
-The solution electrical conductivity :math:`\kappa` incorporates the effect
-of porosity and tortuosity
-
-.. math::
-
-    \kappa = \frac{\kappa_\infty \varepsilon}{\Gamma}
-
-where :math:`\kappa_\infty` is the liquid phase (free solution) conductivity,
-:math:`\varepsilon` is the void volume fraction, and :math:`\kappa` is the
-tortuosity factor.
-
-The solid phase conductivity is also corrected for porosity (and tortuosity???)
-
-.. math::
-
-    \sigma = \sigma_\infty (1-\varepsilon)
-
-
 
 +--------------------------------+------------------------------------------------+--------------------------------+
 | collector                      | electrode                                      | separator                      |
@@ -97,17 +61,16 @@ The solid phase conductivity is also corrected for porosity (and tortuosity???)
 |                                |                                                |                                |
 +--------------------------------+------------------------------------------------+--------------------------------+
 
-+---------------------------------------------------------------------+---------------------------------------------------------------------+
-| collector-electrode interface                                       |  electrode-separator interface                                      |
-+=====================================================================+=====================================================================+
-|.. math::                                                            |.. math::                                                            |
-|                                                                     |                                                                     |
-|    0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_+  |    -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_-        |
-|                                                                     |        = -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_+  |
-|    -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_-        |                                                                     |
-|        = -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_+  |    -\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_- = 0  |
-|                                                                     |                                                                     |
-+---------------------------------------------------------------------+---------------------------------------------------------------------+
++------------------------------------------------------------------------+------------------------------------------------------------------------+
+| collector-electrode interface                                          |  electrode-separator interface                                         |
++========================================================================+========================================================================+
+|.. math::                                                               |.. math::                                                               |
+|                                                                        |                                                                        |
+|    0 &= -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e \\ |    -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e           |
+|    -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c           |        &= -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s \\ |
+|        &= -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e    |    -\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e &= 0    |
+|                                                                        |                                                                        |
++------------------------------------------------------------------------+------------------------------------------------------------------------+
 
 +------------------------------------------------------------+
 | boundary collector tab                                     |
@@ -134,9 +97,6 @@ The solid phase conductivity is also corrected for porosity (and tortuosity???)
 |                                                            |
 |    -\sigma \frac{\partial \Phi_1}{\partial n} R S = \Phi_1 |
 +------------------------------------------------------------+
-
-Governing equations
-^^^^^^^^^^^^^^^^^^^
 
 Ignoring the influence of the electrolyte concentration, the current density
 in the matrix and solution phases can be expressed by Ohm’s law as
@@ -179,4 +139,43 @@ for Faraday’s constant, the universal gas constant and temperature.
 .. math::
 
     \eta = \Phi_1 - \Phi_2 - U_{eq}
+
+
+Material properties
+-------------------
+
+.. literalinclude:: super_capacitor.xml
+    :language: xml
+    :start-after: <!-- material_properties begin -->
+    :end-before: <!-- material_properties end -->
+
+
+The specific surface area per unit volume :math:`a` is estimated using
+
+.. math::
+
+    a = \frac{(1+\zeta)\varepsilon}{r}
+
+where :math:`\zeta` is the pore's geometry factor (:math:`\zeta=2` for
+spheres, :math:`1` for cylinders, and :math:`0` for slabs) and :math:`r` is
+the pore's characteristic dimension.
+[M. W. Verbrugge and B. J. Koch, J. Electrochem. Soc., 150, A374 2003]
+
+The solution electrical conductivity :math:`\kappa` incorporates the effect
+of porosity and tortuosity
+
+.. math::
+
+    \kappa = \frac{\kappa_\infty \varepsilon}{\Gamma}
+
+where :math:`\kappa_\infty` is the liquid phase (free solution) conductivity,
+:math:`\varepsilon` is the void volume fraction, and :math:`\kappa` is the
+tortuosity factor.
+
+The solid phase conductivity is also corrected for porosity (and tortuosity???)
+
+.. math::
+
+    \sigma = \sigma_\infty (1-\varepsilon)
+
 
