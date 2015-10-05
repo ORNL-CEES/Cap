@@ -30,7 +30,7 @@ SET(PYTHON_SOURCES
     end_criterion.py
     stage.py
     charge_discharge.py
-    ragone_chart.py
+    ragone_plot.py
     impedance_spectroscopy.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
@@ -60,7 +60,7 @@ SET(PYTHON_TESTS
     test_time_evolution
     test_stage
     test_charge_discharge
-    test_ragone_chart
+    test_ragone_plot
     test_impedance_spectroscopy
 )
 
