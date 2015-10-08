@@ -1,5 +1,5 @@
 from pycap import PropertyTree,EnergyStorageDevice
-from pycap import measure_impedance_spectrum,analyze_data,initialize_data
+from pycap import measure_impedance_spectrum,retrieve_impedance_spectrum,fourier_analysis,initialize_data
 from numpy import sqrt,log,inf,linalg,real,imag,pi,log10,absolute,angle
 from numpy import array,testing
 from warnings import catch_warnings,simplefilter
@@ -32,37 +32,64 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         ptree.put_string('harmonics','1')
         # uninitialized data
         data={}
-        self.assertRaises(KeyError,analyze_data,data,ptree)
+        self.assertRaises(KeyError,fourier_analysis,data,ptree)
         # empty data
         data=initialize_data()
-        self.assertRaises(IndexError,analyze_data,data,ptree)
+        self.assertRaises(IndexError,fourier_analysis,data,ptree)
         # bad data
         data['time'   ]=array([1,2,3],dtype=float)
         data['current']=array([4,5,6],dtype=float)
         data['voltage']=array([7,8],dtype=float)
-        self.assertRaises(AssertionError,analyze_data,data,ptree)
+        self.assertRaises(AssertionError,fourier_analysis,data,ptree)
         # poor data (size not a power of 2)
         data['voltage']=array([7,8,9],dtype=float)
         with catch_warnings():
             simplefilter("error")
-            self.assertRaises(RuntimeWarning,analyze_data,data,ptree)
+            self.assertRaises(RuntimeWarning,fourier_analysis,data,ptree)
         # data unchanged after analyze
         dummy=array([1,2,3,4,5,6,7,8],dtype=float)
         data['time'   ]=dummy
         data['current']=dummy
         data['voltage']=dummy
         # ptree needs to be updated
-        self.assertRaises(AssertionError,analyze_data,data,ptree)
+        self.assertRaises(AssertionError,fourier_analysis,data,ptree)
         ptree.put_int('steps_per_cycle',4)
         ptree.put_int('cycles',2)
         ptree.put_int('ignore_cycles',0)
-        analyze_data(data,ptree)
+        fourier_analysis(data,ptree)
         try:
             testing.assert_array_equal(data['time'   ],dummy)
             testing.assert_array_equal(data['current'],dummy)
             testing.assert_array_equal(data['voltage'],dummy)
         except AssertionError:
              self.fail('data should not be changed by the fourier analyzis')
+    def testRetrieveData(self):
+        try:
+            from h5py import File
+        except ImportError:
+            print 'module h5py not found'
+            return
+        device_database=PropertyTree()
+        device_database.put_string('type','SeriesRC')
+        device_database.put_double('series_resistance',R)
+        device_database.put_double('capacitance'      ,C)
+        device=EnergyStorageDevice(device_database)
+        eis_database=setup_expertiment()
+        eis_database.put_int   ('steps_per_decade',1)
+        eis_database.put_int   ('steps_per_cycle',64)
+        eis_database.put_int   ('cycles',2)
+        eis_database.put_int   ('ignore_cycles',1)
+        fout=File('trash.hdf5','w')
+        spectrum_data=measure_impedance_spectrum(device,eis_database,fout)
+        fout.close()
+        fin=File('trash.hdf5','r')
+        retrieved_data=retrieve_impedance_spectrum(fin)
+        fin.close()
+        print spectrum_data['impedance']-retrieved_data['impedance']
+        print retrieved_data
+        self.assertEqual(linalg.norm(spectrum_data['frequency']-retrieved_data['frequency'],inf),0.0)
+        # not sure why we don't get equality for the impedance
+        self.assertLess(linalg.norm(spectrum_data['impedance']-retrieved_data['impedance'],inf),1e-12)
     def testSeriesRC(self):
         # make series RC equivalent circuit
         device_database=PropertyTree()

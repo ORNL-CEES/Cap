@@ -1,9 +1,14 @@
-__all__=['measure_impedance_spectrum','plot_nyquist','plot_bode','analyze_data']
+__all__=['measure_impedance_spectrum','plot_nyquist','plot_bode',
+    'fourier_analysis',
+    'retrieve_impedance_spectrum']
 
 from matplotlib import pyplot
-from numpy import real,imag,log10,absolute,angle,array,append,power,sin,pi,sum,isclose,fft
+from numpy import real,imag,log10,absolute,angle,array,append,power,sin,pi,sum,isclose,fft,mean,argsort
 from warnings import warn
 from .data_helpers import initialize_data,report_data,save_data
+
+def _is_power_of_two(x):
+    return (x!=0) and (x&(x-1)==0)
 
 def plot_nyquist(data,figure=None,ls='r-s'):
     impedance=data['impedance']
@@ -66,55 +71,11 @@ def run_one_cycle(device,ptree):
             report_data(data,time,device)
     return data
 
-def analyze_data(data,ptree):
-    time   =data['time'   ]
-    current=data['current']
-    voltage=data['voltage']
-    n=len(time) # normalization factor for fft
-    assert len(current)==n
-    assert len(voltage)==n
-    d=time[1]-time[0] # inverse of the sampling rate
-    # check sampling spacing is the same everywhere
-    for i in range(n-1):
-        assert isclose(time[i+1]-time[i],d,atol=1e-10,rtol=1e-10)
-
-    steps_per_cycle=ptree.get_int('steps_per_cycle')
-    cycles=ptree.get_int('cycles')
-    ignore_cycles=ptree.get_int('ignore_cycles')
-    assert cycles>ignore_cycles
-    assert n==cycles*steps_per_cycle
-    def is_power_of_two(x):
-        return (x!=0) and (x&(x-1)==0)
-    if not is_power_of_two(n):
-        warn(
-            "(cycles-ignore_cycles)*steps_per_cycles is not a "
-            "power of 2 (most efficient for the fourier analysis)",
-            RuntimeWarning)
-
-    # truncate signals
-    n=(cycles-ignore_cycles)*steps_per_cycle
-    time   =time   [ignore_cycles*steps_per_cycle:]
-    current=current[ignore_cycles*steps_per_cycle:]
-    voltage=voltage[ignore_cycles*steps_per_cycle:]
-    assert len(time   )==n
-    assert len(current)==n
-    assert len(voltage)==n
-    
-    fft_current=fft.rfft(current)/n
-    fft_voltage=fft.rfft(voltage)/n
-    fft_frequency=fft.rfftfreq(n,d)
-
-    harmonics=array(ptree.get_array_int('harmonics'))*(cycles-ignore_cycles)
-    frequency=fft_frequency[harmonics]
-    impedance=fft_voltage[harmonics]/fft_current[harmonics]
-
-    return [frequency,impedance]
-
 def measure_impedance_spectrum(device,ptree,fout=None,dummy=None):
     frequency_upper_limit=ptree.get_double('frequency_upper_limit')
     frequency_lower_limit=ptree.get_double('frequency_lower_limit')
     steps_per_decade     =ptree.get_int   ('steps_per_decade'     )
-    eis_data={'frequency':array([],dtype=float),'impedance':array([],dtype=float)}
+    eis_data={'frequency':array([],dtype=float),'impedance':array([],dtype=complex)}
     frequency=frequency_upper_limit
     while frequency>=frequency_lower_limit:
         #print frequency
@@ -123,10 +84,89 @@ def measure_impedance_spectrum(device,ptree,fout=None,dummy=None):
         if fout:
             path='/eis_data/frequency='+str(frequency)+'Hz'
             save_data(data,path,fout)
-        f,Z=analyze_data(data,ptree)
-        eis_data['impedance']=append(eis_data['impedance'],Z)
+        f,Z=fourier_analysis(data,ptree)
         eis_data['frequency']=append(eis_data['frequency'],f)
+        eis_data['impedance']=append(eis_data['impedance'],Z)
         if dummy:
             dummy(eis_data)
         frequency/=power(10.0,1.0/steps_per_decade)
     return eis_data
+
+def retrieve_impedance_spectrum(fin):
+    path='eis_data'
+    eis_data={'frequency':array([],dtype=float),'impedance':array([],dtype=complex)}
+    for key in fin[path].keys():
+        start=key.find('=')+1
+        end=key.find('Hz')
+        frequency=float(key[start:end])
+        cycling_data=fin[path][key]
+        f,Z=fourier_analysis(cycling_data)
+        eis_data['frequency']=append(eis_data['frequency'],f)
+        eis_data['impedance']=append(eis_data['impedance'],Z)
+    sort=argsort(eis_data['frequency'])
+    eis_data['frequency']=eis_data['frequency'][sort]
+    eis_data['impedance']=eis_data['impedance'][sort]
+    eis_data['frequency']=eis_data['frequency'][::-1]
+    eis_data['impedance']=eis_data['impedance'][::-1]
+    return eis_data
+
+from .peak_detection import peakdet
+
+def fourier_analysis(data,ptree=None):
+    time   =data['time'   ]
+    current=data['current']
+    voltage=data['voltage']
+
+    # inspect data
+    n=len(time) # normalization factor for fft
+    assert len(current)==n
+    assert len(voltage)==n
+    d=time[1]-time[0] # inverse of the sampling rate
+    # check sampling spacing is the same everywhere
+    for i in range(n-1):
+        assert isclose(time[i+1]-time[i],d,atol=1e-10,rtol=1e-10)
+
+    # truncate signals
+    if ptree:
+        steps_per_cycle=ptree.get_int('steps_per_cycle')
+        cycles         =ptree.get_int('cycles'         )
+        ignore_cycles  =ptree.get_int('ignore_cycles'  )
+        assert cycles>ignore_cycles
+        assert n==cycles*steps_per_cycle
+        time   =time   [ignore_cycles*steps_per_cycle:]
+        current=current[ignore_cycles*steps_per_cycle:]
+        voltage=voltage[ignore_cycles*steps_per_cycle:]
+    else:
+        time   =time   [n/2:]
+        current=current[n/2:]
+        voltage=voltage[n/2:]
+
+    n=len(time)
+    assert len(current)==n
+    assert len(voltage)==n
+
+    if not _is_power_of_two(n):
+        warn(
+            "(cycles-ignore_cycles)*steps_per_cycles is not a "
+            "power of 2 (most efficient for the fourier analysis)",
+            RuntimeWarning)
+
+    # perform the actual fourrier analaysis
+    fft_current=fft.rfft(current)/n
+    fft_voltage=fft.rfft(voltage)/n
+    fft_frequency=fft.rfftfreq(n,d)
+
+    # find the excited harmonics
+    if ptree:
+        harmonics=array(ptree.get_array_int('harmonics'))
+        peak_indices=harmonics*(cycles-ignore_cycles)
+    else:
+        mx,mn=peakdet(absolute(fft_voltage),mean(absolute(fft_current)))
+        peak_indices=int(mx[:,0])
+        mx,mn=peakdet(absolute(fft_voltage),mean(absolute(fft_current)))
+        assert peak_indices==mx[:,0]
+
+    frequency=fft_frequency[peak_indices]
+    impedance=fft_voltage[peak_indices]/fft_current[peak_indices]
+
+    return [frequency,impedance]
