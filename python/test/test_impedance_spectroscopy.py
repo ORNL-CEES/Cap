@@ -89,7 +89,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         print retrieved_data
         self.assertEqual(linalg.norm(spectrum_data['frequency']-retrieved_data['frequency'],inf),0.0)
         # not sure why we don't get equality for the impedance
-        self.assertLess(linalg.norm(spectrum_data['impedance']-retrieved_data['impedance'],inf),1e-12)
+        self.assertLess(linalg.norm(spectrum_data['impedance']-retrieved_data['impedance'],inf),1e-10)
     def testSeriesRC(self):
         # make series RC equivalent circuit
         device_database=PropertyTree()
