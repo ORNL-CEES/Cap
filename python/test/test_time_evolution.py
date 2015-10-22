@@ -52,8 +52,8 @@ class capTimeEvolutionTestCase(unittest.TestCase):
         ptree.put_string('mode','unexpected')
         self.assertRaises(RuntimeError,TimeEvolution.factory,ptree)
     def test_constructor(self):
-        self.assertRaises(RuntimeError,TimeEvolution)
-        self.assertRaises(TypeError,TimeEvolution,PropertyTree())
+        self.assertRaises(TypeError,TimeEvolution)
+        self.assertRaises(RuntimeError,TimeEvolution,PropertyTree())
     
 if __name__ == '__main__':
     unittest.main()
