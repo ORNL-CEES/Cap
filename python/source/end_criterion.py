@@ -3,7 +3,7 @@ __all__=['EndCriterion']
 from operator import le,ge,or_,and_,xor
 
 class EndCriterion:
-    def __init__(self):
+    def __init__(self,ptree):
         raise RuntimeError('Use EndCriterion.factory to construct')
     def check(self,time,device):
         raise NotImplementedError

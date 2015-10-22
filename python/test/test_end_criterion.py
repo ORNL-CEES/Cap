@@ -135,8 +135,8 @@ class capEndCriterionTestCase(unittest.TestCase):
         ptree.put_string('end_criterion','bad_name')
         self.assertRaises(RuntimeError,EndCriterion.factory,ptree)
     def test_constructor(self):
-        self.assertRaises(RuntimeError,EndCriterion)
-        self.assertRaises(TypeError,EndCriterion,PropertyTree())
+        self.assertRaises(TypeError,EndCriterion)
+        self.assertRaises(RuntimeError,EndCriterion,PropertyTree())
     def test_overload(self):
         class BadCriterion(EndCriterion):
             def __init__(self):
