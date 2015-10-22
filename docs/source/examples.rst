@@ -6,6 +6,11 @@ Constant current charge constant voltage discharge
 
 .. include:: verbrugge.rst
 
+Cyclic charge discharge
+-----------------------
+
+.. include:: cyclic_charge_discharge.rst
+
 Electrochemical impedance spectroscopy
 --------------------------------------
 
