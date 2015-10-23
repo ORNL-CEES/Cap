@@ -19,16 +19,6 @@ rates at the lower end of this range allow slow processes to occur; fast
 scans often show lower capacitance than slower scans and may produce
 large currents on high-value capacitors.
 
-Four parameters define the CV sweep range: The scan starts at
-``initial_voltage``, ramps to ``scan_limit_1``, reverses and goes to
-``scan_limit_2``. Additional cycles start and end at ``scan_limit_2``.
-The scan ends at ``final_voltage``. The rate of voltage change over time
-:math:`\frac{dU}{dt}` is specified using ``scan_rate`` which is here set
-to :math:`100\ \mathrm{mV/s}`. The sweep range is
-[:math:`2.4\ \mathrm{V}`, :math:`-0.5\ \mathrm{V}`]. The scan both
-starts and finishes at :math:`0\ \mathrm{V}`. The linear ramp is imposed
-in increments of :math:`5\ \mathrm{mV}`.
-
 .. code-block:: python
 
     from pycap import PropertyTree,EnergyStorageDevice,CyclicVoltammetry
