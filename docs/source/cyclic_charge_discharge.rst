@@ -17,7 +17,7 @@ steps:
    :math:`0.7 \mathrm{V}`
 5. rest at open circuit potential for :math:`5\ \mathrm{s}`
 
-.. code:: python
+.. code-block:: python
 
     from pycap import PropertyTree,CyclicChargeDischarge,EnergyStorageDevice
 
@@ -43,6 +43,7 @@ steps:
     ptree.put_double('discharge_rest_time',5)
     
     ccd=CyclicChargeDischarge(ptree)
+
 
 
 The property tree is populated interactively here but it can parse
@@ -74,7 +75,7 @@ Let's build an energy storage device, here a simple series RC circuit,
 with a :math:`40\ \mathrm{m\Omega}` resistor and a :math:`3\ \mathrm{F}`
 capacitor, and run the experiment.
 
-.. code:: python
+.. code-block:: python
 
     # build an energy storage device
     ptree=PropertyTree()
