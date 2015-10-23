@@ -1,8 +1,8 @@
 Equivalent circuits
-===================
+-------------------
 
 Series RC
----------
+^^^^^^^^^
 
 .. figure:: series_rc.png
 
@@ -36,7 +36,7 @@ and :math:`R` becomes significant.
 
 
 Parallel RC
------------
+^^^^^^^^^^^
 
 .. figure:: parallel_rc.png
    

@@ -1,5 +1,5 @@
 Supercapacitors
-===============
+---------------
 
 ``type`` is set to ``SuperCapacitor``.
 ``dim`` is used to select two- or three-dimensional simulations.
@@ -19,7 +19,7 @@ Supercapacitors
 
 
 Geometry
---------
+^^^^^^^^
 
 .. literalinclude:: super_capacitor.xml
     :language: xml
@@ -46,7 +46,7 @@ independently from one another. The overall sandwich height and depth (in
     5: cathode collector.
 
 Governing equations
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 +--------------------------------+------------------------------------------------+--------------------------------+
 | collector                      | electrode                                      | separator                      |
@@ -142,7 +142,7 @@ for Faraday’s constant, the universal gas constant and temperature.
 
 
 Material properties
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: super_capacitor.xml
     :language: xml

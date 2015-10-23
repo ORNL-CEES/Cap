@@ -13,9 +13,8 @@ Contents:
 
    overview
    install
-   equivalent_circuits
-   super_capacitor
-   battery
+   energy_storage_devices
+   electrochemical_techniques
    examples
    faq
 
