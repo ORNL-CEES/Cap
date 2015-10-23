@@ -31,16 +31,19 @@ def plot_data(data):
     current=data['current']
     voltage=data['voltage']
     plot_linewidth=3
-    label_fontsize=20
+    label_fontsize=30
+    tick_fontsize=20
     f,axarr=pyplot.subplots(2,sharex=True,figsize=(16,12))
     axarr[0].plot(time,current,lw=plot_linewidth)
     axarr[0].set_ylabel(r'$\mathrm{Current\  [A]}$',fontsize=label_fontsize)
 #    axarr[0].plot(time,1e3*current,lw=plot_linewidth)
 #    axarr[0].set_ylabel(r'$\mathrm{Current\ [mA]}$',fontsize=label_fontsize)
+    axarr[0].get_yaxis().set_tick_params(labelsize=tick_fontsize)
     axarr[1].plot(time,voltage,lw=plot_linewidth)
     axarr[1].set_ylabel(r'$\mathrm{Voltage\  [V]}$',fontsize=label_fontsize)
     axarr[1].set_xlabel(r'$\mathrm{Time\     [s]}$',fontsize=label_fontsize)
-    pyplot.show()
+    axarr[1].get_xaxis().set_tick_params(labelsize=tick_fontsize)
+    axarr[1].get_yaxis().set_tick_params(labelsize=tick_fontsize)
 
 from h5py import File
 from sys import stdout,exit
