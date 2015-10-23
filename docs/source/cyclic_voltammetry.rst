@@ -4,11 +4,9 @@ while varying linearly the voltage back and forth over a given range.
 
 The voltage sweep applied to the device creates a current given by
 
-.. raw:: latex
+.. math::
 
-   \begin{equation}
    I = C \frac{dU}{dt}
-   \end{equation}
 
 where :math:`I` is the current in ampere and :math:`\frac{dU}{dt}` is
 the scan rate of the voltage ramp.
@@ -91,11 +89,9 @@ series with a :math:`50\ \mathrm{m\Omega}` resistor.
 On the CV plot (current on the y-axis and voltage on the x-axis), we
 read
 
-.. raw:: latex
+.. math::
 
-   \begin{equation}
    I = C \frac{dU}{dt} = 300\ \mathrm{mA}
-   \end{equation}
 
 as expected for a :math:`3\ \mathrm{F}` capacitor. For an ideal
 capacitor (i.e. no equivalent series resistance), the plot would be a
