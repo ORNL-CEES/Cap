@@ -1,4 +1,4 @@
-__all__=['_pycap','data_helpers','time_evolution','end_criterion','stage','charge_discharge',
+__all__=['_pycap','data_helpers','time_evolution','end_criterion','stage','charge_discharge','voltammetry'
     'ragone_plot','impedance_spectroscopy'
 ]
 
@@ -13,5 +13,6 @@ from .time_evolution import *
 from .end_criterion import *
 from .stage import *
 from .charge_discharge import *
+from .voltammetry import *
 from .ragone_plot import *
 from .impedance_spectroscopy import *

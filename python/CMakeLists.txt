@@ -30,6 +30,7 @@ SET(PYTHON_SOURCES
     end_criterion.py
     stage.py
     charge_discharge.py
+    voltammetry.py
     ragone_plot.py
     impedance_spectroscopy.py
     peak_detection.py
