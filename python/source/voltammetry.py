@@ -32,7 +32,10 @@ def ramp(device,data,voltage_limit,scan_rate,step_size):
         compare=lt
         update=add
     time_step=step_size/scan_rate
-    time=data['time'][-1]
+    if data:
+        time=data['time'][-1]
+    else:
+        time=0
     voltage=initial_voltage
     while compare(voltage,final_voltage):
         step+=1
