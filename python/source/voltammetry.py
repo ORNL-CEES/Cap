@@ -37,7 +37,7 @@ def ramp(device,data,voltage_limit,scan_rate,step_size):
     else:
         time=0
     voltage=initial_voltage
-    while compare(voltage,final_voltage):
+    while compare(voltage,update(final_voltage,-0.01*step_size)):
         step+=1
         voltage=update(voltage,step_size)
         time+=time_step
