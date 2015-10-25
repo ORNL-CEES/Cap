@@ -14,7 +14,7 @@ steps:
    :math:`3\ \mathrm{min}`
 3. rest at open circuit potential for :math:`2\ \mathrm{s}`
 4. constant load discharge at :math:`3.33\ \mathrm{\Omega}` to
-   :math:`0.7 \mathrm{V}`
+   :math:`0.7\ \mathrm{V}`
 5. rest at open circuit potential for :math:`5\ \mathrm{s}`
 
 .. code-block:: python
