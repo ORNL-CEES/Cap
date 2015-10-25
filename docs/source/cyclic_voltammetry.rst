@@ -76,7 +76,7 @@ series with a :math:`50\ \mathrm{m\Omega}` resistor.
 
 .. parsed-literal::
 
-    2324 steps
+    2320 steps
 
 
 
