@@ -1,6 +1,6 @@
 from pycap import PropertyTree,EnergyStorageDevice,CyclicVoltammetry
 from pycap import initialize_data
-from numpy import array,testing
+from numpy import array,testing,linspace
 import unittest
 
 ptree=PropertyTree()
@@ -26,9 +26,11 @@ class capRampTestCase(unittest.TestCase):
             self.fail('calling run without data should not raise')
         data=initialize_data()
         cv.run(device,data)
-        triangular_signal=array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0],dtype=float)
+        voltage=array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0],dtype=float)
+        time=linspace(0,2,21)
         try:
-            testing.assert_array_almost_equal( data['voltage'],triangular_signal)
+            testing.assert_array_almost_equal(data['voltage'],voltage)
+            testing.assert_array_almost_equal(data['time'   ],time   )
         except AssertionError as e:
             print e
             self.fail()
