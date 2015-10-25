@@ -42,7 +42,8 @@ def ramp(device,data,voltage_limit,scan_rate,step_size):
         voltage=update(voltage,step_size)
         time+=time_step
         device.evolve_one_time_step_changing_voltage(time_step,voltage)
-        report_data(data,time,device)
+        if data:
+            report_data(data,time,device)
     return step
 
 class CyclicVoltammetry:
