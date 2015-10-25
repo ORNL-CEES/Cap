@@ -62,6 +62,7 @@ SET(PYTHON_TESTS
     test_time_evolution
     test_stage
     test_charge_discharge
+    test_voltammetry
     test_ragone_plot
     test_impedance_spectroscopy
 )
