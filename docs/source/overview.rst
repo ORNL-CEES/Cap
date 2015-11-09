@@ -24,6 +24,6 @@ The following command starts a Docker container with a Jupyter Notebook server l
 It has pycap already installed on it and comes with a few notebooks as example.
 ::
 
-    docker run -d -p 8889:8888 dalg24/cap
+    docker run -d -p 8888:8888 dalg24/cap
 
-Open your web browser and follow http://192.168.99.100:8889/tree/cap-notebooks
+Open your web browser and follow http://192.168.99.100:8888/tree/cap-notebooks
