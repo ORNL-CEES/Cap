@@ -134,7 +134,7 @@ std::cout<<"dimesnsions="<<grid.getNumDimensions()<<"\n";
 std::cout<<"points="<<grid.getNumPoints()<<"\n";
 std::cout<<"output="<<grid.getNumOutputs()<<"\n";
 std::cout<<"loaded="<<grid.getNumLoaded()<<"\n";
-    if (grid.getNumNeeded()*grid.getNumOutputs() != values.size())
+    if (grid.getNumNeeded()*grid.getNumOutputs() != static_cast<int>(values.size()))
         throw std::runtime_error("check outputs number in the grid");
     for (auto x : expected_value)
     {
