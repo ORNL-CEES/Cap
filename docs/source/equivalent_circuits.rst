@@ -22,7 +22,7 @@ Above is the database to build a :math:`\mathrm{3\ F}` capacitor in series with 
      I = C \frac{dU_C}{dt}
 
 
-:math:`U_C` stands for the voltage accross the capacitor.
+:math:`U_C` stands for the voltage across the capacitor.
 Its capacitance, :math:`C`, represents its ability to store electric charge.
 The equivalent series resistance, :math:`R`, add a real component to the
 impedance of the circuit:
