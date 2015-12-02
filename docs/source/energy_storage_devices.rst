@@ -12,8 +12,8 @@ impose:
     - The load :math:`R=U/I` the device is subject to.
     - The power :math:`P=UI`.
 
-:class:`EnegyStorageDevice`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:class:`EnergyStorageDevice`
+----------------------------
 
 The class :py:class:`pycap.EnegyStorageDevice` is an abstract representation
 for an energy storage device. It can evolve in time at various operating
@@ -22,46 +22,60 @@ current that flows through it.
 
 .. py:class:: pycap.EnergyStorageDevice(ptree)
 
-    :param pycap.PropertyTree ptree: Tree to construct the appropriate energy
-        storage device
-
     Wrappers for the abstract representation of an energy storage device.
 
-    .. py:method:: evolve_one_time_step_constant_voltage(...)
+    :param pycap.PropertyTree ptree: Tree to construct the appropriate energy
+        storage device.
 
-        evolve_one_time_step_constant_voltage( (float)time_step, (float)voltage) -> None :
-            Impose the voltage and evolve one time step.
+    .. py:method:: evolve_one_time_step_constant_voltage(time_step,voltage)
 
-    .. py:method:: evolve_one_time_step_constant_current(...)
+        Impose the voltage and evolve one time step.
 
-        evolve_one_time_step_constant_current( (float)time_step, (float)current) -> None :
-            Impose the current and evolve one time step.
+        :param float time_step: The time step in units of seconds.
+        :param float voltage: The voltage in units of volts.
 
-    .. py:method:: evolve_one_time_step_constant_load(...)
+    .. py:method:: evolve_one_time_step_constant_current(time_step,current)
 
-        evolve_one_time_step_constant_load( (float)time_step, (float)load) -> None :
-            Impose the load and evolve one time step.
+        Impose the current and evolve one time step.
 
-    .. py:method:: evolve_one_time_step_constant_power(...)
+        :param float time_step: The time step in units of seconds.
+        :param float current: The electric current in units of amperes.
 
-        evolve_one_time_step_constant_power( (float)time_step, (float)power) -> None :
-            Impose the power and evolve one time step.
+    .. py:method:: evolve_one_time_step_constant_load(time_step,load)
 
-    .. py:method:: get_voltage(...)
+        Impose the load and evolve one time step.
 
-        get_voltage( ) -> float :
-             Return the voltage drop across the device in units of volts. 
+        :param float time_step: The time step in units of seconds.
+        :param float load: The load in units of ohms.
 
-    .. py:method:: get_current(...)
+    .. py:method:: evolve_one_time_step_constant_power(time_step,power)
 
-        get_current( ) -> float :
-             Return the electrical current that flows through the device in
-             units of amperes.
+        Impose the power and evolve one time step.
 
-    .. py:staticmethod:: compute_equivalent_circuit(...)
+        :param float time_step: The time step in units of seconds.
+        :param float power: The power in units of watts.
 
-        compute_equivalent_circuit( (pycap.PropertyTree)ptree) -> pycap.PropertyTree :
-             Return the tree to build an equivalent circuit.
+    .. py:method:: get_voltage()
+
+        Measure the voltage drop across the device. 
+
+        :return: The voltage across the device in units of volts.
+        :rtype: float
+
+    .. py:method:: get_current()
+
+        Measure the electrical current that flows through the device.
+
+        :return: The electrical current in units of amperes.
+        :rtype: float
+
+    .. py:staticmethod:: compute_equivalent_circuit(ptree)
+
+        Compute the equivalent circuit to a supercapacitor.
+
+        :param pycap.PropertyTree ptree: The tree to build a supercapacitor.
+        :return: The tree to build the equivalent circuit.
+        :rtype: pycap.PropertyTree
 
 .. note::
 
