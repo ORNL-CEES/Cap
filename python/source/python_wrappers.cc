@@ -57,5 +57,6 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("parse_xml"                    , &pycap::parse_xml                    , "Read the input file at XML format and populate the PropertyTree." , boost::python::args("self", "filename") )
         .def("parse_json"                   , &pycap::parse_json                   , "Read the input file at JSON format and populate the PropertyTree.", boost::python::args("self", "filename") )
         .def("get_child"                    , &pycap::get_child                    , "Get the child at the given path, or throw ptree_bad_path."        , boost::python::args("self", "path") )
+        .def_pickle(pycap::property_tree_pickle_suite())
         ;
 }

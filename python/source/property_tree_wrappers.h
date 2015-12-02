@@ -1,7 +1,14 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/property_tree/ptree_serialization.hpp>
 #include <boost/python/list.hpp>
+#include <boost/python/tuple.hpp>
+#include <boost/python/str.hpp>
+#include <boost/python/extract.hpp>
+#include <boost/python/object/pickle_support.hpp>
 #include <string>
 
 namespace pycap {
@@ -32,5 +39,38 @@ void parse_xml (boost::property_tree::ptree & ptree, string const & filename);
 void parse_json(boost::property_tree::ptree & ptree, string const & filename);
 
 boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, string const & path);
+
+struct property_tree_pickle_suite : boost::python::pickle_suite
+{
+    static
+    boost::python::tuple
+    getstate(boost::property_tree::ptree const & ptree)
+    {
+        std::ostringstream os;
+        boost::archive::binary_oarchive oa(os);
+        oa<<ptree;
+        return boost::python::make_tuple(os.str());
+    }
+
+    static
+    void
+    setstate(boost::property_tree::ptree & ptree, boost::python::tuple state)
+    {
+        if (boost::python::len(state) != 1)
+        {
+          PyErr_SetObject(PyExc_ValueError,
+                          ("expected 1-item tuple in call to __setstate__; got %s"
+                           % state).ptr()
+              );
+          boost::python::throw_error_already_set();
+        }
+
+        boost::python::str pystr = boost::python::extract<boost::python::str>(state[0])();
+        std::string cppstr = boost::python::extract<std::string>(pystr)();
+        std::istringstream is(cppstr);
+        boost::archive::binary_iarchive ia(is);
+        ia>>ptree;
+    }
+};
 
 }

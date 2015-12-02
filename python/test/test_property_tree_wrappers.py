@@ -2,6 +2,15 @@ from pycap import PropertyTree
 import unittest
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
+    def test_pickle_suite(self):
+        import pickle
+        src=PropertyTree()
+        src.put_double('pi',3.14)
+        src.put_string('greet','bonjour')
+        p=pickle.dumps(src)
+        dst=pickle.loads(p)
+        self.assertEqual(dst.get_double('pi'),3.14)
+        self.assertEqual(dst.get_string('greet'),'bonjour')
     def test_get_with_default_value(self):
         ptree=PropertyTree()
         # double
