@@ -2,6 +2,7 @@
 #define CAP_ENERGY_STORAGE_DEVICE_H
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/serialization/access.hpp>
 #include <memory>
 
 namespace cap {
@@ -31,9 +32,16 @@ public:
     virtual void evolve_one_time_step_changing_voltage(double const time_step, double const changing_voltage);
     virtual void evolve_one_time_step_changing_power  (double const time_step, double const changing_power  );
     virtual void evolve_one_time_step_changing_load   (double const time_step, double const changing_load   );
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        // nothing to do
+        std::ignore = ar;
+        std::ignore = version;
+    }
 };
-
-
 
 std::shared_ptr<cap::EnergyStorageDevice>
 buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params);

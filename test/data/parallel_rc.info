@@ -1,0 +1,4 @@
+type              SeriesRC
+series_resistance  50.0e-3 ; [ohm]
+capacitance         3.0    ; [fahrad]
+
