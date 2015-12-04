@@ -9,6 +9,7 @@
 
 BOOST_PYTHON_MODULE(_pycap)
 {
+    // Deprecated stuff
     boost::python::class_<pycap::ElectrochemicalImpedanceSpectroscopyData, std::shared_ptr<pycap::ElectrochemicalImpedanceSpectroscopyData>>("ElectrochemicalImpedanceSpectroscopyData")
         .def("impedance_spectroscopy", &pycap::ElectrochemicalImpedanceSpectroscopyData::impedance_spectroscopy)
         .def("measure_impedance", &pycap::ElectrochemicalImpedanceSpectroscopyData::measure_impedance)
@@ -16,6 +17,12 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("get_complex_impedance", &pycap::ElectrochemicalImpedanceSpectroscopyData::get_complex_impedance)
         .def("clear", &pycap::ElectrochemicalImpedanceSpectroscopyData::clear)
         ;
+
+    boost::python::docstring_options doc_options;
+    doc_options.enable_user_defined();
+    doc_options.disable_py_signatures();
+    doc_options.disable_cpp_signatures();
+
     boost::python::class_<pycap::EnergyStorageDeviceWrap, std::shared_ptr<pycap::EnergyStorageDeviceWrap>, boost::noncopyable>("EnergyStorageDevice", "Wrappers for Cap.EnergyStorageDevice", boost::python::no_init)
         .def("__init__", boost::python::make_constructor(&pycap::build_energy_storage_device) )
         .def("get_voltage", (&pycap::get_voltage), boost::python::args("self") )
