@@ -1,4 +1,5 @@
-type              SeriesRC
-series_resistance  50.0e-3 ; [ohm]
-capacitance         3.0    ; [fahrad]
+type                ParallelRC
+parallel_resistance     2.5e+6 ; [ohm]
+series_resistance      50.0e-3 ; [ohm]
+capacitance             3.0    ; [fahrad]
 
