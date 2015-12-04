@@ -1,6 +1,4 @@
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/property_tree/ptree_serialization.hpp>
@@ -37,6 +35,7 @@ boost::python::list get_array_bool  (boost::property_tree::ptree const & ptree, 
 
 void parse_xml (boost::property_tree::ptree & ptree, string const & filename);
 void parse_json(boost::property_tree::ptree & ptree, string const & filename);
+void parse_info(boost::property_tree::ptree & ptree, string const & filename);
 
 boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, string const & path);
 

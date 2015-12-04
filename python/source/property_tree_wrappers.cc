@@ -1,5 +1,8 @@
 #include <pycap/property_tree_wrappers.h>
 #include <cap/utils.h>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <vector>
 
 namespace pycap {
@@ -111,6 +114,11 @@ void parse_xml (boost::property_tree::ptree & ptree, string const & filename)
 void parse_json(boost::property_tree::ptree & ptree, string const & filename)
 {
     boost::property_tree::json_parser::read_json(filename, ptree);
+}
+
+void parse_info(boost::property_tree::ptree & ptree, string const & filename)
+{
+    boost::property_tree::info_parser::read_info(filename, ptree);
 }
 
 boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, string const & path)
