@@ -15,7 +15,7 @@ impose:
 :class:`EnergyStorageDevice`
 ----------------------------
 
-The class :py:class:`pycap.EnegyStorageDevice` is an abstract representation
+The class :py:class:`pycap.EnergyStorageDevice` is an abstract representation
 for an energy storage device. It can evolve in time at various operating
 conditions and return the voltage drop across itself and the electrical
 current that flows through it.
