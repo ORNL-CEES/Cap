@@ -7,3 +7,6 @@ Reference
 .. autoclass:: pycap.PropertyTree
     :members:
 
+
+:class:`EnergyStorageDevice`
+----------------------------

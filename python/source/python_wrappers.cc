@@ -45,7 +45,18 @@ BOOST_PYTHON_MODULE(_pycap)
     boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
 
-    boost::python::class_<boost::property_tree::ptree,std::shared_ptr<boost::property_tree::ptree>>("PropertyTree", "Wrappers for Boost.PropertyTree")
+    boost::python::class_<boost::property_tree::ptree,std::shared_ptr<boost::property_tree::ptree>>("PropertyTree",
+        "Wrappers for Boost.PropertyTree\n"
+        "\n"
+        "Examples\n"
+        "--------\n"
+        ">>> ptree = PropertyTree()\n"
+        ">>> ptree.put_double('pi', 3.14)\n"
+        ">>> ptree.get_double('pi')\n"
+        "3.14\n"
+        ">>> ptree.get_double_with_default('sqrt2', 1,41)\n"
+        "1.41\n"
+        )
         .def("get_double"                   , &pycap::get_double                   , "Get the double at the given path."                                , boost::python::args("self", "path") )
         .def("get_string"                   , &pycap::get_string                   , "Get the string at the given path."                                , boost::python::args("self", "path") )
         .def("get_int"                      , &pycap::get_int                      , "Get the integer at the given path."                               , boost::python::args("self", "path") )
