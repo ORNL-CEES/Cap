@@ -30,6 +30,7 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("evolve_one_time_step_changing_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_load   ), boost::python::args("self", "time_step", "load"   ) )
         .def("compute_equivalent_circuit", &pycap::compute_equivalent_circuit, "Return the PropertyTree to build an equivalent circuit model", boost::python::args("ptree") )
         .staticmethod("compute_equivalent_circuit")
+//        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
     boost::python::register_ptr_to_python<std::shared_ptr<cap::EnergyStorageDevice>>();
 
@@ -57,6 +58,6 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("parse_xml"                    , &pycap::parse_xml                    , "Read the input file at XML format and populate the PropertyTree." , boost::python::args("self", "filename") )
         .def("parse_json"                   , &pycap::parse_json                   , "Read the input file at JSON format and populate the PropertyTree.", boost::python::args("self", "filename") )
         .def("get_child"                    , &pycap::get_child                    , "Get the child at the given path, or throw ptree_bad_path."        , boost::python::args("self", "path") )
-        .def_pickle(pycap::property_tree_pickle_suite())
+        .def_pickle(pycap::serializable_class_pickle_support<boost::property_tree::ptree>())
         ;
 }

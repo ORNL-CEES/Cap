@@ -2,7 +2,7 @@ from pycap import PropertyTree
 import unittest
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
-    def test_pickle_suite(self):
+    def test_pickle_support(self):
         import pickle
         src=PropertyTree()
         src.put_double('pi',3.14)

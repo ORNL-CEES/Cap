@@ -1,8 +1,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/property_tree/ptree_serialization.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/tuple.hpp>
@@ -40,21 +40,22 @@ void parse_json(boost::property_tree::ptree & ptree, string const & filename);
 
 boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, string const & path);
 
-struct property_tree_pickle_suite : boost::python::pickle_suite
+template <typename T>
+struct serializable_class_pickle_support : boost::python::pickle_suite
 {
     static
     boost::python::tuple
-    getstate(boost::property_tree::ptree const & ptree)
+    getstate(T const & object)
     {
         std::ostringstream os;
-        boost::archive::binary_oarchive oa(os);
-        oa<<ptree;
+        boost::archive::text_oarchive oa(os);
+        oa << object;
         return boost::python::make_tuple(os.str());
     }
 
     static
     void
-    setstate(boost::property_tree::ptree & ptree, boost::python::tuple state)
+    setstate(T & object, boost::python::tuple state)
     {
         if (boost::python::len(state) != 1)
         {
@@ -68,8 +69,8 @@ struct property_tree_pickle_suite : boost::python::pickle_suite
         boost::python::str pystr = boost::python::extract<boost::python::str>(state[0])();
         std::string cppstr = boost::python::extract<std::string>(pystr)();
         std::istringstream is(cppstr);
-        boost::archive::binary_iarchive ia(is);
-        ia>>ptree;
+        boost::archive::text_iarchive ia(is);
+        ia >> object;
     }
 };
 
