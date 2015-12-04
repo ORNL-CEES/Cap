@@ -12,8 +12,8 @@
 #include <boost/serialization/export.hpp>
 #include <sstream>
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(cap::EnergyStorageDevice)
-BOOST_CLASS_EXPORT(cap::SeriesRC)
+//BOOST_SERIALIZATION_ASSUME_ABSTRACT(cap::EnergyStorageDevice)
+//BOOST_CLASS_EXPORT(cap::SeriesRC)
 
 BOOST_AUTO_TEST_CASE( test_factory )
 {
@@ -46,38 +46,42 @@ BOOST_AUTO_TEST_CASE( test_factory )
 
 BOOST_AUTO_TEST_CASE( test_serialization )
 {
-    auto const filename = "series_rc.info";
-    auto ptree = std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::info_parser::read_info(filename, *ptree);
-//    auto original_device = cap::buildEnergyStorageDevice(
-//        std::make_shared<cap::Parameters>(ptree) );
-    auto original_device = std::make_shared<cap::SeriesRC>(
-        std::make_shared<cap::Parameters>(ptree) );
-    original_device->evolve_one_time_step_constant_voltage(0.1, 2.1);
-    double original_voltage;
-    double original_current;
-    original_device->get_voltage(original_voltage);
-    original_device->get_current(original_current);
+    for (auto const & filename : { "series_rc.info", "parallel_rc.info" })
+    {
+        auto ptree = std::make_shared<boost::property_tree::ptree>();
+        boost::property_tree::info_parser::read_info(filename, *ptree);
+        auto original_device = cap::buildEnergyStorageDevice(
+            std::make_shared<cap::Parameters>(ptree) );
 
-    std::stringstream ss;
-    // save device
-    boost::archive::text_oarchive oa(ss);
-    oa.register_type<cap::SeriesRC>();
-    oa<<original_device;
-    // print the content of the stream to the screen
-    std::cout<<ss.str()<<"\n";
+        original_device->evolve_one_time_step_constant_voltage(0.1, 2.1);
+        double original_voltage;
+        double original_current;
+        original_device->get_voltage(original_voltage);
+        original_device->get_current(original_current);
 
-    // restore device
-    boost::archive::text_iarchive ia(ss);
-    ia.register_type<cap::SeriesRC>();
-    std::shared_ptr<cap::EnergyStorageDevice> restored_device;
-    ia>>restored_device;
-    double restored_voltage;
-    double restored_current;
-    restored_device->get_voltage(restored_voltage);
-    restored_device->get_current(restored_current);
-    BOOST_CHECK_EQUAL(original_voltage, restored_voltage);
-    BOOST_CHECK_EQUAL(original_current, restored_current);
-    
+        std::stringstream ss;
+        // save device
+        boost::archive::text_oarchive oa(ss);
+        oa.register_type<cap::SeriesRC>();
+        oa.register_type<cap::ParallelRC>();
+        BOOST_CHECK(true);
+        oa<<original_device;
+        // print the content of the stream to the screen
+        std::cout<<ss.str()<<"\n";
+        BOOST_CHECK( !ss.str().empty() );
+
+        // restore device
+        boost::archive::text_iarchive ia(ss);
+        ia.register_type<cap::SeriesRC>();
+        ia.register_type<cap::ParallelRC>();
+        std::shared_ptr<cap::EnergyStorageDevice> restored_device;
+        ia>>restored_device;
+        double restored_voltage;
+        double restored_current;
+        restored_device->get_voltage(restored_voltage);
+        restored_device->get_current(restored_current);
+        BOOST_CHECK_EQUAL(original_voltage, restored_voltage);
+        BOOST_CHECK_EQUAL(original_current, restored_current);
+    }
 
 }

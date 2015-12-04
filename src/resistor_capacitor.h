@@ -69,6 +69,15 @@ public:
     double U;
     double I;
     double R_series;
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<cap::EnergyStorageDevice>(*this);
+        ar & R_parallel & C & U_C & U & I & R_series;
+        std::ignore = version;
+    }
 };
 
 } // end namespace cap
@@ -93,6 +102,28 @@ inline void load_construct_data(
     database->put("series_resistance", R);
     database->put("capacitance", C);
     ::new(rc)cap::SeriesRC(std::make_shared<cap::Parameters>(database));
+}
+
+template<class Archive>
+inline void save_construct_data(
+    Archive & ar, const cap::ParallelRC * rc, const unsigned int file_version
+){
+    std::ignore = file_version;
+    ar << rc->R_parallel << rc->C << rc->U_C << rc->U << rc->I << rc->R_series;
+}
+
+template<class Archive>
+inline void load_construct_data(
+    Archive & ar, cap::ParallelRC * rc, const unsigned int file_version
+){
+    std::ignore = file_version;
+    double R_parallel, C, U_C, U, I, R_series;
+    ar >> R_parallel >> C >> U_C >> U >> I >> R_series;
+    auto database = std::make_shared<boost::property_tree::ptree>();
+    database->put("series_resistance", R_series);
+    database->put("parallel_resistance", R_parallel);
+    database->put("capacitance", C);
+    ::new(rc)cap::ParallelRC(std::make_shared<cap::Parameters>(database));
 }
 }} // namespace ...
 
