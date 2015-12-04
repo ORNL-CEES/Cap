@@ -15,17 +15,18 @@
 //BOOST_SERIALIZATION_ASSUME_ABSTRACT(cap::EnergyStorageDevice)
 //BOOST_CLASS_EXPORT(cap::SeriesRC)
 
+// list of valid inputs to build an EnergyStorageDevice
+// These are meant as example
+std::list<std::string> const valid_device_input = {
+    "series_rc.info",
+    "parallel_rc.info",
+#ifdef WITH_DEAL_II
+    "super_capacitor.info",
+#endif
+    };
+
 BOOST_AUTO_TEST_CASE( test_factory )
 {
-    // list of valid inputs to build an EnergyStorageDevice
-    // These are meant as example
-    std::list<std::string> const valid_device_input = {
-        "series_rc.info",
-        "parallel_rc.info",
-//#ifdef WITH_DEAL_II
-//        "super_capacitor.xml",
-//#endif
-        };
     for (auto const & filename : valid_device_input)
     {
         auto ptree = std::make_shared<boost::property_tree::ptree>();
@@ -44,9 +45,12 @@ BOOST_AUTO_TEST_CASE( test_factory )
         std::runtime_error );
 }
 
+// TODO: won't work for SuperCapacitor
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( test_serialization, 1 )
+
 BOOST_AUTO_TEST_CASE( test_serialization )
 {
-    for (auto const & filename : { "series_rc.info", "parallel_rc.info" })
+    for (auto const & filename : valid_device_input)
     {
         auto ptree = std::make_shared<boost::property_tree::ptree>();
         boost::property_tree::info_parser::read_info(filename, *ptree);
@@ -64,7 +68,6 @@ BOOST_AUTO_TEST_CASE( test_serialization )
         boost::archive::text_oarchive oa(ss);
         oa.register_type<cap::SeriesRC>();
         oa.register_type<cap::ParallelRC>();
-        BOOST_CHECK(true);
         oa<<original_device;
         // print the content of the stream to the screen
         std::cout<<ss.str()<<"\n";
