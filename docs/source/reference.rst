@@ -10,3 +10,8 @@ Reference
 
 :class:`EnergyStorageDevice`
 ----------------------------
+
+.. autoclass:: pycap.EnergyStorageDevice
+    :members:
+
+

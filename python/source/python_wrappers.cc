@@ -23,8 +23,26 @@ BOOST_PYTHON_MODULE(_pycap)
     doc_options.enable_py_signatures();
     doc_options.disable_cpp_signatures();
 
-    boost::python::class_<pycap::EnergyStorageDeviceWrap, std::shared_ptr<pycap::EnergyStorageDeviceWrap>, boost::noncopyable>("EnergyStorageDevice", "Wrappers for Cap.EnergyStorageDevice", boost::python::no_init)
-        .def("__init__", boost::python::make_constructor(&pycap::build_energy_storage_device) )
+    boost::python::class_<
+        pycap::EnergyStorageDeviceWrap,
+        std::shared_ptr<pycap::EnergyStorageDeviceWrap>,
+        boost::noncopyable >(
+        "EnergyStorageDevice",
+        "Wrappers for Cap.EnergyStorageDevice\n"
+        "\n"
+        "Example\n"
+        "-------\n"
+        ">>> ptree = PropertyTree()\n"
+        ">>> ptree.parse_info('device.info')\n"
+        ">>> device = EnergyStorageDevice(ptree)\n"
+        ">>> delta_t, U = 1.0, 2.1 # units of seconds and volts\n"
+        ">>> device.evolve_one_time_step_constant_voltage(delta_t,U)\n"
+        ">>> I = device.get_current() # amperes \n"
+        ,
+        boost::python::no_init )
+        .def("__init__",
+boost::python::make_constructor(&pycap::build_energy_storage_device,
+boost::python::default_call_policies(), boost::python::args("ptree")))
         .def("get_voltage", (&pycap::get_voltage), boost::python::args("self") )
         .def("get_current", (&pycap::get_current), boost::python::args("self") )
         .def("evolve_one_time_step_constant_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current), boost::python::args("self", "time_step", "current") )
@@ -39,13 +57,15 @@ BOOST_PYTHON_MODULE(_pycap)
         .staticmethod("compute_equivalent_circuit")
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
-    boost::python::register_ptr_to_python<std::shared_ptr<cap::EnergyStorageDevice>>();
 
     boost::python::scope().attr("__version__"        ) = cap::version()        ;
     boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
 
-    boost::python::class_<boost::property_tree::ptree,std::shared_ptr<boost::property_tree::ptree>>("PropertyTree",
+    boost::python::class_<
+        boost::property_tree::ptree,
+        std::shared_ptr<boost::property_tree::ptree> >(
+        "PropertyTree",
         "Wrappers for Boost.PropertyTree\n"
         "\n"
         "Examples\n"
