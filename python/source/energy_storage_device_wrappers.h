@@ -24,16 +24,6 @@ double get_voltage(cap::EnergyStorageDevice const & device);
 
 std::shared_ptr<cap::EnergyStorageDevice> build_energy_storage_device(boost::python::object & python_object);
 
-// DEPRECATED
-struct ElectrochemicalImpedanceSpectroscopyData {
-    void impedance_spectroscopy(boost::python::object & python_device, boost::python::object & python_database);
-    void measure_impedance(boost::python::object & python_device, boost::python::object & python_database);
-    boost::python::list get_frequency() const;
-    boost::python::list get_complex_impedance() const;
-    void clear();
-    std::map<double,std::complex<double>> data;
-};
-
 std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object);
 
 } // end namespace pycap

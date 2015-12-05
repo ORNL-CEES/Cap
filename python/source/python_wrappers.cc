@@ -9,15 +9,6 @@
 
 BOOST_PYTHON_MODULE(_pycap)
 {
-    // Deprecated stuff
-    boost::python::class_<pycap::ElectrochemicalImpedanceSpectroscopyData, std::shared_ptr<pycap::ElectrochemicalImpedanceSpectroscopyData>>("ElectrochemicalImpedanceSpectroscopyData")
-        .def("impedance_spectroscopy", &pycap::ElectrochemicalImpedanceSpectroscopyData::impedance_spectroscopy)
-        .def("measure_impedance", &pycap::ElectrochemicalImpedanceSpectroscopyData::measure_impedance)
-        .def("get_frequency", &pycap::ElectrochemicalImpedanceSpectroscopyData::get_frequency)
-        .def("get_complex_impedance", &pycap::ElectrochemicalImpedanceSpectroscopyData::get_complex_impedance)
-        .def("clear", &pycap::ElectrochemicalImpedanceSpectroscopyData::clear)
-        ;
-
     boost::python::docstring_options doc_options;
     doc_options.enable_user_defined();
     doc_options.enable_py_signatures();

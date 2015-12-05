@@ -62,60 +62,6 @@ build_energy_storage_device(boost::python::object & python_object)
     return cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
 }
 
-// DEPRECATED
-void ElectrochemicalImpedanceSpectroscopyData::impedance_spectroscopy(boost::python::object & python_device, boost::python::object & python_database)
-{
-    std::shared_ptr<cap::EnergyStorageDevice> device =
-        boost::python::extract<std::shared_ptr<cap::EnergyStorageDevice>>(python_device);
-    boost::property_tree::ptree const & database =
-        boost::python::extract<boost::property_tree::ptree const &>(python_database);
-    std::shared_ptr<boost::property_tree::ptree> eis_database =
-        std::make_shared<boost::property_tree::ptree>(database.get_child("impedance_spectroscopy"));
-#ifdef WITH_GSL
-    std::map<double,std::complex<double>> eis_data = cap::impedance_spectroscopy(device, eis_database);
-#else
-    std::map<double,std::complex<double>> eis_data;
-#endif
-    data.insert(eis_data.begin(), eis_data.end());
-}
-
-void ElectrochemicalImpedanceSpectroscopyData::measure_impedance(boost::python::object & python_device, boost::python::object & python_database)
-{
-    std::shared_ptr<cap::EnergyStorageDevice> device =
-        boost::python::extract<std::shared_ptr<cap::EnergyStorageDevice>>(python_device);
-    boost::property_tree::ptree const & database =
-        boost::python::extract<boost::property_tree::ptree const &>(python_database);
-    std::shared_ptr<boost::property_tree::ptree> eis_database =
-        std::make_shared<boost::property_tree::ptree>(database.get_child("impedance_spectroscopy"));
-#ifdef WITH_GSL
-    std::map<double,std::complex<double>> eis_data = cap::measure_impedance(device, eis_database);
-#else
-    std::map<double,std::complex<double>> eis_data;
-#endif
-    data.insert(eis_data.begin(), eis_data.end());
-}
-
-boost::python::list ElectrochemicalImpedanceSpectroscopyData::get_frequency() const
-{
-    boost::python::list frequency;
-    for (auto const & p : data)
-        frequency.append(p.first);
-    return frequency;
-}
-
-boost::python::list ElectrochemicalImpedanceSpectroscopyData::get_complex_impedance() const
-{
-    boost::python::list complex_impedance;
-    for (auto const & p : data)
-        complex_impedance.append(p.second);
-    return complex_impedance;
-}
-
-void ElectrochemicalImpedanceSpectroscopyData::clear()
-{
-    data.clear();
-}
-
 std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object)
 {
     boost::property_tree::ptree const & ptree =
