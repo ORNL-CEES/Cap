@@ -1,6 +1,6 @@
 
-This is based on [Journal of The Electrochemical Society, 152 􏰀5􏰁
-D79-D87 􏰀2005􏰁] by M. Verbrugge and P. Liu. It illustrates how easy it
+This is based on [Journal of The Electrochemical Society, 152 (5)
+D79-D87 (2005)] by M. Verbrugge and P. Liu. It illustrates how easy it
 is to specify complex operating conditions for energy storage devices in
 ``pycap``.
 
