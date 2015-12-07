@@ -9,6 +9,10 @@
 
 BOOST_PYTHON_MODULE(_pycap)
 {
+    boost::python::scope().attr("__version__"        ) = cap::version()        ;
+    boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
+    boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
+
     boost::python::docstring_options doc_options;
     doc_options.enable_user_defined();
     doc_options.enable_py_signatures();
@@ -49,10 +53,6 @@ boost::python::default_call_policies(), boost::python::args("ptree")))
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
 
-    boost::python::scope().attr("__version__"        ) = cap::version()        ;
-    boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
-    boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
-
     boost::python::class_<
         boost::property_tree::ptree,
         std::shared_ptr<boost::property_tree::ptree> >(
@@ -67,6 +67,14 @@ boost::python::default_call_policies(), boost::python::args("ptree")))
         "3.14\n"
         ">>> ptree.get_double_with_default('sqrt2', 1,41)\n"
         "1.41\n"
+        "\n"
+        "Exceptions\n"
+        "----------\n"
+        "RuntimeError: No such node (<path>)\n"
+        "    Error indicating that specified <path> does not exist.\n"
+        "RuntimeError: conversion of data to type \"<type>\" failed\n"
+        "    Error indicating that translation from or to <type> has\n"
+        "    failed.\n"
         )
         .def("get_double"                   , &pycap::get_double                   , "Get the double at the given path."                                , boost::python::args("self", "path") )
         .def("get_string"                   , &pycap::get_string                   , "Get the string at the given path."                                , boost::python::args("self", "path") )
