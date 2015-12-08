@@ -46,7 +46,9 @@ BOOST_AUTO_TEST_CASE( test_factory )
 }
 
 // TODO: won't work for SuperCapacitor
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( test_serialization, 1 )
+#ifdef WITH_DEAL_II
+    BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( test_serialization, 1 )
+#endif
 
 BOOST_AUTO_TEST_CASE( test_serialization )
 {
@@ -63,6 +65,7 @@ BOOST_AUTO_TEST_CASE( test_serialization )
         original_device->get_voltage(original_voltage);
         original_device->get_current(original_current);
 
+try {
         std::stringstream ss;
         // save device
         boost::archive::text_oarchive oa(ss);
@@ -85,6 +88,12 @@ BOOST_AUTO_TEST_CASE( test_serialization )
         restored_device->get_current(restored_current);
         BOOST_CHECK_EQUAL(original_voltage, restored_voltage);
         BOOST_CHECK_EQUAL(original_current, restored_current);
+} catch (boost::archive::archive_exception e) {
+    BOOST_TEST_MESSAGE("unable to serialize the device");
+    BOOST_TEST(false);
+} catch (...) {
+    throw std::runtime_error("unexpected exception occured");
+}
     }
 
 }
