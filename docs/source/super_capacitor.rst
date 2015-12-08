@@ -45,58 +45,52 @@ independently from one another. The overall sandwich height and depth (in
     4: anode collector,
     5: cathode collector.
 
+
 Governing equations
 ^^^^^^^^^^^^^^^^^^^
 
-+--------------------------------+------------------------------------------------+--------------------------------+
-| collector                      | electrode                                      | separator                      |
-+================================+================================================+================================+
-|.. math::                       |.. math::                                       |.. math::                       |
-|                                |                                                |                                |
-|    i_1 = -\sigma \nabla \Phi_1 |    i_1 = -\sigma \nabla \Phi_1                 |    i_2 = -\kappa \nabla \Phi_2 |
-|                                |                                                |                                |
-|    \nabla \cdot i_1 = 0        |    i_2 = -\kappa \nabla \Phi_2                 |    \nabla \cdot i_2 = 0        |
-|                                |                                                |                                |
-|                                |   -\nabla \cdot i_1 = \nabla \cdot i_2 = a i_n |                                |
-|                                |                                                |                                |
-+--------------------------------+------------------------------------------------+--------------------------------+
++------------------------------------+----------------------------------------------------+------------------------------------+
+| collector                          | electrode                                          | separator                          |
++====================================+====================================================+====================================+
+|                                    |                                                    |                                    |
+|:math:`i_1 = -\sigma \nabla \Phi_1` |:math:`i_1 = -\sigma \nabla \Phi_1`                 |:math:`i_2 = -\kappa \nabla \Phi_2` |
+|                                    |                                                    |                                    |
+|:math:`\nabla \cdot i_1 = 0`        |:math:`i_2 = -\kappa \nabla \Phi_2`                 |:math:`\nabla \cdot i_2 = 0`        |
+|                                    |                                                    |                                    |
+|                                    |:math:`\nabla \cdot i_1 = \nabla \cdot i_2 = a i_n` |                                    |
+|                                    |                                                    |                                    |
++------------------------------------+----------------------------------------------------+------------------------------------+
 
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 | collector-electrode interface                                          |  electrode-separator interface                                         |
 +========================================================================+========================================================================+
-|.. math::                                                               |.. math::                                                               |
 |                                                                        |                                                                        |
-|    0 &= -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e \\ |    -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e           |
-|    -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c           |        &= -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s \\ |
-|        &= -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e    |    -\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e &= 0    |
+|:math:`0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e` |:math:`-\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e        |
+|                                                                        |        = -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s`    |
+|                                                                        |                                                                        |
+|:math:`-\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c        |                                                                        |
+|        = -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e`    |:math:`-\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e = 0` |
 |                                                                        |                                                                        |
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 
-+------------------------------------------------------------+
-| boundary collector tab                                     |
-+============================================================+
-|.. math::                                                   |
-|                                                            |
-|    \Phi_1 = U                                              |
-|                                                            |
-|or                                                          |
-|                                                            |
-|.. math::                                                   |
-|                                                            |
-|    -\sigma \frac{\partial \Phi_1}{\partial n} = I/S        |
-|                                                            |
-|or                                                          |
-|                                                            |
-|.. math::                                                   |
-|                                                            |
-|    -\sigma \frac{\partial \Phi_1}{\partial n} \Phi_1 = P/S |
-|                                                            |
-|or                                                          |
-|                                                            |
-|.. math::                                                   |
-|                                                            |
-|    -\sigma \frac{\partial \Phi_1}{\partial n} R S = \Phi_1 |
-+------------------------------------------------------------+
++----------------------------------------------------------------+
+| boundary collector tab                                         |
++================================================================+
+|:math:`\Phi_1 = U`                                              |
+|                                                                |
+|or                                                              |
+|                                                                |
+|:math:`-\sigma \frac{\partial \Phi_1}{\partial n} = I/S`        |
+|                                                                |
+|or                                                              |
+|                                                                |
+|:math:`-\sigma \frac{\partial \Phi_1}{\partial n} \Phi_1 = P/S` |
+|                                                                |
+|or                                                              |
+|                                                                |
+|:math:`-\sigma \frac{\partial \Phi_1}{\partial n} R S = \Phi_1` |
+|                                                                |
++----------------------------------------------------------------+
 
 Ignoring the influence of the electrolyte concentration, the current density
 in the matrix and solution phases can be expressed by Ohm’s law as
