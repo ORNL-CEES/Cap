@@ -86,8 +86,15 @@ BOOST_PYTHON_MODULE(_pycap)
         ,
         boost::python::no_init )
         .def("__init__",
-boost::python::make_constructor(&pycap::build_energy_storage_device,
-boost::python::default_call_policies(), boost::python::args("ptree")))
+        boost::python::make_constructor(&pycap::build_energy_storage_device,
+        boost::python::default_call_policies(), boost::python::args("ptree")),
+        "\n"
+        "Parameters\n"
+        "----------\n"
+        "ptree: pycap.PropertyTree\n"
+        "    The appropriate property tree to create a device\n"
+        "    from the factory."
+        )
         .def("get_voltage", (&pycap::get_voltage), boost::python::args("self") )
         .def("get_current", (&pycap::get_current), boost::python::args("self") )
         .def("evolve_one_time_step_constant_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current), boost::python::args("self", "time_step", "current") )
@@ -118,8 +125,8 @@ boost::python::default_call_policies(), boost::python::args("ptree")))
         ">>> ptree.get_double_with_default('sqrt2', 1,41)\n"
         "1.41\n"
         "\n"
-        "Exceptions\n"
-        "----------\n"
+        "Raises\n"
+        "------\n"
         "RuntimeError: No such node (<path>)\n"
         "    Error indicating that specified <path> does not exist.\n"
         "RuntimeError: conversion of data to type \"<type>\" failed\n"

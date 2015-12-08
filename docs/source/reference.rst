@@ -13,5 +13,6 @@ Reference
 
 .. autoclass:: pycap.EnergyStorageDevice
     :members:
+    :special-members:
 
 
