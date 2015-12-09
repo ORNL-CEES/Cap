@@ -5,7 +5,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get
 install:
-  - cmake
+  - python --version
+  - cmake dalg24/cap
   - make
 before_script:
 script:
