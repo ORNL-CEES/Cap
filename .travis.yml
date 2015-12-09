@@ -1,9 +1,12 @@
+notifications:
+  email: false
+
 language: cpp
 compiler:
   - gcc
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get libboost-all-dev
+  - sudo apt-get install -y libboost-all-dev
 install:
   - python --version
   - cmake
