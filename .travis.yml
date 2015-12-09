@@ -1,40 +1,16 @@
+sudo: required
+
+language: cpp
+
+services:
+  - docker
+
 notifications:
   email: false
 
-language: cpp
-compiler:
-  - gcc
-env:
-  - PREFIX=/scratch
-    BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.bz2
-    BOOST_SHA1=b94de47108b2cdb0f931833a7a9834c2dd3ca46e
-    BOOST_ARCHIVE=${PREFIX}/archive/boost_1_59_0.tar.bz2
-    BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.59.0
-    BOOST_BUILD_DIR=${PREFIX}/build/boost/1.59.0
-    BOOST_INSTALL_DIR=/opt/boost/1.59.0
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y libboost-all-dev
-  - wget --quiet ${BOOST_URL} --output-document=${BOOST_ARCHIVE}
-  - echo "${BOOST_SHA1} ${BOOST_ARCHIVE}" | sha1sum -c
-  - mkdir -p ${BOOST_SOURCE_DIR}
-  - tar -xf ${BOOST_ARCHIVE} -C ${BOOST_SOURCE_DIR} --strip-components=1
-  - cd ${BOOST_SOURCE_DIR}
-  - ./bootstrap.sh \
-        --prefix=${BOOST_INSTALL_DIR} \
-        && \
-    ./b2 install \
-        variant=release \
-        link=static \
-        cxxflags="-fPIC" \
-        --build-dir=${BOOST_BUILD_DIR} \
-        && \
-    rm -rf ${BOOST_ARCHIVE} && \
-    rm -rf ${BOOST_BUILD_DIR} && \
-    rm -rf ${BOOST_SOURCE_DIR}
-install:
-  - cmake .
-  - make
+  - docker pull dalg24/cap-stack
+  - docker build -t dalg24/cap .
 before_script:
 script:
-  - ctest
+  - ctest -V
