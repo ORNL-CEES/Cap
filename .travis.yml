@@ -10,7 +10,8 @@ notifications:
 
 before_install:
   - docker pull dalg24/cap-stack
-  - docker build -t dalg24/cap .
 before_script:
 script:
-  - ctest -V
+  - docker build -t dalg24/cap .
+after_success:
+  - docker push dalg24/cap
