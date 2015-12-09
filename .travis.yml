@@ -1,7 +1,5 @@
 sudo: required
 
-language: cpp
-
 services:
   - docker
 
@@ -13,6 +11,7 @@ before_script:
 
 script:
   - docker build -t dalg24/cap .
+
 after_success:
   - docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
   - docker push dalg24/cap
