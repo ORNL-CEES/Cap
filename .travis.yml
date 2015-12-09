@@ -7,9 +7,32 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libboost-all-dev
+  - export PREFIX=/scratch
+  - export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.bz2 && \
+    export BOOST_SHA1=b94de47108b2cdb0f931833a7a9834c2dd3ca46e && \
+    export BOOST_ARCHIVE=${PREFIX}/archive/boost_1_59_0.tar.bz2 && \
+    export BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.59.0 && \
+    export BOOST_BUILD_DIR=${PREFIX}/build/boost/1.59.0 && \
+    export BOOST_INSTALL_DIR=/opt/boost/1.59.0 && \
+    wget --quiet ${BOOST_URL} --output-document=${BOOST_ARCHIVE} && \
+    echo "${BOOST_SHA1} ${BOOST_ARCHIVE}" | sha1sum -c && \
+    mkdir -p ${BOOST_SOURCE_DIR} && \
+    tar -xf ${BOOST_ARCHIVE} -C ${BOOST_SOURCE_DIR} --strip-components=1 && \
+    cd ${BOOST_SOURCE_DIR} && \
+    ./bootstrap.sh \
+        --prefix=${BOOST_INSTALL_DIR} \
+        && \
+    ./b2 install \
+        variant=release \
+        link=static \
+        cxxflags="-fPIC" \
+        --build-dir=${BOOST_BUILD_DIR} \
+        && \
+    rm -rf ${BOOST_ARCHIVE} && \
+    rm -rf ${BOOST_BUILD_DIR} && \
+    rm -rf ${BOOST_SOURCE_DIR}
 install:
-  - python --version
-  - cmake
+  - cmake .
   - make
 before_script:
 script:
