@@ -61,15 +61,23 @@ Governing equations
 |                                    |                                                    |                                    |
 +------------------------------------+----------------------------------------------------+------------------------------------+
 
+
+.. |alias1| replace::
+    :math:`-\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c
+    = -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e`
+
+
+.. |alias2| replace::
+    :math:`-\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e
+    = -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s`
+
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 | collector-electrode interface                                          |  electrode-separator interface                                         |
 +========================================================================+========================================================================+
 |                                                                        |                                                                        |
-|:math:`0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e` |:math:`-\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e        |
-|                                                                        |        = -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s`    |
+|:math:`0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e` ||alias2|                                                                |
 |                                                                        |                                                                        |
-|:math:`-\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c        |                                                                        |
-|        = -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e`    |:math:`-\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e = 0` |
+||alias1|                                                                |:math:`-\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e = 0` |
 |                                                                        |                                                                        |
 +------------------------------------------------------------------------+------------------------------------------------------------------------+
 
