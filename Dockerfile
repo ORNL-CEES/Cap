@@ -1,4 +1,4 @@
-FROM dalg24/cap-stack
+FROM dalg24/cap
 
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
@@ -31,18 +31,14 @@ ENV NB_UID 1000
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     mkdir /home/$NB_USER/.jupyter && \
     mkdir /home/$NB_USER/.local && \
+    mkdir /home/$NB_USER/notebooks && \
     chown -R $NB_USER:users /home/$NB_USER
 
-RUN cd /home/$NB_USER && \
-    git clone https://github.com/dalg24/cap-notebooks.git && \
-    chown -R $NB_USER:users /home/$NB_USER/cap-notebooks
-
-
 EXPOSE 8888
-WORKDIR /home/$NB_USER
+WORKDIR /home/$NB_USER/notebooks
+VOLUME /home/$NB_USER/notebooks
 ENTRYPOINT ["tini", "--"]
 CMD ["start-notebook.sh"]
-
 
 COPY start-notebook.sh /usr/local/bin/
 COPY jupyter_notebook_config.py /home/$NB_USER/.jupyter/
