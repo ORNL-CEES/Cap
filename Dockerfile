@@ -1,4 +1,4 @@
-FROM dalg24/cap
+FROM dalg24/cap-stack
 
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
