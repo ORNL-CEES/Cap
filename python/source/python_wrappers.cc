@@ -91,21 +91,99 @@ BOOST_PYTHON_MODULE(_pycap)
         "\n"
         "Parameters\n"
         "----------\n"
-        "ptree: pycap.PropertyTree\n"
+        "ptree : pycap.PropertyTree\n"
         "    The appropriate property tree to create a device\n"
         "    from the factory."
         )
-        .def("get_voltage", (&pycap::get_voltage), boost::python::args("self") )
-        .def("get_current", (&pycap::get_current), boost::python::args("self") )
-        .def("evolve_one_time_step_constant_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current), boost::python::args("self", "time_step", "current") )
-        .def("evolve_one_time_step_constant_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_voltage), boost::python::args("self", "time_step", "voltage") )
-        .def("evolve_one_time_step_constant_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_power  ), boost::python::args("self", "time_step", "load"   ) )
-        .def("evolve_one_time_step_constant_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_load   ), boost::python::args("self", "time_step", "power"  ) )
+        .def("get_voltage", (&pycap::get_voltage),
+            "Measure the voltage across the device.                         \n"
+            "                                                               \n"
+            "Returns                                                        \n"
+            "-------                                                        \n"
+            "float                                                          \n"
+            "    The voltage across the device in units of volts.           \n"
+            ,
+            boost::python::args("self") )
+        .def("get_current", (&pycap::get_current),
+            "Measure the electrical current that flows through the device.  \n"
+            "                                                               \n"
+            "Returns                                                        \n"
+            "-------                                                        \n"
+            "float                                                          \n"
+            "    The current in units of amperes.                           \n"
+            ,
+            boost::python::args("self") )
+        .def("evolve_one_time_step_constant_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current),
+            "Impose the electrical current and evolve in time.              \n"
+            "                                                               \n"
+            "Parameters                                                     \n"
+            "----------                                                     \n"
+            "time_step : float                                              \n"
+            "    The time step in units of seconds.                         \n"
+            "current   : float                                              \n"
+            "    The electrical current in units of amperes.                \n"
+            ,
+            boost::python::args("self", "time_step", "current") )
+        .def("evolve_one_time_step_constant_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_voltage),
+            "Impose the voltage across the device and evolve in time.       \n"
+            "                                                               \n"
+            "Parameters                                                     \n"
+            "----------                                                     \n"
+            "time_step : float                                              \n"
+            "    The time step in units of seconds.                         \n"
+            "voltage   : float                                              \n"
+            "    The voltage across the device in units of volts.           \n"
+            ,
+            boost::python::args("self", "time_step", "voltage") )
+        .def("evolve_one_time_step_constant_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_power  ),
+            "Impose the power and evolve in time.                           \n"
+            "                                                               \n"
+            "Parameters                                                     \n"
+            "----------                                                     \n"
+            "time_step : float                                              \n"
+            "    The time step in units of seconds.                         \n"
+            "power     : float                                              \n"
+            "    The power in units of watts.                               \n"
+            ,
+            boost::python::args("self", "time_step", "power"  ) )
+        .def("evolve_one_time_step_constant_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_load   ),
+            "Impose the load and evolve in time.                            \n"
+            "                                                               \n"
+            "Parameters                                                     \n"
+            "----------                                                     \n"
+            "time_step : float                                              \n"
+            "    The time step in units of seconds.                         \n"
+            "load      : float                                              \n"
+            "    The load in units of ohms.                                 \n"
+            ,
+            boost::python::args("self", "time_step", "power"  ) )
         .def("evolve_one_time_step_changing_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_current), boost::python::args("self", "time_step", "current") )
         .def("evolve_one_time_step_changing_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_voltage), boost::python::args("self", "time_step", "voltage") )
         .def("evolve_one_time_step_changing_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_power  ), boost::python::args("self", "time_step", "power"  ) )
         .def("evolve_one_time_step_changing_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_load   ), boost::python::args("self", "time_step", "load"   ) )
-        .def("compute_equivalent_circuit", &pycap::compute_equivalent_circuit, "Return the PropertyTree to build an equivalent circuit model", boost::python::args("ptree") )
+        .def("compute_equivalent_circuit", &pycap::compute_equivalent_circuit,
+            "Compute the equivalent circuit to a supercapacitor.            \n"
+            "                                                               \n"
+            "Parameters                                                     \n"
+            "----------                                                     \n"
+            "ptree : pycap.PropertyTree                                     \n"
+            "    The tree to build a supercapacitor.                        \n"
+            "                                                               \n"
+            "Returns                                                        \n"
+            "-------                                                        \n"
+            "pycap.PropertyTree                                             \n"
+            "    The tree to build the equivalent circuit.                  \n"
+            "                                                               \n"
+            "Examples                                                       \n"
+            "--------                                                       \n"
+            ">>> from pycap import PropertyTree, EnergyStorageDevice        \n"
+            ">>> super_capacitor_ptree=PropertyTree()                       \n"
+            ">>> super_capacitor_ptree.parse_info('super_capacitor.info')   \n"
+            ">>> super_capacitor = EnergyStorageDevice(super_capacitor_ptree)\n"
+            ">>> equivalent_circuit_ptree = EnergyStorageDevice.compute_equivalent_circuit(super_capacitor_ptree)\n"
+            ">>> equivalent_circuit = EnergyStorageDevice(equivalent_circuit_ptree)\n"
+            ,
+            boost::python::args("ptree") )
         .staticmethod("compute_equivalent_circuit")
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
