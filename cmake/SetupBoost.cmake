@@ -5,6 +5,7 @@ FIND_PACKAGE(Boost 1.59.0 REQUIRED
     python 
     unit_test_framework
     serialization
+    mpi
     )
 MESSAGE("Boost_LIBRARIES=${Boost_LIBRARIES}")
 MESSAGE("Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
