@@ -1,4 +1,5 @@
 INCLUDE(${CMAKE_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/source/dummy)
 ADD_CAP_BOOST_TEST(test_parse_params                )
 ADD_CAP_BOOST_TEST(test_butler_volmer_kinetics      )
 ADD_CAP_BOOST_TEST(test_energy_storage_device       )
