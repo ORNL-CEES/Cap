@@ -14,7 +14,7 @@ SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so;.dylib")
 
-INCLUDE(CheckCompiler)
+INCLUDE(SetupCompiler)
 INCLUDE(SetupTPLs)
 INCLUDE(TrackCapRevisionNumber)
 
