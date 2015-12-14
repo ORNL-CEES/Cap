@@ -18,7 +18,7 @@ IF(GIT_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
         DEPENDS ${CMAKE_SOURCE_DIR}/source/version.cc
         )
     INSTALL(
-        FILES ${CMAKE_SOURCE_DIR}/include/cap/version.h
+        FILES ${CMAKE_SOURCE_DIR}/source/version.h
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/cap
         )
 ENDIF()
