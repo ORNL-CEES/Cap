@@ -8,6 +8,7 @@ RUN cd ${PREFIX}/source && \
     cd ${PREFIX}/build/cap && \
     cmake \
         -D CMAKE_INSTALL_PREFIX=/opt/cap \
+        -D CMAKE_CXX_FLAGS="-fPIC" \
         -D BOOST_INSTALL_DIR=/opt/boost/1.59.0 \
         -D DEAL_II_INSTALL_DIR=/opt/dealii/8.3.0 \
         -D PYTHON_INSTALL_DIR=/opt/python/2.7.11 \
