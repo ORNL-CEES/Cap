@@ -45,7 +45,7 @@ INSTALL(DIRECTORY source/
 
 #### OUTDATED ####################################
 IF(MAKE_DOC)
-    ADD_SUBDIRECTORY(doc)
+    ADD_SUBDIRECTORY(doc-old)
 ENDIF()
 ##################################################
 
