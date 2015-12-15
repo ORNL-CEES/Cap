@@ -17,24 +17,38 @@ We recommend out-of-source builds.
 Install third-party libraries
 -----------------------------
 
-cap has a required dependency on C++11.
+Cap has a required dependency on C++11.
 
 +------------------------+------------+---------+
 | Packages               | Dependency | Version |
 +========================+============+=========+
+| MPI                    | Required   |         |
++------------------------+------------+---------+
 | Boost                  | Required   | 1.59.0  |
 +------------------------+------------+---------+
-| deal.II                | Optional   | 8.3.0   |
+| deal.II with p4est     | Optional   | 8.3.0   |
 +------------------------+------------+---------+
 | GNU Scientific Library | Optional   | 1.16    |
 +------------------------+------------+---------+
 | Python                 | Optional   | 2.7     |
 +------------------------+------------+---------+
 
-boost
+Message Passing Interface (MPI)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Cap should be working with any of the MPI implementations. It has only been
+tested with Open MPI, MPICH, and Intel MPI.
+
+Boost
 ^^^^^
 Boost version 1.59.0 or later is required.
 Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
+Do not forget to add the `using mpi ;` directive to the `project-config.jam`
+file before building boost.
+Cap will search for the following libraries at configuration-time:
+    * Boost.Test
+    * Boost.PropertyTree
+    * Boost.Serialization
+    * Boost.MPI
 Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
 `${PREFIX}/archive` directory, boost may be installed by running:
 
@@ -43,13 +57,14 @@ Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
     $ mkdir ${PREFIX}/source/boost
     $ tar -xf ${PREFIX}/archive/boost_1_59_0.tar.bz2 -C ${PREFIX}/source/boost --strip-components=1
     $ cd ${PREFIX}/source/boost && ./bootstrap.sh --prefix=${PREFIX}/install/boost
+    $ echo "using mpi ;" >> project-config.jam
     $ ./b2 install -j<N> variant=release cxxflags="-std=c++11"
 
 deal.II
 ^^^^^^^
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type ``SuperCapacitor``.
-Version 8.3.0 or later compiled with C++11 support is required.
+Version 8.3.0 or later compiled with C++11/MPI/p4est/boost support is required.
 The development sources can be found `here <https://github.com/dealii/dealii>`_.
 
 To download the release version 8.3.0, do:
@@ -70,7 +85,9 @@ It is a good idea to make a `configure_dealii` script such as:
         -D CMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii \
         -D CMAKE_BUILD_TYPE=Release                      \
         -D DEAL_II_WITH_CXX11=ON                         \
+        -D DEAL_II_WITH_MPI=ON                           \
         -D BOOST_DIR=${PREFIX}/install/boost             \
+        -D P4EST_DIR=${PREFIX}/install/p4est             \
         $EXTRA_ARGS                                      \ 
         ${PREFIX}/source/dealii
 
@@ -119,6 +136,7 @@ Create a `configure_cap` script in `${PREFIX}/build`:
         -D CMAKE_INSTALL_PREFIX=${PREFIX}/install/cap   \
         -D BOOST_INSTALL_DIR=${PREFIX}/install/boost    \
         -D DEAL_II_INSTALL_DIR=${PREFIX}/install/dealii \
+        -D MPI_INSTALL_DIR=/usr/bin                     \
         -D CAP_DATA_DIR=${PREFIX}/source/cap-data       \
         $EXTRA_ARGS                                     \ 
         ${PREFIX}/source/cap
