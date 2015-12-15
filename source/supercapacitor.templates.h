@@ -17,10 +17,12 @@ namespace cap {
 
 template <int dim>
 SuperCapacitor<dim>::
-SuperCapacitor(std::shared_ptr<Parameters const> parameters)
+SuperCapacitor(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
+: EnergyStorageDevice(comm)
 {
     // get database
-    std::shared_ptr<boost::property_tree::ptree const> database = parameters->database;
+    std::shared_ptr<boost::property_tree::ptree const> database =
+        std::make_shared<boost::property_tree::ptree>(ptree);
 
     // build triangulation
     std::shared_ptr<boost::property_tree::ptree> geometry_database =

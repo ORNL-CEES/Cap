@@ -3,21 +3,15 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/mpi/communicator.hpp>
 #include <memory>
 
 namespace cap {
 
-class Parameters
-{
-public:
-    Parameters(std::shared_ptr<boost::property_tree::ptree const> d) : database(d) { }
-
-    std::shared_ptr<boost::property_tree::ptree const> database;
-};
-
 class EnergyStorageDevice
 {
 public:
+    EnergyStorageDevice(boost::mpi::communicator const & communicator);
     virtual ~EnergyStorageDevice();
     virtual void print_data(std::ostream & os) const = 0;
     virtual void get_voltage(double & voltage) const = 0;
@@ -41,10 +35,12 @@ private:
         std::ignore = ar;
         std::ignore = version;
     }
+    boost::mpi::communicator communicator_;
 };
 
-std::shared_ptr<cap::EnergyStorageDevice>
-buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params);
+std::shared_ptr<EnergyStorageDevice>
+buildEnergyStorageDevice(boost::mpi::communicator const & communicator,
+                         boost::property_tree::ptree const & ptree);
 
 }
 

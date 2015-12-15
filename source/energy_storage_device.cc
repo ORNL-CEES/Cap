@@ -5,23 +5,29 @@
 
 namespace cap {
 
-std::shared_ptr<cap::EnergyStorageDevice>
-buildEnergyStorageDevice(std::shared_ptr<cap::Parameters const> params)
+EnergyStorageDevice::
+EnergyStorageDevice(boost::mpi::communicator const & communicator)
+: communicator_(communicator)
+{ }
+
+
+
+std::shared_ptr<EnergyStorageDevice>
+buildEnergyStorageDevice(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
 {
-    std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    std::string const type = database->get<std::string>("type", "unknown_type");
+    std::string const type = ptree.get<std::string>("type", "unknown_type");
     if (type.compare("SeriesRC") == 0)
-        return std::make_shared<cap::SeriesRC>(params);
+        return std::make_shared<cap::SeriesRC>(comm, ptree);
     else if (type.compare("ParallelRC") == 0)
-        return std::make_shared<cap::ParallelRC>(params);
+        return std::make_shared<cap::ParallelRC>(comm, ptree);
     else if (type.compare("SuperCapacitor") == 0)
     {
 #ifdef WITH_DEAL_II
-        int const dim = database->get<int>("dim");
+        int const dim = ptree.get<int>("dim");
         if (dim == 2)
-            return std::make_shared<cap::SuperCapacitor<2>>(params);
+            return std::make_shared<cap::SuperCapacitor<2>>(comm, ptree);
         else if (dim ==3)
-            return std::make_shared<cap::SuperCapacitor<3>>(params);
+            return std::make_shared<cap::SuperCapacitor<3>>(comm, ptree);
         else
             throw std::runtime_error("dim="+std::to_string(dim)+" must be 2 or 3");
 #else

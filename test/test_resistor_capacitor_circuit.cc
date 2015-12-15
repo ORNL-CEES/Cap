@@ -20,13 +20,12 @@ double const I          =  0.006;
 double const U          =  2.1;
 double const P          =  0.0017;
 
-std::shared_ptr<boost::property_tree::ptree> initialize_database()
+boost::property_tree::ptree initialize_database()
 {
-    std::shared_ptr<boost::property_tree::ptree> database =
-        std::make_shared<boost::property_tree::ptree>();
-    database->put("series_resistance"  , R_SERIES  );
-    database->put("parallel_resistance", R_PARALLEL);
-    database->put("capacitance"        , C         );
+    boost::property_tree::ptree database;
+    database.put("series_resistance"  , R_SERIES  );
+    database.put("parallel_resistance", R_PARALLEL);
+    database.put("capacitance"        , C         );
     return database;
 }
 
@@ -40,7 +39,7 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    cap::SeriesRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
     BOOST_FOREACH(double const & t, time)
@@ -69,7 +68,7 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_current )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    cap::SeriesRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
     rc.reset_voltage(0.0);
@@ -102,10 +101,8 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    std::shared_ptr<cap::Parameters const> params =
-        std::make_shared<cap::Parameters const>(initialize_database());
-    cap::SeriesRC rc_newton     (params);
-    cap::SeriesRC rc_fixed_point(params);
+    cap::SeriesRC rc_newton     (boost::mpi::communicator(), initialize_database());
+    cap::SeriesRC rc_fixed_point(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
     rc_newton     .reset_current(0.0);
@@ -153,7 +150,7 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_load )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    cap::SeriesRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
 
     // DISCHARGE
     rc.reset_voltage(U);
@@ -175,7 +172,7 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_current )
     for (double t = 0.0; t <= 5.0 * TAU; t += 0.1*TAU)
         time.push_back(t);
 
-    cap::ParallelRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
     rc.R_series = 0.0;
 
     // CHARGE
@@ -208,7 +205,7 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_voltage )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    cap::ParallelRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
     rc.reset_voltage(0.0);
@@ -234,10 +231,8 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_power )
     for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
         time.push_back(t);
 
-    std::shared_ptr<cap::Parameters const> params =
-        std::make_shared<cap::Parameters const>(initialize_database());
-    cap::SeriesRC rc_newton     (params);
-    cap::SeriesRC rc_fixed_point(params);
+    cap::SeriesRC rc_newton     (boost::mpi::communicator(), initialize_database());
+    cap::SeriesRC rc_fixed_point(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
     rc_newton     .reset_current(0.0);
@@ -285,7 +280,7 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_load )
     for (double t = 0.0; t <= 5.0 * TAU; t += 0.1*TAU)
         time.push_back(t);
 
-    cap::ParallelRC rc(std::make_shared<cap::Parameters>(initialize_database()));
+    cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
     rc.R_series = 0.0;
 
     // DISCHARGE

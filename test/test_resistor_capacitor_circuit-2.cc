@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
 
     double const series_resistance   = input_database->get<double>("device.series_resistance"              );
@@ -179,9 +179,9 @@ BOOST_AUTO_TEST_CASE( test_step_vs_ramp )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> step_device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
     std::shared_ptr<cap::EnergyStorageDevice> ramp_device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
     std::fstream fout;
     fout.open("step_vs_ramp_data", std::fstream::out);

@@ -57,9 +57,7 @@ build_energy_storage_device(boost::python::object & python_object)
 {
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(python_object);
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(ptree);
-    return cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+    return cap::buildEnergyStorageDevice(boost::mpi::communicator(), ptree);
 }
 
 std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object)

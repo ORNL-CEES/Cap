@@ -20,7 +20,7 @@ template <int dim>
 class SuperCapacitor : public EnergyStorageDevice
 {
 public:
-    SuperCapacitor(std::shared_ptr<Parameters const> parameters);
+    SuperCapacitor(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
     void print_data(std::ostream & os) const override;
     void get_voltage(double & voltage) const override;
     void get_current(double & current) const override;

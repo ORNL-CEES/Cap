@@ -29,19 +29,19 @@ BOOST_AUTO_TEST_CASE( test_factory )
 {
     for (auto const & filename : valid_device_input)
     {
-        auto ptree = std::make_shared<boost::property_tree::ptree>();
-        boost::property_tree::info_parser::read_info(filename, *ptree);
+        boost::property_tree::ptree ptree;
+        boost::property_tree::info_parser::read_info(filename, ptree);
         BOOST_CHECK_NO_THROW(
             cap::buildEnergyStorageDevice(
-                std::make_shared<cap::Parameters>(ptree) ) );
+                boost::mpi::communicator(), ptree) );
     }
 
     // invalid type must throw an exception
-    auto ptree = std::make_shared<boost::property_tree::ptree>();
-    ptree->put("type", "InvalidDeviceType");
+    boost::property_tree::ptree ptree;
+    ptree.put("type", "InvalidDeviceType");
     BOOST_CHECK_THROW(
         cap::buildEnergyStorageDevice(
-            std::make_shared<cap::Parameters>(ptree) ),
+            boost::mpi::communicator(), ptree ),
         std::runtime_error );
 }
 
@@ -54,10 +54,10 @@ BOOST_AUTO_TEST_CASE( test_serialization )
 {
     for (auto const & filename : valid_device_input)
     {
-        auto ptree = std::make_shared<boost::property_tree::ptree>();
-        boost::property_tree::info_parser::read_info(filename, *ptree);
+        boost::property_tree::ptree ptree;
+        boost::property_tree::info_parser::read_info(filename, ptree);
         auto original_device = cap::buildEnergyStorageDevice(
-            std::make_shared<cap::Parameters>(ptree) );
+            boost::mpi::communicator(), ptree );
 
         original_device->evolve_one_time_step_constant_voltage(0.1, 2.1);
         double original_voltage;

@@ -109,14 +109,12 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
         boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage system
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    auto device_database = std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
     // 
-    std::shared_ptr<boost::property_tree::ptree> not_empty_database =
-        std::make_shared<boost::property_tree::ptree>();
+    auto not_empty_database = std::make_shared<boost::property_tree::ptree>();
     not_empty_database->put("something", "not_empty");
     BOOST_CHECK_THROW(cap::compute_equivalent_circuit(device_database, not_empty_database), std::runtime_error);
 
@@ -125,7 +123,7 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
         std::make_shared<boost::property_tree::ptree>();
     cap::compute_equivalent_circuit(device_database, equivalent_circuit_database);
     std::shared_ptr<cap::EnergyStorageDevice> equivalent_circuit =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(equivalent_circuit_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *equivalent_circuit_database);
     
     std::shared_ptr<boost::property_tree::ptree> cycling_charge_discharge_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("cycling_charge_discharge"));

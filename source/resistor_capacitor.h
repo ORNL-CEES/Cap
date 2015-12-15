@@ -12,7 +12,7 @@ namespace cap {
 class SeriesRC : public EnergyStorageDevice
 {
 public:
-    SeriesRC(std::shared_ptr<Parameters const> );
+    SeriesRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;
@@ -47,7 +47,7 @@ private:
 class ParallelRC : public EnergyStorageDevice
 {
 public:
-    ParallelRC(std::shared_ptr<Parameters const> );
+    ParallelRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;
@@ -98,10 +98,10 @@ inline void load_construct_data(
     std::ignore = file_version;
     double R, C, U_C, U, I;
     ar >> R >> C >> U_C >> U >> I;
-    auto database = std::make_shared<boost::property_tree::ptree>();
-    database->put("series_resistance", R);
-    database->put("capacitance", C);
-    ::new(rc)cap::SeriesRC(std::make_shared<cap::Parameters>(database));
+    boost::property_tree::ptree ptree;
+    ptree.put("series_resistance", R);
+    ptree.put("capacitance"      , C);
+    ::new(rc)cap::SeriesRC(boost::mpi::communicator(), ptree);
 }
 
 template<class Archive>
@@ -119,11 +119,11 @@ inline void load_construct_data(
     std::ignore = file_version;
     double R_parallel, C, U_C, U, I, R_series;
     ar >> R_parallel >> C >> U_C >> U >> I >> R_series;
-    auto database = std::make_shared<boost::property_tree::ptree>();
-    database->put("series_resistance", R_series);
-    database->put("parallel_resistance", R_parallel);
-    database->put("capacitance", C);
-    ::new(rc)cap::ParallelRC(std::make_shared<cap::Parameters>(database));
+    boost::property_tree::ptree ptree;
+    ptree.put("series_resistance", R_series);
+    ptree.put("parallel_resistance", R_parallel);
+    ptree.put("capacitance", C);
+    ::new(rc)cap::ParallelRC(boost::mpi::communicator(), ptree);
 }
 }} // namespace ...
 

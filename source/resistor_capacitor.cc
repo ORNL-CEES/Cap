@@ -6,12 +6,12 @@
 namespace cap {
 
 SeriesRC::
-SeriesRC(std::shared_ptr<Parameters const> params)
+SeriesRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
+: EnergyStorageDevice(comm)
 {
-    std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    R = database->get<double>("series_resistance"     );
-    C = database->get<double>("capacitance"           );
-    U = database->get<double>("initial_voltage"  , 0.0);
+    R = ptree.get<double>("series_resistance"     );
+    C = ptree.get<double>("capacitance"           );
+    U = ptree.get<double>("initial_voltage"  , 0.0);
     this->reset_voltage(U);
 }
 
@@ -160,13 +160,13 @@ evolve_one_time_step_constant_power(double const delta_t, double const constant_
 
 
 ParallelRC::
-ParallelRC(std::shared_ptr<Parameters const> params)
+ParallelRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
+: EnergyStorageDevice(comm)
 {
-    std::shared_ptr<boost::property_tree::ptree const> database = params->database;
-    R_series   = database->get<double>("series_resistance"       );
-    R_parallel = database->get<double>("parallel_resistance"     );
-    C          = database->get<double>("capacitance"             );
-    U          = database->get<double>("initial_voltage"    , 0.0);
+    R_series   = ptree.get<double>("series_resistance"       );
+    R_parallel = ptree.get<double>("parallel_resistance"     );
+    C          = ptree.get<double>("capacitance"             );
+    U          = ptree.get<double>("initial_voltage"    , 0.0);
     this->reset_voltage(U);
 }
 

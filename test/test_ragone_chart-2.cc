@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_power )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_power"));
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_current )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_current"));

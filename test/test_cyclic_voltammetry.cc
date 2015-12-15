@@ -87,10 +87,9 @@ BOOST_AUTO_TEST_CASE( test_cyclic_voltammetry )
         boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
 
     // build an energy storage system
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    auto device_database = input_database->get_child("device");
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), device_database);
 
     // scan the system
     std::fstream fout;
