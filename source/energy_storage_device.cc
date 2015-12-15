@@ -5,6 +5,11 @@
 
 namespace cap {
 
+EnergyStorageDeviceInspector::
+~EnergyStorageDeviceInspector() = default;
+
+
+
 EnergyStorageDeviceBuilder::
 ~EnergyStorageDeviceBuilder() = default;
 
