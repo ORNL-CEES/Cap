@@ -5,9 +5,43 @@
 
 namespace cap {
 
+EnergyStorageDeviceBuilder::
+~EnergyStorageDeviceBuilder() = default;
+
+
+
+void
+EnergyStorageDeviceBuilder::
+register_energy_storage_device(std::string const & type, EnergyStorageDeviceBuilder * builder)
+{
+    EnergyStorageDevice::_builders[type] = builder;
+}
+
+
+
+std::map<std::string,EnergyStorageDeviceBuilder*>
+EnergyStorageDevice::
+_builders = std::map<std::string,EnergyStorageDeviceBuilder*>();
+
+
+
+std::unique_ptr<EnergyStorageDevice>
+EnergyStorageDevice::
+build(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
+{
+    auto const type = ptree.get<std::string>("type");
+    auto const it = _builders.find(type);
+    if (it != _builders.end())
+        return (it->second)->build(comm, ptree);
+    else
+        throw std::runtime_error("invalid EnergyStorageDevice type `"+type+"`\n");
+}
+
+
+
 EnergyStorageDevice::
 EnergyStorageDevice(boost::mpi::communicator const & communicator)
-: communicator_(communicator)
+: _communicator(communicator)
 { }
 
 

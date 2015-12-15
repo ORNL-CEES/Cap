@@ -5,8 +5,11 @@
 #include <boost/serialization/access.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <memory>
+#include <map>
 
 namespace cap {
+
+class EnergyStorageDeviceBuilder;
 
 class EnergyStorageDevice
 {
@@ -26,6 +29,9 @@ public:
     virtual void evolve_one_time_step_changing_voltage(double const time_step, double const changing_voltage);
     virtual void evolve_one_time_step_changing_power  (double const time_step, double const changing_power  );
     virtual void evolve_one_time_step_changing_load   (double const time_step, double const changing_load   );
+    static std::unique_ptr<EnergyStorageDevice> build(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
+protected:
+    boost::mpi::communicator _communicator;
 private:
     friend class boost::serialization::access;
     template<class Archive>
@@ -35,13 +41,38 @@ private:
         std::ignore = ar;
         std::ignore = version;
     }
-    boost::mpi::communicator communicator_;
+    friend EnergyStorageDeviceBuilder;
+    static std::map<std::string,EnergyStorageDeviceBuilder*> _builders;
 };
 
 std::shared_ptr<EnergyStorageDevice>
 buildEnergyStorageDevice(boost::mpi::communicator const & communicator,
                          boost::property_tree::ptree const & ptree);
 
-}
+
+class EnergyStorageDeviceBuilder
+{
+public:
+    virtual ~EnergyStorageDeviceBuilder();
+    virtual std::unique_ptr<EnergyStorageDevice> build(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree) = 0;
+    static void register_energy_storage_device(std::string const & type, EnergyStorageDeviceBuilder * builder);
+};
+
+
+
+#define REGISTER_ENERGY_STORAGE_DEVICE(T) \
+    class T##Builder : public EnergyStorageDeviceBuilder { \
+    public: \
+        T##Builder() \
+        { \
+            register_energy_storage_device(#T, this); \
+        } \
+        virtual std::unique_ptr<EnergyStorageDevice> build(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree) override { \
+            return std::unique_ptr<T>(new T(comm, ptree)); \
+        } \
+    }; \
+    static T##Builder global_##T##Builder;
+
+} // end namespace cap
 
 #endif // CAP_ENERGY_STORAGE_DEVICE_H

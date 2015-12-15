@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE( test_factory )
         boost::property_tree::ptree ptree;
         boost::property_tree::info_parser::read_info(filename, ptree);
         BOOST_CHECK_NO_THROW(
-            cap::buildEnergyStorageDevice(
+            cap::EnergyStorageDevice::build(
                 boost::mpi::communicator(), ptree) );
     }
 

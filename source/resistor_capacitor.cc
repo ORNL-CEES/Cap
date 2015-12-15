@@ -5,6 +5,9 @@
 
 namespace cap {
 
+REGISTER_ENERGY_STORAGE_DEVICE(SeriesRC)
+REGISTER_ENERGY_STORAGE_DEVICE(ParallelRC)
+
 SeriesRC::
 SeriesRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
 : EnergyStorageDevice(comm)
