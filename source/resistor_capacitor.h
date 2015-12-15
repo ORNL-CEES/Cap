@@ -13,6 +13,7 @@ class SeriesRC : public EnergyStorageDevice
 {
 public:
     SeriesRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
+    void inspect(EnergyStorageDeviceInspector * inspector) override;
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;
@@ -48,6 +49,7 @@ class ParallelRC : public EnergyStorageDevice
 {
 public:
     ParallelRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
+    void inspect(EnergyStorageDeviceInspector * inspector) override;
     void print_data(std::ostream & os) const override;
     void reset_voltage(double const voltage) override;
     void reset_current(double const current) override;

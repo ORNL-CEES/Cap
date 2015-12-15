@@ -16,6 +16,14 @@
 namespace cap {
 
 template <int dim>
+void
+SuperCapacitor<dim>::
+inspect(EnergyStorageDeviceInspector * inspector)
+{
+    inspector->inspect(this);
+}
+
+template <int dim>
 SuperCapacitor<dim>::
 SuperCapacitor(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
 : EnergyStorageDevice(comm)

@@ -8,6 +8,26 @@ namespace cap {
 REGISTER_ENERGY_STORAGE_DEVICE(SeriesRC)
 REGISTER_ENERGY_STORAGE_DEVICE(ParallelRC)
 
+
+
+void
+ParallelRC::
+inspect(EnergyStorageDeviceInspector * inspector)
+{
+    inspector->inspect(this);
+}
+
+
+
+void
+SeriesRC::
+inspect(EnergyStorageDeviceInspector * inspector)
+{
+    inspector->inspect(this);
+}
+
+
+
 SeriesRC::
 SeriesRC(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree)
 : EnergyStorageDevice(comm)

@@ -10,17 +10,20 @@
 namespace cap {
 
 class EnergyStorageDeviceBuilder;
+class EnergyStorageDeviceInspector;
 
 class EnergyStorageDevice
 {
 public:
     EnergyStorageDevice(boost::mpi::communicator const & communicator);
     virtual ~EnergyStorageDevice();
+    // DEPRECATED ///////////////////////////////////////
     virtual void print_data(std::ostream & os) const = 0;
-    virtual void get_voltage(double & voltage) const = 0;
-    virtual void get_current(double & current) const = 0;
     virtual void reset_voltage(double const voltage) = 0;
     virtual void reset_current(double const current) = 0;
+    /////////////////////////////////////////////////////
+    virtual void get_voltage(double & voltage) const = 0;
+    virtual void get_current(double & current) const = 0;
     virtual void evolve_one_time_step_constant_current(double const time_step, double const constant_current) = 0;
     virtual void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage) = 0;
     virtual void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  ) = 0;
@@ -30,6 +33,7 @@ public:
     virtual void evolve_one_time_step_changing_power  (double const time_step, double const changing_power  );
     virtual void evolve_one_time_step_changing_load   (double const time_step, double const changing_load   );
     static std::unique_ptr<EnergyStorageDevice> build(boost::mpi::communicator const & comm, boost::property_tree::ptree const & ptree);
+    virtual void inspect(EnergyStorageDeviceInspector * inspector) = 0;
 protected:
     boost::mpi::communicator _communicator;
 private:
@@ -45,9 +49,6 @@ private:
     static std::map<std::string,EnergyStorageDeviceBuilder*> _builders;
 };
 
-std::shared_ptr<EnergyStorageDevice>
-buildEnergyStorageDevice(boost::mpi::communicator const & communicator,
-                         boost::property_tree::ptree const & ptree);
 
 
 class EnergyStorageDeviceBuilder
@@ -58,6 +59,14 @@ public:
     static void register_energy_storage_device(std::string const & type, EnergyStorageDeviceBuilder * builder);
 };
 
+
+
+class EnergyStorageDeviceInspector
+{
+public:
+    virtual ~EnergyStorageDeviceInspector();
+    virtual void inspect(EnergyStorageDevice * device) = 0;
+};
 
 
 #define REGISTER_ENERGY_STORAGE_DEVICE(T) \
@@ -72,6 +81,12 @@ public:
         } \
     }; \
     static T##Builder global_##T##Builder;
+
+// DEPRECATED /////////////////////////////////////////////////////////
+std::shared_ptr<EnergyStorageDevice>
+buildEnergyStorageDevice(boost::mpi::communicator const & communicator,
+                         boost::property_tree::ptree const & ptree);
+///////////////////////////////////////////////////////////////////////
 
 } // end namespace cap
 
