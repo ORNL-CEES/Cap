@@ -158,7 +158,7 @@ Run the tests:
     $ ctest -j<N>
 
 
-Enable the python wrappers
+Enable the Python wrappers
 --------------------------
 
 To build the Python wrappers cap must be configured with an extra flag
@@ -187,11 +187,8 @@ Launch Python and try:
 
 .. testcode::
 
-    >>> from pycap import PropertyTree,EnergyStorageDevice
-    >>> input_database=PropertyTree()
-    >>> input_database.parse_xml('device.xml')
-    >>> device_database=input_database.get_child('device')
-    >>> device=EnergyStorageDevice(device_database)
+    >>> import pycap
+    >>> help(pycap)
 
 Build this documentation
 ------------------------
