@@ -4,9 +4,14 @@ Getting started
 Overview
 --------
 
-`cap <https://github.com/dalg24/cap>`_ is a library for modelling energy
+`Cap <https://github.com/dalg24/cap>`_ is a library for modelling energy
 storage devices.
 Its core is implemented in C++ but Python wrappers are also available.
+
+Cap provides:
+
+1. energy storage device models
+2. electrochmical measurement techniques
 
 .. testcode::
 
@@ -27,3 +32,6 @@ It has pycap already installed on it and comes with a few notebooks as example.
     docker run -d -p 8888:8888 dalg24/cap
 
 Open your web browser and follow http://192.168.99.100:8888/tree/cap-notebooks
+
+- ``-v $PWD:/home/jovyan/notebooks`` - Mount the present working directory, $PWD, into the container at /home/jovyan/notebooks, which is set as the Jupyter Notebook startup folder.
+
