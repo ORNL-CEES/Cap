@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE EnergyStorageDevice
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
 
 #include <cap/energy_storage_device.h>
 #include <cap/resistor_capacitor.h>
@@ -10,10 +11,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/mpi/communicator.hpp>
 #include <sstream>
-
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(cap::EnergyStorageDevice)
-//BOOST_CLASS_EXPORT(cap::SeriesRC)
 
 // list of valid inputs to build an EnergyStorageDevice
 // These are meant as example
@@ -28,6 +27,9 @@ std::list<std::string> const valid_device_input = {
 BOOST_AUTO_TEST_CASE( test_energy_storage_device_builders )
 {
     boost::mpi::communicator world;
+    int const size = world.size();
+    int const rank = world.rank();
+    std::cout<<"hello world from rank "<<rank<<" of size "<<size<<"\n";
     for (auto const & filename : valid_device_input)
     {
         boost::property_tree::ptree ptree;
