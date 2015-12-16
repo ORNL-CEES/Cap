@@ -42,8 +42,8 @@ Boost
 ^^^^^
 Boost version 1.59.0 or later is required.
 Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
-Do not forget to add the `using mpi ;` directive to the `project-config.jam`
-file before building boost.
+Do not forget to add the ``using mpi ;`` directive to the
+`project-config.jam` file before building boost.
 Cap will search for the following libraries at configuration-time:
     * Boost.Test
     * Boost.PropertyTree
@@ -62,6 +62,14 @@ Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
 
 deal.II
 ^^^^^^^
+
+.. code::
+
+    $ wget --output-document=${PREFIX}/archive/p4est-1.1.tar.gz http://p4est.github.io/release/p4est-1.1.tar.gz
+    $ mkdir ${PREFIX}/source/p4est && tar -xf ${PREFIX}/archive/p4est-1.1.tar.gz -C ${PREFIX}/source/p4est --strip-components=1
+    $ mkdir ${PREFIX}/build/p4est && cd ${PREFIX}/build/p4est
+    $ ${PREFIX}/source/p4est/configure --prefix=${PREFIX}/install/p4est --enable-mpi
+
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type ``SuperCapacitor``.
 Version 8.3.0 or later compiled with C++11/MPI/p4est/boost support is required.
