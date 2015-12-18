@@ -73,27 +73,29 @@ BOOST_PYTHON_MODULE(_pycap)
         std::shared_ptr<pycap::EnergyStorageDeviceWrap>,
         boost::noncopyable >(
         "EnergyStorageDevice",
-        "Wrappers for Cap.EnergyStorageDevice\n"
-        "\n"
-        "Example\n"
-        "-------\n"
-        ">>> ptree = PropertyTree()\n"
-        ">>> ptree.parse_info('device.info')\n"
-        ">>> device = EnergyStorageDevice(ptree)\n"
-        ">>> delta_t, U = 1.0, 2.1 # units of seconds and volts\n"
-        ">>> device.evolve_one_time_step_constant_voltage(delta_t,U)\n"
-        ">>> I = device.get_current() # amperes \n"
+        "Wrappers for Cap.EnergyStorageDevice                                \n"
+        "                                                                    \n"
+        "Examples                                                            \n"
+        "--------                                                            \n"
+        "                                                                    \n"
+        ">>> ptree = PropertyTree()                                          \n"
+        ">>> ptree.parse_info('device.info')                                 \n"
+        ">>> device = EnergyStorageDevice(ptree)                             \n"
+        ">>> delta_t, U = 1.0, 2.1 # units of seconds and volts              \n"
+        ">>> device.evolve_one_time_step_constant_voltage(delta_t,U)         \n"
+        ">>> I = device.get_current() # amperes                              \n"
+        "                                                                    \n"
         ,
         boost::python::no_init )
         .def("__init__",
         boost::python::make_constructor(&pycap::build_energy_storage_device,
         boost::python::default_call_policies(), boost::python::args("ptree")),
-        "\n"
-        "Parameters\n"
-        "----------\n"
-        "ptree : pycap.PropertyTree\n"
-        "    The appropriate property tree to create a device\n"
-        "    from the factory."
+        "                                                                    \n"
+        "Parameters                                                          \n"
+        "----------                                                          \n"
+        "ptree : pycap.PropertyTree                                          \n"
+        "    The appropriate property tree to create a device                \n"
+        "    from the factory.                                               \n"
         )
         .def("get_voltage", (&pycap::get_voltage),
             "Measure the voltage across the device.                         \n"
