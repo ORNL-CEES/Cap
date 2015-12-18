@@ -45,10 +45,15 @@ Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
 Do not forget to add the ``using mpi ;`` directive to the
 `project-config.jam` file before building boost.
 Cap will search for the following libraries at configuration-time:
+
     * Boost.Test
+
     * Boost.PropertyTree
+
     * Boost.Serialization
+
     * Boost.MPI
+
 Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
 `${PREFIX}/archive` directory, boost may be installed by running:
 
