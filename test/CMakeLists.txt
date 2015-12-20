@@ -1,4 +1,4 @@
-INCLUDE(${CMAKE_SOURCE_DIR}/cmake/macros.cmake)
+INCLUDE(cmake/macros.cmake)
 ADD_DEFINITIONS(-D BOOST_TEST_DYN_LINK)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/source/dummy)
 ADD_CAP_BOOST_TEST(test_parse_params                )
