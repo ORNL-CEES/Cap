@@ -1,7 +1,6 @@
 #include <pycap/energy_storage_device_wrappers.h>
-#ifdef WITH_GSL
-#include <cap/electrochemical_impedance_spectroscopy.h>
-#endif
+#include <cap/equivalent_circuit.h>
+#include <mpi4py/mpi4py.h>
 
 namespace pycap {
 
@@ -53,14 +52,19 @@ double get_voltage(cap::EnergyStorageDevice const & dev)
 }
 
 std::shared_ptr<cap::EnergyStorageDevice>
-build_energy_storage_device(boost::python::object & python_object)
+build_energy_storage_device(boost::python::object & py_comm, boost::python::object & py_ptree)
 {
     boost::property_tree::ptree const & ptree =
-        boost::python::extract<boost::property_tree::ptree const &>(python_object);
-    return cap::buildEnergyStorageDevice(boost::mpi::communicator(), ptree);
+        boost::python::extract<boost::property_tree::ptree const &>(py_ptree);
+    PyObject* py_obj = py_comm.ptr();
+    MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
+    if (comm_p == NULL) boost::python::throw_error_already_set();
+    boost::mpi::communicator comm(*comm_p, boost::mpi::comm_attach);
+    return cap::EnergyStorageDevice::build(comm, ptree);
 }
 
-std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object)
+std::shared_ptr<boost::property_tree::ptree>
+compute_equivalent_circuit(boost::python::object & python_object)
 {
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(python_object);

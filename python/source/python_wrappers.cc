@@ -6,9 +6,23 @@
 #include <memory>
 #include <map>
 
+#include <mpi4py/mpi4py.h>
+std::shared_ptr<cap::EnergyStorageDevice>
+build_energy_storage_device(boost::python::object & py_comm, boost::python::object & py_ptree)
+{
+    boost::property_tree::ptree const & ptree =
+        boost::python::extract<boost::property_tree::ptree const &>(py_ptree);
+    PyObject* py_obj = py_comm.ptr();
+    MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
+    if (comm_p == NULL) boost::python::throw_error_already_set();
+    boost::mpi::communicator comm(*comm_p, boost::mpi::comm_attach);
+    return cap::EnergyStorageDevice::build(comm, ptree);
+}
 
 BOOST_PYTHON_MODULE(_pycap)
 {
+    if (import_mpi4py() < 0) return;
+
     boost::python::scope().attr("__version__"        ) = cap::version()        ;
     boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
@@ -88,11 +102,14 @@ BOOST_PYTHON_MODULE(_pycap)
         ,
         boost::python::no_init )
         .def("__init__",
-        boost::python::make_constructor(&pycap::build_energy_storage_device,
-        boost::python::default_call_policies(), boost::python::args("ptree")),
+        boost::python::make_constructor(build_energy_storage_device,
+//        boost::python::make_constructor(&pycap::build_energy_storage_device,
+        boost::python::default_call_policies(), boost::python::args("comm", "ptree")),
         "                                                                    \n"
         "Parameters                                                          \n"
         "----------                                                          \n"
+        "comm  : mpi4py.MPI.Comm                                             \n"
+        "    The MPI communicator.                                           \n"
         "ptree : pycap.PropertyTree                                          \n"
         "    The appropriate property tree to create a device                \n"
         "    from the factory.                                               \n"
