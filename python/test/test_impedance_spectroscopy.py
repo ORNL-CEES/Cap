@@ -3,6 +3,7 @@ from pycap import measure_impedance_spectrum,retrieve_impedance_spectrum,fourier
 from numpy import sqrt,log,inf,linalg,real,imag,pi,log10,absolute,angle
 from numpy import array,testing
 from warnings import catch_warnings,simplefilter
+from mpi4py import MPI
 import unittest
 
 R  =50.0e-3 # ohm
@@ -73,7 +74,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_string('type','SeriesRC')
         device_database.put_double('series_resistance',R)
         device_database.put_double('capacitance'      ,C)
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(MPI.COMM_WORLD,device_database)
         eis_database=setup_expertiment()
         eis_database.put_int   ('steps_per_decade',1)
         eis_database.put_int   ('steps_per_cycle',64)
@@ -96,7 +97,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_string('type','SeriesRC')
         device_database.put_double('series_resistance',R)
         device_database.put_double('capacitance'      ,C)      
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(MPI.COMM_WORLD,device_database)
         # setup experiment and measure 
         eis_database=setup_expertiment()
         spectrum_data=measure_impedance_spectrum(device,eis_database)
@@ -127,7 +128,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_double('series_resistance'  ,R  )
         device_database.put_double('parallel_resistance',R_L)
         device_database.put_double('capacitance'        ,C  )      
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(MPI.COMM_WORLD,device_database)
         # setup experiment and measure 
         eis_database=setup_expertiment()
         spectrum_data=measure_impedance_spectrum(device,eis_database)

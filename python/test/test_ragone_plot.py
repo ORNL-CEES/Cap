@@ -1,7 +1,10 @@
 from pycap import PropertyTree,EnergyStorageDevice
 from pycap import measure_performance,retrieve_performance_data
 from numpy import sqrt,log,inf,linalg
+from mpi4py import MPI
 import unittest
+
+comm=MPI.COMM_WORLD
 
 R  =50.0e-3 # ohm
 R_L=500.0   # ohm
@@ -32,7 +35,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_string('type','SeriesRC')
         device_database.put_double('series_resistance',R)
         device_database.put_double('capacitance'      ,C)
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(comm,device_database)
         ragone_database=setup_expertiment()
         ragone_database.put_int   ('min_steps_per_discharge', 20)
         ragone_database.put_int   ('max_steps_per_discharge', 30)
@@ -53,7 +56,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_string('type','SeriesRC')
         device_database.put_double('series_resistance',R)
         device_database.put_double('capacitance'      ,C)
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(comm,device_database)
         # setup experiment and measure 
         ragone_database=setup_expertiment()
         performance_data=measure_performance(device,ragone_database)
@@ -73,7 +76,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_double('series_resistance'  ,R  )
         device_database.put_double('parallel_resistance',R_L)
         device_database.put_double('capacitance'        ,C  )
-        device=EnergyStorageDevice(device_database)
+        device=EnergyStorageDevice(comm,device_database)
         # setup experiment and measure 
         ragone_database=setup_expertiment()
         performance_data=measure_performance(device,ragone_database)

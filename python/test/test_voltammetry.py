@@ -1,13 +1,14 @@
 from pycap import PropertyTree,EnergyStorageDevice,CyclicVoltammetry
 from pycap import initialize_data
 from numpy import array,testing,linspace
+from mpi4py import MPI
 import unittest
 
+comm=MPI.COMM_WORLD
+filename='series_rc.info'
 ptree=PropertyTree()
-ptree.put_string('type','SeriesRC')
-ptree.put_double('series_resistance',40e-3)
-ptree.put_double('capacitance',3)
-device=EnergyStorageDevice(ptree)
+ptree.parse_info(filename)
+device=EnergyStorageDevice(comm,ptree)
 
 class capRampTestCase(unittest.TestCase):
     def test_no_name(self):

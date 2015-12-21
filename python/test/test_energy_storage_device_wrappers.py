@@ -1,6 +1,8 @@
 from pycap import PropertyTree,EnergyStorageDevice
-from numpy import array,pi,linalg,inf
+from mpi4py import MPI
 import unittest
+
+comm=MPI.COMM_WORLD
 
 valid_device_input=[
     "series_rc.info",
@@ -14,15 +16,15 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         for filename in valid_device_input:
             ptree=PropertyTree()
             ptree.parse_info(filename)
-            device=EnergyStorageDevice(ptree)
+            device=EnergyStorageDevice(comm,ptree)
         # invalid device will throw an exception
         ptree=PropertyTree()
         ptree.put_string('type', 'InvalidDevice')
-        self.assertRaises(RuntimeError,EnergyStorageDevice,ptree)
+        self.assertRaises(RuntimeError,EnergyStorageDevice,comm,ptree)
     def test_energy_storage_device_not_copyable(self):
         device_database=PropertyTree()
         device_database.parse_xml('device.xml')
-        device=EnergyStorageDevice(device_database.get_child('device'))
+        device=EnergyStorageDevice(comm,device_database.get_child('device'))
         from copy import copy,deepcopy
         self.assertRaises(RuntimeError,copy,device)
         self.assertRaises(RuntimeError,deepcopy,device)

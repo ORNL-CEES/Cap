@@ -1,11 +1,14 @@
 from pycap import PropertyTree,EnergyStorageDevice
 from pycap import Stage,MultiStage
 from pycap import initialize_data
+from mpi4py import MPI
 import unittest
 
-device_database=PropertyTree()
-device_database.parse_xml('device.xml')
-device=EnergyStorageDevice(device_database.get_child('device'))
+comm=MPI.COMM_WORLD
+filename='series_rc.info'
+ptree=PropertyTree()
+ptree.parse_info(filename)
+device=EnergyStorageDevice(comm,ptree)
 
 class capStageTestCase(unittest.TestCase):
     def test_constant_current_charge_for_given_time(self):

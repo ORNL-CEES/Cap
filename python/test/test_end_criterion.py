@@ -1,10 +1,13 @@
 from pycap import PropertyTree,EnergyStorageDevice,EndCriterion
 from numpy import nan as NaN
+from mpi4py import MPI
 import unittest
 
-device_database=PropertyTree()
-device_database.parse_xml('device.xml')
-device=EnergyStorageDevice(device_database.get_child('device'))
+comm=MPI.COMM_WORLD
+filename='series_rc.info'
+ptree=PropertyTree()
+ptree.parse_info(filename)
+device=EnergyStorageDevice(comm,ptree)
 
 class capEndCriterionTestCase(unittest.TestCase):
     def test_time_limit(self):
