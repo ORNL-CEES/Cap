@@ -1,29 +1,39 @@
 INCLUDE(cmake/macros.cmake)
 ADD_DEFINITIONS(-D BOOST_TEST_DYN_LINK)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/source/dummy)
-ADD_CAP_BOOST_TEST(test_parse_params                )
-ADD_CAP_BOOST_TEST(test_butler_volmer_kinetics      )
-ADD_CAP_BOOST_TEST(test_energy_storage_device       )
-ADD_CAP_BOOST_TEST(test_resistor_capacitor_circuit  )
-ADD_CAP_BOOST_TEST(test_resistor_capacitor_circuit-2)
-ADD_CAP_BOOST_TEST(test_multi_stage                 )
-ADD_CAP_BOOST_TEST(test_discharge_curve             )
-ADD_CAP_BOOST_TEST(test_charge_curve                )
-ADD_CAP_BOOST_TEST(test_lissajous_curve             )
-ADD_CAP_BOOST_TEST(test_cyclic_voltammetry          )
-ADD_CAP_BOOST_TEST(test_leakage_current             )
-ADD_CAP_BOOST_TEST(test_ragone_chart                )
-ADD_CAP_BOOST_TEST(test_ragone_chart-2              )
+SET(CPP_TESTS "")
+LIST(APPEND
+    CPP_TESTS
+    test_parse_params
+    test_butler_volmer_kinetics
+    test_energy_storage_device
+    test_resistor_capacitor_circuit
+    test_resistor_capacitor_circuit-2
+    test_multi_stage
+    test_discharge_curve
+    test_charge_curve
+    test_lissajous_curve
+    test_cyclic_voltammetry
+    test_leakage_current
+    test_ragone_chart
+    test_ragone_chart-2
+    )
 IF(ENABLE_DEAL_II)
-    ADD_CAP_BOOST_TEST(test_geometry)
-    ADD_CAP_BOOST_TEST(test_postprocessor               )
-    ADD_CAP_BOOST_TEST(test_mp_values                   )
-    ADD_CAP_BOOST_TEST(test_dirichlet_boundary_operator )
-    ADD_CAP_BOOST_TEST(test_equivalent_circuit-2        )
-    ADD_CAP_BOOST_TEST(test_supercapacitor              )
-    ADD_CAP_BOOST_TEST(test_exact_transient_solution    )
-    ADD_CAP_BOOST_TEST(test_exact_transient_solution-2  )
+    LIST(APPEND
+        CPP_TESTS
+        test_geometry
+        test_postprocessor
+        test_mp_values
+        test_dirichlet_boundary_operator
+        test_equivalent_circuit-2
+        test_supercapacitor
+        test_exact_transient_solution
+        test_exact_transient_solution-2
+        )
 ENDIF()
+FOREACH(TEST_NAME ${CPP_TESTS})
+    ADD_CAP_BOOST_TEST(${TEST_NAME})
+ENDFOREACH()
 IF(ENABLE_GSL)
     ADD_CAP_BOOST_TEST(test_impedance_spectroscopy      )
     ADD_CAP_BOOST_TEST(test_impedance_spectroscopy-2    )
