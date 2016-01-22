@@ -15,36 +15,65 @@ class SeriesRC : public EnergyStorageDevice
 public:
   SeriesRC(boost::mpi::communicator const &comm,
            boost::property_tree::ptree const &ptree);
+
   void inspect(EnergyStorageDeviceInspector *inspector) override;
+
+  /**
+   * Output the current, the voltage, and the voltage across the capacitor.
+   */
   void print_data(std::ostream &os) const override;
+
   void reset_voltage(double const voltage) override;
+
   void reset_current(double const current) override;
-  void
-  evolve_one_time_step_constant_current(double const delta_t,
-                                        double const constant_current) override;
-  void
-  evolve_one_time_step_constant_voltage(double const delta_t,
-                                        double const constant_voltage) override;
-  void
-  evolve_one_time_step_constant_power(double const delta_t,
-                                      double const constant_power) override;
+
+  void evolve_one_time_step_constant_current(double const delta_t,
+                                             double const current) override;
+
+  void evolve_one_time_step_constant_voltage(double const delta_t,
+                                             double const voltage) override;
+  void evolve_one_time_step_constant_power(double const delta_t,
+                                           double const power) override;
+
   void evolve_one_time_step_constant_load(double const delta_t,
-                                          double const constant_load) override;
-  void
-  evolve_one_time_step_changing_current(double const delta_t,
-                                        double const changing_current) override;
-  void
-  evolve_one_time_step_changing_voltage(double const delta_t,
-                                        double const changing_voltage) override;
+                                          double const load) override;
+
+  void evolve_one_time_step_linear_current(double const delta_t,
+                                           double const current) override;
+
+  void evolve_one_time_step_linear_voltage(double const delta_t,
+                                           double const voltage) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_power(double const delta_t,
+                                         double const power) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_load(double const delta_t,
+                                        double const load) override;
+
   inline void get_voltage(double &voltage) const override { voltage = U; }
+
   inline void get_current(double &current) const override { current = I; }
-  // TODO:
+
+  /**
+   * This function advance the time by @p delta_t seconds. The power is
+   * constant during the time step and its value is @p power. This
+   * function internally solves a non-linear problem and the third parameter @p
+   * method allows to choose between FIXED_POINT (Picard iteration) and NEWTON.
+   * This function returns the number of non-linear iterations performed to
+   * reach convergence.
+   */
   std::size_t
-  evolve_one_time_step_constant_power(double const delta_t,
-                                      double const constant_power,
+  evolve_one_time_step_constant_power(double const delta_t, double const power,
                                       std::string const &method = "NEWTON");
   void reset(double const capacitor_voltage);
 
+  // TODO: make these variables private
   double R;
   double C;
   double U_C;
@@ -67,36 +96,67 @@ class ParallelRC : public EnergyStorageDevice
 public:
   ParallelRC(boost::mpi::communicator const &comm,
              boost::property_tree::ptree const &ptree);
+
   void inspect(EnergyStorageDeviceInspector *inspector) override;
+
+  /**
+   * Output the current, the voltage, and the voltage across the capacitor.
+   */
   void print_data(std::ostream &os) const override;
+
   void reset_voltage(double const voltage) override;
+
   void reset_current(double const current) override;
-  void
-  evolve_one_time_step_constant_current(double const delta_t,
-                                        double const constant_current) override;
-  void
-  evolve_one_time_step_constant_voltage(double const delta_t,
-                                        double const constant_voltage) override;
-  void
-  evolve_one_time_step_constant_power(double const delta_t,
-                                      double const constant_power) override;
+
+  void evolve_one_time_step_constant_current(double const delta_t,
+                                             double const current) override;
+
+  void evolve_one_time_step_constant_voltage(double const delta_t,
+                                             double const voltage) override;
+
+  void evolve_one_time_step_constant_power(double const delta_t,
+                                           double const power) override;
+
   void evolve_one_time_step_constant_load(double const delta_t,
-                                          double const constant_load) override;
-  void
-  evolve_one_time_step_changing_current(double const delta_t,
-                                        double const changing_current) override;
-  void
-  evolve_one_time_step_changing_voltage(double const delta_t,
-                                        double const constant_voltage) override;
+                                          double const load) override;
+
+  void evolve_one_time_step_linear_current(double const delta_t,
+                                           double const current) override;
+
+  void evolve_one_time_step_linear_voltage(double const delta_t,
+                                           double const voltage) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_power(double const delta_t,
+                                         double const power) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_load(double const delta_t,
+                                        double const load) override;
+
   inline void get_voltage(double &voltage) const override { voltage = U; }
+
   inline void get_current(double &current) const override { current = I; }
-  // TODO:
+
+  /**
+   * This function advance the time by @p delta_t seconds. The power is
+   * constant during the time step and its value is @p power. This
+   * function internally solves a non-linear problem and the third parameter @p
+   * method allows to choose between FIXED_POINT (Picard iteration) and NEWTON.
+   * This function returns the number of non-linear iterations performed to
+   * reach convergence.
+   */
   std::size_t
-  evolve_one_time_step_constant_power(double const delta_t,
-                                      double const constant_power,
+  evolve_one_time_step_constant_power(double const delta_t, double const power,
                                       std::string const &method = "NEWTON");
+
   void reset(double const capacitor_voltage);
 
+  // TODO: make these variables private
   double R_parallel;
   double C;
   double U_C;
@@ -121,6 +181,9 @@ namespace boost
 {
 namespace serialization
 {
+/**
+ * Save the current state of a cap::SeriesRC object.
+ */
 template <class Archive>
 inline void save_construct_data(Archive &ar, const cap::SeriesRC *rc,
                                 const unsigned int file_version)
@@ -129,6 +192,9 @@ inline void save_construct_data(Archive &ar, const cap::SeriesRC *rc,
   ar << rc->R << rc->C << rc->U_C << rc->U << rc->I;
 }
 
+/**
+ * Build a cap::SeriesRC object from saved data.
+ */
 template <class Archive>
 inline void load_construct_data(Archive &ar, cap::SeriesRC *rc,
                                 const unsigned int file_version)
@@ -142,6 +208,9 @@ inline void load_construct_data(Archive &ar, cap::SeriesRC *rc,
   ::new (rc) cap::SeriesRC(boost::mpi::communicator(), ptree);
 }
 
+/**
+ * Save the current state of a cap::ParallelRC object.
+ */
 template <class Archive>
 inline void save_construct_data(Archive &ar, const cap::ParallelRC *rc,
                                 const unsigned int file_version)
@@ -150,6 +219,9 @@ inline void save_construct_data(Archive &ar, const cap::ParallelRC *rc,
   ar << rc->R_parallel << rc->C << rc->U_C << rc->U << rc->I << rc->R_series;
 }
 
+/**
+ * Build a cap::ParallelRC object from saved data.
+ */
 template <class Archive>
 inline void load_construct_data(Archive &ar, cap::ParallelRC *rc,
                                 const unsigned int file_version)

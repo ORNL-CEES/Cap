@@ -58,17 +58,17 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::
     {
         for ( ; voltage <= voltage_upper_limit; voltage += step_size, time+=time_step)
         {
-            dev->evolve_one_time_step_changing_voltage(time_step, voltage);
+            dev->evolve_one_time_step_linear_voltage(time_step, voltage);
             report(time, dev, os);
         }
         for ( ; voltage >= voltage_lower_limit; voltage -= step_size, time+=time_step)
         {
-            dev->evolve_one_time_step_changing_voltage(time_step, voltage);
+            dev->evolve_one_time_step_linear_voltage(time_step, voltage);
             report(time, dev, os);
         }
         for ( ; voltage <= final_voltage; voltage += step_size, time+=time_step)
         {
-            dev->evolve_one_time_step_changing_voltage(time_step, voltage);
+            dev->evolve_one_time_step_linear_voltage(time_step, voltage);
             report(time, dev, os);
         }
     }

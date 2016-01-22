@@ -69,31 +69,4 @@ buildEnergyStorageDevice(boost::mpi::communicator const &comm,
 
 EnergyStorageDevice::~EnergyStorageDevice() = default;
 
-void EnergyStorageDevice::evolve_one_time_step_changing_voltage(
-    double const time_step, double const voltage)
-{
-  // this is meant to be a linear change of the voltage over the time step
-  // (ramp)
-  // TODO: if not implemented use the step version
-  this->evolve_one_time_step_constant_voltage(time_step, voltage);
-}
-
-void EnergyStorageDevice::evolve_one_time_step_changing_current(
-    double const time_step, double const current)
-{
-  this->evolve_one_time_step_constant_current(time_step, current);
-}
-
-void EnergyStorageDevice::evolve_one_time_step_changing_power(
-    double const time_step, double const power)
-{
-  this->evolve_one_time_step_constant_power(time_step, power);
-}
-
-void EnergyStorageDevice::evolve_one_time_step_changing_load(
-    double const time_step, double const load)
-{
-  this->evolve_one_time_step_constant_load(time_step, load);
-}
-
 } // end namespace cap

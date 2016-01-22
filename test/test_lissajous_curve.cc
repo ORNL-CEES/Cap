@@ -71,11 +71,11 @@ get_evolve_one_time_step(std::string const & mode, std::shared_ptr<boost::proper
     if (mode.compare("galvanostatic") == 0) {
         double const dc_current = database->get<double>("dc_current");
         return [dc_current,compute_ac_excitation_signal](double const time, double const time_step, std::shared_ptr<cap::EnergyStorageDevice> dev)
-            { dev->evolve_one_time_step_changing_current(time_step, dc_current+compute_ac_excitation_signal(time)); };
+            { dev->evolve_one_time_step_linear_current(time_step, dc_current+compute_ac_excitation_signal(time)); };
     } else if (mode.compare("potentiostatic") == 0) {
         double const dc_voltage = database->get<double>("dc_voltage");
         return [dc_voltage,compute_ac_excitation_signal](double const time, double const time_step, std::shared_ptr<cap::EnergyStorageDevice> dev)
-            { dev->evolve_one_time_step_changing_voltage(time_step, dc_voltage+compute_ac_excitation_signal(time)); };
+            { dev->evolve_one_time_step_linear_voltage(time_step, dc_voltage+compute_ac_excitation_signal(time)); };
     } else {
         throw std::runtime_error("invalid EIS measurement mode "+mode);
     }

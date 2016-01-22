@@ -54,61 +54,71 @@ void SeriesRC::reset(double const capacitor_voltage)
 }
 
 void SeriesRC::evolve_one_time_step_constant_load(double const delta_t,
-                                                  double const constant_load)
+                                                  double const load)
 {
-  U_C *= std::exp(-delta_t / ((R + constant_load) * C));
-  I = -U_C / (R + constant_load);
+  U_C *= std::exp(-delta_t / ((R + load) * C));
+  I = -U_C / (R + load);
   U = U_C + R * I;
 }
 
 void SeriesRC::evolve_one_time_step_constant_power(double const delta_t,
-                                                   double const constant_power)
+                                                   double const power)
 {
-  evolve_one_time_step_constant_power(delta_t, constant_power, "NEWTON");
+  evolve_one_time_step_constant_power(delta_t, power, "NEWTON");
 }
 
-void SeriesRC::evolve_one_time_step_constant_current(
-    double const delta_t, double const constant_current)
+void SeriesRC::evolve_one_time_step_constant_current(double const delta_t,
+                                                     double const current)
 {
-  U_C += constant_current * delta_t / C;
-  I = constant_current;
+  U_C += current * delta_t / C;
+  I = current;
   U = R * I + U_C;
 }
 
-void SeriesRC::evolve_one_time_step_changing_current(
-    double const delta_t, double const changing_current)
+void SeriesRC::evolve_one_time_step_linear_current(double const delta_t,
+                                                   double const current)
 {
   U_C += I * delta_t / C;
-  U_C += (changing_current - I) * 0.5 * delta_t / C;
-  I = changing_current;
+  U_C += (current - I) * 0.5 * delta_t / C;
+  I = current;
   U = R * I + U_C;
 }
 
-void SeriesRC::evolve_one_time_step_constant_voltage(
-    double const delta_t, double const constant_voltage)
+void SeriesRC::evolve_one_time_step_constant_voltage(double const delta_t,
+                                                     double const voltage)
 {
-  U_C -= (constant_voltage - U_C) * std::expm1(-delta_t / (R * C));
-  U = constant_voltage;
+  U_C -= (voltage - U_C) * std::expm1(-delta_t / (R * C));
+  U = voltage;
   I = (U - U_C) / R;
 }
 
-void SeriesRC::evolve_one_time_step_changing_voltage(
-    double const delta_t, double const changing_voltage)
+void SeriesRC::evolve_one_time_step_linear_voltage(double const delta_t,
+                                                   double const voltage)
 {
   U_C -= (U - U_C) * std::expm1(-delta_t / (R * C));
-  U_C += (changing_voltage - U) / delta_t *
+  U_C += (voltage - U) / delta_t *
          (delta_t + R * C * std::expm1(-delta_t / (R * C)));
-  U = changing_voltage;
+  U = voltage;
   I = (U - U_C) / R;
 }
 
-std::size_t
-SeriesRC::evolve_one_time_step_constant_power(double const delta_t,
-                                              double const constant_power,
-                                              std::string const &method)
+void SeriesRC::evolve_one_time_step_linear_power(double const delta_t,
+                                                 double const power)
+{
+  std::runtime_error("This function is not implemented.");
+}
+
+void SeriesRC::evolve_one_time_step_linear_load(double const delta_t,
+                                                double const load)
+{
+  std::runtime_error("This function is not implemented.");
+}
+
+std::size_t SeriesRC::evolve_one_time_step_constant_power(
+    double const delta_t, double const power, std::string const &method)
 {
   // TODO: if P is zero do constant current 0
-  double const P          = constant_power;
+  double const P          = power;
   double const ATOL       = 1.0e-14;
   double const RTOL       = 1.0e-14;
   std::size_t const MAXIT = 30;
@@ -170,75 +180,83 @@ void ParallelRC::reset(double const capacitor_voltage)
   U   = R_series * I + U_C;
 }
 
-void ParallelRC::evolve_one_time_step_constant_current(
-    double const delta_t, double const constant_current)
+void ParallelRC::evolve_one_time_step_constant_current(double const delta_t,
+                                                       double const current)
 {
-  U_C = R_parallel * constant_current +
-        (U_C - R_parallel * constant_current) *
-            std::exp(-delta_t / (R_parallel * C));
-  I = constant_current;
+  U_C = R_parallel * current +
+        (U_C - R_parallel * current) * std::exp(-delta_t / (R_parallel * C));
+  I = current;
   U = R_series * I + U_C;
 }
 
-void ParallelRC::evolve_one_time_step_changing_current(
-    double const delta_t, double const changing_current)
+void ParallelRC::evolve_one_time_step_linear_current(double const delta_t,
+                                                     double const current)
 {
   U_C = R_parallel * I +
         (U_C - R_parallel * I) * std::exp(-delta_t / (R_parallel * C));
-  U_C += R_parallel * (changing_current - I) / delta_t *
+  U_C += R_parallel * (current - I) / delta_t *
          (delta_t + (R_parallel * C) * std::expm1(-delta_t / (R_parallel * C)));
-  I = changing_current;
+  I = current;
   U = R_series * I + U_C;
 }
 
-void ParallelRC::evolve_one_time_step_constant_voltage(
-    double const delta_t, double const constant_voltage)
+void ParallelRC::evolve_one_time_step_constant_voltage(double const delta_t,
+                                                       double const voltage)
 {
-  U_C -= (constant_voltage * R_parallel / (R_series + R_parallel) - U_C) *
+  U_C -= (voltage * R_parallel / (R_series + R_parallel) - U_C) *
          std::expm1(-delta_t * (R_series + R_parallel) /
                     (R_series * R_parallel * C));
-  U = constant_voltage;
+  U = voltage;
   I = (U - U_C) / R_series;
 }
 
-void ParallelRC::evolve_one_time_step_changing_voltage(
-    double const delta_t, double const constant_voltage)
+void ParallelRC::evolve_one_time_step_linear_voltage(double const delta_t,
+                                                     double const voltage)
 {
   U_C -= (U * R_parallel / (R_series + R_parallel) - U_C) *
          std::expm1(-delta_t * (R_series + R_parallel) /
                     (R_series * R_parallel * C));
-  U_C += (constant_voltage - U) / delta_t * R_parallel /
-         (R_series + R_parallel) *
+  U_C += (voltage - U) / delta_t * R_parallel / (R_series + R_parallel) *
          (delta_t +
           (R_series * R_parallel * C) / (R_series + R_parallel) *
               std::expm1(-delta_t * (R_series + R_parallel) /
                          (R_series * R_parallel * C)));
-  U = constant_voltage;
+  U = voltage;
   I = (U - U_C) / R_series;
 }
 
-void ParallelRC::evolve_one_time_step_constant_load(double const delta_t,
-                                                    double const constant_load)
+void ParallelRC::evolve_one_time_step_linear_power(double const delta_t,
+                                                   double const power)
 {
-  U_C *= std::exp(-delta_t * (1.0 + (R_series + constant_load) / R_parallel) /
-                  ((R_series + constant_load) * C));
-  I = -U_C / (R_series + constant_load);
+  std::runtime_error("This function is not implemented.");
+}
+
+void ParallelRC::evolve_one_time_step_linear_load(double const delta_t,
+                                                  double const load)
+{
+  std::runtime_error("This function is not implemented.");
+}
+
+void ParallelRC::evolve_one_time_step_constant_load(double const delta_t,
+                                                    double const load)
+{
+  U_C *= std::exp(-delta_t * (1.0 + (R_series + load) / R_parallel) /
+                  ((R_series + load) * C));
+  I = -U_C / (R_series + load);
   U = U_C + R_series * I;
 }
 
-void ParallelRC::evolve_one_time_step_constant_power(
-    double const delta_t, double const constant_power)
+void ParallelRC::evolve_one_time_step_constant_power(double const delta_t,
+                                                     double const power)
 {
-  evolve_one_time_step_constant_power(delta_t, constant_power, "NEWTON");
+  evolve_one_time_step_constant_power(delta_t, power, "NEWTON");
 }
 
-std::size_t
-ParallelRC::evolve_one_time_step_constant_power(double const delta_t,
-                                                double const constant_power,
-                                                std::string const &method)
+std::size_t ParallelRC::evolve_one_time_step_constant_power(
+    double const delta_t, double const power, std::string const &method)
 {
   // TODO: if P is zero do constant current 0
-  double const P          = constant_power;
+  double const P          = power;
   double const ATOL       = 1.0e-14;
   double const RTOL       = 1.0e-14;
   std::size_t const MAXIT = 30;

@@ -89,7 +89,7 @@ get_evolve_one_time_step(
         std::shared_ptr<cap::EnergyStorageDevice> device, double time,
         double time_step)
     {
-      device->evolve_one_time_step_changing_current(
+      device->evolve_one_time_step_linear_current(
           time_step, compute_ac_excitation_signal(time));
     };
   }
@@ -100,7 +100,7 @@ get_evolve_one_time_step(
         std::shared_ptr<cap::EnergyStorageDevice> device, double time,
         double time_step)
     {
-      device->evolve_one_time_step_changing_voltage(
+      device->evolve_one_time_step_linear_voltage(
           time_step, dc_voltage + compute_ac_excitation_signal(time));
     };
   }

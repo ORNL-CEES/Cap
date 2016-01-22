@@ -13,6 +13,11 @@ namespace cap
 class EnergyStorageDeviceBuilder;
 class EnergyStorageDeviceInspector;
 
+/**
+ * This class is an abstract representation of an energy storage device. It can
+ * evolve in time at various operating conditions and return the voltage drop
+ * across itself and the electrical current that flows through it.
+ */
 class EnergyStorageDevice
 {
 public:
@@ -24,32 +29,81 @@ public:
   virtual void reset_current(double const current) = 0;
   /////////////////////////////////////////////////////
   virtual void get_voltage(double &voltage) const = 0;
+
   virtual void get_current(double &current) const = 0;
-  virtual void
-  evolve_one_time_step_constant_current(double const time_step,
-                                        double const constant_current) = 0;
-  virtual void
-  evolve_one_time_step_constant_voltage(double const time_step,
-                                        double const constant_voltage) = 0;
-  virtual void
-  evolve_one_time_step_constant_power(double const time_step,
-                                      double const constant_power) = 0;
-  virtual void
-  evolve_one_time_step_constant_load(double const time_step,
-                                     double const constant_load) = 0;
-  virtual void
-  evolve_one_time_step_changing_current(double const time_step,
-                                        double const changing_current);
-  virtual void
-  evolve_one_time_step_changing_voltage(double const time_step,
-                                        double const changing_voltage);
-  virtual void evolve_one_time_step_changing_power(double const time_step,
-                                                   double const changing_power);
-  virtual void evolve_one_time_step_changing_load(double const time_step,
-                                                  double const changing_load);
+
+  /**
+   * Advance the time by @p time_step seconds. The current is constant during
+   * time step and its value is @p current amperes.
+   */
+  virtual void evolve_one_time_step_constant_current(double const time_step,
+                                                     double const current) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The voltage is constant during
+   * time step and its value is @p voltage volts.
+   */
+  virtual void evolve_one_time_step_constant_voltage(double const time_step,
+                                                     double const voltage) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The power is constant during
+   * time step and its value is @p power watts.
+   */
+  virtual void evolve_one_time_step_constant_power(double const time_step,
+                                                   double const power) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The load is constant during
+   * time step and its value is @p load ohms.
+   */
+  virtual void evolve_one_time_step_constant_load(double const time_step,
+                                                  double const load) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The current is changing linearly
+   * during time step and its value at the end of the time step is
+   * @p current amperes.
+   */
+  virtual void evolve_one_time_step_linear_current(double const time_step,
+                                                   double const current) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The voltage is changing linearly
+   * during time step and its value at the end of the time step is
+   * @p voltage volts.
+   */
+  virtual void evolve_one_time_step_linear_voltage(double const time_step,
+                                                   double const voltage) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The power is changing linearly
+   * during time step and its value at the end of the time step is
+   * @p power watts.
+   */
+  virtual void evolve_one_time_step_linear_power(double const time_step,
+                                                 double const power) = 0;
+
+  /**
+   * Advance the time by @p time_step seconds. The load is changing linearly
+   * during time step and its value at the end of the time step is
+   * @p load ohms.
+   */
+  virtual void evolve_one_time_step_linear_load(double const time_step,
+                                                double const load) = 0;
+
+  /**
+   * Factory function that creates an EnergyStorageDevice object.
+   */
   static std::unique_ptr<EnergyStorageDevice>
   build(boost::mpi::communicator const &comm,
         boost::property_tree::ptree const &ptree);
+
+  /**
+   * Visitor design pattern of the EnergyStorageDevice object. This allows to
+   * define a new operation without changing the classes of the elements on
+   * which it operates.
+   */
   virtual void inspect(EnergyStorageDeviceInspector *inspector) = 0;
 
 protected:
@@ -68,6 +122,9 @@ private:
   static std::map<std::string, EnergyStorageDeviceBuilder *> _builders;
 };
 
+/**
+ * Helper class for the factory function.
+ */
 class EnergyStorageDeviceBuilder
 {
 public:
@@ -80,6 +137,9 @@ public:
                                  EnergyStorageDeviceBuilder *builder);
 };
 
+/**
+ * Abstract class used for the visitor design pattern.
+ */
 class EnergyStorageDeviceInspector
 {
 public:

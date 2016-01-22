@@ -4,37 +4,37 @@
 
 namespace pycap {
 
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_current(double const time_step, double const constant_current)
+void EnergyStorageDeviceWrap::evolve_one_time_step_constant_current(double const time_step, double const current)
 {
-    this->get_override("evolve_one_time_step_constant_current")(time_step, constant_current);
+    this->get_override("evolve_one_time_step_constant_current")(time_step, current);
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage)
+void EnergyStorageDeviceWrap::evolve_one_time_step_constant_voltage(double const time_step, double const voltage)
 {
-    this->get_override("evolve_one_time_step_constant_voltage")(time_step, constant_voltage);
+    this->get_override("evolve_one_time_step_constant_voltage")(time_step, voltage);
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_power  (double const time_step, double const constant_power  )
+void EnergyStorageDeviceWrap::evolve_one_time_step_constant_power  (double const time_step, double const power  )
 {
-    this->get_override("evolve_one_time_step_constant_power"  )(time_step, constant_power  );
+    this->get_override("evolve_one_time_step_constant_power"  )(time_step, power  );
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_load   (double const time_step, double const constant_load   )
+void EnergyStorageDeviceWrap::evolve_one_time_step_constant_load   (double const time_step, double const load   )
 {
-    this->get_override("evolve_one_time_step_constant_load"   )(time_step, constant_load   );
+    this->get_override("evolve_one_time_step_constant_load"   )(time_step, load   );
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_changing_current(double const time_step, double const changing_current)
+void EnergyStorageDeviceWrap::evolve_one_time_step_linear_current  (double const time_step, double const current)
 {
-    this->get_override("evolve_one_time_step_changing_current")(time_step, changing_current);
+    this->get_override("evolve_one_time_step_new_current"     )(time_step, current);
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_changing_voltage(double const time_step, double const changing_voltage)
+void EnergyStorageDeviceWrap::evolve_one_time_step_linear_voltage  (double const time_step, double const voltage)
 {
-    this->get_override("evolve_one_time_step_changing_voltage")(time_step, changing_voltage);
+    this->get_override("evolve_one_time_step_linear_voltage"  )(time_step, voltage);
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_changing_power  (double const time_step, double const changing_power  )
+void EnergyStorageDeviceWrap::evolve_one_time_step_linear_power    (double const time_step, double const power  )
 {
-    this->get_override("evolve_one_time_step_changing_power"  )(time_step, changing_power  );
+    this->get_override("evolve_one_time_step_linear_power"    )(time_step, power  );
 }
-void EnergyStorageDeviceWrap::evolve_one_time_step_changing_load   (double const time_step, double const changing_load   )
+void EnergyStorageDeviceWrap::evolve_one_time_step_linear_load     (double const time_step, double const load   )
 {
-    this->get_override("evolve_one_time_step_changing_load"   )(time_step, changing_load   );
+    this->get_override("evolve_one_time_step_linear_load"     )(time_step, load   );
 }
 
 double get_current(cap::EnergyStorageDevice const & dev)
