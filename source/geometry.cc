@@ -1,6 +1,7 @@
 #include <cap/geometry.templates.h>
 
-namespace cap {
+namespace cap
+{
 
 template class Geometry<2>;
 template class Geometry<3>;

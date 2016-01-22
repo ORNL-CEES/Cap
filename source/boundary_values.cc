@@ -1,6 +1,7 @@
 #include <cap/boundary_values.templates.h>
 
-namespace cap {
+namespace cap
+{
 
 template class BoundaryValuesParameters<2>;
 template class BoundaryValues<2>;

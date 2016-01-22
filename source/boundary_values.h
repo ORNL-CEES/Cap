@@ -8,74 +8,85 @@
 #include <deal.II/dofs/dof_accessor.h>
 #include <boost/property_tree/ptree.hpp>
 
-namespace cap {
+namespace cap
+{
 
 //////////////////////// BOUNDARY VALUES PARAMETERS ////////////////////////////
-template <int dim, int spacedim=dim>
-class BoundaryValuesParameters {
+template <int dim, int spacedim = dim>
+class BoundaryValuesParameters
+{
 public:
-    BoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d) 
-        : database(d)
-    { }
-    virtual ~BoundaryValuesParameters() = default;
-// keep public for now
-    std::shared_ptr<boost::property_tree::ptree> database;
-
+  BoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
+      : database(d)
+  {
+  }
+  virtual ~BoundaryValuesParameters() = default;
+  // keep public for now
+  std::shared_ptr<boost::property_tree::ptree> database;
 };
 
 //////////////////////// BOUNDARY VALUES ////////////////////////////
-template <int dim, int spacedim=dim>
-class BoundaryValues {
+template <int dim, int spacedim = dim>
+class BoundaryValues
+{
 public:
-    typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
-    BoundaryValues(BoundaryValuesParameters<dim, spacedim> const & ) { }
-    virtual ~BoundaryValues() = default;
-    virtual void get_values(std::string const &          key,
-                            active_cell_iterator const & cell,
-                            unsigned int const           face,
-                            std::vector<double> &        values) const;
-    virtual void get_values(std::string const &                         key,
-                            active_cell_iterator const &                cell,
-                            unsigned int const                          face,
-                            std::vector<dealii::Tensor<1, spacedim> > & values) const;
+  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
+      active_cell_iterator;
+  BoundaryValues(BoundaryValuesParameters<dim, spacedim> const &) {}
+  virtual ~BoundaryValues() = default;
+  virtual void get_values(std::string const &key,
+                          active_cell_iterator const &cell,
+                          unsigned int const face,
+                          std::vector<double> &values) const;
+  virtual void
+  get_values(std::string const &key, active_cell_iterator const &cell,
+             unsigned int const face,
+             std::vector<dealii::Tensor<1, spacedim>> &values) const;
 };
 
-
-//////////////////////// SUPERCAPACITOR BOUNDARY VALUES ////////////////////////////
-template <int dim, int spacedim=dim>
-class SuperCapacitorBoundaryValuesParameters : public BoundaryValuesParameters<dim, spacedim> {
+//////////////////////// SUPERCAPACITOR BOUNDARY VALUES
+///////////////////////////////
+template <int dim, int spacedim = dim>
+class SuperCapacitorBoundaryValuesParameters
+    : public BoundaryValuesParameters<dim, spacedim>
+{
 public:
-    SuperCapacitorBoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
-        : BoundaryValuesParameters<dim, spacedim>(d)
-    { }
+  SuperCapacitorBoundaryValuesParameters(
+      std::shared_ptr<boost::property_tree::ptree> d)
+      : BoundaryValuesParameters<dim, spacedim>(d)
+  {
+  }
 };
 
-template <int dim, int spacedim=dim>
-class SuperCapacitorBoundaryValues : public BoundaryValues<dim, spacedim> { 
+template <int dim, int spacedim = dim>
+class SuperCapacitorBoundaryValues : public BoundaryValues<dim, spacedim>
+{
 public:
-    typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator active_cell_iterator;
-    SuperCapacitorBoundaryValues(BoundaryValuesParameters<dim, spacedim> const & parameters);
-    void get_values(std::string const &          key,
-                    active_cell_iterator const & cell,
-                    unsigned int const           face,
-                    std::vector<double> &        values) const override;
+  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
+      active_cell_iterator;
+  SuperCapacitorBoundaryValues(
+      BoundaryValuesParameters<dim, spacedim> const &parameters);
+  void get_values(std::string const &key, active_cell_iterator const &cell,
+                  unsigned int const face,
+                  std::vector<double> &values) const override;
+
 protected:
-    dealii::types::material_id separator_material_id;
-    dealii::types::material_id anode_electrode_material_id;
-    dealii::types::material_id anode_collector_material_id;
-    dealii::types::material_id cathode_electrode_material_id;
-    dealii::types::material_id cathode_collector_material_id;
+  dealii::types::material_id separator_material_id;
+  dealii::types::material_id anode_electrode_material_id;
+  dealii::types::material_id anode_collector_material_id;
+  dealii::types::material_id cathode_electrode_material_id;
+  dealii::types::material_id cathode_collector_material_id;
 
-    dealii::types::boundary_id anode_boundary_id;
-    dealii::types::boundary_id cathode_boundary_id; 
-    dealii::types::boundary_id upper_boundary_id;
-    dealii::types::boundary_id lower_boundary_id;
-    dealii::types::boundary_id other_boundary_id;
+  dealii::types::boundary_id anode_boundary_id;
+  dealii::types::boundary_id cathode_boundary_id;
+  dealii::types::boundary_id upper_boundary_id;
+  dealii::types::boundary_id lower_boundary_id;
+  dealii::types::boundary_id other_boundary_id;
 
-    double upper_ambient_temperature;
-    double lower_ambient_temperature;
-    double upper_heat_transfer_coefficient;
-    double lower_heat_transfer_coefficient;
+  double upper_ambient_temperature;
+  double lower_ambient_temperature;
+  double upper_heat_transfer_coefficient;
+  double lower_heat_transfer_coefficient;
 };
 
 } // end namespace cap
