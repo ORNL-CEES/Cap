@@ -6,8 +6,10 @@
 namespace cap
 {
 
-//////////////////////// THERMAL OPERATOR PARAMETERS
-///////////////////////////////
+//////////////////////// THERMAL OPERATOR PARAMETERS ////////////////////////
+/**
+ * This class encapsulates the parameters used ThermalOperator.
+ */
 template <int dim>
 class ThermalOperatorParameters : public OperatorParameters<dim>
 {
@@ -20,12 +22,16 @@ public:
 };
 
 //////////////////////// THERMAL OPERATOR ////////////////////////////
-
+/**
+ * Create the system of equations associated to the heat transfer. The heat
+ * source is computed in ElectrochemicalOperator.
+ */
 template <int dim>
 class ThermalOperator : public Operator<dim>
 {
 public:
   ThermalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters);
+
   void
   reset(std::shared_ptr<OperatorParameters<dim> const> parameters) override;
 

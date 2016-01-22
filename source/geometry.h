@@ -9,20 +9,28 @@
 
 namespace cap
 {
-
+/**
+ * Base class for the geometry. This class allows access to the underlying
+ * triangulation and the material id map. It also creates the triangulation by
+ * reading the mesh from a ucd file.
+ */
 template <int dim>
 class Geometry
 {
 public:
   Geometry(std::shared_ptr<boost::property_tree::ptree const> const &database);
+
   virtual ~Geometry() = default;
+
   inline std::shared_ptr<dealii::Triangulation<dim> const>
   get_triangulation() const
   {
     return this->triangulation;
   }
+
   virtual void
   reset(std::shared_ptr<boost::property_tree::ptree const> const &database) = 0;
+
   inline std::shared_ptr<std::unordered_map<
       std::string, std::vector<dealii::types::material_id>> const>
   get_materials() const
@@ -36,6 +44,9 @@ protected:
       std::string, std::vector<dealii::types::material_id>>> materials;
 };
 
+/**
+ * Empty geometry.
+ */
 template <int dim>
 class DummyGeometry : public Geometry<dim>
 {
@@ -45,18 +56,26 @@ public:
       : Geometry<dim>(database)
   {
   }
+
   void
   reset(std::shared_ptr<boost::property_tree::ptree const> const &) override
   {
   }
 };
 
+/**
+ * This class describes the geometry and the material ids of one cell of a 
+ * supercapacitor. This class assume that the geometry of the anode, the
+ * cathode, the seperator, and the collectors can be described by rectangles in 
+ * 2D and rectangular cuboids in 3D.
+ */
 template <int dim>
 class SuperCapacitorGeometry : public Geometry<dim>
 {
 public:
   SuperCapacitorGeometry(
       std::shared_ptr<boost::property_tree::ptree const> const &database);
+
   void reset(std::shared_ptr<boost::property_tree::ptree const> const &database)
       override;
 

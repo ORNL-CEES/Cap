@@ -32,6 +32,7 @@ public:
 
   void evolve_one_time_step_constant_voltage(double const delta_t,
                                              double const voltage) override;
+
   void evolve_one_time_step_constant_power(double const delta_t,
                                            double const power) override;
 
@@ -71,6 +72,7 @@ public:
   std::size_t
   evolve_one_time_step_constant_power(double const delta_t, double const power,
                                       std::string const &method = "NEWTON");
+
   void reset(double const capacitor_voltage);
 
   // TODO: make these variables private
