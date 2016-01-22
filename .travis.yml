@@ -13,5 +13,11 @@ script:
   - docker build -t dalg24/cap .
 
 after_success:
-  - docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-  - docker push dalg24/cap
+  - >
+    if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}";
+      docker push dalg24/cap;
+      echo "push the image that was built to the docker repository.";
+    else
+      echo "this is a pull request, do not push the image to docker hub.";
+    fi;
