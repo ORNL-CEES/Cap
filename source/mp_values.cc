@@ -1,6 +1,7 @@
 #include <cap/mp_values.templates.h>
 
-namespace cap {
+namespace cap
+{
 
 template class MPValuesParameters<2>;
 template class MPValues<2>;

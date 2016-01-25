@@ -1,6 +1,7 @@
 #include <cap/operator.templates.h>
 
-namespace cap {
+namespace cap
+{
 
 template class OperatorParameters<2>;
 template class Operator<2>;
