@@ -6,15 +6,20 @@ services:
 notifications:
   email: false
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install docker-engine
+
 before_script:
   - docker pull dalg24/cap-stack
 
 script:
-  - docker build -t dalg24/cap .
+  - docker --version
+  - docker build --build-arg CAP_BRANCH=${TRAVIS_BRANCH} --build-arg CAP_REPOSITORY=${TRAVIS_REPO_SLUG} -t dalg24/cap .
 
 after_success:
   - >
-    if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+    if [ "${TRAVIS_BRANCH}" == "master" ]; then
       docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}";
       docker push dalg24/cap;
       echo "push the image that was built to the docker repository.";
