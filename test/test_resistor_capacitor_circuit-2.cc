@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     {
           time += time_step;
           voltage = amplitude * std::sin(angular_frequency * time);
-          device->evolve_one_time_step_changing_voltage(time_step, voltage);
+          device->evolve_one_time_step_linear_voltage(time_step, voltage);
           device->get_current(current);
           double const exact = amplitude * gain * std::sin(angular_frequency * time + phase);
           double const error = 100.0 * std::abs(current-exact)/(amplitude*gain);
@@ -136,8 +136,8 @@ void foo(
     {
         ramp_voltage = initial_voltage + (final_voltage - initial_voltage) / (final_time - initial_time) * (time+time_step - initial_time);
         step_voltage = final_voltage;
-        ramp_device->evolve_one_time_step_changing_voltage(time_step, ramp_voltage);
-        step_device->evolve_one_time_step_changing_voltage(time_step, step_voltage);
+        ramp_device->evolve_one_time_step_linear_voltage(time_step, ramp_voltage);
+        step_device->evolve_one_time_step_linear_voltage(time_step, step_voltage);
         if (type.compare("SeriesRC") == 0) {
             step_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(step_device))->U_C;
             ramp_capacitor_voltage = (std::dynamic_pointer_cast<cap::SeriesRC  >(ramp_device))->U_C;

@@ -75,8 +75,8 @@ def run_one_cycle(device, ptree):
             excitation_signal = dc_voltage+sum(ac_amplitudes *
                                                sin(2*pi*harmonics*frequency *
                                                    time+phases))
-            device.evolve_one_time_step_changing_voltage(time_step,
-                                                         excitation_signal)
+            device.evolve_one_time_step_linear_voltage(time_step,
+                                                       excitation_signal)
             report_data(data, time, device)
 
     return data

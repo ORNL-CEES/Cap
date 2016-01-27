@@ -176,10 +176,10 @@ BOOST_PYTHON_MODULE(_pycap)
             "    The load in units of ohms.                                 \n"
             ,
             boost::python::args("self", "time_step", "power"  ) )
-        .def("evolve_one_time_step_changing_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_current), boost::python::args("self", "time_step", "current") )
-        .def("evolve_one_time_step_changing_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_voltage), boost::python::args("self", "time_step", "voltage") )
-        .def("evolve_one_time_step_changing_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_power  ), boost::python::args("self", "time_step", "power"  ) )
-        .def("evolve_one_time_step_changing_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_changing_load   ), boost::python::args("self", "time_step", "load"   ) )
+        .def("evolve_one_time_step_linear_current", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_current), boost::python::args("self", "time_step", "current") )
+        .def("evolve_one_time_step_linear_voltage", boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_voltage), boost::python::args("self", "time_step", "voltage") )
+        .def("evolve_one_time_step_linear_power"  , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_power  ), boost::python::args("self", "time_step", "power"  ) )
+        .def("evolve_one_time_step_linear_load"   , boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_load   ), boost::python::args("self", "time_step", "load"   ) )
         .def("compute_equivalent_circuit", &pycap::compute_equivalent_circuit,
             "Compute the equivalent circuit to a supercapacitor.            \n"
             "                                                               \n"

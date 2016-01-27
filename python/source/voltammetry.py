@@ -43,7 +43,7 @@ def ramp(device, data, voltage_limit, scan_rate, step_size):
         step += 1
         voltage = update(voltage, step_size)
         time += time_step
-        device.evolve_one_time_step_changing_voltage(time_step, voltage)
+        device.evolve_one_time_step_linear_voltage(time_step, voltage)
         if data:
             report_data(data, time, device)
 
@@ -61,7 +61,7 @@ class CyclicVoltammetry:
         self.step_size = ptree.get_double('step_size')
 
     def run(self, device, data=None):
-        device.evolve_one_time_step_changing_voltage(self.step_size/self.scan_rate,
+        device.evolve_one_time_step_linear_voltage(self.step_size/self.scan_rate,
                                                      self.initial_voltage)
         if data:
             report_data(data, 0.0, device)

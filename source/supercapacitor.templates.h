@@ -192,26 +192,53 @@ SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
-    double const time_step, double const constant_voltage)
+    double const time_step, double const voltage)
 {
   (*this->electrochemical_operator_params).capacitor_state =
       CustomConstantVoltage;
-  (*this->electrochemical_operator_params).custom_constant_voltage =
-      constant_voltage;
+  (*this->electrochemical_operator_params).custom_constant_voltage = voltage;
   this->evolve_one_time_step(time_step);
 }
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_current(
-    double const time_step, double const constant_current)
+    double const time_step, double const current)
 {
   double surface_area;
   (*this->post_processor).get("surface_area", surface_area);
   (*this->electrochemical_operator_params).capacitor_state =
       CustomConstantCurrent;
   (*this->electrochemical_operator_params).custom_constant_current_density =
-      constant_current / surface_area;
+      current / surface_area;
   this->evolve_one_time_step(time_step);
+}
+
+template <int dim>
+void SuperCapacitor<dim>::evolve_one_time_step_linear_current(
+    double const time_step, double const current)
+{
+  std::runtime_error("This function is not implemented");
+}
+
+template <int dim>
+void SuperCapacitor<dim>::evolve_one_time_step_linear_voltage(
+    double const time_step, double const voltage)
+{
+  std::runtime_error("This function is not implemented");
+}
+
+template <int dim>
+void SuperCapacitor<dim>::evolve_one_time_step_linear_power(
+    double const time_step, double const power)
+{
+  std::runtime_error("THis function is not implemented");
+}
+
+template <int dim>
+void SuperCapacitor<dim>::evolve_one_time_step_linear_load(
+    double const time_step, double const load)
+{
+  std::runtime_error("This function is not implemented");
 }
 
 template <int dim>
@@ -330,19 +357,19 @@ void SuperCapacitor<dim>::evolve_one_time_step(double const time_step)
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_load(
-    double const time_step, double const constant_load)
+    double const time_step, double const load)
 {
   double surface_area;
   (*this->post_processor).get("surface_area", surface_area);
   (*this->electrochemical_operator_params).capacitor_state = CustomConstantLoad;
   (*this->electrochemical_operator_params).custom_constant_load_density =
-      constant_load * surface_area;
+      load * surface_area;
   this->evolve_one_time_step(time_step);
 }
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
-    double const time_step, double const constant_power)
+    double const time_step, double const power)
 {
   double surface_area;
   (*this->post_processor).get("surface_area", surface_area);
@@ -356,13 +383,12 @@ void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
   this->get_voltage(voltage);
   for (int k = 0; k < max_iterations; ++k)
   {
-    current = constant_power / voltage;
+    current = power / voltage;
     (*this->electrochemical_operator_params).custom_constant_current_density =
         current / surface_area;
     this->evolve_one_time_step(time_step);
     this->get_voltage(voltage);
-    if (std::abs(constant_power - voltage * current) /
-            std::abs(constant_power) <
+    if (std::abs(power - voltage * current) / std::abs(power) <
         percent_tolerance)
       return;
     *this->solution = old_solution;

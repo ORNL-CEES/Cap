@@ -23,24 +23,59 @@ class SuperCapacitor : public EnergyStorageDevice
 public:
   SuperCapacitor(boost::mpi::communicator const &comm,
                  boost::property_tree::ptree const &ptree);
-  void inspect(EnergyStorageDeviceInspector *inspector) override;
-  void print_data(std::ostream &os) const override;
-  void get_voltage(double &voltage) const override;
-  void get_current(double &current) const override;
-  void reset_voltage(double const voltage) override;
-  void reset_current(double const current) override;
-  void
-  evolve_one_time_step_constant_current(double const time_step,
-                                        double const constant_current) override;
-  void
-  evolve_one_time_step_constant_voltage(double const time_step,
-                                        double const constant_voltage) override;
-  void
-  evolve_one_time_step_constant_power(double const time_step,
-                                      double const constant_power) override;
-  void evolve_one_time_step_constant_load(double const time_step,
-                                          double const constant_load) override;
 
+  void inspect(EnergyStorageDeviceInspector *inspector) override;
+
+  void print_data(std::ostream &os) const override;
+
+  void get_voltage(double &voltage) const override;
+
+  void get_current(double &current) const override;
+
+  void reset_voltage(double const voltage) override;
+
+  void reset_current(double const current) override;
+
+  void evolve_one_time_step_constant_current(double const time_step,
+                                             double const current) override;
+
+  void evolve_one_time_step_constant_voltage(double const time_step,
+                                             double const voltage) override;
+
+  void evolve_one_time_step_constant_power(double const time_step,
+                                           double const power) override;
+
+  void evolve_one_time_step_constant_load(double const time_step,
+                                          double const load) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_current(double const time_step,
+                                           double const current) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_voltage(double const time_step,
+                                           double const voltage) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_power(double const time_step,
+                                         double const power) override;
+
+  /**
+   * This function is not implemented and throws an exception.
+   */
+  void evolve_one_time_step_linear_load(double const time_step,
+                                        double const load) override;
+
+  /**
+   * Helper function to advance time by @p time_step second.
+   */
+  // TODO: move to private.
   void evolve_one_time_step(double const time_step);
 
 private:

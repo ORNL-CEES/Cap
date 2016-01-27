@@ -6,14 +6,14 @@ namespace pycap {
 
 struct EnergyStorageDeviceWrap : cap::EnergyStorageDevice, boost::python::wrapper<cap::EnergyStorageDevice>
 {
-    void evolve_one_time_step_constant_current(double const time_step, double const constant_current);
-    void evolve_one_time_step_constant_voltage(double const time_step, double const constant_voltage);
-    void evolve_one_time_step_constant_power  (double const time_step, double const constant_power  );
-    void evolve_one_time_step_constant_load   (double const time_step, double const constant_load   );
-    void evolve_one_time_step_changing_current(double const time_step, double const changing_current);
-    void evolve_one_time_step_changing_voltage(double const time_step, double const changing_voltage);
-    void evolve_one_time_step_changing_power  (double const time_step, double const changing_power  );
-    void evolve_one_time_step_changing_load   (double const time_step, double const changing_load   );
+    void evolve_one_time_step_constant_current(double const time_step, double const current);
+    void evolve_one_time_step_constant_voltage(double const time_step, double const voltage);
+    void evolve_one_time_step_constant_power  (double const time_step, double const power  );
+    void evolve_one_time_step_constant_load   (double const time_step, double const load   );
+    void evolve_one_time_step_linear_current  (double const time_step, double const current);
+    void evolve_one_time_step_linear_voltage  (double const time_step, double const voltage);
+    void evolve_one_time_step_linear_power    (double const time_step, double const power  );
+    void evolve_one_time_step_linear_load     (double const time_step, double const load   );
 };
 
 double get_current(cap::EnergyStorageDevice const & device);
