@@ -15,4 +15,4 @@ CONTINUOUS INTEGRATION STATUS
 AUTHORS
 -------
 * [Damien Lebrun-Grandie](https://github.com/dalg24)
-* [Bruno Turksin](https://github.com/rombur)
+* [Bruno Turcksin](https://github.com/rombur)
