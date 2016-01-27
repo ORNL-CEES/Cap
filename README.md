@@ -10,8 +10,9 @@ Cap's documentation can be found [here](https://cap.readthedocs.org).
 CONTINUOUS INTEGRATION STATUS
 -----------------------------
 
-[![Build Status](https://travis-ci.org/dalg24/cap.svg?branch=master)](https://travis-ci.org/dalg24/cap)
+[![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
 
 AUTHORS
 -------
 * [Damien Lebrun-Grandie](https://github.com/dalg24)
+* [Bruno Turksin](https://github.com/rombur)
