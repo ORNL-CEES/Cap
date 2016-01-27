@@ -5,7 +5,7 @@ ARG CAP_REPOSITORY=dalg24/cap
 
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
-    git clone --branch ${CAP_BRANCH} https://github.com/${CAP_REPOSITORY}.git && \
+    git clone --branch ${CAP_BRANCH} https://github.com/${CAP_REPOSITORY}.git cap && \
     git clone https://github.com/dalg24/cap-data.git && \
     mkdir -p ${PREFIX}/build/cap && \
     cd ${PREFIX}/build/cap && \
