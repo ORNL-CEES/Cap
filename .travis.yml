@@ -12,4 +12,4 @@ before_script:
 script:
   - docker --version
   - pwd
-  - docker run -v ${PWD}:/scratch/source/cap cap-stack /scratch/source/cap/docker/build_cap.sh
+  - docker run -v ${PWD}:/scratch/source/cap dalg24/cap-stack /scratch/source/cap/docker/build_cap.sh
