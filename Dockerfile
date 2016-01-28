@@ -38,6 +38,6 @@ VOLUME /home/$NB_USER/notebooks
 ENTRYPOINT ["tini", "--"]
 CMD ["start-notebook.sh"]
 
-COPY start-notebook.sh /usr/local/bin/
-COPY jupyter_notebook_config.py /home/$NB_USER/.jupyter/
+COPY docker/start-notebook.sh /usr/local/bin/
+COPY docker/jupyter_notebook_config.py /home/$NB_USER/.jupyter/
 RUN chown -R $NB_USER:users /home/$NB_USER/.jupyter
