@@ -25,50 +25,68 @@ public:
       : database(d)
   {
   }
+  
   virtual ~OperatorParameters() = default;
 
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+  
   std::shared_ptr<dealii::ConstraintMatrix const> constraint_matrix;
+  
   dealii::SparsityPattern const *sparsity_pattern;
+
   dealii::Vector<double> const *some_vector;
 
   std::shared_ptr<MPValues<dim> const> mp_values;
+
   std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 
   std::shared_ptr<boost::property_tree::ptree const> database;
 };
 
 //////////////////////// OPERATOR ////////////////////////////
+/**
+ * This is the base class for the operators. The derived operators need to 
+ * build the mass matrix, the stiffness matrix, and the load vector 
+ * (right-hand-side vector). These operators are used by EnergyStorageDevice 
+ * object.
+ */
 template <int dim>
 class Operator
 {
 public:
   Operator(std::shared_ptr<OperatorParameters<dim> const> parameters);
+
   virtual ~Operator() = default;
+  
   virtual void reset(std::shared_ptr<OperatorParameters<dim> const>) {}
 
   inline dealii::SparseMatrix<double> const &get_mass_matrix() const
   {
     return this->mass_matrix;
   }
+  
   inline dealii::SparseMatrix<double> const &get_stiffness_matrix() const
   {
     return this->stiffness_matrix;
   }
+  
   inline dealii::Vector<double> const &get_load_vector() const
   {
     return this->load_vector;
   }
+  
   inline std::map<dealii::types::global_dof_index, double> const &
   get_boundary_values() const
   {
     return this->boundary_values;
   }
+  
   inline std::vector<dealii::types::global_dof_index> const &
   get_null_space() const
   {
     return this->null_space_dof_indices;
   }
+  
   void set_null_space(unsigned int const, dealii::types::material_id const);
 
 protected:

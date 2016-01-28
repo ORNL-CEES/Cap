@@ -39,7 +39,7 @@ void compute_equivalent_circuit(
       std::make_shared<cap::DummyGeometry<2>>(geometry_database);
   std::shared_ptr<cap::MPValues<2>> mp_values =
       std::shared_ptr<cap::MPValues<2>>(new cap::MPValues<2>(mp_values_params));
-  // build dummy cell itertor and set its material id
+  // build dummy cell iterator and set its material id
   dealii::Triangulation<2> triangulation;
   dealii::GridGenerator::hyper_cube(triangulation);
   dealii::DoFHandler<2> dof_handler(triangulation);
