@@ -1,11 +1,8 @@
 FROM dalg24/cap-stack
 
-ARG CAP_BRANCH=master
-ARG CAP_REPOSITORY=dalg24/cap
-
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
-    git clone --branch ${CAP_BRANCH} https://github.com/${CAP_REPOSITORY}.git cap && \
+    git clone https://github.com/ORNL-CEES/Cap.git cap && \
     git clone https://github.com/dalg24/cap-data.git && \
     mkdir -p ${PREFIX}/build/cap && \
     cd ${PREFIX}/build/cap && \
@@ -18,9 +15,7 @@ RUN cd ${PREFIX}/source && \
         -D MPI_INSTALL_DIR=/opt/openmpi/1.10.1 \
         -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
         ${PREFIX}/source/cap && \
-   make install && \
-   cd python && \
-   ctest -V && \
+   make -j2 install && \
    rm -rf ${PREFIX}/build/cap && \
    rm -rf ${PREFIX}/source/cap && \
    rm -rf ${PREFIX}/source/cap-data
