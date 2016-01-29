@@ -217,14 +217,16 @@ template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_linear_current(
     double const time_step, double const current)
 {
-  throw std::runtime_error("This function is not implemented");
+  // TODO: this is a temporary solution
+  this->evolve_one_time_step_constant_current(time_step, current);
 }
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_linear_voltage(
     double const time_step, double const voltage)
 {
-  throw std::runtime_error("This function is not implemented");
+  // TODO: this is a temporary solution
+  this->evolve_one_time_step_constant_voltage(time_step, voltage);
 }
 
 template <int dim>
