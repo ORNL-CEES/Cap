@@ -105,13 +105,13 @@ void SeriesRC::evolve_one_time_step_linear_voltage(double const delta_t,
 void SeriesRC::evolve_one_time_step_linear_power(double const delta_t,
                                                  double const power)
 {
-  std::runtime_error("This function is not implemented.");
+  throw std::runtime_error("This function is not implemented.");
 }
 
 void SeriesRC::evolve_one_time_step_linear_load(double const delta_t,
                                                 double const load)
 {
-  std::runtime_error("This function is not implemented.");
+  throw std::runtime_error("This function is not implemented.");
 }
 
 std::size_t SeriesRC::evolve_one_time_step_constant_power(
@@ -228,13 +228,13 @@ void ParallelRC::evolve_one_time_step_linear_voltage(double const delta_t,
 void ParallelRC::evolve_one_time_step_linear_power(double const delta_t,
                                                    double const power)
 {
-  std::runtime_error("This function is not implemented.");
+  throw std::runtime_error("This function is not implemented.");
 }
 
 void ParallelRC::evolve_one_time_step_linear_load(double const delta_t,
                                                   double const load)
 {
-  std::runtime_error("This function is not implemented.");
+  throw std::runtime_error("This function is not implemented.");
 }
 
 void ParallelRC::evolve_one_time_step_constant_load(double const delta_t,
