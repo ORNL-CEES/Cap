@@ -6,6 +6,9 @@ FIND_PACKAGE(Boost 1.59.0 REQUIRED
     unit_test_framework
     serialization
     mpi
+    timer
+    system
+    chrono
     )
 MESSAGE("Boost_LIBRARIES=${Boost_LIBRARIES}")
 MESSAGE("Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
