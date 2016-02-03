@@ -19,19 +19,19 @@ Install third-party libraries
 
 Cap has a required dependency on C++11.
 
-+------------------------+------------+---------+
-| Packages               | Dependency | Version |
-+========================+============+=========+
-| MPI                    | Required   |         |
-+------------------------+------------+---------+
-| Boost                  | Required   | 1.59.0  |
-+------------------------+------------+---------+
-| deal.II with p4est     | Optional   | 8.3.0   |
-+------------------------+------------+---------+
-| GNU Scientific Library | Optional   | 1.16    |
-+------------------------+------------+---------+
-| Python                 | Optional   | 2.7     |
-+------------------------+------------+---------+
++-----------------------------+------------+---------+
+| Packages                    | Dependency | Version |
++=============================+============+=========+
+| MPI                         | Required   |         |
++-----------------------------+------------+---------+
+| Python                      | Optional   | 2.7     |
++-----------------------------+------------+---------+
+| Boost                       | Required   | 1.59.0  |
++-----------------------------+------------+---------+
+| deal.II with p4est/Trilinos | Optional   | 8.3.0   |
++-----------------------------+------------+---------+
+| GNU Scientific Library      | Optional   | 1.16    |
++-----------------------------+------------+---------+
 
 Message Passing Interface (MPI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,17 +42,9 @@ Boost
 ^^^^^
 Boost version 1.59.0 or later is required.
 Boost can be downloaded from `here <http://www.boost.org/users/download>`_.
+Make sure to install **all** the libraries.
 Do not forget to add the ``using mpi ;`` directive to the
 `project-config.jam` file before building boost.
-Cap will search for the following libraries at configuration-time:
-
-    * Boost.Test
-
-    * Boost.PropertyTree
-
-    * Boost.Serialization
-
-    * Boost.MPI
 
 Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
 `${PREFIX}/archive` directory, boost may be installed by running:
@@ -68,16 +60,9 @@ Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
 deal.II
 ^^^^^^^
 
-.. code::
-
-    $ wget --output-document=${PREFIX}/archive/p4est-1.1.tar.gz http://p4est.github.io/release/p4est-1.1.tar.gz
-    $ mkdir ${PREFIX}/source/p4est && tar -xf ${PREFIX}/archive/p4est-1.1.tar.gz -C ${PREFIX}/source/p4est --strip-components=1
-    $ mkdir ${PREFIX}/build/p4est && cd ${PREFIX}/build/p4est
-    $ ${PREFIX}/source/p4est/configure --prefix=${PREFIX}/install/p4est --enable-mpi
-
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type ``SuperCapacitor``.
-Version 8.3.0 or later compiled with C++11/MPI/p4est/boost support is required.
+Version 8.3.0 or later compiled with C++11/MPI/Boost/p4est/Trilinos support is required.
 The development sources can be found `here <https://github.com/dealii/dealii>`_.
 
 To download the release version 8.3.0, do:
@@ -101,6 +86,7 @@ It is a good idea to make a `configure_dealii` script such as:
         -D DEAL_II_WITH_MPI=ON                           \
         -D BOOST_DIR=${PREFIX}/install/boost             \
         -D P4EST_DIR=${PREFIX}/install/p4est             \
+        -D TRILINOS_DIR=${PREFIX}/install/trilinos       \
         $EXTRA_ARGS                                      \ 
         ${PREFIX}/source/dealii
 
@@ -111,6 +97,10 @@ Then run:
     $ mkdir ${PREFIX}/build/dealii && cd ${PREFIX}/build/dealii
     $ ../configure_dealii
     $ make -j<N> install
+
+Please refer to the deal.II documentation to see how to install
+`p4est <https://dealii.org/developer/external-libs/p4est.html>`_ and
+`Trilinos <https://dealii.org/developer/external-libs/trilinos.html>`_.
 
 gsl
 ^^^
@@ -127,13 +117,14 @@ that case.
     $ ${PREFIX}/source/gsl/configure --prefix=${PREFIX}/install/gsl
     $ make -j<N> install
 
+
 Install cap from source
 -----------------------
 Get the source:
 
 .. code::
 
-    $ git clone https://github.com/dalg24/cap.git ${PREFIX}/source/cap
+    $ git clone https://github.com/ORNL-CEES/cap.git ${PREFIX}/source/cap
     $ git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
 
 `cap-data` contains a series of 2-D and 3-D meshes to model batteries or supercapacitors.
@@ -202,6 +193,20 @@ Launch Python and try:
 
     >>> import pycap
     >>> help(pycap)
+
+A number of Python packages are required to use pycap. We recommend you use
+pip to install them:
+
+.. code::
+
+    $ pip install numpy scipy matplotlib cython h5py mpi4py
+
+If pip is not already installed on your machine, you may try:
+
+.. code::
+
+   $ wget --quiet https://bootstrap.pypa.io/get-pip.py && python get-pip.py
+
 
 Build this documentation
 ------------------------
