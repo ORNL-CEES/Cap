@@ -66,6 +66,10 @@ public:
       active_cell_iterator;
   SuperCapacitorBoundaryValues(
       BoundaryValuesParameters<dim, spacedim> const &parameters);
+
+  // Needed to fix hidding of get_values.
+  using BoundaryValues<dim, spacedim>::get_values;
+  
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   unsigned int const face,
                   std::vector<double> &values) const override;

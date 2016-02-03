@@ -34,11 +34,15 @@ class MPValues
 public:
   typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
       active_cell_iterator;
+
   MPValues(MPValuesParameters<dim, spacedim> const &params);
+
   virtual ~MPValues() = default;
+
   virtual void get_values(std::string const &key,
                           active_cell_iterator const &cell,
                           std::vector<double> &values) const;
+
   virtual void
   get_values(std::string const &key, active_cell_iterator const &cell,
              std::vector<dealii::Tensor<1, spacedim>> &values) const;
@@ -67,7 +71,12 @@ class SuperCapacitorMPValues : public MPValues<dim, spacedim>
 public:
   typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
       active_cell_iterator;
+
   SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const &parameters);
+
+  // Needed to fix hidding of get_values.
+  using MPValues<dim,spacedim>::get_values;
+
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   std::vector<double> &values) const override;
 
@@ -117,7 +126,12 @@ class NewStuffMPValues : public MPValues<dim, spacedim>
 public:
   typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
       active_cell_iterator;
+
   NewStuffMPValues(MPValuesParameters<dim, spacedim> const &parameters);
+
+  // Needed to fix hidding of get_values.
+  using MPValues<dim, spacedim>::get_values;
+
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   std::vector<double> &values) const override;
 
