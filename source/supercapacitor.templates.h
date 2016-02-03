@@ -233,6 +233,9 @@ template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_linear_power(
     double const time_step, double const power)
 {
+  std::ignore = time_step;
+  std::ignore = power;
+
   throw std::runtime_error("THis function is not implemented");
 }
 
@@ -240,6 +243,9 @@ template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_linear_load(
     double const time_step, double const load)
 {
+  std::ignore = time_step;
+  std::ignore = load;
+
   throw std::runtime_error("This function is not implemented");
 }
 
