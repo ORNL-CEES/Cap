@@ -5,7 +5,8 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
-#include <deal.II/lac/sparse_direct.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -39,6 +40,15 @@ SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
       std::make_shared<cap::SuperCapacitorGeometry<dim>>(geometry_database);
   std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
       (*this->geometry).get_triangulation();
+
+  // get data tolerance and maximum number of iterations for the CG solver
+  std::shared_ptr<boost::property_tree::ptree> solver_database =
+      std::make_shared<boost::property_tree::ptree>(
+          database->get_child("solver"));
+  max_iter = solver_database->get<unsigned int>("max_iter", 1000);
+  rel_tolerance = solver_database->get<double>("rel_tolerance", 1e-12);
+  abs_tolerance = solver_database->get<double>("abs_tolerance", 1e-12);
+  verbose_lvl = solver_database->get<unsigned int>("verbosity", 0);
 
   // distribute degrees of freedom
   this->fe          = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 3);
@@ -283,10 +293,6 @@ void SuperCapacitor<dim>::evolve_one_time_step(double const time_step)
       system_matrix_electrochemical_block, solution_electrochemical_block,
       system_rhs_electrochemical_block, symmetric_correction);
 
-  dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
-  inverse_electrochemical_system_matrix.initialize(
-      system_matrix_electrochemical_block);
-
   std::map<dealii::types::global_dof_index, double> rhs_set;
   std::map<dealii::types::global_dof_index, double> rhs_add;
   rhs_set.clear();
@@ -357,8 +363,22 @@ void SuperCapacitor<dim>::evolve_one_time_step(double const time_step)
     } // end for
   }   // end if symmetric correction
 
-  inverse_electrochemical_system_matrix.vmult(solution_electrochemical_block,
-                                              system_rhs_electrochemical_block);
+
+  // Solve the system 
+  dealii::deallog.depth_console(verbose_lvl);
+  double tolerance = std::max(abs_tolerance,rel_tolerance *
+      system_rhs_electrochemical_block.l2_norm());
+  dealii::SolverControl solver_control(max_iter, tolerance);
+  dealii::SolverCG<> solver(solver_control);
+  // Temporary preconditioner
+  dealii::PreconditionSSOR<> preconditioner;
+  preconditioner.initialize(system_matrix_electrochemical_block, 1.2);
+  solver.solve(system_matrix_electrochemical_block,
+      solution_electrochemical_block, system_rhs_electrochemical_block,
+      preconditioner);
+  this->constraint_matrix->distribute(solution_electrochemical_block);
+  // Turn off the verbosity of deal.II
+  dealii::deallog.depth_console(0);
 
   (*this->post_processor).reset(this->post_processor_params);
 }

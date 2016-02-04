@@ -136,6 +136,13 @@
         <cathode_electrode_material_id>6</cathode_electrode_material_id>
         <cathode_collector_material_id>7</cathode_collector_material_id>
     </boundary_values>
+
+    <solver>
+        <max_iter> 2000 </max_iter>
+        <rel_tolerance> 1.0e-6 </rel_tolerance>
+        <abs_tolerance> 1.0e-9 </abs_tolerance>
+        <verbosity> 0 </verbosity>
+    </solver>
 </device>
 
 <initial_voltage>1.9</initial_voltage>
