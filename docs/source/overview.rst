@@ -14,7 +14,7 @@ Cap provides:
 2. electrochmical measurement techniques
 
 Guidelines for installation are :ref:`available <installation>`.
-Note that is **not** necessary to build Cap from source to use it.
+Note that it is **not** necessary to build Cap from source to use it.
 For instructions on how to use Cap without installing it, refer to the
 following :ref:`section <docker>`.
 
@@ -54,8 +54,11 @@ running.
     $ docker-machine ip default
     192.168.99.100 # <- this is the machine ip address
 
-In that case you would copy/paste the url http://192.168.99.100:8888 into your
-browser address bar.
+In that case you would copy/paste the url http://192.168.99.100:8888 into
+your browser address bar.
 
 - On Linux, you may access the notebook server from the browser using
-  http://localhost:8888.
+  http://localhost:8888. You may have use ``sudo`` to run the ``docker``
+  command. Please refer to the Docker documentation on how to create a
+  ``docker`` group and add your user to it if you want to avoid using
+  ``sudo`` each time.
