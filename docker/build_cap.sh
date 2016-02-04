@@ -14,4 +14,5 @@ cmake \
     -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     ${PREFIX}/source/cap && \
 make -j4 install && \
+cd python && \
 ctest -j4 -V
