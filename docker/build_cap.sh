@@ -6,7 +6,7 @@ mkdir -p ${PREFIX}/build/cap && \
 cd ${PREFIX}/build/cap && \
 cmake \
     -D CMAKE_INSTALL_PREFIX=/opt/cap \
-    -D BUILD_SHARED_LIB=ON \
+    -D BUILD_SHARED_LIBS=ON \
     -D MPI_INSTALL_DIR=${MPI_DIR} \
     -D PYTHON_INSTALL_DIR=${PYTHON_DIR} \
     -D BOOST_INSTALL_DIR=${BOOST_DIR} \
