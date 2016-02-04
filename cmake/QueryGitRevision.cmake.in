@@ -21,6 +21,5 @@ MESSAGE("GIT_COMMIT_HASH=${GIT_COMMIT_HASH}")
 MESSAGE("GIT_BRANCH=${GIT_BRANCH}")
 CONFIGURE_FILE(
     @CMAKE_SOURCE_DIR@/cmake/version.cc.in
-    @CMAKE_SOURCE_DIR@/source/version.cc
+    @CMAKE_SOURCE_DIR@/cpp/source/version.cc
     )
-
