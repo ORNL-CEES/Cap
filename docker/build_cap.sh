@@ -13,6 +13,5 @@ cmake \
     -D DEAL_II_INSTALL_DIR=${DEAL_II_DIR} \
     -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     ${PREFIX}/source/cap && \
-make install && \
-cd python && \
-ctest -V
+make -j4 install && \
+ctest -j4 -V
