@@ -118,3 +118,10 @@ boundary_values {
     cathode_electrode_material_id 6
     cathode_collector_material_id 7
 }
+
+solver {
+    max_iter  2000
+    rel_tolerance 1.0e-13
+    abs_tolerance 1.0e-13
+    verbosity 0
+}

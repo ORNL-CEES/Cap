@@ -79,8 +79,30 @@ public:
   void evolve_one_time_step(double const time_step);
 
 private:
-  std::shared_ptr<dealii::FESystem<dim>>
-      fe; // TODO: would be nice to get rid of this guy
+  /**
+   * Maximum number of iterations of the Krylov solver in evolve_one_time_step().
+   */
+  unsigned int max_iter;
+  /**
+   * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
+   * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
+   * by the Krylov solver is the maximum of the relative and the absolute 
+   * tolerance.
+   */
+  double rel_tolerance;
+  /**
+   * Absolute tolerance of the Krylov solver in evolve_one_time_step(). The
+   * tolerance used by the Krylov solver is the maximum of the relative and the
+   * absolute tolerance.
+   */
+  double abs_tolerance;
+  /**
+   * Verbosity level of the Krylov solver in evolve_one_time_step().
+   */
+  unsigned int verbose_lvl;
+
+  // TODO: would be nice to get rid of this guy
+  std::shared_ptr<dealii::FESystem<dim>> fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   std::shared_ptr<dealii::ConstraintMatrix> constraint_matrix;
   std::shared_ptr<dealii::BlockSparsityPattern> sparsity_pattern;
@@ -88,10 +110,6 @@ private:
   std::shared_ptr<dealii::BlockVector<double>> system_rhs;
   std::shared_ptr<dealii::BlockVector<double>> solution;
 
-  //    dealii::SparseDirectUMFPACK inverse_electrochemical_system_matrix;
-  //    dealii::SparseDirectUMFPACK inverse_thermal_system_matrix;
-  //    dealii::Vector<double> thermal_load_vector;
-  //
   std::shared_ptr<SuperCapacitorGeometry<dim>> geometry;
   std::shared_ptr<ElectrochemicalOperatorParameters<dim>>
       electrochemical_operator_params;
