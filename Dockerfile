@@ -8,7 +8,7 @@ RUN cd ${PREFIX}/source && \
     cd ${PREFIX}/build/cap && \
     cmake \
         -D CMAKE_INSTALL_PREFIX=/opt/cap \
-        -D BUILD_SHARED_LIB=ON \
+        -D BUILD_SHARED_LIBS=ON \
         -D MPI_INSTALL_DIR=${MPI_DIR} \
         -D PYTHON_INSTALL_DIR=${PYTHON_DIR} \
         -D BOOST_INSTALL_DIR=${BOOST_DIR} \
@@ -32,9 +32,11 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     mkdir /home/$NB_USER/notebooks && \
     chown -R $NB_USER:users /home/$NB_USER
 
+RUN mkdir /notebooks && chmod -R 777 /notebooks
+
 EXPOSE 8888
-WORKDIR /home/$NB_USER/notebooks
-VOLUME /home/$NB_USER/notebooks
+WORKDIR /notebooks
+VOLUME /notebooks
 ENTRYPOINT ["tini", "--"]
 CMD ["start-notebook.sh"]
 

@@ -6,13 +6,13 @@ mkdir -p ${PREFIX}/build/cap && \
 cd ${PREFIX}/build/cap && \
 cmake \
     -D CMAKE_INSTALL_PREFIX=/opt/cap \
-    -D BUILD_SHARED_LIB=ON \
+    -D BUILD_SHARED_LIBS=ON \
     -D MPI_INSTALL_DIR=${MPI_DIR} \
     -D PYTHON_INSTALL_DIR=${PYTHON_DIR} \
     -D BOOST_INSTALL_DIR=${BOOST_DIR} \
     -D DEAL_II_INSTALL_DIR=${DEAL_II_DIR} \
     -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     ${PREFIX}/source/cap && \
-make install && \
+make -j4 install && \
 cd python && \
-ctest -V
+ctest -j4 -V
