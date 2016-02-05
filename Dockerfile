@@ -20,7 +20,7 @@ RUN cd ${PREFIX}/source && \
    rm -rf ${PREFIX}/source/cap && \
    rm -rf ${PREFIX}/source/cap-data
 
-ENV PYTHONPATH=/opt/cap/python2.7/site-packages:${PYTHONPATH}
+ENV PYTHONPATH=/opt/cap/lib/python2.7/site-packages:${PYTHONPATH}
 # TODO: this is a tmp fix until adjustments are made to cmake
 ENV LD_LIBRARY_PATH=/opt/cap/lib
 
