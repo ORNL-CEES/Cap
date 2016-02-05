@@ -99,25 +99,25 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
 
   if (this->debug_material_ids)
     this->vectors["material_id"] =
-        dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
+        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
   if (this->debug_boundary_ids)
     throw dealii::StandardExceptions::ExcMessage("not implemented yet");
   for (std::vector<std::string>::const_iterator it =
            this->debug_material_properties.begin();
        it != this->debug_material_properties.end(); ++it)
     this->vectors[*it] =
-        dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
+        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fields.begin();
        it != this->debug_solution_fields.end(); ++it)
     this->vectors[*it] =
-        dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
+        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fluxes.begin();
        it != this->debug_solution_fluxes.end(); ++it)
     for (int d = 0; d < dim; ++d)
       this->vectors[(*it) + "_" + std::to_string(d)] =
-          dealii::Vector<double>(dof_handler.get_tria().n_active_cells());
+          dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
 }
 
 template <int dim>
@@ -146,7 +146,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
   // clang-format on
 
-  dealii::Triangulation<dim> const &triangulation = dof_handler.get_tria();
+  dealii::Triangulation<dim> const &triangulation = dof_handler.get_triangulation();
   dealii::Vector<double> joule_heating(triangulation.n_active_cells());
 
   dealii::FiniteElement<dim> const &fe =
@@ -185,13 +185,9 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::vector<double> face_solid_potential_values(n_face_q_points);
   std::vector<dealii::Tensor<1, dim>> face_solid_potential_gradients(
       n_face_q_points);
-  std::vector<dealii::Point<dim>> normal_vectors(n_face_q_points);
+  std::vector<dealii::Tensor<1,dim>> normal_vectors(n_face_q_points);
 
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell            = dof_handler.begin_active(),
-      end_cell        = dof_handler.end();
-  std::size_t cell_id = 0;
-  for (; cell != end_cell; ++cell, ++cell_id)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     fe_values.reinit(cell);
     this->mp_values->get_values("solid_electrical_conductivity", cell,
@@ -248,7 +244,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
       this->values["max_temperature"] = max_temperature;
     } // end if
     if (this->debug_material_ids)
-      this->vectors["material_id"][cell_id] =
+      this->vectors["material_id"][cell->active_cell_index()] =
           static_cast<double>(cell->material_id());
     for (std::vector<std::string>::const_iterator it =
              this->debug_material_properties.begin();
@@ -262,7 +258,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
         cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
       }
       cell_averaged_value /= cell->measure();
-      this->vectors[*it][cell_id] = cell_averaged_value;
+      this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
     }
     for (std::vector<std::string>::const_iterator it =
              this->debug_solution_fields.begin();
@@ -310,7 +306,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
         cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
       }
       cell_averaged_value /= cell->measure();
-      this->vectors[*it][cell_id] = cell_averaged_value;
+      this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
     }
     for (std::vector<std::string>::const_iterator it =
              this->debug_solution_fluxes.begin();
@@ -363,7 +359,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
       }
       cell_averaged_value /= cell->measure();
       for (int d = 0; d < dim; ++d)
-        this->vectors[(*it) + "_" + std::to_string(d)][cell_id] =
+        this->vectors[(*it) + "_" + std::to_string(d)][cell->active_cell_index()] =
             cell_averaged_value[d];
     }
 
@@ -386,7 +382,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
                 solution, face_solid_potential_gradients);
             fe_face_values[solid_potential].get_function_values(
                 solution, face_solid_potential_values);
-            normal_vectors = fe_face_values.get_normal_vectors();
+            normal_vectors = fe_face_values.get_all_normal_vectors();
             for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
                  ++face_q_point)
             {

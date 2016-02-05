@@ -221,10 +221,7 @@ void ElectrochemicalOperator<dim>::compute_robin_boundary_contribution(
   mask.set(this->solid_potential_component, true);
   mask.set(this->liquid_potential_component, true);
   DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_stiffness_matrix = 0.0;
     if (cell->at_boundary())
@@ -321,10 +318,7 @@ void ElectrochemicalOperator<dim>::compute_neumann_boundary_contribution(
   mask.set(this->solid_potential_component, true);
   mask.set(this->liquid_potential_component, true);
   DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_load_vector = 0.0;
     if (cell->at_boundary())
@@ -400,10 +394,7 @@ void ElectrochemicalOperator<dim>::compute_electrical_operator_contribution()
   mask.set(this->solid_potential_component, true);
   mask.set(this->liquid_potential_component, true);
   DoFExtractor dof_extractor(mask, mask, dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_stiffness_matrix = 0.0;
     cell_mass_matrix = 0.0;
@@ -471,11 +462,6 @@ void ElectrochemicalOperator<dim>::compute_electrical_operator_contribution()
         tmp_stiffness_matrix, tmp_indices, this->stiffness_matrix);
     constraint_matrix.distribute_local_to_global(tmp_mass_matrix, tmp_indices,
                                                  this->mass_matrix);
-
-    //        this->constraint_matrix.distribute_local_to_global(cell_stiffness_matrix,
-    //        local_dof_indices, this->stiffness_matrix);
-    //        this->constraint_matrix.distribute_local_to_global(cell_mass_matrix,
-    //        local_dof_indices, this->mass_matrix);
   } // end for cell
 }
 template <int dim>
@@ -535,10 +521,7 @@ void ElectrochemicalOperator<dim>::compute_heat_source(
   dealii::types::global_dof_index const dof_shift =
       std::accumulate(&(dofs_per_component[0]),
                       &(dofs_per_component[this->temperature_component]), 0);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_load_vector = 0.0;
     fe_values.reinit(cell);

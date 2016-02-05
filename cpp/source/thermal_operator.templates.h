@@ -86,10 +86,7 @@ void ThermalOperator<dim>::compute_thermal_operator_contribution()
   dealii::ComponentMask the_mask(n_components, false);
   the_mask.set(this->temperature_component, true);
   DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_stiffness_matrix = 0.0;
     cell_mass_matrix = 0.0;
@@ -163,10 +160,7 @@ void ThermalOperator<dim>::compute_robin_boundary_contribution()
   dealii::ComponentMask the_mask(n_components, false);
   the_mask.set(this->temperature_component, true);
   DoFExtractor dof_extractor(the_mask, the_mask, dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = dof_handler.begin_active(),
-      end_cell = dof_handler.end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_stiffness_matrix = 0.0;
     cell_load_vector = 0.0;

@@ -39,10 +39,7 @@ void Operator<dim>::set_null_space(unsigned int const component,
   dealii::FiniteElement<dim> const &fe = (*dof_handler).get_fe();
   unsigned int const dofs_per_cell = fe.dofs_per_cell;
   std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
-  typename dealii::DoFHandler<dim>::active_cell_iterator
-      cell     = (*dof_handler).begin_active(),
-      end_cell = (*dof_handler).end();
-  for (; cell != end_cell; ++cell)
+  for (auto cell : dof_handler->active_cell_iterators())
   {
     cell->get_dof_indices(local_dof_indices);
     if (cell->material_id() != material_id)
