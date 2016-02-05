@@ -22,7 +22,7 @@ RUN cd ${PREFIX}/source && \
 
 ENV PYTHONPATH=/opt/cap/python2.7/site-packages:${PYTHONPATH}
 # TODO: this is a tmp fix until adjustments are made to cmake
-ENV LD_LIBRARY_PATH=/opt/cap/lib
+ENV LD_LIBRARY_PATH=/opt/cap/lib:${LD_LIBRARY_PATH}
 
 ENV SHELL /bin/bash
 ENV NB_USER jovyan
