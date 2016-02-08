@@ -75,7 +75,7 @@ public:
   SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const &parameters);
 
   // Needed to fix hidding of get_values.
-  using MPValues<dim,spacedim>::get_values;
+  using MPValues<dim, spacedim>::get_values;
 
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   std::vector<double> &values) const override;

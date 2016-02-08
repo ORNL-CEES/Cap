@@ -242,7 +242,7 @@ void ParallelRC::evolve_one_time_step_linear_power(double const delta_t,
 
 void ParallelRC::evolve_one_time_step_linear_load(double const delta_t,
                                                   double const load)
-{                   
+{
   std::ignore = delta_t;
   std::ignore = load;
 
