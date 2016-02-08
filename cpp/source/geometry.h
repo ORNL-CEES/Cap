@@ -64,9 +64,9 @@ public:
 };
 
 /**
- * This class describes the geometry and the material ids of one cell of a 
+ * This class describes the geometry and the material ids of one cell of a
  * supercapacitor. This class assume that the geometry of the anode, the
- * cathode, the seperator, and the collectors can be described by rectangles in 
+ * cathode, the seperator, and the collectors can be described by rectangles in
  * 2D and rectangular cuboids in 3D.
  */
 template <int dim>

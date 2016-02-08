@@ -42,7 +42,7 @@ public:
 //////////////////////// ELECTROCHEMICAL OPERATOR ////////////////////////////
 /**
  * Create the system of equations associated with the electro-chemical reactions
- * happening in a supercapacitor. 
+ * happening in a supercapacitor.
  */
 template <int dim>
 class ElectrochemicalOperator : public Operator<dim>
@@ -63,7 +63,6 @@ public:
       dealii::Vector<double> &) const; // TODO: template 1st argument
 
 protected:
-
   void compute_electrical_operator_contribution();
 
   void compute_dirichlet_boundary_values(double const);

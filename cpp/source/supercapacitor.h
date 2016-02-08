@@ -80,13 +80,14 @@ public:
 
 private:
   /**
-   * Maximum number of iterations of the Krylov solver in evolve_one_time_step().
+   * Maximum number of iterations of the Krylov solver in
+   * evolve_one_time_step().
    */
   unsigned int max_iter;
   /**
    * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
    * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
-   * by the Krylov solver is the maximum of the relative and the absolute 
+   * by the Krylov solver is the maximum of the relative and the absolute
    * tolerance.
    */
   double rel_tolerance;
