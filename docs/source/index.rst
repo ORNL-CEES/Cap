@@ -18,6 +18,7 @@ Contents:
    examples
    reference
    faq
+   appendix
 
 Indices and tables
 ==================
