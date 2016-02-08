@@ -18,9 +18,5 @@ Reference
 
 .. note::
 
-    The class methods :py:meth:`evolve_one_time_step_constant_xxx` have their
-    conterpart :py:meth:`evolve_one_time_step_changing_xxx` where the
-    operating condition is imposed on the device as a ramp function rather
-    than a step function.
-
-
+    This will not show up on Read the Docs because Cap is not actually
+    installed on their servers when they update the documentation.
