@@ -2,5 +2,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/dummy)
 
 SET(CAP_SOURCES
     ${CAP_SOURCES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/new_supercapacitor.cc PARENT_SCOPE
+    ${CMAKE_CURRENT_SOURCE_DIR}/new_supercapacitor.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_physics.cc
+    PARENT_SCOPE
    )
