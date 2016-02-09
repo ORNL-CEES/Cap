@@ -8,6 +8,7 @@ RUN cd ${PREFIX}/source && \
     cd ${PREFIX}/build/cap && \
     cmake \
         -D CMAKE_INSTALL_PREFIX=/opt/cap \
+        -D CMAKE_BUILD_TYPE=Release \
         -D BUILD_SHARED_LIBS=ON \
         -D MPI_INSTALL_DIR=${MPI_DIR} \
         -D PYTHON_INSTALL_DIR=${PYTHON_DIR} \
