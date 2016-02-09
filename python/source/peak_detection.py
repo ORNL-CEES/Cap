@@ -1,3 +1,9 @@
+# Copyright (c) 2016, the Cap authors.
+#
+# This file is subject to the Modified BSD License and may not be distributed
+# without copyright and license information. Please refer to the file LICENSE
+# for the text and further information on this license. 
+
 # downloaded from https://gist.github.com/endolith/250860#file-peakdetect-py on Oct 7th, 2015
 
 import sys
