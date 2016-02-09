@@ -44,7 +44,6 @@ RUN export PYTHON_VERSION=2.7.11 && \
     ${PYTHON_SOURCE_DIR}/configure \
         --prefix=${PYTHON_INSTALL_DIR} \
         --enable-shared \
-        CFLAGS="-fPIC" \
         && \
     make -j4 install && \
     rm -rf ${PYTHON_ARCHIVE} && \
@@ -70,12 +69,14 @@ RUN export OPENMPI_VERSION=1.10.2 && \
     mkdir -p ${OPENMPI_BUILD_DIR} && cd ${OPENMPI_BUILD_DIR} && \
     ${OPENMPI_SOURCE_DIR}/configure \
         --prefix=${OPENMPI_INSTALL_DIR} \
+        --enable-shared \
+        --disable-static \
         && \
     make -j4 all && make install && \
     rm -rf ${OPENMPI_ARCHIVE} && \
     rm -rf ${OPENMPI_BUILD_DIR} && \
     rm -rf ${OPENMPI_SOURCE_DIR}
-     
+
 ENV MPI_DIR=/opt/openmpi/1.10.2
 ENV PATH=${MPI_DIR}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${MPI_DIR}/lib:${LD_LIBRARY_PATH}
@@ -99,8 +100,8 @@ RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.60.0/bo
         && \
     echo "using mpi ;" >> project-config.jam && \
     ./b2 install -j4 \
+        link=shared \
         variant=release \
-        cxxflags="-fPIC -Wno-unused-local-typedefs" \
         --build-dir=${BOOST_BUILD_DIR} \
         && \
     rm -rf ${BOOST_ARCHIVE} && \
@@ -126,8 +127,8 @@ RUN export HDF5_VERSION=1.8.16 && \
     cd ${HDF5_BUILD_DIR} && \
     ${HDF5_SOURCE_DIR}/configure \
         --prefix=${HDF5_INSTALL_DIR} \
-        --enable-static \
         --enable-shared \
+        --disable-static \
         --enable-parallel \
         && \
     make -j4 install && \
@@ -154,8 +155,8 @@ RUN export NETCDF_VERSION=4.4.0 && \
     ${NETCDF_SOURCE_DIR}/configure \
         --prefix=${NETCDF_INSTALL_DIR} \
         --enable-netcdf-4 \
-        --enable-static \
         --enable-shared \
+        --disable-static \
         CC=${MPI_DIR}/bin/mpicc \
         CFLAGS="-I${HDF5_DIR}/include" \
         LDFLAGS="-L${HDF5_DIR}/lib -lhdf5" \
@@ -190,6 +191,7 @@ RUN export TRILINOS_VERSION=12.4.2 && \
     cmake \
         -D CMAKE_INSTALL_PREFIX=${TRILINOS_INSTALL_DIR} \
         -D CMAKE_BUILD_TYPE=RELEASE \
+        -D BUILD_SHARED_LIBS:BOOL=ON \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
         -D TPL_ENABLE_MPI:BOOL=ON \
         -D MPI_BASE_DIR:PATH=${MPI_DIR} \
@@ -209,22 +211,39 @@ RUN export TRILINOS_VERSION=12.4.2 && \
         -D Trilinos_ENABLE_CXX11:BOOL=ON \
         -D Trilinos_ASSERT_MISSING_PACKAGES:BOOL=OFF \
         -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
-        -D Trilinos_ENABLE_Epetra:BOOL=ON \
-        -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
-        -D Trilinos_ENABLE_Kokkos:BOOL=ON \
-        -D Trilinos_ENABLE_Teuchos:BOOL=ON \
         -D Trilinos_ENABLE_Amesos:BOOL=ON \
         -D Trilinos_ENABLE_Amesos2:BOOL=ON \
         -D Trilinos_ENABLE_AztecOO:BOOL=ON \
+        -D Trilinos_ENABLE_Belos:BOOL=ON \
+        -D Trilinos_ENABLE_Epetra:BOOL=ON \
+        -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
+        -D Trilinos_ENABLE_Ifpack:BOOL=ON \
+        -D Trilinos_ENABLE_Intrepid:BOOL=ON \
+        -D Trilinos_ENABLE_Kokkos:BOOL=ON \
         -D Trilinos_ENABLE_ML:BOOL=ON \
-        -D Trilinos_ENABLE_MueLu:BOOL=ON \
-        -D Trilinos_ENABLE_Tpetra:BOOL=ON \
+        -D Trilinos_ENABLE_MueLu:BOOL=OFF \
         -D Trilinos_ENABLE_Sacado:BOOL=ON \
+        -D Trilinos_ENABLE_Shards:BOOL=ON \
+        -D Trilinos_ENABLE_Stratimikos:BOOL=ON \
+        -D Trilinos_ENABLE_STKMesh:BOOL=ON \
+        -D Trilinos_ENABLE_STKIO:BOOL=ON \
+        -D Trilinos_ENABLE_STKUnit_tests:BOOL=ON \
+        -D Trilinos_ENABLE_STKUtil:BOOL=ON \
+        -D Trilinos_ENABLE_STKTopology:BOOL=ON \
+        -D Trilinos_ENABLE_ThyraCore:BOOL=ON \
+        -D Trilinos_ENABLE_ThyraTpetraAdapters:BOOL=ON \
+        -D Trilinos_ENABLE_Teuchos:BOOL=ON \
+        -D Trilinos_ENABLE_Tpetra:BOOL=ON \
+        -D Trilinos_ENABLE_Xpetra:BOOL=ON \
+        -D Trilinos_ENABLE_SEACASExodus:BOOL=ON \
+        -D Trilinos_ENABLE_SEACASIoss:BOOL=ON \
         ${TRILINOS_SOURCE_DIR} && \
     make -j4 install && \
     rm -rf ${TRILINOS_ARCHIVE} && \
     rm -rf ${TRILINOS_BUILD_DIR} && \
-    rm -rf ${TRILINOS_SOURCE_DIR}
+    rm -rf ${TRILINOS_SOURCE_DIR} && \
+    rm -rf ${DTK_SOURCE_DIR} && \
+    rm -rf ${DTK_DATA_SOURCE_DIR}
 
 ENV TRILINOS_DIR=/opt/trilinos/12.4.2
 
@@ -243,6 +262,8 @@ RUN export P4EST_VERSION=1.1 &&\
     ${P4EST_SOURCE_DIR}/configure \
         --prefix=${P4EST_INSTALL_DIR} \
         --enable-mpi \
+        --enable-shared \
+        --disable-static \
         --without-blas \
         CC=mpicc \
         CFLAGS="-O2 -fPIC" \
