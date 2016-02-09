@@ -102,6 +102,7 @@ private:
    */
   unsigned int verbose_lvl;
 
+  std::shared_ptr<SuperCapacitorGeometry<dim>> geometry;
   // TODO: would be nice to get rid of this guy
   std::shared_ptr<dealii::FESystem<dim>> fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
@@ -111,7 +112,6 @@ private:
   std::shared_ptr<dealii::BlockVector<double>> system_rhs;
   std::shared_ptr<dealii::BlockVector<double>> solution;
 
-  std::shared_ptr<SuperCapacitorGeometry<dim>> geometry;
   std::shared_ptr<ElectrochemicalOperatorParameters<dim>>
       electrochemical_operator_params;
   std::shared_ptr<ElectrochemicalOperator<dim>> electrochemical_operator;

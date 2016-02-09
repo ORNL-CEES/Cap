@@ -80,6 +80,7 @@ SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
   // make sparsity pattern
   this->sparsity_pattern  = std::make_shared<dealii::BlockSparsityPattern>();
   this->constraint_matrix = std::make_shared<dealii::ConstraintMatrix>();
+  (*this->constraint_matrix).close();
   unsigned int const max_couplings =
       (*this->dof_handler).max_couplings_between_dofs();
   (*this->sparsity_pattern).reinit(n_blocks, n_blocks);
