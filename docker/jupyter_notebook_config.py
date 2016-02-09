@@ -37,3 +37,6 @@ if 'PASSWORD' in os.environ:
     from IPython.lib import passwd
     c.NotebookApp.password = passwd(os.environ['PASSWORD'])
     del os.environ['PASSWORD']
+
+# enable interactive parallel computing
+c.NotebookApp.server_extensions.append('ipyparallel.nbextension')
