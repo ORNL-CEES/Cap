@@ -1,5 +1,5 @@
 #ifndef CAP_TYPES.h
-#define CAP_TYPES.h
+#define CAP_TYPES .h
 
 /**
  * Shorten dealii::TrilinosWrappers::MPI to dealii::Trilinos::MPI and
@@ -7,7 +7,7 @@
  */
 namespace dealii
 {
- namespace Trilinos = TrilinosWrappers;
+namespace Trilinos = TrilinosWrappers;
 }
 
 #endif

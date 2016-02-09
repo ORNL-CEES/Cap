@@ -2,7 +2,7 @@
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
- * for the text and further information on this license. 
+ * for the text and further information on this license.
  */
 
 #include <cap/post_processor.h>
@@ -98,26 +98,26 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->debug_material_ids = database->get("debug.material_ids", false);
 
   if (this->debug_material_ids)
-    this->vectors["material_id"] =
-        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
+    this->vectors["material_id"] = dealii::Vector<double>(
+        dof_handler.get_triangulation().n_active_cells());
   if (this->debug_boundary_ids)
     throw dealii::StandardExceptions::ExcMessage("not implemented yet");
   for (std::vector<std::string>::const_iterator it =
            this->debug_material_properties.begin();
        it != this->debug_material_properties.end(); ++it)
-    this->vectors[*it] =
-        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
+    this->vectors[*it] = dealii::Vector<double>(
+        dof_handler.get_triangulation().n_active_cells());
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fields.begin();
        it != this->debug_solution_fields.end(); ++it)
-    this->vectors[*it] =
-        dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
+    this->vectors[*it] = dealii::Vector<double>(
+        dof_handler.get_triangulation().n_active_cells());
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fluxes.begin();
        it != this->debug_solution_fluxes.end(); ++it)
     for (int d = 0; d < dim; ++d)
-      this->vectors[(*it) + "_" + std::to_string(d)] =
-          dealii::Vector<double>(dof_handler.get_triangulation().n_active_cells());
+      this->vectors[(*it) + "_" + std::to_string(d)] = dealii::Vector<double>(
+          dof_handler.get_triangulation().n_active_cells());
 }
 
 template <int dim>
@@ -146,7 +146,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
   // clang-format on
 
-  dealii::Triangulation<dim> const &triangulation = dof_handler.get_triangulation();
+  dealii::Triangulation<dim> const &triangulation =
+      dof_handler.get_triangulation();
   dealii::Vector<double> joule_heating(triangulation.n_active_cells());
 
   dealii::FiniteElement<dim> const &fe =
@@ -185,7 +186,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::vector<double> face_solid_potential_values(n_face_q_points);
   std::vector<dealii::Tensor<1, dim>> face_solid_potential_gradients(
       n_face_q_points);
-  std::vector<dealii::Tensor<1,dim>> normal_vectors(n_face_q_points);
+  std::vector<dealii::Tensor<1, dim>> normal_vectors(n_face_q_points);
 
   for (auto cell : dof_handler.active_cell_iterators())
   {
@@ -359,7 +360,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
       }
       cell_averaged_value /= cell->measure();
       for (int d = 0; d < dim; ++d)
-        this->vectors[(*it) + "_" + std::to_string(d)][cell->active_cell_index()] =
+        this->vectors[(*it) + "_" +
+                      std::to_string(d)][cell->active_cell_index()] =
             cell_averaged_value[d];
     }
 
