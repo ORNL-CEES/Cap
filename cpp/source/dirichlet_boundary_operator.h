@@ -136,7 +136,7 @@ public:
           // we have assumed that the sparsity pattern is
           // symmetric and we only walk over those rows for
           // which the current row has a column entry
-          Assert((p != matrix.end(row)) && (p->column() == dof_number),
+          Assert((p != matrix.end(row)) && (p->column() == dof_index),
                  dealii::ExcMessage(
                      "This function is trying to access an element of the "
                      "matrix that doesn't seem to exist. Are you using a "
