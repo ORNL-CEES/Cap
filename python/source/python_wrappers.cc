@@ -33,6 +33,7 @@ BOOST_PYTHON_MODULE(_pycap)
     boost::python::scope().attr("__version__"        ) = cap::version()        ;
     boost::python::scope().attr("__git_branch__"     ) = cap::git_branch()     ;
     boost::python::scope().attr("__git_commit_hash__") = cap::git_commit_hash();
+    boost::python::scope().attr("__git_remote_url__" ) = cap::git_remote_url() ;
     boost::python::scope().attr("__doc__") =
         "\n"
         "PyCap\n"
