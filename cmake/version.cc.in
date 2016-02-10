@@ -3,6 +3,7 @@
 #define CAP_VERSION "@Cap_VERSION@"
 #define GIT_BRANCH "@GIT_BRANCH@"
 #define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
+#define GIT_REMOTE_URL "@GIT_REMOTE_URL@"
 
 namespace cap {
 
@@ -11,5 +12,7 @@ std::string version() { return CAP_VERSION; }
 std::string git_branch() { return GIT_BRANCH; }
 
 std::string git_commit_hash() { return GIT_COMMIT_HASH; }
+
+std::string git_remote_url() { return GIT_REMOTE_URL; }
 
 }

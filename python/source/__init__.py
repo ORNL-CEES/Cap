@@ -21,4 +21,5 @@ __all__ = ['_pycap', 'data_helpers', 'time_evolution', 'end_criterion',
 __version__ = _pycap.__version__
 __git_branch__ = _pycap.__git_branch__
 __git_commit_hash__ = _pycap.__git_commit_hash__
+__git_remote_url__ = _pycap.__git_remote_url__
 __doc__ = _pycap.__doc__
