@@ -85,7 +85,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(MPI.COMM_WORLD, device_database)
+        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
         eis_database  = setup_expertiment()
         eis_database.put_int('steps_per_decade', 1)
         eis_database.put_int('steps_per_cycle', 64)
@@ -111,7 +111,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(MPI.COMM_WORLD, device_database)
+        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
         # setup experiment and measure
         eis_database = setup_expertiment()
         spectrum_data = measure_impedance_spectrum(device, eis_database)
@@ -143,7 +143,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_double('series_resistance', R)
         device_database.put_double('parallel_resistance', R_L)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(MPI.COMM_WORLD, device_database)
+        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
         # setup experiment and measure
         eis_database = setup_expertiment()
         spectrum_data = measure_impedance_spectrum(device, eis_database)

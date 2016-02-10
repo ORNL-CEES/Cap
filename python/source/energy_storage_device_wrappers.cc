@@ -59,7 +59,8 @@ double get_voltage(cap::EnergyStorageDevice const & dev)
 }
 
 std::shared_ptr<cap::EnergyStorageDevice>
-build_energy_storage_device(boost::python::object & py_comm, boost::python::object & py_ptree)
+build_energy_storage_device(boost::python::object & py_ptree,
+                            boost::python::object & py_comm)
 {
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(py_ptree);

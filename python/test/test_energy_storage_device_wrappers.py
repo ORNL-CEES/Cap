@@ -23,16 +23,16 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         for filename in valid_device_input:
             ptree = PropertyTree()
             ptree.parse_info(filename)
-            EnergyStorageDevice(comm, ptree)
+            EnergyStorageDevice(ptree, comm)
         # invalid device will throw an exception
         ptree = PropertyTree()
         ptree.put_string('type', 'InvalidDevice')
-        self.assertRaises(RuntimeError, EnergyStorageDevice, comm, ptree)
+        self.assertRaises(RuntimeError, EnergyStorageDevice, ptree, comm)
 
     def test_energy_storage_device_not_copyable(self):
         device_database = PropertyTree()
         device_database.parse_xml('device.xml')
-        device = EnergyStorageDevice(comm, device_database.get_child('device'))
+        device = EnergyStorageDevice(device_database.get_child('device'), comm)
         from copy import copy, deepcopy
         self.assertRaises(RuntimeError, copy, device)
         self.assertRaises(RuntimeError, deepcopy, device)

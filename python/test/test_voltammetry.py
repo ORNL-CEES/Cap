@@ -14,7 +14,7 @@ comm = MPI.COMM_WORLD
 filename = 'series_rc.info'
 ptree = PropertyTree()
 ptree.parse_info(filename)
-device = EnergyStorageDevice(comm, ptree)
+device = EnergyStorageDevice(ptree, comm)
 
 
 class capRampTestCase(unittest.TestCase):
