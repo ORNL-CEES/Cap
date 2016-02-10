@@ -44,7 +44,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(comm, device_database)
+        device = EnergyStorageDevice(device_database, comm)
         ragone_database = setup_expertiment()
         ragone_database.put_int('min_steps_per_discharge', 20)
         ragone_database.put_int('max_steps_per_discharge', 30)
@@ -68,7 +68,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(comm, device_database)
+        device = EnergyStorageDevice(device_database, comm)
         # setup experiment and measure
         ragone_database = setup_expertiment()
         performance_data = measure_performance(device, ragone_database)
@@ -90,7 +90,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         device_database.put_double('series_resistance', R)
         device_database.put_double('parallel_resistance', R_L)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(comm, device_database)
+        device = EnergyStorageDevice(device_database, comm)
         # setup experiment and measure
         ragone_database = setup_expertiment()
         performance_data = measure_performance(device, ragone_database)
