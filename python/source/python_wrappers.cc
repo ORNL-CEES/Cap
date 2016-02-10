@@ -14,8 +14,10 @@
 #include <map>
 
 #include <mpi4py/mpi4py.h>
+
 std::shared_ptr<cap::EnergyStorageDevice>
-build_energy_storage_device(boost::python::object & py_comm, boost::python::object & py_ptree)
+build_energy_storage_device(boost::python::object & py_ptree,
+                            boost::python::object & py_comm)
 {
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(py_ptree);
@@ -112,7 +114,7 @@ BOOST_PYTHON_MODULE(_pycap)
         .def("__init__",
         boost::python::make_constructor(build_energy_storage_device,
 //        boost::python::make_constructor(&pycap::build_energy_storage_device,
-        boost::python::default_call_policies(), boost::python::args("comm", "ptree")),
+        boost::python::default_call_policies(), boost::python::args("ptree", "comm")),
         "                                                                    \n"
         "Parameters                                                          \n"
         "----------                                                          \n"
