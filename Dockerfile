@@ -45,4 +45,5 @@ CMD ["start-notebook.sh"]
 
 COPY docker/start-notebook.sh /usr/local/bin/
 COPY docker/jupyter_notebook_config.py /home/$NB_USER/.jupyter/
+COPY docker/jupyter_nbconvert_config.py /home/$NB_USER/.jupyter/
 RUN chown -R $NB_USER:users /home/$NB_USER/.jupyter
