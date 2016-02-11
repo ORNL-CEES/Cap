@@ -115,7 +115,7 @@ def measure_performance(device, ptree, fout=None, dummy=None):
                     ptree.put_double('time_step',
                                      data['time'][-1]/max_steps_per_discharge)
         except RuntimeError:
-            print 'Failed to discharge at %f watt' %discharge_power
+            print('Failed to discharge at {0} watt'.format(discharge_power))
             break
         # TODO:
         performance_data['energy'] = append(performance_data['energy'],

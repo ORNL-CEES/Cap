@@ -38,7 +38,7 @@ class capRagonePlotTestCase(unittest.TestCase):
         try:
             from h5py import File
         except ImportError:
-            print 'module h5py not found'
+            print('module h5py not found')
             return
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')

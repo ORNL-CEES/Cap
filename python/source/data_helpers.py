@@ -62,7 +62,7 @@ def open_file_in_write_mode(filename):
     try:
         fout = File(filename, 'w-')
     except IOError:
-        print "file '%s' already exists..." %filename
+        print("file '{0}' already exists...".format(filename))
         stdout.write('overwrite it? [Y/n] ')
         yes = set(['yes', 'y', ''])
         no = set(['no', 'n'])
