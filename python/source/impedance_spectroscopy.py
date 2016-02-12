@@ -155,9 +155,9 @@ def fourier_analysis(data, ptree=None):
         current = current[ignore_cycles*steps_per_cycle:]
         voltage = voltage[ignore_cycles*steps_per_cycle:]
     else:
-        time = time[n/2:]
-        current = current[n/2:]
-        voltage = voltage[n/2:]
+        time = time[int(n/2):]
+        current = current[int(n/2):]
+        voltage = voltage[int(n/2):]
 
     n = len(time)
     assert len(current) == n

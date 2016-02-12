@@ -79,7 +79,7 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         try:
             from h5py import File
         except ImportError:
-            print 'module h5py not found'
+            print('module h5py not found')
             return
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')
@@ -97,8 +97,8 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         fin = File('trash.hdf5', 'r')
         retrieved_data = retrieve_impedance_spectrum(fin)
         fin.close()
-        print spectrum_data['impedance']-retrieved_data['impedance']
-        print retrieved_data
+        print(spectrum_data['impedance']-retrieved_data['impedance'])
+        print(retrieved_data)
         self.assertEqual(linalg.norm(spectrum_data['frequency'] -
                                      retrieved_data['frequency'], inf), 0.0)
         # not sure why we don't get equality for the impedance
@@ -131,8 +131,8 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         # ensure the error is small
         max_phase_error_in_degree = linalg.norm(P_computed-P_exact, inf)
         max_magniture_error_in_decibel = linalg.norm(M_computed-M_exact, inf)
-        print 'max_phase_error_in_degree =', max_phase_error_in_degree
-        print 'max_magniture_error_in_decibel =', max_magniture_error_in_decibel
+        print('max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
+        print('max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
         self.assertLessEqual(max_phase_error_in_degree, 1)
         self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
 
@@ -159,8 +159,8 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         # ensure the error is small
         max_phase_error_in_degree = linalg.norm(P_computed-P_exact, inf)
         max_magniture_error_in_decibel = linalg.norm(M_computed-M_exact, inf)
-        print 'max_phase_error_in_degree =', max_phase_error_in_degree
-        print 'max_magniture_error_in_decibel =', max_magniture_error_in_decibel
+        print('max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
+        print('max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
         self.assertLessEqual(max_phase_error_in_degree, 1)
         self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
 

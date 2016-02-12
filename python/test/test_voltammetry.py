@@ -42,7 +42,7 @@ class capRampTestCase(unittest.TestCase):
             testing.assert_array_almost_equal(data['voltage'], voltage)
             testing.assert_array_almost_equal(data['time'], time)
         except AssertionError as e:
-            print e
+            print(e)
             self.fail()
 
 
