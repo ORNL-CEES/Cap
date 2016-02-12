@@ -30,9 +30,9 @@ RUN mkdir -p ${PREFIX} && \
     mkdir install
 
 # install python
-RUN export PYTHON_VERSION=2.7.11 && \
+RUN export PYTHON_VERSION=3.5.1 && \
     export PYTHON_URL=https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
-    export PYTHON_MD5=1dbcc848b4cd8399a8199d000f9f823c && \
+    export PYTHON_MD5=e9ea6f2623fffcdd871b7b19113fde80 && \
     export PYTHON_ARCHIVE=${PREFIX}/archive/python-${PYTHON_VERSION}.tar.xz && \
     export PYTHON_SOURCE_DIR=${PREFIX}/source/python/${PYTHON_VERSION} && \
     export PYTHON_BUILD_DIR=${PREFIX}/build/python/${PYTHON_VERSION} && \
@@ -52,9 +52,14 @@ RUN export PYTHON_VERSION=2.7.11 && \
     rm -rf ${PYTHON_BUILD_DIR} && \
     rm -rf ${PYTHON_SOURCE_DIR}
 
-ENV PYTHON_DIR=/opt/python/2.7.11
+ENV PYTHON_DIR=/opt/python/3.5.1
 ENV PATH=${PYTHON_DIR}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${PYTHON_DIR}/lib:${LD_LIBRARY_PATH}
+
+RUN ln -s ${PYTHON_DIR}/bin/python3 ${PYTHON_DIR}/bin/python && \
+    ln -s ${PYTHON_DIR}/bin/pip3 ${PYTHON_DIR}/bin/pip && \
+    ln -s ${PYTHON_DIR}/include/python3.5m ${PYTHON_DIR}/include/python3.5 && \
+    ln -s ${PYTHON_DIR}/lib/libpython3.5m.so ${PYTHON_DIR}/lib/libpython3.5.so
     
 # install openmpi
 RUN export OPENMPI_VERSION=1.10.2 && \
@@ -171,7 +176,8 @@ RUN export NETCDF_VERSION=4.4.0 && \
 ENV NETCDF_DIR=/opt/netcdf/4.4.0
 
 # install TRILINOS
-RUN export TRILINOS_VERSION=12.6.1 && \
+RUN apt-get install -y python2.7 && \
+    export TRILINOS_VERSION=12.6.1 && \
     export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-1.tar.gz && \
     export TRILINOS_ARCHIVE=${PREFIX}/archive/trilinos-${TRILINOS_VERSION}.tar.xz && \
     export TRILINOS_SOURCE_DIR=${PREFIX}/source/trilinos/${TRILINOS_VERSION} && \
@@ -191,8 +197,8 @@ RUN export TRILINOS_VERSION=12.6.1 && \
     mkdir -p ${TRILINOS_BUILD_DIR} && \
     cd ${TRILINOS_BUILD_DIR} && \
     cmake \
-        -D CMAKE_INSTALL_PREFIX=${TRILINOS_INSTALL_DIR} \
-        -D CMAKE_BUILD_TYPE=RELEASE \
+        -D CMAKE_INSTALL_PREFIX:PATH=${TRILINOS_INSTALL_DIR} \
+        -D CMAKE_BUILD_TYPE:SRTING=RELEASE \
         -D BUILD_SHARED_LIBS:BOOL=ON \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
         -D TPL_ENABLE_MPI:BOOL=ON \
@@ -244,6 +250,9 @@ RUN export TRILINOS_VERSION=12.6.1 && \
     rm -rf ${TRILINOS_ARCHIVE} && \
     rm -rf ${TRILINOS_BUILD_DIR} && \
     rm -rf ${TRILINOS_SOURCE_DIR} && \
+    apt-get remove -y --purge python2.7 && \
+    apt-get autoremove -y && \
+    apt-get clean && \
     rm -rf ${DTK_SOURCE_DIR} && \
     rm -rf ${DTK_DATA_SOURCE_DIR}
 
@@ -318,11 +327,8 @@ ENV DEAL_II_DIR=/opt/dealii/8.3.0
 
 ENV LD_LIBRARY_PATH=${LAPACK_DIR}/lib:${LD_LIBRARY_PATH}
 
-# install pip
+# install python requirements using pip
 RUN cd ${PREFIX}/source && \
-    wget --quiet https://bootstrap.pypa.io/get-pip.py && \
-    python get-pip.py --no-cache-dir && \
-    rm -rf get-pip.py && \
     pip install -U pip --no-cache-dir && \
     pip install --no-cache-dir \
         numpy \
