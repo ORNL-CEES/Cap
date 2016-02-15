@@ -9,7 +9,7 @@
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
 #include <cap/equivalent_circuit.h>
-#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <boost/format.hpp>
 #include <boost/test/unit_test.hpp>
 #include <fstream>
@@ -112,8 +112,7 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::xml_parser::read_xml("input_equivalent_circuit", *input_database,
-        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+    boost::property_tree::info_parser::read_xml("input_equivalent_circuit", *input_database);
 
     // build an energy storage system
     auto device_database = std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));

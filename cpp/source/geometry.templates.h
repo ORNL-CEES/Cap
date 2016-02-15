@@ -36,13 +36,13 @@ std::tuple<std::pair<dealii::Point<2>, dealii::Point<2>>,
 foo<2>(std::shared_ptr<boost::property_tree::ptree const> const &database)
 {
   // clang-format off
-  double const anode_collector_width   = database->get<double>("anode_collector_width");
-  double const anode_electrode_width   = database->get<double>("anode_electrode_width");
-  double const separator_width         = database->get<double>("separator_width");
-  double const cathode_electrode_width = database->get<double>("cathode_electrode_width");
-  double const cathode_collector_width = database->get<double>("cathode_collector_width");
-  double const sandwich_height         = database->get<double>("sandwich_height");
-  double const tab_height              = database->get<double>("tab_height");
+  double const anode_collector_width   = 0.01 * database->get<double>("anode_collector_thickness");
+  double const anode_electrode_width   = 0.01 * database->get<double>("anode_electrode_thickness");
+  double const separator_width         = 0.01 * database->get<double>("separator_thickness");
+  double const cathode_electrode_width = 0.01 * database->get<double>("cathode_electrode_thickness");
+  double const cathode_collector_width = 0.01 * database->get<double>("cathode_collector_thickness");
+  double const sandwich_height         = 0.0001 * database->get<double>("geometric_area");
+  double const tab_height              = 0.01 * database->get<double>("tab_height");
   // clang-format on
 
   std::pair<dealii::Point<2>, dealii::Point<2>> anode_tab_bbox;
@@ -102,14 +102,14 @@ std::tuple<std::pair<dealii::Point<3>, dealii::Point<3>>,
 foo<3>(std::shared_ptr<boost::property_tree::ptree const> const &database)
 {
   // clang-format off
-  double const anode_collector_width   = database->get<double>("anode_collector_width");
-  double const anode_electrode_width   = database->get<double>("anode_electrode_width");
-  double const separator_width         = database->get<double>("separator_width");
-  double const cathode_electrode_width = database->get<double>("cathode_electrode_width");
-  double const cathode_collector_width = database->get<double>("cathode_collector_width");
-  double const sandwich_height         = database->get<double>("sandwich_height");
-  double const sandwich_depth          = database->get<double>("sandwich_depth");
-  double const tab_height              = database->get<double>("tab_height");
+  double const anode_collector_width   = 0.01 * database->get<double>("anode_collector_thickness");
+  double const anode_electrode_width   = 0.01 * database->get<double>("anode_electrode_thickness");
+  double const separator_width         = 0.01 * database->get<double>("separator_thickness");
+  double const cathode_electrode_width = 0.01 * database->get<double>("cathode_electrode_thickness");
+  double const cathode_collector_width = 0.01 * database->get<double>("cathode_collector_thickness");
+  double const sandwich_height         = 0.01 * sqrt(database->get<double>("geometric_area"));
+  double const sandwich_depth          = sandwich_height;
+  double const tab_height              = 0.01 * database->get<double>("tab_height");
   // clang-format on
 
   std::pair<dealii::Point<3>, dealii::Point<3>> anode_tab_bbox;
