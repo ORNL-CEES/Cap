@@ -1,2 +1,36 @@
-ADD_SUBDIRECTORY(source)
-ADD_SUBDIRECTORY(test)
+add_subdirectory(source)
+add_subdirectory(test)
+
+set(Cap_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/source/dummy)
+include_directories(${Cap_INCLUDE_DIRS})
+add_library(Cap ${Cap_SOURCES})
+target_include_directories(Cap SYSTEM PUBLIC ${MPI_CXX_INCLUDE_PATH})
+target_link_libraries(Cap PUBLIC ${MPI_CXX_LIBRARIES})
+target_include_directories(Cap SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
+target_link_libraries(Cap PUBLIC ${Boost_MPI_LIBRARY})
+target_link_libraries(Cap PUBLIC ${Boost_SERIALIZATION_LIBRARY})
+if(ENABLE_DEAL_II)
+    target_include_directories(Cap SYSTEM PUBLIC ${DEAL_II_INCLUDE_DIRS})
+    target_link_libraries(Cap PUBLIC ${DEAL_II_LIBRARIES})
+endif()
+if(ENABLE_GSL)
+    target_include_directories(Cap SYSTEM PUBLIC ${GSL_INCLUDE_DIRS})
+    target_link_libraries(Cap PUBLIC ${GSL_LIBRARIES})
+endif()
+set_target_properties(Cap PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+    VERSION ${Cap_VERSION}
+)
+
+install(FILES ${Cap_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/cap
+)
+install(TARGETS Cap EXPORT CapTargets
+    LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include
+)
+install(EXPORT CapTargets
+    FILE CapTargets.cmake
+    DESTINATION lib/cmake/Cap
+)

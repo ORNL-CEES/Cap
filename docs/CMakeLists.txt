@@ -6,7 +6,6 @@ ADD_CUSTOM_TARGET(docs-html ALL
         "${CMAKE_CURRENT_SOURCE_DIR}/source"
         "${CMAKE_CURRENT_BINARY_DIR}/html"
     COMMENT "Building HTML documentation with Sphinx"
-    DEPENDS pycap
 )
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html"
@@ -19,7 +18,6 @@ ADD_CUSTOM_TARGET(docs-latex ALL
         "${CMAKE_CURRENT_SOURCE_DIR}/source"
         "${CMAKE_CURRENT_BINARY_DIR}/latex"
     COMMENT "Building LATEX documentation with Sphinx"
-    DEPENDS pycap
 )
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/latex"

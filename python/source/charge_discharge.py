@@ -4,7 +4,7 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license. 
 
-from .pycap import PropertyTree
+from .PyCap import PropertyTree
 from .stage import MultiStage
 
 __all__ = ['Charge', 'Discharge', 'CyclicChargeDischarge']

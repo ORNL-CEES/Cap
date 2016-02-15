@@ -1,14 +1,32 @@
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/dummy)
 
-SET(CAP_SOURCES
+set(Cap_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/version.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.h
+)
+set(Cap_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/version.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/utils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.cc
+)
+if(ENABLE_DEAL_II)
+    set(Cap_HEADERS
+       ${Cap_HEADERS}
+       ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/dof_extractor.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/operator.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/thermal_operator.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_operator.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/post_processor.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/geometry.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.h
     )
-IF(ENABLE_DEAL_II)
-    SET(CAP_SOURCES
-        ${CAP_SOURCES}
+    set(Cap_SOURCES
+        ${Cap_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/dof_extractor.cc
@@ -19,27 +37,18 @@ IF(ENABLE_DEAL_II)
         ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.cc
-        )
-ENDIF()
-IF(ENABLE_GSL)
-    SET(CAP_SOURCES
-        ${CAP_SOURCES}
+    )
+endif()
+if(ENABLE_GSL)
+    set(Cap_HEADERS
+        ${Cap_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_impedance_spectroscopy.h
+    )
+    set(Cap_SOURCES
+        ${Cap_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_impedance_spectroscopy.cc
-        )
-ENDIF()
+    )
+endif()
 
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
-ADD_LIBRARY(cap ${CAP_SOURCES})
-IF(ENABLE_DEAL_II)
-    DEAL_II_SETUP_TARGET(cap)
-ENDIF()
-
-INSTALL(TARGETS cap DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-INSTALL(DIRECTORY .
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/cap
-    FILES_MATCHING
-    PATTERN "*.h"
-    PATTERN "*.templates.h" EXCLUDE
-)
-
+set(Cap_HEADERS ${Cap_HEADERS} PARENT_SCOPE)
+set(Cap_SOURCES ${Cap_SOURCES} PARENT_SCOPE)

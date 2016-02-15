@@ -10,10 +10,12 @@ RUN cd ${PREFIX}/source && \
         -D CMAKE_INSTALL_PREFIX=/opt/cap \
         -D CMAKE_BUILD_TYPE=Release \
         -D BUILD_SHARED_LIBS=ON \
-        -D MPI_INSTALL_DIR=${MPI_DIR} \
-        -D PYTHON_INSTALL_DIR=${PYTHON_DIR} \
-        -D BOOST_INSTALL_DIR=${BOOST_DIR} \
-        -D DEAL_II_INSTALL_DIR=${DEAL_II_DIR} \
+        -D ENABLE_PYTHON=ON \
+        -D PYTHON_LIBRARY=${PYTHON_DIR}/lib/libpython3.5.so \
+        -D PYTHON_INCLUDE_DIR=${PYTHON_DIR}/include/python3.5 \
+        -D BOOST_DIR=${BOOST_DIR} \
+        -D ENABLE_DEAL_II=ON \
+        -D DEAL_II_DIR=${DEAL_II_DIR} \
         -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
         ${PREFIX}/source/cap && \
    make -j2 install && \
@@ -21,7 +23,7 @@ RUN cd ${PREFIX}/source && \
    rm -rf ${PREFIX}/source/cap && \
    rm -rf ${PREFIX}/source/cap-data
 
-ENV PYTHONPATH=/opt/cap/lib/python2.7/site-packages:${PYTHONPATH}
+ENV PYTHONPATH=/opt/cap/lib/python3.5/site-packages:${PYTHONPATH}
 # TODO: this is a tmp fix until adjustments are made to cmake
 ENV LD_LIBRARY_PATH=/opt/cap/lib:${LD_LIBRARY_PATH}
 
