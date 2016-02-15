@@ -28,7 +28,7 @@ build_energy_storage_device(boost::python::object & py_ptree,
     return cap::EnergyStorageDevice::build(comm, ptree);
 }
 
-BOOST_PYTHON_MODULE(pycap)
+BOOST_PYTHON_MODULE(PyCap)
 {
     if (import_mpi4py() < 0) return;
 

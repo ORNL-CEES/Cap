@@ -1,51 +1,27 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
-SET(Cap_MAJOR_VERSION 0)
-SET(Cap_MINOR_VERSION 1)
-SET(Cap_PATCH_VERSION 0)
-SET(Cap_VERSION
-    ${Cap_MAJOR_VERSION}.${Cap_MINOR_VERSION}.${Cap_PATCH_VERSION})
-MESSAGE("Cap version: ${Cap_VERSION}")
+project(Cap LANGUAGES CXX VERSION ${Cap_VERSION})
 
-MESSAGE("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-IF(CMAKE_BUILD_TYPE MATCHES "Release")
-    ADD_DEFINITIONS(-D BOOST_DISABLE_ASSERTS)
-ELSEIF(CMAKE_BUILD_TYPE MATCHES "Debug")
-    # DO NOTHING
-ELSE()
-    MESSAGE(FATAL_ERROR
-        "Possible values for CMAKE_BUILD_TYPE are Debug and Release"
-    )
-ENDIF()
-
-
-PROJECT(Cap LANGUAGES CXX VERSION
-    ${Cap_MAJOR_VERSION}.${Cap_MINOR_VERSION}.${Cap_PATCH_VERSION})
-
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
-INCLUDE(SetupCompiler)
-INCLUDE(SetupTPLs)
-INCLUDE(TrackCapRevisionNumber)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(SetupTPLs)
+include(SetupCap)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-ENABLE_TESTING()
+enable_testing()
 
-ADD_SUBDIRECTORY(cpp)
+add_subdirectory(cpp)
 
-IF(ENABLE_PYTHON)
-    ADD_SUBDIRECTORY(python)
-ENDIF()
+if(ENABLE_PYTHON)
+    add_subdirectory(python)
+endif()
 
-IF(ENABLE_DOCUMENTATION)
-    ADD_SUBDIRECTORY(docs)
-ENDIF()
+if(ENABLE_DOCUMENTATION)
+    add_subdirectory(docs)
+endif()
 
 #### OUTDATED ####################################
 IF(MAKE_DOC)
     ADD_SUBDIRECTORY(doc-old)
 ENDIF()
 ##################################################
-
-SET(CMAKE_EXPORT_COMPILE_COMMANDS 1)

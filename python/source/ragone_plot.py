@@ -6,7 +6,7 @@
 
 from numpy import trapz, count_nonzero, array, append, power, argsort
 from matplotlib import pyplot
-from .pycap import PropertyTree
+from .PyCap import PropertyTree
 from .charge_discharge import Charge, Discharge
 from .data_helpers import initialize_data, save_data
 
