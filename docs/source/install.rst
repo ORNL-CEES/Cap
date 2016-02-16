@@ -26,13 +26,13 @@ Cap has a required dependency on C++11.
 +=============================+============+=========+
 | MPI                         | Required   |         |
 +-----------------------------+------------+---------+
-| Python                      | Optional   | 2.7     |
+| Python                      | Optional   |         |
 +-----------------------------+------------+---------+
 | Boost                       | Required   | 1.59.0  |
 +-----------------------------+------------+---------+
 | deal.II with p4est/Trilinos | Optional   | 8.3.0   |
 +-----------------------------+------------+---------+
-| GNU Scientific Library      | Optional   | 1.16    |
+| GNU Scientific Library      | Optional   |         |
 +-----------------------------+------------+---------+
 
 Message Passing Interface (MPI)
@@ -138,13 +138,13 @@ Create a `configure_cap` script in `${PREFIX}/build`:
 
     EXTRA_ARGS=$@
 
-    cmake                                               \
-        -D CMAKE_INSTALL_PREFIX=${PREFIX}/install/cap   \
-        -D BOOST_INSTALL_DIR=${PREFIX}/install/boost    \
-        -D DEAL_II_INSTALL_DIR=${PREFIX}/install/dealii \
-        -D MPI_INSTALL_DIR=/usr/bin                     \
-        -D CAP_DATA_DIR=${PREFIX}/source/cap-data       \
-        $EXTRA_ARGS                                     \ 
+    cmake \
+        -D CMAKE_INSTALL_PREFIX=${PREFIX}/install/cap \
+        -D BOOST_DIR=${PREFIX}/install/boost \
+        -D ENABLE_DEAL_II=ON \
+        -D DEAL_II_DIR=${PREFIX}/install/dealii \
+        -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
+        $EXTRA_ARGS \ 
         ${PREFIX}/source/cap
 
 Configure, build and install:
@@ -168,26 +168,23 @@ Enable the Python wrappers
 --------------------------
 
 To build the Python wrappers cap must be configured with an extra flag
-``PYTHON_INSTALL_DIR`` that tells cmake where Python is installed.
-
-Find out where Python is installed:
-
-.. code::
-
-    $ export PYTHON_INSTALL_DIR=`python -c "import sys; print sys.prefix"`
-
-Configure cap to build the python interface and (re)install:
+``ENABLE_PYTHON=ON``. It is recommended to use Python 3.X but PyCap has
+been successfully built with Python 2.X in the past.
 
 .. code::
 
-    $ cmake -DPYTHON_INSTALL_DIR=${PYTHON_INSTALL_DIR} ${PREFIX}/source/cap
+    $ ../configure_cap -DENABLE_PYTHON=ON
+    $ make install
 
 Prepend the `cap/python` directory to the environment variable `PYTHONPATH`
 in order to import the pycap module from your Python interpreter.
 
 .. code::
 
-    $ export PYTHONPATH=${PREFIX}/install/cap/python:${PYTHONPATH}
+    $ export PYTHONPATH=${PREFIX}/install/cap/lib/pythonX.Y/site-packages:${PYTHONPATH}
+
+``X.Y`` stands for the version of Python that was used to build PyCap, 
+for example 2.7 or 3.5.
 
 Launch Python and try:
 
@@ -202,12 +199,6 @@ pip to install them:
 .. code::
 
     $ pip install numpy scipy matplotlib cython h5py mpi4py
-
-If pip is not already installed on your machine, you may try:
-
-.. code::
-
-   $ wget --quiet https://bootstrap.pypa.io/get-pip.py && python get-pip.py
 
 
 Build this documentation
