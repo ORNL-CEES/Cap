@@ -9,7 +9,7 @@ geometry {
     separator_thickness         25.0e-4 ; [centimeters]
     cathode_electrode_thickness 50.0e-4 ; [centimeters]
     cathode_collector_thickness  5.0e-4 ; [centimeters]
-    geometric_area              25.0e-4 ; [square centimeters]
+    geometric_area              25.0e-2 ; [square centimeters]
     tab_height                   5.0e-4 ; [centimeters]
 
     anode_collector_material_id   4
@@ -76,7 +76,7 @@ material_properties {
     }
     electrode_material {
         differential_capacitance         0.03134   ; [farad per square meter]
-        exchange_current_density         0.0       ; [ampere per square meter]
+        exchange_current_density         0.7463e-5 ; [ampere per square meter]
         void_volume_fraction             0.67      ; 
         tortuosity_factor                2.3       ; 
         pores_characteristic_dimension   1.5e-9    ; [meter]
@@ -120,7 +120,7 @@ boundary_values {
 
 solver {
     max_iter  2000
-    rel_tolerance 1.0e-13
-    abs_tolerance 1.0e-13
+    rel_tolerance 1.0e-14
+    abs_tolerance 1.0e-12
     verbosity 0
 }
