@@ -8,10 +8,36 @@
 #ifndef CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_H
 #define CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_H
 
-#include <cap/physics.h>
+#include <cap/deal.II/physics.h>
 
 namespace cap
 {
+  enum ChargeType
+  {
+    ConstantCurrent,
+    ConstantVoltage,
+    ConstantLoad
+  };
+
+  /**
+   * This class encapsulates the parameters used in ElectrochemicalPhysis.
+   */
+  template <int dim>
+  class ElectrochemicalPhysicsParameters : public PhysicsParameters<dim>
+  {
+    public:
+      ElectrochemicalPhysicsParameters(
+          std::shared_ptr<boost::property_tree::ptree const> d)
+        : PhysicsParameters<dim> (d)
+      {}
+
+      ChargeType charge_type;
+      double constant_current_density;
+      double constant_voltage;
+      double constant_load_density;
+      double time_step;
+  };
+
   /**
    * This class builds the system of equations that describes an electrochemical
    * physics. The system is built when the constructor or the reinit() function
@@ -24,7 +50,7 @@ namespace cap
       ElectrochemicalPhysics(std::shared_ptr<PhysicsParameters<dim> const> parameters);
 
     private:
-      void assemble_system();
+      void assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters);
 
       unsigned int solid_potential_component;
       unsigned int liquid_potential_component;

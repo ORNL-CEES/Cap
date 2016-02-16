@@ -1,11 +1,13 @@
 #ifndef CAP_PHYSICS_H
 #define CAP_PHYSICS_H
 
+#include <cap/boundary_values.h>
 #include <cap/mp_values.h>
 #include <boost/property_tree/ptree.hpp>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/linear_operator.h>
 #include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/lac/sparsity_pattern.h>
 #include <deal.II/lac/vector.h>
 
 namespace cap
@@ -25,9 +27,9 @@ public:
   virtual ~PhysicsParameters() = default;
 
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  dealii::SparsityPattern const *sparsity_pattern;
-  dealii::Vector<double> const *some_vector;
+  dealii::types::global_dof_index n_dofs;
   std::shared_ptr<MPValues<dim> const> mp_values;
+  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
   std::shared_ptr<boost::property_tree::ptree const> database;
 };
 
@@ -56,7 +58,7 @@ public:
 
   inline dealii::SparseMatrix<double> const &get_system_matrix() const
   {
-    return this->system_matrix;
+    return system_matrix;
   }
 
   /**
@@ -65,22 +67,37 @@ public:
   inline dealii::LinearOperator<dealii::Vector<double>, dealii::Vector<double>>
   get_linear_operator() const
   {
-    return linear_operator(this->system_matrix);
+    return linear_operator(system_matrix);
+  }
+
+  inline dealii::SparseMatrix<double> const &get_mass_matrix() const
+  {
+    return mass_matrix;
+  }
+
+  inline dealii::ConstraintMatrix const &get_constraint_matrix() const
+  {
+    return constraint_matrix;
   }
 
   /**
    * Return the right-hand side of system of equations.
    */
-  inline dealii::Vector<double> const &get_load_vector() const
+  inline dealii::Vector<double> const &get_system_rhs() const
   {
-    return this->load_vector;
+    return this->system_rhs;;
   }
 
 protected:
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  std::shared_ptr<MPValues<dim> const> mp_values;
+  dealii::types::global_dof_index n_dofs;
+  dealii::ConstraintMatrix constraint_matrix;
+  dealii::SparsityPattern sparsity_pattern;
   dealii::SparseMatrix<double> system_matrix;
-  dealii::Vector<double> load_vector;
+  dealii::SparseMatrix<double> mass_matrix;
+  dealii::Vector<double> system_rhs;
+  std::shared_ptr<MPValues<dim> const> mp_values;
+  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 };
 }
 

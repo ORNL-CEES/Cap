@@ -8,9 +8,6 @@
 #ifndef CAP_BOUNDARY_VALUES_H
 #define CAP_BOUNDARY_VALUES_H
 
-//#include <deal.II/base/types.h>
-//#include <deal.II/base/tensor.h>
-//#include <deal.II/dofs/dof_handler.h>
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/dofs/dof_accessor.h>
 #include <boost/property_tree/ptree.hpp>
