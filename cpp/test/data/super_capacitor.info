@@ -4,13 +4,13 @@ dim  2
 geometry {
     mesh_file mesh_2d.ucd
 
-    anode_collector_thickness    5.0e-4 ; [centimeters]
-    anode_electrode_thickness   50.0e-4 ; [centimeters]
-    separator_thickness         25.0e-4 ; [centimeters]
-    cathode_electrode_thickness 50.0e-4 ; [centimeters]
-    cathode_collector_thickness  5.0e-4 ; [centimeters]
-    geometric_area              25.0e-2 ; [square centimeters]
-    tab_height                   5.0e-4 ; [centimeters]
+    anode_collector_thickness    5.0e-4 ; [centimeter]
+    anode_electrode_thickness   50.0e-4 ; [centimeter]
+    separator_thickness         25.0e-4 ; [centimeter]
+    cathode_electrode_thickness 50.0e-4 ; [centimeter]
+    cathode_collector_thickness  5.0e-4 ; [centimeter]
+    geometric_area              25.0e-2 ; [square centimeter]
+    tab_height                   5.0e-4 ; [centimeter]
 
     anode_collector_material_id   4
     anode_electrode_material_id   1
@@ -68,33 +68,33 @@ material_properties {
     separator_material {
         void_volume_fraction             0.6       ;
         tortuosity_factor                1.29      ;
-        pores_characteristic_dimension   1.5e-9    ; [meter]
+        pores_characteristic_dimension   1.5e-7    ; [centimeter]
         pores_geometry_factor            2.0       ;
-        mass_density                     3.2e3     ; [kilogram per cubic meter]
+        mass_density                     3.2       ; [gram per cubic centimeter]
         heat_capacity                    1.2528e3  ; [joule per kilogram kelvin]
         thermal_conductivity             0.0019e2  ; [watt per meter kelvin]
     }
     electrode_material {
-        differential_capacitance         0.03134   ; [farad per square meter]
-        exchange_current_density         0.7463e-5 ; [ampere per square meter]
+        differential_capacitance         3.134     ; [microfarad per square centimeter]
+        exchange_current_density         7.463e-10 ; [ampere per square centimeter]
         void_volume_fraction             0.67      ; 
         tortuosity_factor                2.3       ; 
-        pores_characteristic_dimension   1.5e-9    ; [meter]
+        pores_characteristic_dimension   1.5e-7    ; [centimeter]
         pores_geometry_factor            2.0       ; 
-        mass_density                     2.3e3     ; [kilogram per cubic meter]
-        electrical_conductivity         52.1       ; [siemens per meter]
+        mass_density                     2.3       ; [gram per cubic centimeter]
+        electrical_resistivity           1.92      ; [ohm centimeter]
         heat_capacity                    0.93e3    ; [joule per kilogram kelvin]
         thermal_conductivity             0.0011e2  ; [watt per meter kelvin]
     }
     collector_material {
-        mass_density                     2.7e3     ; [kilogram per cubic meter]
-        electrical_resistivity          28.2e-9    ; [ohm meter]
+        mass_density                     2.7       ; [gram per cubic centimeter]
+        electrical_resistivity          28.2e-7    ; [ohm centimeter]
         heat_capacity                    2.7e3     ; [joule per kilogram kelvin]
         thermal_conductivity           237.0       ; [watt per meter kelvin]
     }
     electrolyte {
-        mass_density                     1.2e3     ; [kilogram per cubic meter]
-        conductivity                     0.067     ; [siemens per meter]
+        mass_density                     1.2       ; [gram per cubic centimeter]
+        electrical_resistivity           1.49e3    ; [ohm centimeter]
         heat_capacity                    0.0       ; [joule per kilogram kelvin]
         thermal_conductivity             0.0       ; [watt per meter kelvin]
     }

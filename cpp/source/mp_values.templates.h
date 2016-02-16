@@ -79,6 +79,12 @@ void MPValues<dim, spacedim>::get_values(
 }
 
 //////////////////////// NEW STUFF ////////////////////////////
+auto to_meters = [](double const & cm) { return 1e-2*cm; };
+auto to_kilograms_per_cubic_meter = [](double const & g_per_cm3) { return 1e3*g_per_cm3; };
+auto to_farads_per_square_meter = [](double const & uF_per_cm2) { return 1e-2*uF_per_cm2; };
+auto to_amperes_per_square_meter = [](double const & A_per_cm2) { return 1e4*A_per_cm2; };
+auto to_ohm_meter = [](double const & o_cm) { return 1e-2*o_cm; };
+
 template <int dim, int spacedim>
 PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
     MPValuesParameters<dim, spacedim> const &parameters)
@@ -99,14 +105,14 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
 
   // from the matrix_phase database
   // clang-format off
-  double const differential_capacitance       = matrix_phase_database->get<double>("differential_capacitance");
-  double const exchange_current_density       = matrix_phase_database->get<double>("exchange_current_density");
+  double const differential_capacitance       = to_farads_per_square_meter(matrix_phase_database->get<double>("differential_capacitance"));
+  double const exchange_current_density       = to_amperes_per_square_meter(matrix_phase_database->get<double>("exchange_current_density"));
   double const void_volume_fraction           = matrix_phase_database->get<double>("void_volume_fraction");
   double const tortuosity_factor              = matrix_phase_database->get<double>("tortuosity_factor");
-  double const pores_characteristic_dimension = matrix_phase_database->get<double>("pores_characteristic_dimension");
+  double const pores_characteristic_dimension = to_meters(matrix_phase_database->get<double>("pores_characteristic_dimension"));
   double const pores_geometry_factor          = matrix_phase_database->get<double>("pores_geometry_factor");
-  double const mass_density                   = matrix_phase_database->get<double>("mass_density");
-  double const electrical_conductivity        = matrix_phase_database->get<double>("electrical_conductivity");
+  double const mass_density                   = to_kilograms_per_cubic_meter(matrix_phase_database->get<double>("mass_density"));
+  double const electrical_conductivity        = 1.0/to_ohm_meter(matrix_phase_database->get<double>("electrical_resistivity"));
   double const heat_capacity                  = matrix_phase_database->get<double>("heat_capacity");
   double const thermal_conductivity           = matrix_phase_database->get<double>("thermal_conductivity");
   // clang-format on
@@ -140,9 +146,9 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       std::make_shared<boost::property_tree::ptree>(
           database->get_child(solution_phase));
   double const electrolyte_conductivity =
-      solution_phase_database->get<double>("conductivity");
+      1.0/to_ohm_meter(solution_phase_database->get<double>("electrical_resistivity"));
   double const electrolyte_mass_density =
-      solution_phase_database->get<double>("mass_density");
+      to_kilograms_per_cubic_meter(solution_phase_database->get<double>("mass_density"));
   (this->properties)
       .emplace("liquid_electrical_conductivity",
                [electrolyte_conductivity, void_volume_fraction,
@@ -216,8 +222,8 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
           database->get_child(metal_foil));
 
   // clang-format off
-  double const mass_density           = metal_foil_database->get<double>("mass_density");
-  double const electrical_resistivity = metal_foil_database->get<double>("electrical_resistivity");
+  double const mass_density           = to_kilograms_per_cubic_meter(metal_foil_database->get<double>("mass_density"));
+  double const electrical_resistivity = to_ohm_meter(metal_foil_database->get<double>("electrical_resistivity"));
   double const heat_capacity          = metal_foil_database->get<double>("heat_capacity");
   double const thermal_conductivity   = metal_foil_database->get<double>("thermal_conductivity");
   // clang-format on
@@ -265,291 +271,6 @@ void NewStuffMPValues<dim, spacedim>::get_values(
     throw std::runtime_error("Invalid material property " + key);
   auto eval = got->second;
   eval(cell, values);
-}
-
-//////////////////////// SUPERCAPACITORS ////////////////////////////
-template <int dim, int spacedim>
-SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
-    MPValuesParameters<dim, spacedim> const &parameters)
-    : MPValues<dim, spacedim>(parameters)
-{
-  std::shared_ptr<boost::property_tree::ptree const> database =
-      parameters.database;
-
-  if (!database)
-    throw std::runtime_error(
-        "supercapacitor material property values database is empty");
-  //    SuperCapacitorMPValuesParameters<dim, spacedim> const *
-  //    super_capacitor_parameters =
-  //        dynamic_cast<SuperCapacitorMPValuesParameters<dim, spacedim> const
-  //        *>(&parameters);
-
-  // clang-format off
-  this->separator_material_id         = database->get<dealii::types::material_id>("separator_material_id");
-  this->anode_electrode_material_id   = database->get<dealii::types::material_id>("anode_electrode_material_id");
-  this->anode_collector_material_id   = database->get<dealii::types::material_id>("anode_collector_material_id");
-  this->cathode_electrode_material_id = database->get<dealii::types::material_id>("cathode_electrode_material_id");
-  this->cathode_collector_material_id = database->get<dealii::types::material_id>("cathode_collector_material_id");
-  // clang-format on
-
-  // clang-format off
-  this->separator_thermal_conductivity = database->get<double>("separator_thermal_conductivity");
-  this->electrode_thermal_conductivity = database->get<double>("electrode_thermal_conductivity");
-  this->collector_thermal_conductivity = database->get<double>("collector_thermal_conductivity");
-  this->separator_density              = database->get<double>("separator_density");
-  this->electrode_density              = database->get<double>("electrode_density");
-  this->collector_density              = database->get<double>("collector_density");
-  this->electrolyte_mass_density       = database->get<double>("electrolyte_mass_density");
-  this->separator_heat_capacity        = database->get<double>("separator_heat_capacity");
-  this->electrode_heat_capacity        = database->get<double>("electrode_heat_capacity");
-  this->collector_heat_capacity        = database->get<double>("collector_heat_capacity");
-  // clang-format on
-
-  // clang-format off
-  this->differential_capacitance         = database->get<double>("differential_capacitance");
-  this->electrode_void_volume_fraction   = database->get<double>("electrode_void_volume_fraction");
-  this->separator_void_volume_fraction   = database->get<double>("separator_void_volume_fraction");
-  this->electrolyte_conductivity         = database->get<double>("electrolyte_conductivity");
-  this->solid_phase_conductivity         = database->get<double>("solid_phase_conductivity");
-  this->collector_electrical_resistivity = database->get<double>("collector_electrical_resistivity");
-  this->separator_tortuosity_factor      = database->get<double>("separator_tortuosity_factor");
-  this->electrode_tortuosity_factor      = database->get<double>("electrode_tortuosity_factor");
-  this->bruggemans_coefficient           = database->get<double>("bruggemans_coefficient");
-  this->pores_characteristic_dimension   = database->get<double>("pores_characteristic_dimension");
-  this->pores_geometry_factor            = database->get<double>("pores_geometry_factor");
-  //clang-format on
-  this->specific_surface_area_per_unit_volume =
-      (1.0 + this->pores_geometry_factor) *
-      this->electrode_void_volume_fraction /
-      this->pores_characteristic_dimension;
-
-  // clang-format off
-  this->anodic_charge_transfer_coefficient   = database->get<double>("anodic_charge_transfer_coefficient", 0.5);
-  this->cathodic_charge_transfer_coefficient = database->get<double>("cathodic_charge_transfer_coefficient", 0.5);
-  this->faraday_constant                     = database->get<double>("faraday_constant", 9.64853365e4);
-  this->gas_constant                         = database->get<double>("gas_constant", 8.3144621);
-  this->exchange_current_density             = database->get<double>("exchange_current_density", 0.0);
-  this->temperature                          = database->get<double>("temperature", 300.0);
-  // clang-format on
-}
-
-template <int dim, int spacedim>
-void SuperCapacitorMPValues<dim, spacedim>::get_values(
-    std::string const &key, active_cell_iterator const &cell,
-    std::vector<double> &values) const
-{
-  if (key.compare("thermal_conductivity") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(),
-                this->separator_thermal_conductivity);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->electrode_thermal_conductivity);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->collector_thermal_conductivity);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("density_times_heat_capacity") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(),
-                this->separator_density * this->separator_heat_capacity);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->electrode_density * this->electrode_heat_capacity);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->collector_density * this->collector_heat_capacity);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("density") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(),
-                this->separator_void_volume_fraction *
-                        this->electrolyte_mass_density +
-                    (1.0 - this->separator_void_volume_fraction) *
-                        this->separator_density);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->electrode_void_volume_fraction *
-                        this->electrolyte_mass_density +
-                    (1.0 - this->electrode_void_volume_fraction) *
-                        this->electrode_density);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(), this->collector_density);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("specific_capacitance") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->specific_surface_area_per_unit_volume *
-                    this->differential_capacitance);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("solid_electrical_conductivity") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      //            std::fill(values.begin(), values.end(),
-      //            this->solid_phase_conductivity*std::pow((1.0-this->electrode_void_volume_fraction),
-      //            this->bruggemans_coefficient));
-      std::fill(values.begin(), values.end(), this->solid_phase_conductivity);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                1.0 / this->collector_electrical_resistivity);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("liquid_electrical_conductivity") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      //            std::fill(values.begin(), values.end(),
-      //            this->electrolyte_conductivity*std::pow(this->separator_void_volume_fraction,
-      //            this->bruggemans_coefficient));
-      std::fill(values.begin(), values.end(),
-                this->electrolyte_conductivity *
-                    this->separator_void_volume_fraction /
-                    this->separator_tortuosity_factor);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      //            std::fill(values.begin(), values.end(),
-      //            this->electrolyte_conductivity*std::pow(this->electrode_void_volume_fraction,
-      //            this->bruggemans_coefficient));
-      std::fill(values.begin(), values.end(),
-                this->electrolyte_conductivity *
-                    this->electrode_void_volume_fraction /
-                    this->electrode_tortuosity_factor);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("faradaic_reaction_coefficient") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(),
-                this->specific_surface_area_per_unit_volume *
-                    this->exchange_current_density *
-                    (this->anodic_charge_transfer_coefficient +
-                     this->cathodic_charge_transfer_coefficient) *
-                    this->faraday_constant /
-                    (this->gas_constant * this->temperature));
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else if (key.compare("electron_thermal_voltage") == 0)
-  {
-    if (cell->material_id() == this->separator_material_id)
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else if ((cell->material_id() == this->anode_electrode_material_id) ||
-             (cell->material_id() == this->cathode_electrode_material_id))
-    {
-      std::fill(values.begin(), values.end(), this->gas_constant *
-                                                  this->temperature /
-                                                  this->faraday_constant);
-    }
-    else if ((cell->material_id() == this->anode_collector_material_id) ||
-             (cell->material_id() == this->cathode_collector_material_id))
-    {
-      std::fill(values.begin(), values.end(), 0.0);
-    }
-    else
-    {
-      throw std::runtime_error("Invalid material id");
-    } // end if material id
-  }
-  else
-  {
-    throw std::runtime_error("Invalid key '" + key + "' material property");
-  } // end if key
 }
 
 } // end namespace cap
