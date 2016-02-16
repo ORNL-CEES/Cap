@@ -25,12 +25,15 @@ void compute_equivalent_circuit(
   if (!output_database->empty())
     throw std::runtime_error("output_database was not empty...");
 
+  auto to_meters = [](double const & cm){ return 0.01*cm; };
+  auto to_square_meters = [](double const & cm2){ return 0.0001*cm2; };
+
   double const cross_sectional_area =
-      0.0001 * input_database->get<double>("geometry.geometric_area");
+      to_square_meters(input_database->get<double>("geometry.geometric_area"));
   // clang-format off
-  double const electrode_width = 0.01 * input_database->get<double>("geometry.anode_electrode_thickness");
-  double const separator_width = 0.01 * input_database->get<double>("geometry.separator_thickness");
-  double const collector_width = 0.01 * input_database->get<double>("geometry.anode_collector_thickness");
+  double const electrode_width = to_meters(input_database->get<double>("geometry.anode_electrode_thickness"));
+  double const separator_width = to_meters(input_database->get<double>("geometry.separator_thickness"      ));
+  double const collector_width = to_meters(input_database->get<double>("geometry.anode_collector_thickness"));
   // clang-format on
 
   // getting the material parameters values
