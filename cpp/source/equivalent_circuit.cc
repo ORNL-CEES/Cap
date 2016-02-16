@@ -25,13 +25,12 @@ void compute_equivalent_circuit(
   if (!output_database->empty())
     throw std::runtime_error("output_database was not empty...");
 
-  double const sandwich_height =
-      input_database->get<double>("geometry.sandwich_height");
-  double const cross_sectional_area = sandwich_height * 1.0;
+  double const cross_sectional_area =
+      0.0001 * input_database->get<double>("geometry.geometric_area");
   // clang-format off
-  double const electrode_width = input_database->get<double>("geometry.anode_electrode_width");
-  double const separator_width = input_database->get<double>("geometry.separator_width");
-  double const collector_width = input_database->get<double>("geometry.anode_collector_width");
+  double const electrode_width = 0.01 * input_database->get<double>("geometry.anode_electrode_thickness");
+  double const separator_width = 0.01 * input_database->get<double>("geometry.separator_thickness");
+  double const collector_width = 0.01 * input_database->get<double>("geometry.anode_collector_thickness");
   // clang-format on
 
   // getting the material parameters values

@@ -1,0 +1,15 @@
+device {
+    #include "super_capacitor.info"
+}
+
+cycling_charge_discharge {
+    charge_current        5.0e-3 ; [amperes]
+    discharge_current    -5.0e-3 ; [amperes]
+    voltage_upper_limit   2.7    ; [volts]
+    voltage_lower_limit   1.1    ; [volts]
+    initial_voltage       1.5    ; [volts]
+    charge_hold_time      3.0    ; [seconds]
+    discharge_rest_time  10.0    ; [seconds]
+    time_step             0.05   ; [seconds]
+    cycles 2
+}

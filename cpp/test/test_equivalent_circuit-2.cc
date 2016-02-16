@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::info_parser::read_xml("input_equivalent_circuit", *input_database);
+    boost::property_tree::info_parser::read_info("equivalent_circuits.info", *input_database);
 
     // build an energy storage system
     auto device_database = std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));

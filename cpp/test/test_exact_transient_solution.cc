@@ -16,7 +16,7 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -27,10 +27,9 @@ namespace cap {
 void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input_database,
                         std::shared_ptr<boost::property_tree::ptree      > output_database)
 {
-    double const sandwich_height = input_database->get<double>("geometry.sandwich_height");
-    double const cross_sectional_area = sandwich_height * 1.0;
-    double const electrode_width = input_database->get<double>("geometry.anode_electrode_width");
-    double const separator_width = input_database->get<double>("geometry.separator_width");
+    double const cross_sectional_area = 0.0001 * input_database->get<double>("geometry.geometric_area");
+    double const electrode_width = 0.01 * input_database->get<double>("geometry.anode_electrode_thickness");
+    double const separator_width = 0.01 * input_database->get<double>("geometry.separator_thickness");
 
     // getting the material parameters values
     std::shared_ptr<boost::property_tree::ptree> material_properties_database = 
@@ -49,7 +48,7 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
         dof_handler.begin_active();
     // electrode
     cell->set_material_id(
-        input_database->get<dealii::types::material_id>("material_properties.anode_electrode_material_id"));
+        input_database->get<dealii::types::material_id>("geometry.anode_electrode_material_id"));
     std::vector<double> electrode_solid_electrical_conductivity_values(1);
     std::vector<double> electrode_liquid_electrical_conductivity_values(1);
     std::vector<double> electrode_specific_capacitance_values(1);
@@ -87,7 +86,7 @@ void compute_parameters(std::shared_ptr<boost::property_tree::ptree const> input
           
     // separator
     cell->set_material_id(
-        input_database->get<dealii::types::material_id>("material_properties.separator_material_id"));
+        input_database->get<dealii::types::material_id>("geometry.separator_material_id"));
     std::vector<double> separator_liquid_electrical_conductivity_values(1);
     mp_values->get_values("liquid_electrical_conductivity", cell, separator_liquid_electrical_conductivity_values);
 
@@ -395,8 +394,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     // parse input file
     std::shared_ptr<boost::property_tree::ptree> input_database =
         std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::xml_parser::read_xml("input_verification_problem", *input_database,
-        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+    boost::property_tree::info_parser::read_info("verification_problems.info", *input_database);
 
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =

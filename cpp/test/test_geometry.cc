@@ -34,13 +34,13 @@ write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<
 BOOST_AUTO_TEST_CASE( test_reset_geometry )
 {
     std::shared_ptr<boost::property_tree::ptree> params(new boost::property_tree::ptree);
-    params->put("anode_collector_width"        ,  45.0e-6     );
-    params->put("anode_electrode_width"        ,  50.0e-6     );
-    params->put("separator_width"              ,   5.0e-6     );
-    params->put("cathode_electrode_width"      , 250.0e-6     );
-    params->put("cathode_collector_width"      ,  15.0e-6     );
-    params->put("sandwich_height"              ,  25.0e-6     );
-    params->put("tab_height"                   ,  20.0e-6     );
+    params->put("anode_collector_thickness"    ,  45.0e-4     );
+    params->put("anode_electrode_thickness"    ,  50.0e-4     );
+    params->put("separator_thickness"          ,   5.0e-4     );
+    params->put("cathode_electrode_thickness"  , 250.0e-4     );
+    params->put("cathode_collector_thickness"  ,  15.0e-4     );
+    params->put("geometric_area"               ,  25.0e-2     );
+    params->put("tab_height"                   ,  20.0e-4     );
     params->put("anode_collector_material_id"  ,   4          );
     params->put("anode_electrode_material_id"  ,   1          );
     params->put("separator_material_id"        ,   2          );
@@ -74,23 +74,23 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
     for (std::string const layer : { "separator", "anode_electrode", "cathode_electrode" })
     BOOST_CHECK_CLOSE(
         measure[params->get<dealii::types::material_id>(layer+"_material_id")],
-        params->get<double>(layer+"_width")*params->get<double>("sandwich_height"),
+        0.01*params->get<double>(layer+"_thickness")*0.0001*params->get<double>("geometric_area"),
         percent_tolerance
         );
     for (std::string const layer : { "anode_collector", "cathode_collector" })
     BOOST_CHECK_CLOSE(
         measure[params->get<dealii::types::material_id>(layer+"_material_id")],
-        params->get<double>(layer+"_width")*(params->get<double>("sandwich_height")+params->get<double>("tab_height")),
+        0.01*params->get<double>(layer+"_thickness")*(0.0001*params->get<double>("geometric_area")+0.01*params->get<double>("tab_height")),
         percent_tolerance
         );
 
-    params->put("anode_collector_width"        ,   5.0e-6     );
-    params->put("anode_electrode_width"        ,  50.0e-6     );
-    params->put("separator_width"              ,  25.0e-6     );
-    params->put("cathode_electrode_width"      ,  50.0e-6     );
-    params->put("cathode_collector_width"      ,   5.0e-6     );
-    params->put("sandwich_height"              ,  25.0e-6     );
-    params->put("tab_height"                   ,   5.0e-6     );
+    params->put("anode_collector_thickness"    ,   5.0e-4     );
+    params->put("anode_electrode_thickness"    ,  50.0e-4     );
+    params->put("separator_thickness"          ,  25.0e-4     );
+    params->put("cathode_electrode_thickness"  ,  50.0e-4     );
+    params->put("cathode_collector_thickness"  ,   5.0e-4     );
+    params->put("geometric_area"               ,  25.0e-2     );
+    params->put("tab_height"                   ,   5.0e-4     );
 
     geo.reset(params);
     write_mesh("output_test_geometry_1.vtk", geo.get_triangulation());
