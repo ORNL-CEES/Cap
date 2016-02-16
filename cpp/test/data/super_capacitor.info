@@ -4,14 +4,13 @@ dim  2
 geometry {
     mesh_file mesh_2d.ucd
 
-    anode_collector_width    5.0e-6 ; [meter]
-    anode_electrode_width   50.0e-6 ; [meter]
-    separator_width         25.0e-6 ; [meter]
-    cathode_electrode_width 50.0e-6 ; [meter]
-    cathode_collector_width  5.0e-6 ; [meter]
-    sandwich_height         25.0e-6 ; [meter]
-    sandwich_depth          50.0e-6 ; [meter]
-    tab_height               5.0e-6 ; [meter]
+    anode_collector_thickness    5.0e-4 ; [centimeters]
+    anode_electrode_thickness   50.0e-4 ; [centimeters]
+    separator_thickness         25.0e-4 ; [centimeters]
+    cathode_electrode_thickness 50.0e-4 ; [centimeters]
+    cathode_collector_thickness  5.0e-4 ; [centimeters]
+    geometric_area              25.0e-2 ; [square centimeters]
+    tab_height                   5.0e-4 ; [centimeters]
 
     anode_collector_material_id   4
     anode_electrode_material_id   1
@@ -77,7 +76,7 @@ material_properties {
     }
     electrode_material {
         differential_capacitance         0.03134   ; [farad per square meter]
-        exchange_current_density         0.0       ; [ampere per square meter]
+        exchange_current_density         0.7463e-5 ; [ampere per square meter]
         void_volume_fraction             0.67      ; 
         tortuosity_factor                2.3       ; 
         pores_characteristic_dimension   1.5e-9    ; [meter]
@@ -121,7 +120,7 @@ boundary_values {
 
 solver {
     max_iter  2000
-    rel_tolerance 1.0e-13
-    abs_tolerance 1.0e-13
+    rel_tolerance 1.0e-14
+    abs_tolerance 1.0e-12
     verbosity 0
 }

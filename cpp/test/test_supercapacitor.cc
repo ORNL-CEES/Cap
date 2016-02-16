@@ -10,7 +10,7 @@
 #include <cap/energy_storage_device.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <boost/format.hpp>
 #include <memory>
 #include <iostream>
@@ -18,84 +18,61 @@
 
 namespace cap {
 
-void charge_and_chill(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database, std::ostream & os = std::cout)
+void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev)
 {
-    double const charge_time     = database->get<double>("charge_time"    );
-    double const relaxation_time = database->get<double>("relaxation_time");
-    double const time_step       = database->get<double>("time_step"      );
-    double const charge_current  = database->get<double>("charge_current" );
-    for (double time = 0.0 ; time < charge_time; time += time_step)
+    for (auto imposed_current : { 10e-3, 5e-3, 2e-3 })
     {
-        dev->evolve_one_time_step_constant_current(time_step, charge_current);
-        os<<boost::format("%5.1f  ") % time;
-        dev->print_data(os);
+        dev->evolve_one_time_step_constant_current(2.0, imposed_current);
+        double measured_current;
+        dev->get_current(measured_current);
+        BOOST_TEST(imposed_current== measured_current);
     }
-    for (double time = charge_time ; time < charge_time+relaxation_time; time += time_step)
+
+    for (auto imposed_voltage : { 1.4, 1.6, 1.8, 2.0, 2.2 })
     {
-        dev->evolve_one_time_step_constant_current(time_step, 0.0);
-        os<<boost::format("%5.1f  ") % time;
-        dev->print_data(os);
+        dev->evolve_one_time_step_constant_voltage(2.0, imposed_voltage);
+        double measured_voltage;
+        dev->get_voltage(measured_voltage);
+        BOOST_TEST(imposed_voltage == measured_voltage);
     }
-}
 
+    for (auto imposed_power : { 1e-3, 2e-3, })
+    {
+        dev->evolve_one_time_step_constant_power(2.0, imposed_power);
+        double measured_voltage;
+        dev->get_voltage(measured_voltage);
+        double measured_current;
+        dev->get_current(measured_current);
+        BOOST_TEST(imposed_power == measured_voltage * measured_current);
+    }
 
-
-void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr<boost::property_tree::ptree const> database)
-
-{
-    double const initial_voltage   = database->get<double>("initial_voltage"  );
-    double       initial_current;
-    double       voltage;
-    double       current;
-    double const percent_tolerance = database->get<double>("percent_tolerance");
-    double const time_step         = database->get<double>("time_step"        );
-
-    dev->reset_voltage(initial_voltage);
-    dev->get_current(initial_current);
-    dev->get_voltage(voltage);
-    BOOST_CHECK_CLOSE(voltage, initial_voltage, percent_tolerance);
-
-    dev->evolve_one_time_step_constant_voltage(time_step, initial_voltage);
-    dev->get_current(current);
-    // TODO: Criterion to exit the loop in SuperCapacitor::reset_voltage() in
-    // not robust so following line will fail (0.02% error)
-    // I commented it out because I am thinking about removing the
-    // reset_voltage() method anyway.
-//    BOOST_CHECK_CLOSE(initial_current, current, 1.0e-2); // matches percent_tolerance in SuperCapacitor::reset_voltage()
-    dev->get_voltage(voltage);
-    BOOST_CHECK_CLOSE(voltage, initial_voltage, percent_tolerance);
-
-    initial_current = database->get<double>("initial_current");
-    dev->evolve_one_time_step_constant_current(time_step, initial_current);
-    dev->get_current(current);
-    BOOST_CHECK_CLOSE(current, initial_current, 1.0e-2); // mostlikely related to grid resolution.  unsure how much accuracy we should expect.
+    for (auto imposed_load : { 100.0, 33.0, })
+    {
+        dev->evolve_one_time_step_constant_load(2.0, imposed_load);
+        double measured_voltage;
+        dev->get_voltage(measured_voltage);
+        double measured_current;
+        dev->get_current(measured_current);
+        BOOST_TEST(imposed_load == - measured_voltage / measured_current);
+    }
 }
 
 } // end namespace cap
 
 
+double constexpr relative_tolerance = 1.0e-2;
 
-BOOST_AUTO_TEST_CASE( test_supercapacitor )
+BOOST_AUTO_TEST_CASE( test_supercapacitor, *
+    boost::unit_test::tolerance(relative_tolerance))
 {
-    // read input file
-    std::shared_ptr<boost::property_tree::ptree> input_database =
-        std::make_shared<boost::property_tree::ptree>();
-    boost::property_tree::xml_parser::read_xml("input_supercapacitor", *input_database,
-        boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
-
     // build an energy storage device
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
-    std::shared_ptr<cap::EnergyStorageDevice> device = 
-        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
-
-    // charge and then relax
-    std::fstream fout;
-    fout.open("supercapacitor_data", std::fstream::out);
-    std::shared_ptr<boost::property_tree::ptree> operating_conditions_database =
-        std::make_shared<boost::property_tree::ptree>(input_database->get_child("operating_conditions"));
-    cap::charge_and_chill(device, operating_conditions_database, fout);
+    boost::property_tree::ptree ptree;
+    boost::property_tree::info_parser::read_info(
+        "super_capacitor.info", ptree);
+    boost::mpi::communicator world; 
+    std::shared_ptr<cap::EnergyStorageDevice> supercap =
+        cap::buildEnergyStorageDevice(world, ptree);
 
     // check sanity
-    cap::check_sanity(device, input_database);
+    cap::check_sanity(supercap);
 }
