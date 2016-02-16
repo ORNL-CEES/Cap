@@ -4,17 +4,20 @@ set(Cap_VERSION_PATCH 0)
 set(Cap_VERSION
     ${Cap_VERSION_MAJOR}.${Cap_VERSION_MINOR}.${Cap_VERSION_PATCH})
 message("Cap version: ${Cap_VERSION}")
+    
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-IF(CMAKE_BUILD_TYPE MATCHES "Release")
-    ADD_DEFINITIONS(-DBOOST_DISABLE_ASSERTS)
-ELSEIF(CMAKE_BUILD_TYPE MATCHES "Debug")
+message("Build type: ${CMAKE_BUILD_TYPE}")
+if(CMAKE_BUILD_TYPE MATCHES "Release")
+    add_definitions(-DBOOST_DISABLE_ASSERTS)
+elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
     # DO NOTHING
-ELSE()
-    MESSAGE(FATAL_ERROR
+else()
+    message(FATAL_ERROR
         "Possible values for CMAKE_BUILD_TYPE are Debug and Release"
     )
-ENDIF()
+endif()
 
 include(TrackCapRevisionNumber)
 
