@@ -31,16 +31,3 @@ BOOST_AUTO_TEST_CASE( test_mp_values )
    BOOST_CHECK_THROW( mp_values->get_values("key", cell, vectors), std::runtime_error );
 }
 
-BOOST_AUTO_TEST_CASE( test_supercapacitor_mp_values )
-{
-   std::shared_ptr<boost::property_tree::ptree> empty_database;
-   BOOST_CHECK_THROW( 
-       std::make_shared<cap::SuperCapacitorMPValues<2> >(cap::MPValuesParameters<2>(empty_database)),
-       std::runtime_error );
-
-   std::shared_ptr<boost::property_tree::ptree> database(new boost::property_tree::ptree);
-   BOOST_CHECK_THROW(
-       std::make_shared<cap::SuperCapacitorMPValues<2> >(cap::MPValuesParameters<2>(database)),
-       boost::property_tree::ptree_bad_path );
-}
-
