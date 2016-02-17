@@ -125,7 +125,7 @@ buildMaterial(std::string const &material_name,
         dummy_database->get<std::string>(material_name + "." + "matrix_phase");
     dummy_database->put(matrix_phase + "." + "differential_capacitance", 0.0);
     dummy_database->put(matrix_phase + "." + "exchange_current_density", 0.0);
-    dummy_database->put(matrix_phase + "." + "electrical_resistivity", std::numeric_limits<double>::infinity());
+    dummy_database->put(matrix_phase + "." + "electrical_resistivity", std::numeric_limits<double>::max());
     return std::make_shared<PorousElectrodeMPValues<dim>>(
         MPValuesParameters<dim>(dummy_database));
   }
