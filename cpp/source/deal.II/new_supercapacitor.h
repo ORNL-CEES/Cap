@@ -2,7 +2,7 @@
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
- * for the text and further information on this license. 
+ * for the text and further information on this license.
  */
 
 #ifndef CAP_DEAL_II_NEW_SUPERCAPACITOR_H
@@ -25,7 +25,7 @@ class New_SuperCapacitor : public EnergyStorageDevice
 {
 public:
   New_SuperCapacitor(boost::mpi::communicator const &comm,
-                 boost::property_tree::ptree const &ptree);
+                     boost::property_tree::ptree const &ptree);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -91,13 +91,14 @@ private:
   void evolve_one_time_step(double const time_step, ChargeType charge_type);
 
   /**
-   * Maximum number of iterations of the Krylov solver in evolve_one_time_step().
+   * Maximum number of iterations of the Krylov solver in
+   * evolve_one_time_step().
    */
   unsigned int max_iter;
   /**
    * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
    * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
-   * by the Krylov solver is the maximum of the relative and the absolute 
+   * by the Krylov solver is the maximum of the relative and the absolute
    * tolerance.
    */
   double rel_tolerance;
@@ -124,7 +125,6 @@ private:
       post_processor_params;
   std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
 };
-
 }
 
-#endif 
+#endif

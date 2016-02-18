@@ -20,7 +20,6 @@ std::string git_branch();
 std::string git_commit_hash();
 
 std::string git_remote_url();
-
 }
 
 #endif

@@ -25,8 +25,14 @@ void compute_equivalent_circuit(
   if (!output_database->empty())
     throw std::runtime_error("output_database was not empty...");
 
-  auto to_meters = [](double const & cm){ return 0.01*cm; };
-  auto to_square_meters = [](double const & cm2){ return 0.0001*cm2; };
+  auto to_meters = [](double const &cm)
+  {
+    return 0.01 * cm;
+  };
+  auto to_square_meters = [](double const &cm2)
+  {
+    return 0.0001 * cm2;
+  };
 
   double const cross_sectional_area =
       to_square_meters(input_database->get<double>("geometry.geometric_area"));

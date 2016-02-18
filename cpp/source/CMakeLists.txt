@@ -25,8 +25,9 @@ if(ENABLE_DEAL_II)
        ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.h
        ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.h
     )
-IF(ENABLE_DEAL_II)
-    ADD_SUBDIRECTORY(deal.II)
+endif()
+if(ENABLE_DEAL_II)
+    add_subdirectory(deal.II)
     SET(Cap_SOURCES
         ${Cap_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.cc

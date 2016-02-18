@@ -46,16 +46,6 @@ public:
 
   virtual ~Physics() = default;
 
-  /**
-   * This function is function is not implemented and will throw an
-   * exception.
-   */
-  virtual void reset(std::shared_ptr<PhysicsParameters<dim> const> parameters)
-  {
-    std::ignore = parameters;
-    std::runtime_error("This is function is not implemented");
-  }
-
   inline dealii::SparseMatrix<double> const &get_system_matrix() const
   {
     return system_matrix;
@@ -85,7 +75,8 @@ public:
    */
   inline dealii::Vector<double> const &get_system_rhs() const
   {
-    return this->system_rhs;;
+    return this->system_rhs;
+    ;
   }
 
 protected:
@@ -97,7 +88,6 @@ protected:
   dealii::SparseMatrix<double> mass_matrix;
   dealii::Vector<double> system_rhs;
   std::shared_ptr<MPValues<dim> const> mp_values;
-  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 };
 }
 
