@@ -59,9 +59,6 @@ private:
   unsigned int solid_potential_component;
   unsigned int liquid_potential_component;
   unsigned int temperature_component;
-  /**
-   * Charge transfer coefficients.
-   */
   double alpha;
   dealii::types::boundary_id anode_boundary_id;
   dealii::types::boundary_id cathode_boundary_id;

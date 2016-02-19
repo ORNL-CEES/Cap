@@ -48,15 +48,12 @@ public:
                           std::vector<double> &values) const;
 
   virtual void
-  get_values(std::string const &key,
-             active_cell_iterator const &cell,
+  get_values(std::string const &key, active_cell_iterator const &cell,
              std::vector<dealii::Tensor<1, spacedim>> &values) const;
 
 protected:
-  std::unordered_map<
-    dealii::types::material_id,
-    std::shared_ptr<MPValues<dim>>
-  > materials;
+  std::unordered_map<dealii::types::material_id, std::shared_ptr<MPValues<dim>>>
+      materials;
 };
 
 //////////////////////// NEW STUFF ////////////////////////////
@@ -125,7 +122,8 @@ buildMaterial(std::string const &material_name,
         dummy_database->get<std::string>(material_name + "." + "matrix_phase");
     dummy_database->put(matrix_phase + "." + "differential_capacitance", 0.0);
     dummy_database->put(matrix_phase + "." + "exchange_current_density", 0.0);
-    dummy_database->put(matrix_phase + "." + "electrical_resistivity", std::numeric_limits<double>::max());
+    dummy_database->put(matrix_phase + "." + "electrical_resistivity",
+                        std::numeric_limits<double>::max());
     return std::make_shared<PorousElectrodeMPValues<dim>>(
         MPValuesParameters<dim>(dummy_database));
   }
