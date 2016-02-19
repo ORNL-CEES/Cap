@@ -170,7 +170,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
     double const time_step, double const voltage)
 {
   electrochemical_physics_params->constant_voltage = voltage;
-  evolve_one_time_step(time_step, ConstantLoad);
+  evolve_one_time_step(time_step, ConstantVoltage);
 }
 
 template <int dim>
@@ -208,6 +208,8 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_load(
   double surface_area;
   post_processor->get("surface_area", surface_area);
   electrochemical_physics_params->constant_load_density = load * surface_area;
+  // BC not implemented yet
+  throw std::runtime_error("This function is not implemented.");
   evolve_one_time_step(time_step, ConstantLoad);
 }
 
@@ -234,7 +236,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_power(
   std::ignore = time_step;
   std::ignore = power;
 
-  throw std::runtime_error("THis function is not implemented");
+  throw std::runtime_error("This function is not implemented");
 }
 
 template <int dim>

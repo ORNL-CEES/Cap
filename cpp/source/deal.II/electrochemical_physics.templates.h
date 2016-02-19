@@ -143,10 +143,10 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     cell_rhs           = 0.0;
 
     // clang-format off
-      (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
-      (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
-      (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
-      (this->mp_values)->get_values("faradaic_reaction_coefficient", cell, faradaic_reaction_coefficient_values);
+    (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
+    (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+    (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
+    (this->mp_values)->get_values("faradaic_reaction_coefficient", cell, faradaic_reaction_coefficient_values);
     // clang-format on
 
     // The coefficients are zeros when the physics does not make sense.
@@ -194,12 +194,51 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                   fe_values.JxW(q);
         }
 
+    // Fill in the global matrices.
     cell->get_dof_indices(local_dof_indices);
     this->constraint_matrix.distribute_local_to_global(
         cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
         this->system_rhs);
     this->constraint_matrix.distribute_local_to_global(
         cell_mass_matrix, local_dof_indices, this->mass_matrix);
+  }
+
+  // Apply Neumann boundary condition on the cathode (constant current
+  // charge).
+  if (electrochemical_parameters->charge_type == ConstantCurrent)
+  {
+    double const current_density =
+        electrochemical_parameters->constant_current_density;
+    dealii::QGauss<dim - 1> face_quadrature_rule(fe.degree + 1);
+    unsigned int const n_face_q_points = face_quadrature_rule.size();
+    dealii::FEFaceValues<dim> fe_face_values(fe, face_quadrature_rule,
+                                             dealii::update_values |
+                                                 dealii::update_JxW_values);
+    dealii::Vector<double> cell_rhs(dofs_per_cell);
+    for (auto cell : dof_handler.active_cell_iterators())
+    {
+      if (cell->at_boundary())
+      {
+        cell_rhs = 0.0;
+        for (unsigned int face = 0;
+             face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
+        {
+          if ((cell->face(face)->at_boundary()) &&
+              (cell->face(face)->boundary_id() == cathode_boundary_id))
+          {
+            fe_face_values.reinit(cell, face);
+            for (unsigned int q = 0; q < n_face_q_points; ++q)
+              for (unsigned int i = 0; i < dofs_per_cell; ++i)
+                cell_rhs[i] += current_density *
+                               fe_face_values[solid_potential].value(i, q) *
+                               fe_face_values.JxW(q);
+          }
+        }
+        cell->get_dof_indices(local_dof_indices);
+        this->constraint_matrix.distribute_local_to_global(
+            cell_rhs, local_dof_indices, this->system_rhs);
+      }
+    }
   }
 }
 }
