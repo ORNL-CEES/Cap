@@ -2,21 +2,14 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python/pycap)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/cpp/source/dummy)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/dummy)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/wrappers/dummy)
 
-SET(CPP_HEADERS
-   property_tree_wrappers.h
-   energy_storage_device_wrappers.h
-   )
-SET(CPP_SOURCES
-    property_tree_wrappers.cc
-    energy_storage_device_wrappers.cc
-    python_wrappers.cc
-    )
+
+add_subdirectory(wrappers)
 
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 include_directories(SYSTEM ${MPI4PY_INCLUDE_DIR})
-python_add_module(PyCap ${CPP_SOURCES})
+python_add_module(PyCap ${PyCap_SOURCES})
 
 set(PYTHON_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
 
