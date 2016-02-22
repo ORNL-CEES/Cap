@@ -1,6 +1,4 @@
-// NOTE THAT THE .CC FILE IS INCLUDED HERE ////////////////////////////////////
-#include <pycap/energy_storage_device_wrappers.cc>
-///////////////////////////////////////////////////////////////////////////////
+#include <pycap/energy_storage_device_wrappers.h>
 #include <boost/python.hpp>
 #include <mpi4py/mpi4py.h>
 

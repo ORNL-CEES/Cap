@@ -2,8 +2,8 @@
 #define ENERGY_STORAGE_DEVICE_WRAPPERS_H
 
 #include <cap/energy_storage_device.h>
-#include <boost/python/wrapper.hpp>
 #include <boost/python/object.hpp>
+#include <boost/python/wrapper.hpp>
 
 namespace pycap {
 

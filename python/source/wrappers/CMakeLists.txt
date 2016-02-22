@@ -4,9 +4,7 @@ SET(PyCap_HEADERS
 )
 SET(PyCap_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/property_tree_wrappers.cc
-# THE FILE WAS INCLUDED IN EXPORT_*.CC ########################################
-#    ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device_wrappers.cc
-###############################################################################
+    ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device_wrappers.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/export_property_tree.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/export_energy_storage_device.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/python_wrappers.cc
