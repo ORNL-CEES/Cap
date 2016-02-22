@@ -66,7 +66,7 @@ build_energy_storage_device(boost::python::object & py_ptree,
         boost::python::extract<boost::property_tree::ptree const &>(py_ptree);
     PyObject* py_obj = py_comm.ptr();
     MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
-    if (comm_p == NULL) boost::python::throw_error_already_set();
+    if (comm_p == nullptr) boost::python::throw_error_already_set();
     boost::mpi::communicator comm(*comm_p, boost::mpi::comm_attach);
     return cap::EnergyStorageDevice::build(comm, ptree);
 }

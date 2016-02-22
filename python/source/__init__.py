@@ -13,6 +13,7 @@ from .charge_discharge import *
 from .voltammetry import *
 from .ragone_plot import *
 from .impedance_spectroscopy import *
+from mpi4py import MPI
 
 __all__ = ['PyCap', 'data_helpers', 'time_evolution', 'end_criterion',
            'stage', 'charge_discharge', 'voltammetry', 'ragone_plot',
@@ -23,3 +24,19 @@ __git_branch__ = PyCap.__git_branch__
 __git_commit_hash__ = PyCap.__git_commit_hash__
 __git_remote_url__ = PyCap.__git_remote_url__
 __doc__ = PyCap.__doc__
+
+
+# Override EnergyStorageDevice.__init__(...) to add a default value to the
+# ``comm`` parameter.
+def build(self, ptree, comm=MPI.COMM_WORLD):
+    """
+    Parameters
+    ----------
+    ptree : pycap.PropertyTree
+        Property Tree
+    comm : mpi4py.MPI.Comm
+        Communicator
+    """
+    return EnergyStorageDevice.build(self, ptree, comm)
+
+EnergyStorageDevice.__init__ = build;

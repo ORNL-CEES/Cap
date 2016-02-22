@@ -1,3 +1,6 @@
+#ifndef PROPERTY_TREE_WRAPPERS_H
+#define PROPERTY_TREE_WRAPPERS_H
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -74,3 +77,5 @@ struct serializable_class_pickle_support : boost::python::pickle_suite
 };
 
 }
+
+#endif

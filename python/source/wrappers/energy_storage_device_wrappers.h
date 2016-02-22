@@ -1,3 +1,6 @@
+#ifndef ENERGY_STORAGE_DEVICE_WRAPPERS_H
+#define ENERGY_STORAGE_DEVICE_WRAPPERS_H
+
 #include <cap/energy_storage_device.h>
 #include <boost/python/wrapper.hpp>
 #include <boost/python/object.hpp>
@@ -27,3 +30,4 @@ std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::p
 
 } // end namespace pycap
 
+#endif
