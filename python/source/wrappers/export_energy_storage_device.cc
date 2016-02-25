@@ -1,6 +1,5 @@
 #include <pycap/energy_storage_device_wrappers.h>
 #include <boost/python.hpp>
-#include <mpi4py/mpi4py.h>
 
 namespace pycap
 {
