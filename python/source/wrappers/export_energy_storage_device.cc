@@ -1,8 +1,5 @@
-// NOTE THAT THE .CC FILE IS INCLUDED HERE ////////////////////////////////////
-#include <pycap/energy_storage_device_wrappers.cc>
-///////////////////////////////////////////////////////////////////////////////
+#include <pycap/energy_storage_device_wrappers.h>
 #include <boost/python.hpp>
-#include <mpi4py/mpi4py.h>
 
 namespace pycap
 {
@@ -109,8 +106,6 @@ char const compute_equivalent_circuit_docstring[] =
 
 void export_energy_storage_device()
 {
-  if (import_mpi4py() < 0) return;
-
   boost::python::class_<EnergyStorageDeviceWrap,
                         std::shared_ptr<EnergyStorageDeviceWrap>,
                         boost::noncopyable> (

@@ -5,10 +5,6 @@
  * for the text and further information on this license. 
  */
 
-// FOR SOME REASON CANNOT COMPILE WITHOUT THESES /////////////////////////////
-#include <pycap/property_tree_wrappers.h>
-#include <pycap/energy_storage_device_wrappers.h>
-//////////////////////////////////////////////////////////////////////////////
 #include <cap/version.h>
 #include <boost/python.hpp>
 
