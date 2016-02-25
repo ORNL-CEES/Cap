@@ -27,7 +27,6 @@ public:
   virtual ~PhysicsParameters() = default;
 
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  dealii::types::global_dof_index n_dofs;
   std::shared_ptr<MPValues<dim> const> mp_values;
   std::shared_ptr<BoundaryValues<dim> const> boundary_values;
   std::shared_ptr<boost::property_tree::ptree const> database;
@@ -81,7 +80,6 @@ public:
 
 protected:
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  dealii::types::global_dof_index n_dofs;
   dealii::ConstraintMatrix constraint_matrix;
   dealii::SparsityPattern sparsity_pattern;
   dealii::SparseMatrix<double> system_matrix;

@@ -84,7 +84,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   // Create sparsity pattern
   unsigned int const max_couplings =
       this->dof_handler->max_couplings_between_dofs();
-  this->sparsity_pattern.reinit(this->n_dofs, this->n_dofs, max_couplings);
+  dealii::types::global_dof_index const n_dofs = this->dof_handler->n_dofs();
+  this->sparsity_pattern.reinit(n_dofs, n_dofs, max_couplings);
   dealii::DoFTools::make_sparsity_pattern(
       *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix);
   this->sparsity_pattern.compress();
@@ -92,7 +93,7 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   // Initialize matrices and vectors
   this->system_matrix.reinit(this->sparsity_pattern);
   this->mass_matrix.reinit(this->sparsity_pattern);
-  this->system_rhs.reinit(this->n_dofs);
+  this->system_rhs.reinit(n_dofs);
 
   assemble_system(parameters);
 }

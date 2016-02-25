@@ -17,8 +17,7 @@ namespace cap
 {
 template <int dim>
 Physics<dim>::Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters)
-    : dof_handler(parameters->dof_handler), n_dofs(parameters->n_dofs),
-      mp_values(parameters->mp_values)
+    : dof_handler(parameters->dof_handler), mp_values(parameters->mp_values)
 {
 }
 }

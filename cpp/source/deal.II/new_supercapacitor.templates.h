@@ -72,11 +72,10 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
   unsigned int const electrochemical_block      = database.get<unsigned int>("electrochemical_block");
   unsigned int const n_blocks                   = database.get<unsigned int>("n_blocks");
   // clang-format on
-  dealii::types::global_dof_index const n_electrochemical_dofs =
-      dofs_per_component[solid_potential_component] +
-      dofs_per_component[liquid_potential_component];
   // For now, we have just one block so we can ignore some variable.
   std::ignore = temperature_component;
+  std::ignore = solid_potential_component;
+  std::ignore = liquid_potential_component;
   std::ignore = thermal_block;
   std::ignore = electrochemical_block;
   std::ignore = n_blocks;
@@ -103,7 +102,6 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
       new ElectrochemicalPhysicsParameters<dim>(
           std::make_shared<boost::property_tree::ptree>(database)));
   electrochemical_physics_params->dof_handler = dof_handler;
-  electrochemical_physics_params->n_dofs = n_electrochemical_dofs;
   electrochemical_physics_params->mp_values =
       std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
   electrochemical_physics_params->boundary_values =
