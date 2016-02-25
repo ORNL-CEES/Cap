@@ -107,8 +107,6 @@ char const compute_equivalent_circuit_docstring[] =
 
 void export_energy_storage_device()
 {
-  if (import_mpi4py() < 0) return;
-
   boost::python::class_<EnergyStorageDeviceWrap,
                         std::shared_ptr<EnergyStorageDeviceWrap>,
                         boost::noncopyable> (

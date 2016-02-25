@@ -62,6 +62,7 @@ std::shared_ptr<cap::EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & py_ptree,
                             boost::python::object & py_comm)
 {
+    if (import_mpi4py() < 0) throw std::runtime_error("Failed to import mpi4py");
     boost::property_tree::ptree const & ptree =
         boost::python::extract<boost::property_tree::ptree const &>(py_ptree);
     PyObject* py_obj = py_comm.ptr();
