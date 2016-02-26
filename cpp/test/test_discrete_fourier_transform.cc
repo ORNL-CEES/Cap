@@ -7,16 +7,8 @@
 
 #define BOOST_TEST_MODULE TestDiscreteFourierTransform
 #define BOOST_TEST_MAIN
-#include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <fstream>
-#include <complex>
 
 BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
 {
@@ -31,8 +23,6 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
         y[i] = 1.0 + std::sin(2*pi*k*x[i]);
     auto fft_data = cap::compute_fft(&(y[0]), n);
     auto fft_freq = cap::compute_fft_frequencies(n, 1.0/n);
-    for (size_t i = 0; i < fft_data.size(); ++i)
-        std::cout<<i<<"  "<<fft_freq[i]<<"  "<<fft_data[i]<<"\n";
 // import numpy
 // n=32
 // k=3
