@@ -65,8 +65,7 @@ protected:
   std::unordered_map<std::string, double> values;
 };
 
-//////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS
-///////////////////////////////
+//////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS //////////
 template <int dim>
 class SuperCapacitorPostprocessorParameters
     : public PostprocessorParameters<dim>
@@ -82,6 +81,34 @@ class SuperCapacitorPostprocessor : public Postprocessor<dim>
 {
 public:
   SuperCapacitorPostprocessor(
+      std::shared_ptr<PostprocessorParameters<dim> const> parameters);
+  void reset(
+      std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
+
+private:
+  bool debug_material_ids;
+  bool debug_boundary_ids;
+  std::vector<std::string> debug_material_properties;
+  std::vector<std::string> debug_solution_fields;
+  std::vector<std::string> debug_solution_fluxes;
+};
+
+//////////////////////// NEW_SUPERCAPCITOR POSTPROCESSOR PARAMETERS ////
+template <int dim>
+class New_SuperCapacitorPostprocessorParameters
+    : public PostprocessorParameters<dim>
+{
+public:
+  New_SuperCapacitorPostprocessorParameters(
+      std::shared_ptr<boost::property_tree::ptree const> d);
+};
+
+//////////////////////// NEW_SUPERCAPCITOR POSTPROCESSOR ///////////////
+template <int dim>
+class New_SuperCapacitorPostprocessor : public Postprocessor<dim>
+{
+public:
+  New_SuperCapacitorPostprocessor(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters);
   void reset(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;

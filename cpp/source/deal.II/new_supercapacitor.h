@@ -96,12 +96,9 @@ private:
    */
   unsigned int max_iter;
   /**
-   * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
-   * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
-   * by the Krylov solver is the maximum of the relative and the absolute
-   * tolerance.
+   * Verbosity level of the Krylov solver in evolve_one_time_step().
    */
-  double rel_tolerance;
+  unsigned int verbose_lvl;
   /**
    * Absolute tolerance of the Krylov solver in evolve_one_time_step(). The
    * tolerance used by the Krylov solver is the maximum of the relative and the
@@ -109,21 +106,28 @@ private:
    */
   double abs_tolerance;
   /**
-   * Verbosity level of the Krylov solver in evolve_one_time_step().
+   * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
+   * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
+   * by the Krylov solver is the maximum of the relative and the absolute
+   * tolerance.
    */
-  unsigned int verbose_lvl;
+  double rel_tolerance;
+  /**
+   * Area of the cathode.
+   */
+  double surface_area;
 
   std::shared_ptr<SuperCapacitorGeometry<dim>> geometry;
   std::shared_ptr<dealii::FESystem<dim>> fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
-  dealii::BlockVector<double> solution;
+  std::shared_ptr<dealii::BlockVector<double>> solution;
 
   std::shared_ptr<ElectrochemicalPhysicsParameters<dim>>
       electrochemical_physics_params;
   std::shared_ptr<ElectrochemicalPhysics<dim>> electrochemical_physics;
-  std::shared_ptr<SuperCapacitorPostprocessorParameters<dim>>
+  std::shared_ptr<New_SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
-  std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
+  std::shared_ptr<New_SuperCapacitorPostprocessor<dim>> post_processor;
 };
 }
 

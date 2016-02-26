@@ -107,9 +107,31 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
   electrochemical_physics_params->boundary_values =
       std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
 
+  // Compute the surface area. This is neeeded by several evolve_one_time_step_*
+  surface_area = 0.;
+  dealii::types::boundary_id cathode_boundary_id =
+      database.get<dealii::types::boundary_id>(
+          "boundary_values.cathode_boundary_id");
+  dealii::QGauss<dim - 1> face_quadrature_rule(fe->degree + 1);
+  unsigned int const n_face_q_points = face_quadrature_rule.size();
+  dealii::FEFaceValues<dim> fe_face_values(*fe, face_quadrature_rule,
+                                           dealii::update_JxW_values);
+  for (auto cell : dof_handler->active_cell_iterators())
+    if (cell->at_boundary())
+      for (unsigned int face = 0;
+           face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
+        if ((cell->face(face)->at_boundary()) &&
+            (cell->face(face)->boundary_id() == cathode_boundary_id))
+          for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
+               ++face_q_point)
+          {
+            fe_face_values.reinit(cell, face);
+            surface_area += fe_face_values.JxW(face_q_point);
+          }
+
   // Create the post-processor
   post_processor_params =
-      std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
+      std::make_shared<New_SuperCapacitorPostprocessorParameters<dim>>(
           std::make_shared<boost::property_tree::ptree>(database));
 }
 
@@ -156,8 +178,7 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_current(
     double const time_step, double const current)
 {
-  double surface_area = 0.0;
-  post_processor->get("surface_area", surface_area);
+  BOOST_ASSERT_MSG(surface_area != 0., "The surface area is zero.");
   electrochemical_physics_params->constant_current_density =
       current / surface_area;
   evolve_one_time_step(time_step, ConstantCurrent);
@@ -175,9 +196,8 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
     double const time_step, double const power)
 {
-  double surface_area(0.0);
-  post_processor->get("surface_area", surface_area);
-  dealii::Vector<double> old_solution(solution.block(0));
+  BOOST_ASSERT_MSG(surface_area != 0., "The surface area is zero.");
+  dealii::Vector<double> old_solution(solution->block(0));
   int const max_iterations       = 10;
   double const percent_tolerance = 1.0e-2;
   double current(0.0);
@@ -193,7 +213,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
     if (std::abs(power - voltage * current) / std::abs(power) <
         percent_tolerance)
       return;
-    solution.block(0) = old_solution;
+    solution->block(0) = old_solution;
   }
   throw std::runtime_error("fixed point iteration did not converge in " +
                            std::to_string(max_iterations) + " iterations");
@@ -203,8 +223,6 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_load(
     double const time_step, double const load)
 {
-  double surface_area;
-  post_processor->get("surface_area", surface_area);
   electrochemical_physics_params->constant_load_density = load * surface_area;
   // BC not implemented yet
   throw std::runtime_error("This function is not implemented.");
@@ -262,18 +280,17 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
 
     // Initialize the size solution
     // Temporary keep using a BlockVector because of PostProcessor.
-    solution.reinit(1);
-    solution.block(0).reinit(electrochemical_physics->get_system_rhs());
+    solution.reset(new dealii::BlockVector<double>(
+        1, electrochemical_physics->get_system_rhs().size()));
 
     // Initialize postprocessor
     post_processor_params->dof_handler = dof_handler;
-    post_processor_params->solution =
-        std::make_shared<dealii::BlockVector<double>>(solution);
+    post_processor_params->solution = solution;
     post_processor_params->mp_values =
         electrochemical_physics_params->mp_values;
     post_processor_params->boundary_values =
         electrochemical_physics_params->boundary_values;
-    post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
+    post_processor = std::make_shared<New_SuperCapacitorPostprocessor<dim>>(
         post_processor_params);
 
     post_processor->reset(post_processor_params);
@@ -300,7 +317,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
       electrochemical_physics->get_system_rhs();
   dealii::Vector<double> time_dep_rhs = system_rhs;
   time_dep_rhs *= time_step;
-  mass_matrix.vmult_add(time_dep_rhs, solution.block(0));
+  mass_matrix.vmult_add(time_dep_rhs, solution->block(0));
 
   // Solve the system
   dealii::deallog.depth_console(verbose_lvl);
@@ -311,13 +328,13 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
   // Temporary: no preconditioner so we don't need to take care of the null
   // space. This can be fixed using hp::DoFHandler or adding the null space.
   dealii::PreconditionIdentity preconditioner;
-  solver.solve(system_matrix, solution.block(0), time_dep_rhs, preconditioner);
-  constraint_matrix.distribute(solution.block(0));
+  solver.solve(system_matrix, solution->block(0), time_dep_rhs, preconditioner);
+  constraint_matrix.distribute(solution->block(0));
   // Turn off the verbosity of deal.II
   dealii::deallog.depth_console(0);
 
   // Update the data in post-processor
-  post_processor->reset(this->post_processor_params);
+  post_processor->reset(post_processor_params);
 }
 } // end namespace cap
 

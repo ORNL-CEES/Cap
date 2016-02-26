@@ -20,6 +20,11 @@ template class SuperCapacitorPostprocessor<2>;
 template class SuperCapacitorPostprocessorParameters<3>;
 template class SuperCapacitorPostprocessor<3>;
 
+template class New_SuperCapacitorPostprocessorParameters<2>;
+template class New_SuperCapacitorPostprocessor<2>;
+template class New_SuperCapacitorPostprocessorParameters<3>;
+template class New_SuperCapacitorPostprocessor<3>;
+
 void compute_energy(std::vector<std::string> const &capacitor_state,
                     std::vector<double> const &time,
                     std::vector<double> const &power,

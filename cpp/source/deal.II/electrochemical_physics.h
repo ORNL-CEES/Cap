@@ -29,7 +29,7 @@ class ElectrochemicalPhysicsParameters : public PhysicsParameters<dim>
 public:
   ElectrochemicalPhysicsParameters(
       std::shared_ptr<boost::property_tree::ptree const> d)
-      : PhysicsParameters<dim>(d)
+      : PhysicsParameters<dim>(d), charge_type(Uninitialized)
   {
   }
 

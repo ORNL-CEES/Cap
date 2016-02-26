@@ -41,7 +41,7 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
       std::dynamic_pointer_cast<ElectrochemicalPhysicsParameters<dim> const>(
           parameters);
-  BOOST_ASSERT_MSG(electrochemical_parameters == nullptr,
+  BOOST_ASSERT_MSG(electrochemical_parameters != nullptr,
                    "Problem during dowcasting the pointer");
 
   // Take care of hanging nodes
@@ -59,12 +59,12 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
   dirichlet_boundary_condition[anode_boundary_id] = &homogeneous_bc;
-  dealii::Function<dim> *anode_dirichlet_bc = nullptr;
+  dealii::Function<dim> *cathode_dirichlet_bc = nullptr;
   if (electrochemical_parameters->charge_type == ConstantVoltage)
   {
-    anode_dirichlet_bc = new dealii::ConstantFunction<dim>(
+    cathode_dirichlet_bc = new dealii::ConstantFunction<dim>(
         electrochemical_parameters->constant_voltage, n_components);
-    dirichlet_boundary_condition[cathode_boundary_id] = anode_dirichlet_bc;
+    dirichlet_boundary_condition[cathode_boundary_id] = cathode_dirichlet_bc;
   }
 
   dealii::VectorTools::interpolate_boundary_values(
@@ -74,11 +74,11 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   // Finally close the ConstraintMatrix.
   this->constraint_matrix.close();
 
-  // Free anode_dirichlet_bc if necessary.
-  if (anode_dirichlet_bc != nullptr)
+  // Free cathode_dirichlet_bc if necessary.
+  if (cathode_dirichlet_bc != nullptr)
   {
-    delete anode_dirichlet_bc;
-    anode_dirichlet_bc = nullptr;
+    delete cathode_dirichlet_bc;
+    cathode_dirichlet_bc = nullptr;
   }
 
   // Create sparsity pattern
@@ -106,7 +106,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
       std::dynamic_pointer_cast<ElectrochemicalPhysicsParameters<dim> const>(
           parameters);
-  BOOST_ASSERT_MSG(electrochemical_parameters == nullptr,
+  BOOST_ASSERT_MSG(electrochemical_parameters != nullptr,
                    "Problem during dowcasting the pointer");
 
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
@@ -141,7 +141,8 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   {
     cell_system_matrix = 0.0;
     cell_mass_matrix   = 0.0;
-    cell_rhs           = 0.0;
+    cell_rhs = 0.0;
+    fe_values.reinit(cell);
 
     // clang-format off
     (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
@@ -217,7 +218,6 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                                                  dealii::update_JxW_values);
     dealii::Vector<double> cell_rhs(dofs_per_cell);
     for (auto cell : dof_handler.active_cell_iterators())
-    {
       if (cell->at_boundary())
       {
         cell_rhs = 0.0;
@@ -239,7 +239,6 @@ void ElectrochemicalPhysics<dim>::assemble_system(
         this->constraint_matrix.distribute_local_to_global(
             cell_rhs, local_dof_indices, this->system_rhs);
       }
-    }
   }
 }
 }
