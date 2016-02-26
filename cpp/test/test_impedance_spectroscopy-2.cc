@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( test_impedance_spectroscopy )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(std::make_shared<cap::Parameters>(device_database));
+        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 
     // measure its impedance
     std::fstream fout;

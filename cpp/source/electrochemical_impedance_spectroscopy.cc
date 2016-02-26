@@ -7,6 +7,7 @@
 
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>
+#include <boost/assert.hpp>
 #include <boost/math/special_functions/sin_pi.hpp>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
@@ -45,7 +46,7 @@ compute_signal_to_noise_ratio(std::vector<std::complex<double>> fft_data,
                               std::vector<int> excited_harmonics,
                               std::vector<int> unexcited_harmonics)
 {
-  assert(fft_data.size() ==
+  BOOST_ASSERT(fft_data.size() ==
          excited_harmonics.size() + unexcited_harmonics.size() + 1);
   double dc_power = std::norm(fft_data[0]);
   double ac_power = 0.0;
@@ -75,8 +76,8 @@ get_evolve_one_time_step(
   std::vector<double> const amplitudes = cap::to_vector<double>(database->get<std::string>("amplitudes"));
   std::vector<double> const phases     = cap::to_vector<double>(database->get<std::string>("phases"));
   // clang-format on
-  assert(harmonics.size() == amplitudes.size());
-  assert(harmonics.size() == phases.size());
+  BOOST_ASSERT(harmonics.size() == amplitudes.size());
+  BOOST_ASSERT(harmonics.size() == phases.size());
   double const frequency            = database->get<double>("frequency");
   auto compute_ac_excitation_signal = [frequency, harmonics, amplitudes,
                                        phases](double time)
@@ -155,12 +156,12 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
 
   //
   int const n = (cycles - ignore_cycles) * steps_per_cycle;
-  assert(fft_current.size() == n / 2 + 1);
-  assert(fft_voltage.size() == n / 2 + 1);
-  assert(fft_frequencies.size() == n / 2 + 1);
+  BOOST_ASSERT(fft_current.size() == static_cast<size_t>(n / 2 + 1));
+  BOOST_ASSERT(fft_voltage.size() == static_cast<size_t>(n / 2 + 1));
+  BOOST_ASSERT(fft_frequencies.size() == static_cast<size_t>(n / 2 + 1));
   std::vector<int> excited_harmonics;
   std::vector<int> unexcited_harmonics;
-  for (int i = 1; i < n / 2; ++i)
+  for (int i = 1; i <= n / 2; ++i)
     if ((std::find(harmonics.begin(), harmonics.end(),
                    i / (cycles - ignore_cycles)) != harmonics.end()) &&
         (i % (cycles - ignore_cycles) == 0))
