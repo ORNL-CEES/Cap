@@ -51,7 +51,10 @@ endif()
 
 #### GNU Scientific Library ##################################################
 if(ENABLE_GSL)
-    find_package(GSL REQUIRED PATHS ${GSL_DIR})
+    if(DEFINED GSL_DIR)
+        set(GSL_ROOT_DIR ${GSL_DIR})
+    endif()
+    find_package(GSL REQUIRED)
     add_definitions(-DWITH_GSL)
 ENDIF()
 
