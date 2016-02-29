@@ -123,7 +123,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
 
   unsigned int const dofs_per_cell = fe.dofs_per_cell;
   unsigned int const n_q_points    = quadrature_rule.size();
-  unsigned int const time_step = electrochemical_parameters->time_step;
+  double const time_step = electrochemical_parameters->time_step;
   dealii::Vector<double> cell_rhs(dofs_per_cell);
   dealii::FullMatrix<double> cell_system_matrix(dofs_per_cell, dofs_per_cell);
   dealii::FullMatrix<double> cell_mass_matrix(dofs_per_cell, dofs_per_cell);
@@ -133,14 +133,14 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   std::vector<double> faradaic_reaction_coefficient_values(n_q_points);
   std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
-  this->system_matrix = 0.0;
-  this->mass_matrix   = 0.0;
-  this->system_rhs    = 0.0;
+  this->system_matrix    = 0.0;
+  this->mass_matrix      = 0.0;
+  this->system_rhs       = 0.0;
 
   for (auto cell : dof_handler.active_cell_iterators())
   {
-    cell_system_matrix = 0.0;
-    cell_mass_matrix   = 0.0;
+    cell_system_matrix    = 0.0;
+    cell_mass_matrix      = 0.0;
     cell_rhs = 0.0;
     fe_values.reinit(cell);
 
@@ -154,22 +154,20 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     // The coefficients are zeros when the physics does not make sense.
     for (unsigned int q = 0; q < n_q_points; ++q)
       for (unsigned int i = 0; i < dofs_per_cell; ++i)
+      {
         for (unsigned int j = 0; j < dofs_per_cell; ++j)
         {
           // Mass matrix terms
           cell_mass_matrix(i, j) +=
-              (specific_capacitance_values[q] *
-                   (fe_values[solid_potential].value(i, q) *
-                    fe_values[solid_potential].value(j, q)) -
-               specific_capacitance_values[q] *
-                   (fe_values[solid_potential].value(i, q) *
-                    fe_values[liquid_potential].value(j, q)) -
-               specific_capacitance_values[q] *
-                   (fe_values[liquid_potential].value(i, q) *
-                    fe_values[solid_potential].value(j, q)) +
-               specific_capacitance_values[q] *
-                   (fe_values[liquid_potential].value(i, q) *
-                    fe_values[liquid_potential].value(j, q))) *
+              specific_capacitance_values[q] *
+              (fe_values[solid_potential].value(i, q) *
+                   fe_values[solid_potential].value(j, q) -
+               fe_values[solid_potential].value(i, q) *
+                   fe_values[liquid_potential].value(j, q) -
+               fe_values[liquid_potential].value(i, q) *
+                   fe_values[solid_potential].value(j, q) +
+               fe_values[liquid_potential].value(i, q) *
+                   fe_values[liquid_potential].value(j, q)) *
               fe_values.JxW(q);
           cell_system_matrix(i, j) +=
               cell_mass_matrix(i, j) +
@@ -182,28 +180,36 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                        (fe_values[liquid_potential].gradient(i, q) *
                         fe_values[liquid_potential].gradient(j, q)) +
                    faradaic_reaction_coefficient_values[q] *
-                       (fe_values[solid_potential].value(i, q) *
-                        fe_values[solid_potential].value(j, q)) -
-                   faradaic_reaction_coefficient_values[q] *
-                       (fe_values[liquid_potential].value(i, q) *
-                        fe_values[solid_potential].value(j, q)) -
-                   faradaic_reaction_coefficient_values[q] *
-                       (fe_values[solid_potential].value(i, q) *
-                        fe_values[liquid_potential].value(j, q)) +
-                   faradaic_reaction_coefficient_values[q] *
-                       (fe_values[liquid_potential].value(i, q) *
-                        fe_values[liquid_potential].value(j, q))) *
+                       ((fe_values[solid_potential].value(i, q) *
+                         fe_values[solid_potential].value(j, q)) -
+                        (fe_values[liquid_potential].value(i, q) *
+                         fe_values[solid_potential].value(j, q)) -
+                        (fe_values[solid_potential].value(i, q) *
+                         fe_values[liquid_potential].value(j, q)) +
+                        (fe_values[liquid_potential].value(i, q) *
+                         fe_values[liquid_potential].value(j, q)))) *
                   fe_values.JxW(q);
         }
+      }
 
     // Fill in the global matrices.
     cell->get_dof_indices(local_dof_indices);
     this->constraint_matrix.distribute_local_to_global(
         cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
         this->system_rhs);
-    this->constraint_matrix.distribute_local_to_global(
-        cell_mass_matrix, local_dof_indices, this->mass_matrix);
+    // TODO is this correct? Do we have constraints on the mass matrix?
+    for (unsigned int i = 0; i < dofs_per_cell; ++i)
+      for (unsigned int j = 0; j < dofs_per_cell; ++j)
+        this->mass_matrix.add(local_dof_indices[i], local_dof_indices[j],
+                              cell_mass_matrix(i, j));
   }
+  // Add the null space. This wouldn't be necessary if we were using a
+  // hp::DoFHandler object instead of a DoFHandler object but
+  // hp::DoFHandler does not work with MPI.
+  dealii::types::global_dof_index const n_dofs = this->dof_handler->n_dofs();
+  for (unsigned int i = 0; i < n_dofs; ++i)
+    if (std::fabs(this->system_matrix.diag_element(i)) < 1e-100)
+      this->system_matrix.diag_element(i) = 1.;
 
   // Apply Neumann boundary condition on the cathode (constant current
   // charge).
@@ -216,7 +222,6 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     dealii::FEFaceValues<dim> fe_face_values(fe, face_quadrature_rule,
                                              dealii::update_values |
                                                  dealii::update_JxW_values);
-    dealii::Vector<double> cell_rhs(dofs_per_cell);
     for (auto cell : dof_handler.active_cell_iterators())
       if (cell->at_boundary())
       {

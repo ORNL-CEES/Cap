@@ -37,11 +37,11 @@ geometry {
     }
 }
 
-temperature_component      0
-solid_potential_component  1
-liquid_potential_component 2
-thermal_block         0
-electrochemical_block 1
+solid_potential_component  0
+liquid_potential_component 1
+temperature_component      2
+electrochemical_block 0
+thermal_block         1
 n_blocks              2
 
 material_properties {

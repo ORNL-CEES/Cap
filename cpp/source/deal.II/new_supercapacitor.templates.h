@@ -53,7 +53,7 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
   verbose_lvl   = solver_database.get<unsigned int>("verbosity", 0);
 
   // distribute degrees of freedom
-  fe          = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 3);
+  fe          = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
   dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
   dof_handler->distribute_dofs(*fe);
 
@@ -179,17 +179,26 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_current(
     double const time_step, double const current)
 {
   BOOST_ASSERT_MSG(surface_area != 0., "The surface area is zero.");
+  double const constant_current_density = current / surface_area;
+  bool const rebuild =
+      (electrochemical_physics_params->constant_current_density ==
+       constant_current_density)
+          ? false
+          : true;
   electrochemical_physics_params->constant_current_density =
-      current / surface_area;
-  evolve_one_time_step(time_step, ConstantCurrent);
+      constant_current_density;
+  evolve_one_time_step(time_step, ConstantCurrent, rebuild);
 }
 
 template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
     double const time_step, double const voltage)
 {
+  bool const rebuild =
+      (electrochemical_physics_params->constant_voltage == voltage) ? false
+                                                                    : true;
   electrochemical_physics_params->constant_voltage = voltage;
-  evolve_one_time_step(time_step, ConstantVoltage);
+  evolve_one_time_step(time_step, ConstantVoltage, rebuild);
 }
 
 template <int dim>
@@ -205,10 +214,16 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
   get_voltage(voltage);
   for (int k = 0; k < max_iterations; ++k)
   {
-    current = power / voltage;
+    current                               = power / voltage;
+    double const constant_current_density = current / surface_area;
+    bool const rebuild =
+        (electrochemical_physics_params->constant_current_density ==
+         constant_current_density)
+            ? false
+            : true;
     electrochemical_physics_params->constant_current_density =
-        current / surface_area;
-    evolve_one_time_step(time_step, ConstantCurrent);
+        constant_current_density;
+    evolve_one_time_step(time_step, ConstantCurrent, rebuild);
     get_voltage(voltage);
     if (std::abs(power - voltage * current) / std::abs(power) <
         percent_tolerance)
@@ -226,7 +241,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_load(
   electrochemical_physics_params->constant_load_density = load * surface_area;
   // BC not implemented yet
   throw std::runtime_error("This function is not implemented.");
-  evolve_one_time_step(time_step, ConstantLoad);
+  evolve_one_time_step(time_step, ConstantLoad, true);
 }
 
 template <int dim>
@@ -267,7 +282,8 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_load(
 
 template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
-                                                   ChargeType charge_type)
+                                                   ChargeType charge_type,
+                                                   bool rebuild)
 {
   // The first time evolve_one_time_step is called, the solution and the
   // post-processor need to be iniatialized.
@@ -296,7 +312,8 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
     post_processor->reset(post_processor_params);
   }
   // Rebuild the system if necessary
-  else if ((std::abs(time_step / electrochemical_physics_params->time_step -
+  else if ((rebuild == true) ||
+           (std::abs(time_step / electrochemical_physics_params->time_step -
                      1.0) > 1e-14) ||
            (charge_type != electrochemical_physics_params->charge_type))
   {
@@ -325,9 +342,9 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
       std::max(abs_tolerance, rel_tolerance * system_rhs.l2_norm());
   dealii::SolverControl solver_control(max_iter, tolerance);
   dealii::SolverCG<> solver(solver_control);
-  // Temporary: no preconditioner so we don't need to take care of the null
-  // space. This can be fixed using hp::DoFHandler or adding the null space.
-  dealii::PreconditionIdentity preconditioner;
+  // Temporary preconditioner
+  dealii::PreconditionSSOR<> preconditioner;
+  preconditioner.initialize(system_matrix, 1.2);
   solver.solve(system_matrix, solution->block(0), time_dep_rhs, preconditioner);
   constraint_matrix.distribute(solution->block(0));
   // Turn off the verbosity of deal.II

@@ -88,7 +88,8 @@ private:
   /**
    * Helper function to advance time by @p time_step second.
    */
-  void evolve_one_time_step(double const time_step, ChargeType charge_type);
+  void evolve_one_time_step(double const time_step, ChargeType charge_type,
+                            bool rebuild);
 
   /**
    * Maximum number of iterations of the Krylov solver in
