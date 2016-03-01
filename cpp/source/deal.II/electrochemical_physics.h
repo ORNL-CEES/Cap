@@ -53,8 +53,8 @@ public:
       std::shared_ptr<PhysicsParameters<dim> const> parameters);
 
 private:
-  void
-  assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters);
+  void assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters,
+                       bool const inhomogeneous_bc);
 
   unsigned int solid_potential_component;
   unsigned int liquid_potential_component;

@@ -333,7 +333,6 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
   dealii::Vector<double> const &system_rhs =
       electrochemical_physics->get_system_rhs();
   dealii::Vector<double> time_dep_rhs = system_rhs;
-  time_dep_rhs *= time_step;
   mass_matrix.vmult_add(time_dep_rhs, solution->block(0));
 
   // Solve the system
@@ -345,6 +344,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
   // Temporary preconditioner
   dealii::PreconditionSSOR<> preconditioner;
   preconditioner.initialize(system_matrix, 1.2);
+  constraint_matrix.distribute(solution->block(0));
   solver.solve(system_matrix, solution->block(0), time_dep_rhs, preconditioner);
   constraint_matrix.distribute(solution->block(0));
   // Turn off the verbosity of deal.II

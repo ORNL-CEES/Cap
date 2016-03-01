@@ -59,12 +59,14 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
   dirichlet_boundary_condition[anode_boundary_id] = &homogeneous_bc;
-  dealii::Function<dim> *cathode_dirichlet_bc = nullptr;
+  dealii::Function<dim> *cathode_dirichlet_bc     = nullptr;
+  bool inhomogeneous_bc = false;
   if (electrochemical_parameters->charge_type == ConstantVoltage)
   {
     cathode_dirichlet_bc = new dealii::ConstantFunction<dim>(
         electrochemical_parameters->constant_voltage, n_components);
     dirichlet_boundary_condition[cathode_boundary_id] = cathode_dirichlet_bc;
+    inhomogeneous_bc                                  = true;
   }
 
   dealii::VectorTools::interpolate_boundary_values(
@@ -95,12 +97,13 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   this->mass_matrix.reinit(this->sparsity_pattern);
   this->system_rhs.reinit(n_dofs);
 
-  assemble_system(parameters);
+  assemble_system(parameters, inhomogeneous_bc);
 }
 
 template <int dim>
 void ElectrochemicalPhysics<dim>::assemble_system(
-    std::shared_ptr<PhysicsParameters<dim> const> parameters)
+    std::shared_ptr<PhysicsParameters<dim> const> parameters,
+    bool const inhomogeneous_bc)
 {
   std::shared_ptr<
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
@@ -197,13 +200,14 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     cell->get_dof_indices(local_dof_indices);
     this->constraint_matrix.distribute_local_to_global(
         cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
-        this->system_rhs);
+        this->system_rhs, inhomogeneous_bc);
     // TODO is this correct? Do we have constraints on the mass matrix?
     for (unsigned int i = 0; i < dofs_per_cell; ++i)
       for (unsigned int j = 0; j < dofs_per_cell; ++j)
         this->mass_matrix.add(local_dof_indices[i], local_dof_indices[j],
                               cell_mass_matrix(i, j));
   }
+
   // Add the null space. This wouldn't be necessary if we were using a
   // hp::DoFHandler object instead of a DoFHandler object but
   // hp::DoFHandler does not work with MPI.
@@ -216,6 +220,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   // charge).
   if (electrochemical_parameters->charge_type == ConstantCurrent)
   {
+    double const time_step = electrochemical_parameters->time_step;
     double const current_density =
         electrochemical_parameters->constant_current_density;
     dealii::QGauss<dim - 1> face_quadrature_rule(fe.degree + 1);
@@ -236,7 +241,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
             fe_face_values.reinit(cell, face);
             for (unsigned int q = 0; q < n_face_q_points; ++q)
               for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                cell_rhs[i] += current_density *
+                cell_rhs[i] += time_step * current_density *
                                fe_face_values[solid_potential].value(i, q) *
                                fe_face_values.JxW(q);
           }
