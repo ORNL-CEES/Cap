@@ -133,14 +133,14 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   std::vector<double> faradaic_reaction_coefficient_values(n_q_points);
   std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
-  this->system_matrix    = 0.0;
-  this->mass_matrix      = 0.0;
-  this->system_rhs       = 0.0;
+  this->system_matrix = 0.0;
+  this->mass_matrix   = 0.0;
+  this->system_rhs    = 0.0;
 
   for (auto cell : dof_handler.active_cell_iterators())
   {
-    cell_system_matrix    = 0.0;
-    cell_mass_matrix      = 0.0;
+    cell_system_matrix = 0.0;
+    cell_mass_matrix   = 0.0;
     cell_rhs = 0.0;
     fe_values.reinit(cell);
 
@@ -158,7 +158,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
         for (unsigned int j = 0; j < dofs_per_cell; ++j)
         {
           // Mass matrix terms
-          cell_mass_matrix(i, j) +=
+          double const mass_matrix_val =
               specific_capacitance_values[q] *
               (fe_values[solid_potential].value(i, q) *
                    fe_values[solid_potential].value(j, q) -
@@ -169,8 +169,9 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                fe_values[liquid_potential].value(i, q) *
                    fe_values[liquid_potential].value(j, q)) *
               fe_values.JxW(q);
+          cell_mass_matrix(i, j) += mass_matrix_val;
           cell_system_matrix(i, j) +=
-              cell_mass_matrix(i, j) +
+              mass_matrix_val +
               time_step *
                   // Stiffness matrix terms
                   (solid_phase_diffusion_coefficient_values[q] *
