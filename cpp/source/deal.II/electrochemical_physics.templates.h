@@ -193,7 +193,6 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     this->constraint_matrix.distribute_local_to_global(
         cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
         this->system_rhs, inhomogeneous_bc);
-    // TODO is this correct? Do we have constraints on the mass matrix?
     for (unsigned int i = 0; i < dofs_per_cell; ++i)
       for (unsigned int j = 0; j < dofs_per_cell; ++j)
         this->mass_matrix.add(local_dof_indices[i], local_dof_indices[j],
