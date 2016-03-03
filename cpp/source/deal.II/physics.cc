@@ -5,7 +5,7 @@
  * for the text and further information on this license.
  */
 
-#include <cap/deal.II/physics.templates.h>
+#include <cap/physics.templates.h>
 
 namespace cap
 {

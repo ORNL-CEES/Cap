@@ -8,7 +8,7 @@
 #ifndef CAP_PHYSICS_TEMPLATES_H
 #define CAP_PHYSICS_TEMPLATES_H
 
-#include <cap/deal.II/physics.h>
+#include <cap/physics.h>
 #include <deal.II/base/function.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/vector_tools.h>

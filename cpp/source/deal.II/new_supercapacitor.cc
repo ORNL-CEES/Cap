@@ -5,7 +5,7 @@
  * for the text and further information on this license.
  */
 
-#include <cap/deal.II/new_supercapacitor.templates.h>
+#include <cap/new_supercapacitor.templates.h>
 
 namespace cap
 {
@@ -17,17 +17,18 @@ public:
   {
     register_energy_storage_device("New_SuperCapacitor", this);
   }
+
   std::unique_ptr<EnergyStorageDevice>
   build(boost::mpi::communicator const &comm,
         boost::property_tree::ptree const &ptree)
   {
     int const dim = ptree.get<int>("dim");
     if (dim == 2)
-      return std::unique_ptr<New_SuperCapacitor<2>>(
-          new New_SuperCapacitor<2>(comm, ptree));
+      return std::make_unique<New_SuperCapacitor<2>>(
+          New_SuperCapacitor<2>(comm, ptree));
     else if (dim == 3)
-      return std::unique_ptr<New_SuperCapacitor<3>>(
-          new New_SuperCapacitor<3>(comm, ptree));
+      return std::make_unique<New_SuperCapacitor<3>>(
+          New_SuperCapacitor<3>(comm, ptree));
     else
       throw std::runtime_error("dim=" + std::to_string(dim) +
                                " must be 2 or 3");

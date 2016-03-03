@@ -8,11 +8,11 @@
 #ifndef CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_H
 #define CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_H
 
-#include <cap/deal.II/physics.h>
+#include <cap/physics.h>
 
 namespace cap
 {
-enum ChargeType
+enum SuperCapacitorState
 {
   Uninitialized,
   ConstantCurrent,
@@ -21,19 +21,18 @@ enum ChargeType
 };
 
 /**
- * This class encapsulates the parameters used in ElectrochemicalPhysis.
+ * This class encapsulates the parameters used in ElectrochemicalPhysics.
  */
 template <int dim>
 class ElectrochemicalPhysicsParameters : public PhysicsParameters<dim>
 {
 public:
-  ElectrochemicalPhysicsParameters(
-      std::shared_ptr<boost::property_tree::ptree const> d)
-      : PhysicsParameters<dim>(d), charge_type(Uninitialized)
+  ElectrochemicalPhysicsParameters(boost::property_tree::ptree const &d)
+      : PhysicsParameters<dim>(d), supercapacitor_state(Uninitialized)
   {
   }
 
-  ChargeType charge_type;
+  SuperCapacitorState supercapacitor_state;
   double constant_current_density;
   double constant_voltage;
   double constant_load_density;
@@ -58,8 +57,6 @@ private:
 
   unsigned int solid_potential_component;
   unsigned int liquid_potential_component;
-  unsigned int temperature_component;
-  double alpha;
   dealii::types::boundary_id anode_boundary_id;
   dealii::types::boundary_id cathode_boundary_id;
 };

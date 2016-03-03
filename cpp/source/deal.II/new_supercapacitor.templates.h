@@ -8,7 +8,8 @@
 #ifndef CAP_DEAL_II_NEW_SUPERCAPACITOR_TEMPLATES_H
 #define CAP_DEAL_II_NEW_SUPERCAPACITOR_TEMPLATES_H
 
-#include <cap/deal.II/new_supercapacitor.h>
+#include <cap/new_supercapacitor.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -89,23 +90,12 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
   std::shared_ptr<MPValues<dim>> mp_values =
       std::make_shared<MPValues<dim>>(params);
 
-  std::shared_ptr<boost::property_tree::ptree> boundary_values_database =
-      std::make_shared<boost::property_tree::ptree>(
-          database.get_child("boundary_values"));
-  std::shared_ptr<SuperCapacitorBoundaryValues<dim>> boundary_values =
-      std::make_shared<SuperCapacitorBoundaryValues<dim>>(
-          SuperCapacitorBoundaryValuesParameters<dim>(
-              boundary_values_database));
-
   // Initialize the electrochemical physics parameters
   electrochemical_physics_params.reset(
-      new ElectrochemicalPhysicsParameters<dim>(
-          std::make_shared<boost::property_tree::ptree>(database)));
+      new ElectrochemicalPhysicsParameters<dim>(database));
   electrochemical_physics_params->dof_handler = dof_handler;
   electrochemical_physics_params->mp_values =
       std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
-  electrochemical_physics_params->boundary_values =
-      std::dynamic_pointer_cast<BoundaryValues<dim> const>(boundary_values);
 
   // Compute the surface area. This is neeeded by several evolve_one_time_step_*
   surface_area = 0.;
@@ -178,7 +168,8 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_current(
     double const time_step, double const current)
 {
-  BOOST_ASSERT_MSG(surface_area != 0., "The surface area is zero.");
+  BOOST_ASSERT_MSG(surface_area > 0.,
+                   "The surface area should be greater than zero.");
   double const constant_current_density = current / surface_area;
   bool const rebuild =
       (electrochemical_physics_params->constant_current_density ==
@@ -205,8 +196,12 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
     double const time_step, double const power)
 {
-  BOOST_ASSERT_MSG(surface_area != 0., "The surface area is zero.");
+  BOOST_ASSERT_MSG(surface_area > 0.,
+                   "The surface area should be greater than zero.");
   dealii::Vector<double> old_solution(solution->block(0));
+  // The tolerance and the maximum number of iterations are for the picard
+  // iterations done below. This is not related to the Krylov solver in
+  // evolve_one_time_step.
   int const max_iterations       = 10;
   double const percent_tolerance = 1.0e-2;
   double current(0.0);
@@ -264,33 +259,29 @@ template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_linear_power(
     double const time_step, double const power)
 {
-  std::ignore = time_step;
-  std::ignore = power;
-
-  throw std::runtime_error("This function is not implemented");
+  // TODO: this is a temporary solution
+  evolve_one_time_step_constant_power(time_step, power);
 }
 
 template <int dim>
 void New_SuperCapacitor<dim>::evolve_one_time_step_linear_load(
     double const time_step, double const load)
 {
-  std::ignore = time_step;
-  std::ignore = load;
-
-  throw std::runtime_error("This function is not implemented");
+  // TODO: this is a temporary solution
+  evolve_one_time_step_linear_load(time_step, load);
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
-                                                   ChargeType charge_type,
-                                                   bool rebuild)
+void New_SuperCapacitor<dim>::evolve_one_time_step(
+    double const time_step, SuperCapacitorState supercapacitor_state,
+    bool rebuild)
 {
   // The first time evolve_one_time_step is called, the solution and the
   // post-processor need to be iniatialized.
-  if (electrochemical_physics_params->charge_type == Uninitialized)
+  if (electrochemical_physics_params->supercapacitor_state == Uninitialized)
   {
-    electrochemical_physics_params->time_step   = time_step;
-    electrochemical_physics_params->charge_type = charge_type;
+    electrochemical_physics_params->time_step            = time_step;
+    electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
     electrochemical_physics.reset(
         new ElectrochemicalPhysics<dim>(electrochemical_physics_params));
 
@@ -304,8 +295,6 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
     post_processor_params->solution = solution;
     post_processor_params->mp_values =
         electrochemical_physics_params->mp_values;
-    post_processor_params->boundary_values =
-        electrochemical_physics_params->boundary_values;
     post_processor = std::make_shared<New_SuperCapacitorPostprocessor<dim>>(
         post_processor_params);
 
@@ -315,10 +304,11 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(double const time_step,
   else if ((rebuild == true) ||
            (std::abs(time_step / electrochemical_physics_params->time_step -
                      1.0) > 1e-14) ||
-           (charge_type != electrochemical_physics_params->charge_type))
+           (supercapacitor_state !=
+            electrochemical_physics_params->supercapacitor_state))
   {
-    electrochemical_physics_params->time_step   = time_step;
-    electrochemical_physics_params->charge_type = charge_type;
+    electrochemical_physics_params->time_step            = time_step;
+    electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
     electrochemical_physics.reset(
         new ElectrochemicalPhysics<dim>(electrochemical_physics_params));
   }

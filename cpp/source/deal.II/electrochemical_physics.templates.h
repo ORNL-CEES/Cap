@@ -8,7 +8,7 @@
 #ifndef CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_TEMPLATES_H
 #define CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_TEMPLATES_H
 
-#include <cap/deal.II/electrochemical_physics.h>
+#include <cap/electrochemical_physics.h>
 #include <boost/assert.hpp>
 #include <deal.II/base/function.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -22,19 +22,16 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     std::shared_ptr<PhysicsParameters<dim> const> parameters)
     : Physics<dim>(parameters)
 {
-  std::shared_ptr<boost::property_tree::ptree const> database =
-      parameters->database;
+  boost::property_tree::ptree const &database = parameters->database;
 
   // clang-format off
-  this->solid_potential_component  = database->get<unsigned int>("solid_potential_component");
-  this->liquid_potential_component = database->get<unsigned int>("liquid_potential_component");
-  this->temperature_component      = database->get<unsigned int>("temperature_component");
+  this->solid_potential_component  = database.get<unsigned int>("solid_potential_component");
+  this->liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
   // clang-format on
 
-  alpha             = database->get<double>("material_properties.alpha", 0.0);
-  anode_boundary_id = database->get<dealii::types::boundary_id>(
+  anode_boundary_id = database.get<dealii::types::boundary_id>(
       "boundary_values.anode_boundary_id");
-  cathode_boundary_id = database->get<dealii::types::boundary_id>(
+  cathode_boundary_id = database.get<dealii::types::boundary_id>(
       "boundary_values.cathode_boundary_id");
 
   std::shared_ptr<
@@ -58,15 +55,17 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   dealii::ComponentMask component_mask(mask);
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
-  dirichlet_boundary_condition[anode_boundary_id] = &homogeneous_bc;
-  dealii::Function<dim> *cathode_dirichlet_bc     = nullptr;
+  dirichlet_boundary_condition[anode_boundary_id]             = &homogeneous_bc;
+  std::unique_ptr<dealii::Function<dim>> cathode_dirichlet_bc = nullptr;
   bool inhomogeneous_bc = false;
-  if (electrochemical_parameters->charge_type == ConstantVoltage)
+  if (electrochemical_parameters->supercapacitor_state == ConstantVoltage)
   {
-    cathode_dirichlet_bc = new dealii::ConstantFunction<dim>(
-        electrochemical_parameters->constant_voltage, n_components);
-    dirichlet_boundary_condition[cathode_boundary_id] = cathode_dirichlet_bc;
-    inhomogeneous_bc                                  = true;
+    cathode_dirichlet_bc = std::make_unique<dealii::ConstantFunction<dim>>(
+        dealii::ConstantFunction<dim>(
+            electrochemical_parameters->constant_voltage, n_components));
+    dirichlet_boundary_condition[cathode_boundary_id] =
+        cathode_dirichlet_bc.get();
+    inhomogeneous_bc = true;
   }
 
   dealii::VectorTools::interpolate_boundary_values(
@@ -75,13 +74,6 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
 
   // Finally close the ConstraintMatrix.
   this->constraint_matrix.close();
-
-  // Free cathode_dirichlet_bc if necessary.
-  if (cathode_dirichlet_bc != nullptr)
-  {
-    delete cathode_dirichlet_bc;
-    cathode_dirichlet_bc = nullptr;
-  }
 
   // Create sparsity pattern
   unsigned int const max_couplings =
@@ -213,12 +205,12 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   // hp::DoFHandler does not work with MPI.
   dealii::types::global_dof_index const n_dofs = this->dof_handler->n_dofs();
   for (unsigned int i = 0; i < n_dofs; ++i)
-    if (std::fabs(this->system_matrix.diag_element(i)) < 1e-100)
+    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
       this->system_matrix.diag_element(i) = 1.;
 
   // Apply Neumann boundary condition on the cathode (constant current
   // charge).
-  if (electrochemical_parameters->charge_type == ConstantCurrent)
+  if (electrochemical_parameters->supercapacitor_state == ConstantCurrent)
   {
     double const time_step = electrochemical_parameters->time_step;
     double const current_density =

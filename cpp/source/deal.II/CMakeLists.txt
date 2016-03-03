@@ -1,6 +1,15 @@
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/dummy)
+set(Cap_INCLUDE_DIRS ${Cap_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/dummy)
+set(Cap_INCLUDE_DIRS ${Cap_INCLUDE_DIRS} PARENT_SCOPE)
 
-SET(Cap_SOURCES
+set(Cap_HEADERS
+    ${Cap_HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/new_supercapacitor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_physics.h
+    PARENT_SCOPE
+   )
+
+set(Cap_SOURCES
     ${Cap_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/new_supercapacitor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/physics.cc

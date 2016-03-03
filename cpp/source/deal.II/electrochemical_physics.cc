@@ -5,7 +5,7 @@
  * for the text and further information on this license.
  */
 
-#include <cap/deal.II/electrochemical_physics.templates.h>
+#include <cap/electrochemical_physics.templates.h>
 
 namespace cap
 {

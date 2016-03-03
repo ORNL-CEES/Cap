@@ -1,7 +1,6 @@
 #ifndef CAP_PHYSICS_H
 #define CAP_PHYSICS_H
 
-#include <cap/boundary_values.h>
 #include <cap/mp_values.h>
 #include <boost/property_tree/ptree.hpp>
 #include <deal.II/dofs/dof_handler.h>
@@ -19,17 +18,13 @@ template <int dim>
 class PhysicsParameters
 {
 public:
-  PhysicsParameters(std::shared_ptr<boost::property_tree::ptree const> d)
-      : database(d)
-  {
-  }
+  PhysicsParameters(boost::property_tree::ptree const &d) : database(d) {}
 
   virtual ~PhysicsParameters() = default;
 
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
   std::shared_ptr<MPValues<dim> const> mp_values;
-  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
-  std::shared_ptr<boost::property_tree::ptree const> database;
+  boost::property_tree::ptree const database;
 };
 
 /**

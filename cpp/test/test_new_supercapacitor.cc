@@ -69,7 +69,8 @@ BOOST_AUTO_TEST_CASE( test_supercapacitor, *
     // build an energy storage device
     boost::property_tree::ptree ptree;
     boost::property_tree::info_parser::read_info(
-        "new_super_capacitor.info", ptree);
+        "super_capacitor.info", ptree);
+    ptree.put("type", "New_SuperCapacitor");
     boost::mpi::communicator world; 
     std::shared_ptr<cap::EnergyStorageDevice> supercap =
         cap::buildEnergyStorageDevice(world, ptree);

@@ -29,12 +29,15 @@ class EnergyStorageDevice
 {
 public:
   EnergyStorageDevice(boost::mpi::communicator const &communicator);
+
   virtual ~EnergyStorageDevice();
+
   // DEPRECATED ///////////////////////////////////////
   virtual void print_data(std::ostream &os) const = 0;
   virtual void reset_voltage(double const voltage) = 0;
   virtual void reset_current(double const current) = 0;
   /////////////////////////////////////////////////////
+
   virtual void get_voltage(double &voltage) const = 0;
 
   virtual void get_current(double &current) const = 0;
@@ -139,6 +142,11 @@ public:
   virtual std::unique_ptr<EnergyStorageDevice>
   build(boost::mpi::communicator const &comm,
         boost::property_tree::ptree const &ptree) = 0;
+
+  /**
+   * This function registers the energy device storages so that they can be
+   * called by the factory function.
+   */
   static void
   register_energy_storage_device(std::string const &type,
                                  EnergyStorageDeviceBuilder *builder);

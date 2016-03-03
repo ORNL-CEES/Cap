@@ -10,7 +10,7 @@
 
 #include <cap/energy_storage_device.h>
 #include <cap/geometry.h>
-#include <cap/deal.II/electrochemical_physics.h>
+#include <cap/electrochemical_physics.h>
 #include <cap/post_processor.h>
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/lac/block_vector.h>
@@ -88,7 +88,8 @@ private:
   /**
    * Helper function to advance time by @p time_step second.
    */
-  void evolve_one_time_step(double const time_step, ChargeType charge_type,
+  void evolve_one_time_step(double const time_step,
+                            SuperCapacitorState supercapacitor_state,
                             bool rebuild);
 
   /**
