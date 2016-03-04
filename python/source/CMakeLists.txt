@@ -33,6 +33,7 @@ SET(PYTHON_SOURCES
     ragone_plot.py
     impedance_spectroscopy.py
     peak_detection.py
+    observer_pattern.py
     )
 FOREACH(PYTHON_SOURCE ${PYTHON_SOURCES})
     ADD_CUSTOM_COMMAND(
