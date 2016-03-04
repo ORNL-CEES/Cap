@@ -86,6 +86,17 @@ class ObserverObservableTestCase(unittest.TestCase):
         # Only attached observer may be detached.
         self.assertRaises(RuntimeError, subject.detach, observer)
 
+        # Note that the subject only stores a weak reference to its observers.
+        subject.attach(observer)
+        del observer
+        self.assertRaises(RuntimeError, subject.notify)
+
+        # Similarly this will raise an exception.
+        subject = ConcreteObservable()
+        subject.notify()
+        subject.attach(ConcreteObserver())
+        self.assertRaises(RuntimeError, subject.notify)
+
 
 if __name__ == '__main__':
     unittest.main()

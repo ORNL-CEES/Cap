@@ -158,7 +158,11 @@ class Observable(object):
         '''Notify all registered observers that some change has occured.
         '''
         for weak_reference in self._observers:
-            weak_reference().update(self, *args, **kwargs)
+            observer = weak_reference()
+            if observer is not None:
+                observer.update(self, *args, **kwargs)
+            else:
+                raise RuntimeError("Observer is no longer alive")
 
 
 class Experiment(Observable):
