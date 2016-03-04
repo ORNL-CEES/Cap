@@ -8,11 +8,16 @@ from matplotlib import pyplot
 from numpy import real, imag, log10, absolute, angle, array, append, power,\
                   sin, pi, sum, isclose, fft, mean, argsort
 from warnings import warn
+from copy import copy
+from io import open # to be able to use parameter ``encoding`` with Python2.7
 from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
+from .observer_pattern import Observer, Observable, Experiment
 
 __all__ = ['measure_impedance_spectrum', 'plot_nyquist', 'plot_bode',
-           'fourier_analysis', 'retrieve_impedance_spectrum']
+           'fourier_analysis', 'retrieve_impedance_spectrum',
+           'NyquistPlot', 'BodePlot', 'ECLabAsciiFile',
+           'ElectrochemicalImpedanceSpectroscopy']
 
 
 def _is_power_of_two(x):
@@ -89,6 +94,12 @@ def run_one_cycle(device, ptree):
 
 
 def measure_impedance_spectrum(device, ptree, fout=None, dummy=None):
+    '''Deprecated
+
+    See Also
+    -------
+    ElectrochemicalImpedanceSpectroscopy
+    '''
     frequency_upper_limit = ptree.get_double('frequency_upper_limit')
     frequency_lower_limit = ptree.get_double('frequency_lower_limit')
     steps_per_decade = ptree.get_int('steps_per_decade')
@@ -188,3 +199,183 @@ def fourier_analysis(data, ptree=None):
     impedance = fft_voltage[peak_indices]/fft_current[peak_indices]
 
     return [frequency, impedance]
+
+class NyquistPlot(Observer):
+    '''Nyquist plot.
+
+    The frequency-dependent impedance Z(f) is represented as a complex number:
+        Z(f) = R + jX
+    In a Nyquist plot, the real part of the impedance R = real(Z) is plotted on
+    the X-axis and the imaginary part X = imag(Z) on the Y-axis. R and X are
+    called resistance and reactance, respectively. Both are expressed in ohm.
+
+    Nyquist plots have one major shortcoming. When looking at any data point
+    on the complex plane, it is impossible to tell what frequency was used to
+    record that point.
+
+    See also
+    --------
+    BodePlot
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(NyquistPlot)
+    def __init__(self, filename=None):
+        self._figure = pyplot.figure(figsize=(14, 14))
+        self._filename = filename
+    def update(self, subject, *args, **kwargs):
+        plot_nyquist(subject._data, figure=self._figure)
+        if self._filename is not None:
+            pyplot.savefig(self._filename, bbox_inches='tight')
+Observer._builders['NyquistPlot'] = NyquistPlot
+
+class BodePlot(Observer):
+    '''Bode plot.
+
+    A Bode plot is another popular presentation method for impedance spectra.
+    The impedance is plotted with frequency on the X-axis in log scale and
+    absolute values of the impedance in dB, 20*log10(|Z|), and the phase shift
+    in degree, arg(Z), on the Y-axis.
+
+    Unlike the Nyquist plot, the Bode plot does show frequency information.
+
+    See also
+    --------
+    NyquistPlot
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(BodePlot)
+    def __init__(self, filename=None):
+        raise NotImplementedError
+    def update(self, subject, *args, **kwargs):
+        raise NotImplementedError
+Observer._builders['BodePlot'] = BodePlot
+
+class ECLabAsciiFile(Observer):
+    '''Exports a text format file recognised by EC-Lab software.
+
+    Attributes
+    ----------
+    _filename : string
+        Name of the file to be exported.
+    _headers : list of strings
+        Headers from a template to be added to the exported file.
+    _template : string
+        Template for a line that will be written. It contains replacement fields
+        and is meant to be formatted.
+    _encoding : string
+        I had an issue with Python 3.5 to decode byte 0xb2.
+
+    See Also
+    --------
+    ElectrochemicalImpedanceSpectroscopy
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(ECLabAsciiFile)
+    def __init__(self, filename):
+        self._filename = filename
+        self._encoding = 'iso-8859-1'
+        # read the headers from a template file that Frank gave me
+        with open('BC52-7-100C_C01.mpt',
+                  mode='r', encoding=self._encoding) as fin:
+            self._headers = fin.readlines()[:60]
+        # build a template for each line in the results
+        self._template = u''
+        for i in range(18):
+            self._template += '{left}{0}:{format_spec}{right}{separator}'\
+                .format(i, format_spec='{format_spec}',
+                        left='{', right='}', separator='\t')
+        self._template += '\r\n'
+
+    def update(self, subject, *args, **kwargs):
+        with open(self._filename, mode='w', encoding=self._encoding) as fout:
+
+            # write headers
+            for line in self._headers:
+                fout.write(line)
+
+            # write data
+            n = subject._data['frequency'].size
+            for i in range(n):
+                f = subject._data['frequency'][i]
+                Z = subject._data['impedance'][i]
+                Y = 1.0 / Z
+                place_holder = 255
+                line = self._template.format(float(f),
+                                             float(real(Z)),
+                                             -float(imag(Z)),
+                                             float(absolute(Z)),
+                                             float(angle(Z, deg=True)),
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             place_holder,
+                                             float(real(Y)),
+                                             float(imag(Y)),
+                                             float(absolute(Y)),
+                                             float(angle(Y, deg=True)),
+                                             format_spec='.7e')
+                fout.write(line)
+Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
+
+class ElectrochemicalImpedanceSpectroscopy(Experiment):
+    '''ElectrochemicalImpedanceSpectroscopy (EIS)
+
+    Measures the complex impedance of an energy storage device as a function of
+    the frequency,
+
+    Attributes
+    ----------
+    _frequency_upper_limit : float
+    _frequency_lower_limit : float
+    _steps_per_decade : int
+    _ptree : PropertyTree
+    _data : dict
+        Stores the frequency as a numpy.array of floating point numbers
+        and the impedance as a numpy.arry of complex numbers.
+
+    Examples
+    --------
+    ptree = PropertyTree()
+    ptree.parse_xml(eis.info)
+    eis = Experiment(ptree)
+
+    observer = NyquistPlot("nyquist_plot.png")
+    eis.attach(observer)
+
+    eis.run(device)
+
+    See Also
+    --------
+    NyquistPlot, BodePlot
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(ElectrochemicalImpedanceSpectroscopy)
+    def __init__(self, ptree):
+        Experiment.__init__(self)
+        self._frequency_upper_limit = ptree.get_double('frequency_upper_limit')
+        self._frequency_lower_limit = ptree.get_double('frequency_lower_limit')
+        self._steps_per_decade = ptree.get_int('steps_per_decade')
+        self._ptree = copy(ptree)
+        self._data = {
+            'frequency': array([], dtype=float),
+            'impedance': array([], dtype=complex)
+        }
+    def run(self, device, fout=None):
+        frequency = self._frequency_upper_limit
+        while frequency >= self._frequency_lower_limit:
+            self._ptree.put_double('frequency', frequency)
+            data = run_one_cycle(device, self._ptree)
+            if fout:
+                path = '/eis_data/frequency=' + str(frequency) + 'Hz'
+                save_data(data, path, fout)
+            f, Z = fourier_analysis(data, self._ptree)
+            self._data['frequency'] = append(self._data['frequency'], f)
+            self._data['impedance'] = append(self._data['impedance'], Z)
+            frequency /= power(10.0, 1.0/self._steps_per_decade)
+            self.notify()
+Experiment._builders['EIS'] = ElectrochemicalImpedanceSpectroscopy
