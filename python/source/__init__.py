@@ -13,11 +13,12 @@ from .charge_discharge import *
 from .voltammetry import *
 from .ragone_plot import *
 from .impedance_spectroscopy import *
+from .observer_pattern import *
 from mpi4py import MPI
 
 __all__ = ['PyCap', 'data_helpers', 'time_evolution', 'end_criterion',
            'stage', 'charge_discharge', 'voltammetry', 'ragone_plot',
-           'impedance_spectroscopy']
+           'impedance_spectroscopy', 'observer_pattern']
 
 __version__ = PyCap.__version__
 __git_branch__ = PyCap.__git_branch__

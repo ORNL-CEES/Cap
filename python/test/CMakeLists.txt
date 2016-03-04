@@ -8,6 +8,7 @@ SET(PYTHON_TESTS
     test_voltammetry
     test_ragone_plot
     test_impedance_spectroscopy
+    test_observer_pattern
 )
 
 FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)
