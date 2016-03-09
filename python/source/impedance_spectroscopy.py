@@ -291,7 +291,7 @@ class ECLabAsciiFile(Observer):
 
             # write headers
             for line in self._headers:
-                fout.write(line)
+                fout.write(line.replace('\n','\r\n'))
 
             # write data
             n = subject._data['frequency'].size
