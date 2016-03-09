@@ -5,18 +5,6 @@ device {
   parallel_resistance  2.5e6      ;
 }
 
-ragone_chart {
-  discharge_mode               constant_power ;
-  discharge_power_lower_limit  1.0e-6         ; [watt]
-  discharge_power_upper_limit  1.0e2          ; [watt]
-  steps_per_decade             5              ;
-  initial_voltage              2.7            ; [volt]
-  final_voltage                1.2            ; [volt]
-  time_step                    1800.0         ; [second]
-  min_steps_per_discharge      200            ;
-  max_steps_per_discharge      300            ;
-}
-
 ragone_chart_constant_power {
   discharge_mode               constant_power ;
   discharge_power_lower_limit  1.0e-6         ; [watt]
