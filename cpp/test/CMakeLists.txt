@@ -9,10 +9,7 @@ LIST(APPEND
     test_resistor_capacitor_circuit
     test_resistor_capacitor_circuit-2
     test_multi_stage
-    test_lissajous_curve
-    test_leakage_current
     test_ragone_chart
-    test_ragone_chart-2
     )
 IF(ENABLE_DEAL_II)
     LIST(APPEND
@@ -32,26 +29,23 @@ FOREACH(TEST_NAME ${CPP_TESTS})
 ENDFOREACH()
 IF(ENABLE_GSL)
     Cap_ADD_BOOST_TEST(test_impedance_spectroscopy      )
-    Cap_ADD_BOOST_TEST(test_impedance_spectroscopy-2    )
     Cap_ADD_BOOST_TEST(test_discrete_fourier_transform  )
 ENDIF()
 IF(ENABLE_TASMANIAN)
     Cap_ADD_BOOST_TEST(test_uq_eis                      )
     COPY_CAP_INPUT_FILE(input_uq_eis                )
 ENDIF()
-COPY_CAP_INPUT_FILE(input_lissajous_curve       )
-COPY_CAP_INPUT_FILE(input_leakage_current       )
-COPY_CAP_INPUT_FILE(input_ragone_chart          )
-COPY_CAP_INPUT_FILE(input_multi_stage           )
-COPY_CAP_INPUT_FILE(input_impedance_spectroscopy)
-COPY_CAP_INPUT_FILE(input_resistor_capacitor    )
-COPY_CAP_INPUT_FILE(input_equivalent_circuit    )
-COPY_CAP_INPUT_FILE(input_verification_problem  )
-COPY_CAP_INPUT_FILE(series_rc.info              )
-COPY_CAP_INPUT_FILE(parallel_rc.info            )
-COPY_CAP_INPUT_FILE(super_capacitor.info        )
-COPY_CAP_INPUT_FILE(equivalent_circuits.info    )
-COPY_CAP_INPUT_FILE(verification_problems.info  )
+COPY_CAP_INPUT_FILE(input_ragone_chart.info          )
+COPY_CAP_INPUT_FILE(input_multi_stage                )
+COPY_CAP_INPUT_FILE(input_impedance_spectroscopy.info)
+COPY_CAP_INPUT_FILE(input_resistor_capacitor         )
+COPY_CAP_INPUT_FILE(input_equivalent_circuit         )
+COPY_CAP_INPUT_FILE(input_verification_problem       )
+COPY_CAP_INPUT_FILE(series_rc.info                   )
+COPY_CAP_INPUT_FILE(parallel_rc.info                 )
+COPY_CAP_INPUT_FILE(super_capacitor.info             )
+COPY_CAP_INPUT_FILE(equivalent_circuits.info         )
+COPY_CAP_INPUT_FILE(verification_problems.info       )
 
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd)
