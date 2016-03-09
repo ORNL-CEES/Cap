@@ -5,15 +5,11 @@ SET(CPP_TESTS "")
 LIST(APPEND
     CPP_TESTS
     test_parse_params
-    test_butler_volmer_kinetics
     test_energy_storage_device
     test_resistor_capacitor_circuit
     test_resistor_capacitor_circuit-2
     test_multi_stage
-    test_discharge_curve
-    test_charge_curve
     test_lissajous_curve
-    test_cyclic_voltammetry
     test_leakage_current
     test_ragone_chart
     test_ragone_chart-2
@@ -43,13 +39,9 @@ IF(ENABLE_TASMANIAN)
     Cap_ADD_BOOST_TEST(test_uq_eis                      )
     COPY_CAP_INPUT_FILE(input_uq_eis                )
 ENDIF()
-COPY_CAP_INPUT_FILE(input_discharge_curve       )
-COPY_CAP_INPUT_FILE(input_charge_curve          )
 COPY_CAP_INPUT_FILE(input_lissajous_curve       )
-COPY_CAP_INPUT_FILE(input_cyclic_voltammetry    )
 COPY_CAP_INPUT_FILE(input_leakage_current       )
 COPY_CAP_INPUT_FILE(input_ragone_chart          )
-COPY_CAP_INPUT_FILE(input_butler_volmer_kinetics)
 COPY_CAP_INPUT_FILE(input_multi_stage           )
 COPY_CAP_INPUT_FILE(input_impedance_spectroscopy)
 COPY_CAP_INPUT_FILE(input_resistor_capacitor    )
