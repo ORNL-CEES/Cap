@@ -18,6 +18,16 @@
 #include <iostream>
 
 
+// This file contains the following tests:
+//  - Series RC constant voltage
+//  - Series RC constant current
+//  - Series RC constant power
+//  - Series RC constant load
+//  - Parallel RC constant current
+//  - Parallel RC constant voltage
+//  - Parallel RC constant power
+//  - Parallel RC constant load
+
 
 double const R_SERIES   = 55.0e-3;
 double const R_PARALLEL =  2.5e6;

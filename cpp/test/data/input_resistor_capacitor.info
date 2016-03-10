@@ -1,0 +1,23 @@
+device {
+  type                 ParallelRC ;
+  capacitance          3.0        ;
+  parallel_resistance  2.5e2      ;
+  series_resistance    50.0e-1    ;
+}
+
+impedance_spectroscopy {
+  frequency        1.0e-5 ;
+  amplitude        1.1    ;
+  cycles           2      ;
+  ignore_cycles    1      ;
+  steps_per_cycle  2048   ;
+  tolerance        1.0e-1 ;
+}
+
+initial_voltage 1.1   ;
+final_voltage   2.7   ;
+final_time      100.0 ;
+initial_time    0.0   ;
+steps           16    ;
+control_steps   10000 ;
+

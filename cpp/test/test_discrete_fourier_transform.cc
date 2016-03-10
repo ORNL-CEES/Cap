@@ -10,6 +10,21 @@
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <boost/test/unit_test.hpp>
 
+// This test compare the results given by gsl with the results given by numpy.
+// The numpy code can be found below:
+// import numpy
+// n=32
+// k=3
+// x=numpy.linspace(0,1,n)
+// y=1+numpy.sin(k*2*numpy.pi*x)
+// fft_data=numpy.fft.rfft(y)
+// fft_freq=numpy.fft.rfftfreq(n)
+// #for i in range(len(fft_data)):
+// #    print i,fft_freq[i],fft_data[i]
+// print numpy.real(fft_data)
+// print numpy.imag(fft_data)
+// print fft_freq
+
 BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
 {
     size_t const n = 32;
@@ -23,18 +38,6 @@ BOOST_AUTO_TEST_CASE( test_discrete_fourier_transform )
         y[i] = 1.0 + std::sin(2*pi*k*x[i]);
     auto fft_data = cap::compute_fft(&(y[0]), n);
     auto fft_freq = cap::compute_fft_frequencies(n, 1.0/n);
-// import numpy
-// n=32
-// k=3
-// x=numpy.linspace(0,1,n)
-// y=1+numpy.sin(k*2*numpy.pi*x)
-// fft_data=numpy.fft.rfft(y)
-// fft_freq=numpy.fft.rfftfreq(n)
-// #for i in range(len(fft_data)):
-// #    print i,fft_freq[i],fft_data[i]
-// print numpy.real(fft_data)
-// print numpy.imag(fft_data)
-// print fft_freq
     std::vector<double> real = {
         32.        ,  0.03429769,  0.21085557,  4.49628784, -0.73607911,
         -0.47868609, -0.40249877, -0.3674597 , -0.34801027, -0.3360312 ,
