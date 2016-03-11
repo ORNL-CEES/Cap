@@ -15,6 +15,9 @@
 #include <fstream>
 #include <unordered_map>
 
+// Check that a mesh can be loaded, that the areas are computed correctly, and
+// check that a mesh can be written.
+
 template <int dim>
 void
 write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<dim> const> triangulation)
@@ -23,8 +26,8 @@ write_mesh(std::string const & mesh_file, std::shared_ptr<dealii::Triangulation<
     std::fstream fout;
     fout.open(mesh_file.c_str(), std::fstream::out);
     std::string const file_extension = mesh_file.substr(mesh_file.find_last_of(".")+1);
-    if (file_extension.compare("vtk") == 0) {
-        mesh_writer.write_vtk(*triangulation, fout);
+    if (file_extension.compare("vtu") == 0) {
+        mesh_writer.write_vtu(*triangulation, fout);
     } else {
         throw std::runtime_error("Bad output format ."+file_extension+" in mesh file "+mesh_file);
     }
@@ -52,7 +55,7 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
     params->put("material_0.material_id"       , "1,2,3,4,5"  );
 
     cap::SuperCapacitorGeometry<2> geo(params);
-    write_mesh("output_test_geometry_0.vtk", geo.get_triangulation());
+    write_mesh("output_test_geometry_0.vtu", geo.get_triangulation());
 
     dealii::Triangulation<2> const & tria = *geo.get_triangulation();
     std::cout<<"cells="<<tria.n_active_cells()<<"  "
@@ -93,5 +96,5 @@ BOOST_AUTO_TEST_CASE( test_reset_geometry )
     params->put("tab_height"                   ,   5.0e-4     );
 
     geo.reset(params);
-    write_mesh("output_test_geometry_1.vtk", geo.get_triangulation());
+    write_mesh("output_test_geometry_1.vtu", geo.get_triangulation());
 }
