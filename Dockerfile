@@ -7,6 +7,7 @@ RUN cd ${PREFIX}/source && \
     mkdir -p ${PREFIX}/build/cap && \
     cd ${PREFIX}/build/cap && \
     cmake \
+        -D CMAKE_CXX_COMPILER=mpicxx \
         -D CMAKE_INSTALL_PREFIX=/opt/cap \
         -D CMAKE_BUILD_TYPE=Release \
         -D BUILD_SHARED_LIBS=ON \
