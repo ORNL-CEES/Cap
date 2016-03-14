@@ -5,6 +5,9 @@ project(Cap LANGUAGES CXX VERSION ${Cap_VERSION})
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(SetupTPLs)
 include(SetupCap)
+if(ENABLE_COVERAGE)
+    include(CodeCoverage)
+endif()
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
