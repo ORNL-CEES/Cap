@@ -45,7 +45,7 @@ endif()
 
 #### deal.II #################################################################
 if(ENABLE_DEAL_II)
-    find_package(deal.II 8.3 REQUIRED PATHS ${DEAL_II_DIR})
+    find_package(deal.II 8.4 REQUIRED PATHS ${DEAL_II_DIR})
     add_definitions(-DWITH_DEAL_II)
 endif()
 

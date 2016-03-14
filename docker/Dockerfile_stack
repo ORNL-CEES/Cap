@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
         git \
         cmake \
         lcov \
-        ninja-build \
         libssl-dev \
         libpng-dev \
         libfreetype6-dev \
@@ -291,9 +290,9 @@ RUN export P4EST_VERSION=1.1 &&\
 ENV P4EST_DIR=/opt/p4est/1.1
 
 # install dealii
-RUN export DEAL_II_VERSION=8.3.0 && \
-    export DEAL_II_URL=https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-${DEAL_II_VERSION}.tar.gz && \
-    export DEAL_II_SHA1=274288b09c053b461239040816129a9eb9d45914 && \
+RUN export DEAL_II_VERSION=8.4.0 && \
+    export DEAL_II_URL=https://github.com/dealii/dealii/releases/download/v${DEAL_II_VERSION}/dealii-${DEAL_II_VERSION}.tar.gz && \
+    export DEAL_II_SHA1=559ef06969da4a35600adee38195f1b8be929721 && \
     export DEAL_II_ARCHIVE=${PREFIX}/archive/dealii-${DEAL_II_VERSION}.tar.gz && \
     export DEAL_II_SOURCE_DIR=${PREFIX}/source/dealii/${DEAL_II_VERSION} && \
     export DEAL_II_BUILD_DIR=${PREFIX}/build/dealii/${DEAL_II_VERSION} && \
@@ -305,7 +304,6 @@ RUN export DEAL_II_VERSION=8.3.0 && \
     mkdir -p ${DEAL_II_BUILD_DIR} && \
     cd ${DEAL_II_BUILD_DIR} && \
     cmake \
-        -G Ninja \
         -D CMAKE_INSTALL_PREFIX=${DEAL_II_INSTALL_DIR} \
         -D CMAKE_BUILD_TYPE=Release \
         -D DEAL_II_WITH_MPI=ON \
@@ -319,12 +317,12 @@ RUN export DEAL_II_VERSION=8.3.0 && \
         -D HDF5_DIR=${HDF5_DIR} \
         -D NETCDF_DIR=${NETCDF_DIR} \
         ${DEAL_II_SOURCE_DIR} && \
-    ninja install && \
+    make -j${NPROC} install && \
     rm -rf ${DEAL_II_ARCHIVE} && \
     rm -rf ${DEAL_II_BUILD_DIR} && \
     rm -rf ${DEAL_II_SOURCE_DIR}
 
-ENV DEAL_II_DIR=/opt/dealii/8.3.0
+ENV DEAL_II_DIR=/opt/dealii/8.4.0
 
 ENV LD_LIBRARY_PATH=${LAPACK_DIR}/lib:${LD_LIBRARY_PATH}
 
