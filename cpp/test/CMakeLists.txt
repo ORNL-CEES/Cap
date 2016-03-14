@@ -47,7 +47,6 @@ COPY_CAP_INPUT_FILE(parallel_rc.info                 )
 COPY_CAP_INPUT_FILE(super_capacitor.info             )
 COPY_CAP_INPUT_FILE(equivalent_circuits.info         )
 COPY_CAP_INPUT_FILE(verification_problems.info       )
-COPY_CAP_INPUT_FILE(new_super_capacitor.info         )
 
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd)
