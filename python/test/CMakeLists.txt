@@ -23,10 +23,17 @@ FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)
         ${TEST_NAME}.py ALL
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.py
     )
-    ADD_TEST(
-        NAME ${TEST_NAME}_py
-        COMMAND ${PYTHON_EXECUTABLE} ${TEST_NAME}.py
-    )
+    if(ENABLE_COVERAGE)
+        add_test(
+            NAME ${TEST_NAME}_py
+            COMMAND ${COVERAGE_EXECUTABLE} run --append ${TEST_NAME}.py
+        )
+    else()
+        ADD_TEST(
+            NAME ${TEST_NAME}_py
+            COMMAND ${PYTHON_EXECUTABLE} ${TEST_NAME}.py
+        )
+    endif()
 ENDFUNCTION()
 
 FOREACH(TEST_NAME ${PYTHON_TESTS})

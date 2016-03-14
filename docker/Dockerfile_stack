@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
         wget \
         git \
         cmake \
+        lcov \
         ninja-build \
         libssl-dev \
         libpng-dev \
@@ -339,7 +340,9 @@ RUN cd ${PREFIX}/source && \
         jupyter \
         ipyparallel \
         ipywidgets \
-        mpi4py
+        mpi4py \
+        sympy \
+        codecov
 
 RUN CFLAGS="-I${MPI_DIR}/include -I${HDF5_DIR}/include" \
     LDFLAGS="-L${HDF5_DIR}/lib" \
