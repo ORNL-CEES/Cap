@@ -8,7 +8,6 @@ LIST(APPEND
     test_energy_storage_device
     test_resistor_capacitor_circuit
     test_resistor_capacitor_circuit-2
-    test_multi_stage
     test_ragone_chart
     )
 IF(ENABLE_DEAL_II)
@@ -17,7 +16,6 @@ IF(ENABLE_DEAL_II)
         test_geometry
         test_postprocessor
         test_mp_values
-        test_dirichlet_boundary_operator
         test_equivalent_circuit-2
         test_supercapacitor
         test_exact_transient_solution
@@ -32,12 +30,7 @@ IF(ENABLE_GSL)
     Cap_ADD_BOOST_TEST(test_impedance_spectroscopy      )
     Cap_ADD_BOOST_TEST(test_discrete_fourier_transform  )
 ENDIF()
-IF(ENABLE_TASMANIAN)
-    Cap_ADD_BOOST_TEST(test_uq_eis                      )
-    COPY_CAP_INPUT_FILE(input_uq_eis                )
-ENDIF()
 COPY_CAP_INPUT_FILE(input_ragone_chart.info          )
-COPY_CAP_INPUT_FILE(input_multi_stage                )
 COPY_CAP_INPUT_FILE(input_impedance_spectroscopy.info)
 COPY_CAP_INPUT_FILE(input_resistor_capacitor.info    )
 COPY_CAP_INPUT_FILE(input_equivalent_circuit         )

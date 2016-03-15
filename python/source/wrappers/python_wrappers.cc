@@ -12,7 +12,7 @@ namespace pycap
 {
 void export_property_tree();
 void export_energy_storage_device();
-};
+}
 
 char const * pycap_docstring =
   "                                                                         \n"
