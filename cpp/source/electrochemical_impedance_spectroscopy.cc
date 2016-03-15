@@ -2,7 +2,7 @@
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
- * for the text and further information on this license. 
+ * for the text and further information on this license.
  */
 
 #include <cap/electrochemical_impedance_spectroscopy.h>
@@ -47,7 +47,7 @@ compute_signal_to_noise_ratio(std::vector<std::complex<double>> fft_data,
                               std::vector<int> unexcited_harmonics)
 {
   BOOST_ASSERT(fft_data.size() ==
-         excited_harmonics.size() + unexcited_harmonics.size() + 1);
+               excited_harmonics.size() + unexcited_harmonics.size() + 1);
   double dc_power = std::norm(fft_data[0]);
   double ac_power = 0.0;
   for (int k : excited_harmonics)

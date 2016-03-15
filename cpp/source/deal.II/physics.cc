@@ -5,14 +5,12 @@
  * for the text and further information on this license.
  */
 
-#include <cap/electrochemical_operator.templates.h>
+#include <cap/physics.templates.h>
 
 namespace cap
 {
-
-template class ElectrochemicalOperatorParameters<2>;
-template class ElectrochemicalOperator<2>;
-template class ElectrochemicalOperatorParameters<3>;
-template class ElectrochemicalOperator<3>;
-
-} // end namespace cap
+template class PhysicsParameters<2>;
+template class PhysicsParameters<3>;
+template class Physics<2>;
+template class Physics<3>;
+}

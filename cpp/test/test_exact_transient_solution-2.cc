@@ -236,7 +236,10 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     std::cout<<"gamma = "<<ratio_of_solution_phase_to_matrix_phase_conductivities<<"\n";
     std::cout<<"beta  = "<<ratio_of_separator_to_electrode_resistances<<"\n";
 
-    dev->reset_voltage(initial_voltage);
+    // Charge the device
+    for (double time = 0.0; time <= 60; time += 2.)
+      dev->evolve_one_time_step_constant_voltage(2., initial_voltage);
+      
     double computed_voltage;
     double exact_voltage;
     for (double time = 0.0; time <= discharge_time+epsilon; time += time_step)
@@ -627,6 +630,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
     // build an energy storage system
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
+    device_database->put("type", "New_SuperCapacitor");
     std::shared_ptr<cap::EnergyStorageDevice> device =
         cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
 

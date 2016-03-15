@@ -2,7 +2,7 @@
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
- * for the text and further information on this license. 
+ * for the text and further information on this license.
  */
 
 #include <cap/post_processor.templates.h>
@@ -19,6 +19,11 @@ template class SuperCapacitorPostprocessorParameters<2>;
 template class SuperCapacitorPostprocessor<2>;
 template class SuperCapacitorPostprocessorParameters<3>;
 template class SuperCapacitorPostprocessor<3>;
+
+template class New_SuperCapacitorPostprocessorParameters<2>;
+template class New_SuperCapacitorPostprocessor<2>;
+template class New_SuperCapacitorPostprocessorParameters<3>;
+template class New_SuperCapacitorPostprocessor<3>;
 
 void compute_energy(std::vector<std::string> const &capacitor_state,
                     std::vector<double> const &time,

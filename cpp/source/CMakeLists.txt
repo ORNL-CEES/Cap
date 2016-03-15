@@ -25,7 +25,10 @@ if(ENABLE_DEAL_II)
        ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.h
        ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.h
     )
-    set(Cap_SOURCES
+endif()
+if(ENABLE_DEAL_II)
+    add_subdirectory(deal.II)
+    SET(Cap_SOURCES
         ${Cap_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.cc
@@ -52,3 +55,5 @@ endif()
 
 set(Cap_HEADERS ${Cap_HEADERS} PARENT_SCOPE)
 set(Cap_SOURCES ${Cap_SOURCES} PARENT_SCOPE)
+set(Cap_INCLUDE_DIRS ${Cap_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/dummy)
+set(Cap_INCLUDE_DIRS ${Cap_INCLUDE_DIRS} PARENT_SCOPE)

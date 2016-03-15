@@ -22,6 +22,7 @@ IF(ENABLE_DEAL_II)
         test_supercapacitor
         test_exact_transient_solution
         test_exact_transient_solution-2
+        test_new_supercapacitor
         )
 ENDIF()
 FOREACH(TEST_NAME ${CPP_TESTS})

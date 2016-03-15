@@ -2,7 +2,7 @@
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
- * for the text and further information on this license. 
+ * for the text and further information on this license.
  */
 
 #include <cap/mp_values.h>
@@ -79,11 +79,26 @@ void MPValues<dim, spacedim>::get_values(
 }
 
 //////////////////////// NEW STUFF ////////////////////////////
-auto to_meters = [](double const & cm) { return 1e-2*cm; };
-auto to_kilograms_per_cubic_meter = [](double const & g_per_cm3) { return 1e3*g_per_cm3; };
-auto to_farads_per_square_meter = [](double const & uF_per_cm2) { return 1e-2*uF_per_cm2; };
-auto to_amperes_per_square_meter = [](double const & A_per_cm2) { return 1e4*A_per_cm2; };
-auto to_ohm_meter = [](double const & o_cm) { return 1e-2*o_cm; };
+auto to_meters = [](double const &cm)
+{
+  return 1e-2 * cm;
+};
+auto to_kilograms_per_cubic_meter = [](double const &g_per_cm3)
+{
+  return 1e3 * g_per_cm3;
+};
+auto to_farads_per_square_meter = [](double const &uF_per_cm2)
+{
+  return 1e-2 * uF_per_cm2;
+};
+auto to_amperes_per_square_meter = [](double const &A_per_cm2)
+{
+  return 1e4 * A_per_cm2;
+};
+auto to_ohm_meter = [](double const &o_cm)
+{
+  return 1e-2 * o_cm;
+};
 
 template <int dim, int spacedim>
 PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
@@ -146,9 +161,10 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       std::make_shared<boost::property_tree::ptree>(
           database->get_child(solution_phase));
   double const electrolyte_conductivity =
-      1.0/to_ohm_meter(solution_phase_database->get<double>("electrical_resistivity"));
-  double const electrolyte_mass_density =
-      to_kilograms_per_cubic_meter(solution_phase_database->get<double>("mass_density"));
+      1.0 / to_ohm_meter(
+                solution_phase_database->get<double>("electrical_resistivity"));
+  double const electrolyte_mass_density = to_kilograms_per_cubic_meter(
+      solution_phase_database->get<double>("mass_density"));
   (this->properties)
       .emplace("liquid_electrical_conductivity",
                [electrolyte_conductivity, void_volume_fraction,

@@ -1,7 +1,6 @@
 add_subdirectory(source)
 add_subdirectory(test)
 
-set(Cap_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/source/dummy)
 include_directories(${Cap_INCLUDE_DIRS})
 add_library(Cap ${Cap_SOURCES})
 target_include_directories(Cap SYSTEM PUBLIC ${MPI_CXX_INCLUDE_PATH})
