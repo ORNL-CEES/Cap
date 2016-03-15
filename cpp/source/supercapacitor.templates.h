@@ -276,7 +276,7 @@ void SuperCapacitor<dim>::evolve_one_time_step(double const time_step)
   (*this->electrochemical_operator)
       .reset(this->electrochemical_operator_params);
 
-  unsigned int const electrochemical_block = 1; // TODO: !!!!!!!!
+  unsigned int const electrochemical_block = 0; // TODO: !!!!!!!!
   dealii::SparseMatrix<double> &system_matrix_electrochemical_block =
       (*this->system_matrix)
           .block(electrochemical_block, electrochemical_block);
