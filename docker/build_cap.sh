@@ -18,14 +18,15 @@ cmake \
     -D DEAL_II_DIR=${DEAL_II_DIR} \
     -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     ${PREFIX}/source/cap && \
-make -j4 VERBOSE=1 && \
+make -j2 && \
 useradd -m -s /bin/bash -N -u 1000 jovyan && \
 chown jovyan ${PREFIX}/build/cap -R && \
 su jovyan <<EOF
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:$LD_LIBRARY_PATH && \
 export PATH=${PYTHON_DIR}/bin:${PATH} && \
-ctest -j4 -V && \
+ctest -j2 -V && \
 make coverage-cpp && make coverage-python && \
+sed -i.fixpath "s|python/pycap|python/source|g" coverage.xml && \
 cd ${PREFIX}/source/cap && \
 codecov --disable gcov search pycov --file ${PREFIX}/build/cap/lcov.info ${PREFIX}/build/cap/coverage.xml
 EOF

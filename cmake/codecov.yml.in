@@ -1,0 +1,21 @@
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project:
+      target: auto
+      if_no_uploads: error
+
+    patch:
+      target: "80%"
+      if_no_uploads: error
+
+  fixes:
+    - "@CMAKE_SOURCE_DIR@/cpp/source/dummy/cap::@CMAKE_SOURCE_DIR@/cpp/source"
+    - "@CMAKE_BINARY_DIR@/python/pycap::@CMAKE_SOURCE_DIR@/python/source"
+
+comment:
+  layout: "header, diff, changes, suggestions"
+  behavior: default

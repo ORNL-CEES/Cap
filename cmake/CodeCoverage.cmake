@@ -1,3 +1,9 @@
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/codecov.yml.in
+    ${CMAKE_SOURCE_DIR}/codecov.yml
+    @ONLY
+)
+
 ## C++ coverage ###############################################################
 find_program(LCOV_EXECUTABLE lcov)
 if(LCOV_EXECUTABLE)
