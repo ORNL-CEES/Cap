@@ -128,16 +128,13 @@ void extract_duration_and_average_power(
     std::vector<double> const &time, std::vector<double> const &energy,
     std::vector<double> &duration, std::vector<double> &average_power);
 
-void compute_energy(std::vector<std::string> const &capacitor_state,
-                    std::vector<double> const &time,
+/**
+ * Compute the integral of the power using Dormand-Prince 5. A linear
+ * interpolation is used for the power when necessary.
+ */
+void compute_energy(std::vector<double> const &time,
                     std::vector<double> const &power,
                     std::vector<double> &energy);
-
-void compute_thermal_energy_losses(
-    std::vector<std::string> const &capacitor_state,
-    std::vector<double> const &time, std::vector<double> const &heat_production,
-    std::vector<double> &energy_losses);
-
 } // end namespace cap
 
 #endif // CAP_POSTPROCESSOR_H
