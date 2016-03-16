@@ -4,13 +4,13 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license. 
 
-from pycap import PropertyTree, EnergyStorageDevice
+from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
+                  ECLabAsciiFile
 from pycap import measure_impedance_spectrum, retrieve_impedance_spectrum,\
                   fourier_analysis, initialize_data
 from numpy import inf, linalg, real, imag, pi, log10, absolute, angle
 from numpy import array, testing
 from warnings import catch_warnings, simplefilter
-from mpi4py import MPI
 from h5py import File
 import unittest
 
@@ -18,6 +18,19 @@ R = 50.0e-3   # ohm
 R_L = 500.0   # ohm
 C = 3.0       # farad
 
+ptree = PropertyTree()
+ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
+ptree.put_double('frequency_upper_limit', 1e+4)
+ptree.put_double('frequency_lower_limit', 1e-6)
+ptree.put_int('steps_per_decade', 3)
+ptree.put_int('steps_per_cycle', 1024)
+ptree.put_int('cycles', 2)
+ptree.put_int('ignore_cycles', 1)
+ptree.put_double('dc_voltage', 0)
+ptree.put_string('harmonics', '3')
+ptree.put_string('amplitudes', '5e-3')
+ptree.put_string('phases', '0')
+eis = Experiment(ptree)
 
 def setup_expertiment():
     eis_database = PropertyTree()
@@ -36,7 +49,7 @@ def setup_expertiment():
 
 
 class capImpedanceSpectroscopyTestCase(unittest.TestCase):
-    def testFourierAnalysis(self):
+    def test_fourier_analysis(self):
         ptree = PropertyTree()
         ptree.put_int('steps_per_cycle', 3)
         ptree.put_int('cycles', 1)
@@ -76,12 +89,13 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         except AssertionError:
             self.fail('data should not be changed by the fourier analyzis')
 
-    def testRetrieveData(self):
+    def test_retrieve_data(self):
+        # TODO: no need to use a device here
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
+        device = EnergyStorageDevice(device_database)
         eis_database  = setup_expertiment()
         eis_database.put_int('steps_per_decade', 1)
         eis_database.put_int('steps_per_cycle', 64)
@@ -101,64 +115,42 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
         self.assertLess(linalg.norm(spectrum_data['impedance'] -
                                     retrieved_data['impedance'], inf), 1e-10)
 
-    def testSeriesRC(self):
-        # make series RC equivalent circuit
+    def test_verification_with_equivalent_circuit(self):
+        # setup equivalent circuit database
         device_database = PropertyTree()
-        device_database.put_string('type', 'SeriesRC')
-        device_database.put_double('series_resistance', R)
-        device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
-        # setup experiment and measure
-        eis_database = setup_expertiment()
-        spectrum_data = measure_impedance_spectrum(device, eis_database)
-        # extract data
-        f = spectrum_data['frequency']
-        Z_computed = spectrum_data['impedance']
-        R_computed = real(Z_computed)
-        X_computed = imag(Z_computed)
-        M_computed = 20*log10(absolute(Z_computed))
-        P_computed = angle(Z_computed)*180/pi
-        # compute the exact solution
-        Z_exact = R+1/(1j*C*2*pi*f)
-        R_exact = real(Z_exact)
-        X_exact = imag(Z_exact)
-        M_exact = 20*log10(absolute(Z_exact))
-        P_exact = angle(Z_exact)*180/pi
-        # ensure the error is small
-        max_phase_error_in_degree = linalg.norm(P_computed-P_exact, inf)
-        max_magniture_error_in_decibel = linalg.norm(M_computed-M_exact, inf)
-        print('max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
-        print('max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
-        self.assertLessEqual(max_phase_error_in_degree, 1)
-        self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
-
-    def testParallelRC(self):
-        # make parallel RC equivalent circuit
-        device_database = PropertyTree()
-        device_database.put_string('type', 'ParallelRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('parallel_resistance', R_L)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, MPI.COMM_WORLD)
-        # setup experiment and measure
-        eis_database = setup_expertiment()
-        spectrum_data = measure_impedance_spectrum(device, eis_database)
-        # extract data
-        f = spectrum_data['frequency']
-        Z_computed = spectrum_data['impedance']
-        M_computed = 20*log10(absolute(Z_computed))
-        P_computed = angle(Z_computed)*180/pi
-        # compute the exact solution
-        Z_exact = R+R_L/(1+1j*R_L*C*2*pi*f)
-        M_exact = 20*log10(absolute(Z_exact))
-        P_exact = angle(Z_exact)*180/pi
-        # ensure the error is small
-        max_phase_error_in_degree = linalg.norm(P_computed-P_exact, inf)
-        max_magniture_error_in_decibel = linalg.norm(M_computed-M_exact, inf)
-        print('max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
-        print('max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
-        self.assertLessEqual(max_phase_error_in_degree, 1)
-        self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
+        # analytical solutions
+        Z = {}
+        Z['SeriesRC'] = lambda f : R+1/(1j*C*2*pi*f)
+        Z['ParallelRC'] = lambda f : R+R_L/(1+1j*R_L*C*2*pi*f)
+        for device_type in ['SeriesRC', 'ParallelRC']:
+            # create a device
+            device_database.put_string('type', device_type)
+            device = EnergyStorageDevice(device_database)
+            # setup experiment and measure
+            eis.reset()
+            eis.run(device)
+            f = eis._data['frequency']
+            Z_computed = eis._data['impedance']
+            # compute the exact solution
+            Z_exact = Z[device_type](f)
+            # ensure the error is small
+            max_phase_error_in_degree = linalg.norm(
+                angle(Z_computed)*180/pi - angle(Z_exact)*180/pi,
+                inf)
+            max_magniture_error_in_decibel = linalg.norm(
+                20*log10(absolute(Z_exact)) - 20*log10(absolute(Z_computed)),
+                inf)
+            print(device_type)
+            print('-- max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
+            print('-- max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
+            self.assertLessEqual(max_phase_error_in_degree, 1)
+            self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
+
+    def test_export_eclab_ascii_format(self):
+            pass
 
 if __name__ == '__main__':
     unittest.main()

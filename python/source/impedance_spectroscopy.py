@@ -361,6 +361,8 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
         self._frequency_lower_limit = ptree.get_double('frequency_lower_limit')
         self._steps_per_decade = ptree.get_int('steps_per_decade')
         self._ptree = copy(ptree)
+        self.reset()
+    def reset(self):
         self._data = {
             'frequency': array([], dtype=float),
             'impedance': array([], dtype=complex)
@@ -378,4 +380,5 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             self._data['impedance'] = append(self._data['impedance'], Z)
             frequency /= power(10.0, 1.0/self._steps_per_decade)
             self.notify()
-Experiment._builders['EIS'] = ElectrochemicalImpedanceSpectroscopy
+for alias in ['EIS', 'ElectrochemicalImpedanceSpectroscopy']:
+    Experiment._builders[alias] = ElectrochemicalImpedanceSpectroscopy
