@@ -30,7 +30,7 @@ Cap has a required dependency on C++11.
 +-----------------------------+------------+---------+
 | Boost                       | Required   | 1.59.0  |
 +-----------------------------+------------+---------+
-| deal.II with p4est/Trilinos | Optional   | 8.3.0   |
+| deal.II with p4est/Trilinos | Optional   | 8.4.0   |
 +-----------------------------+------------+---------+
 | GNU Scientific Library      | Optional   |         |
 +-----------------------------+------------+---------+
@@ -64,15 +64,17 @@ deal.II
 
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type ``SuperCapacitor``.
-Version 8.3.0 or later compiled with C++11/MPI/Boost/p4est/Trilinos support is required.
+Version 8.4.0 or later compiled with C++11/MPI/Boost/p4est/Trilinos support is required.
 The development sources can be found `here <https://github.com/dealii/dealii>`_.
 
-To download the release version 8.3.0, do:
+To download the release version 8.4.0, do:
 
 .. code::
 
-    $ wget --output-document=${PREFIX}/archive/dealii-8.3.0.tar.gz https://github.com/dealii/dealii/releases/download/v8.3.0/dealii-8.3.0.tar.gz
-    $ mkdir ${PREFIX}/source/dealii && tar -xf ${PREFIX}/archive/dealii-8.3.0.tar.gz -C ${PREFIX}/source/dealii --strip-components=1
+    $ wget --output-document=${PREFIX}/archive/dealii-8.4.0.tar.gz \
+        https://github.com/dealii/dealii/releases/download/v8.4.0/dealii-8.4.0.tar.gz
+    $ mkdir ${PREFIX}/source/dealii && tar -xf ${PREFIX}/archive/dealii-8.4.0.tar.gz \
+        -C ${PREFIX}/source/dealii --strip-components=1
 
 It is a good idea to make a `configure_dealii` script such as:
 
