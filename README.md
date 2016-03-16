@@ -1,11 +1,19 @@
 Cap
 ===
 [![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)]()
-[![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
-[![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
 
 Cap is an open-source software library for modeling energy storage devices.
 To get started, [checkout the documentation](https://cap.readthedocs.org).
+
+Continuous Integration Status
+-----------------------------
+
+Provider      | Service       | Status
+------------- | ------------- | ------
+Read the Docs | documentation | [![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
+Travis CI     | unit tests    | [![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
+Codecov       | coverage      | [![codecov.io](https://codecov.io/github/ORNL-CEES/Cap/coverage.svg?branch=master)](https://codecov.io/github/ORNL-CEES/Cap?branch=master)
+
 
 NEW - Escape dependency hell
 ----------------------------
