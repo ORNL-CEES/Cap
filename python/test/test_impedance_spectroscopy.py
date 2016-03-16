@@ -11,6 +11,7 @@ from numpy import inf, linalg, real, imag, pi, log10, absolute, angle
 from numpy import array, testing
 from warnings import catch_warnings, simplefilter
 from mpi4py import MPI
+from h5py import File
 import unittest
 
 R = 50.0e-3   # ohm
@@ -76,11 +77,6 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
             self.fail('data should not be changed by the fourier analyzis')
 
     def testRetrieveData(self):
-        try:
-            from h5py import File
-        except ImportError:
-            print('module h5py not found')
-            return
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
