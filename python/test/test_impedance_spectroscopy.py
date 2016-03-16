@@ -6,49 +6,16 @@
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
                   ECLabAsciiFile
-from pycap import measure_impedance_spectrum, retrieve_impedance_spectrum,\
+from pycap import retrieve_impedance_spectrum,\
                   fourier_analysis, initialize_data
-from numpy import inf, linalg, real, imag, pi, log10, absolute, angle
-from numpy import array, testing
+from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
+                  array, testing, ones, cos, sin
 from warnings import catch_warnings, simplefilter
 from h5py import File
+from io import open
 import unittest
 
-R = 50.0e-3   # ohm
-R_L = 500.0   # ohm
-C = 3.0       # farad
-
-ptree = PropertyTree()
-ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
-ptree.put_double('frequency_upper_limit', 1e+4)
-ptree.put_double('frequency_lower_limit', 1e-6)
-ptree.put_int('steps_per_decade', 3)
-ptree.put_int('steps_per_cycle', 1024)
-ptree.put_int('cycles', 2)
-ptree.put_int('ignore_cycles', 1)
-ptree.put_double('dc_voltage', 0)
-ptree.put_string('harmonics', '3')
-ptree.put_string('amplitudes', '5e-3')
-ptree.put_string('phases', '0')
-eis = Experiment(ptree)
-
-def setup_expertiment():
-    eis_database = PropertyTree()
-    eis_database.put_double('frequency_upper_limit', 1e+4)
-    eis_database.put_double('frequency_lower_limit', 1e-6)
-    eis_database.put_int('steps_per_decade', 3)
-    eis_database.put_int('steps_per_cycle', 1024)
-    eis_database.put_int('cycles', 2)
-    eis_database.put_int('ignore_cycles', 1)
-    eis_database.put_double('dc_voltage', 0)
-    eis_database.put_string('harmonics', ' 3')
-    eis_database.put_string('amplitudes', ' 5e-3')
-    eis_database.put_string('phases', '0')
-
-    return eis_database
-
-
-class capImpedanceSpectroscopyTestCase(unittest.TestCase):
+class ImpedanceSpectroscopyTestCase(unittest.TestCase):
     def test_fourier_analysis(self):
         ptree = PropertyTree()
         ptree.put_int('steps_per_cycle', 3)
@@ -90,23 +57,33 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
             self.fail('data should not be changed by the fourier analyzis')
 
     def test_retrieve_data(self):
-        # TODO: no need to use a device here
-        device_database = PropertyTree()
-        device_database.put_string('type', 'SeriesRC')
-        device_database.put_double('series_resistance', R)
-        device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database)
-        eis_database  = setup_expertiment()
-        eis_database.put_int('steps_per_decade', 1)
-        eis_database.put_int('steps_per_cycle', 64)
-        eis_database.put_int('cycles', 2)
-        eis_database.put_int('ignore_cycles', 1)
-        fout = File('trash.hdf5', 'w')
-        spectrum_data = measure_impedance_spectrum(device, eis_database, fout)
-        fout.close()
-        fin = File('trash.hdf5', 'r')
-        retrieved_data = retrieve_impedance_spectrum(fin)
-        fin.close()
+        ptree = PropertyTree()
+        ptree.put_string('type', 'SeriesRC')
+        ptree.put_double('series_resistance', 100e-3)
+        ptree.put_double('capacitance', 2.5)
+        device = EnergyStorageDevice(ptree)
+
+        ptree = PropertyTree()
+        ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
+        ptree.put_double('frequency_upper_limit', 1e+2)
+        ptree.put_double('frequency_lower_limit', 1e-1)
+        ptree.put_int('steps_per_decade', 1)
+        ptree.put_int('steps_per_cycle', 64)
+        ptree.put_int('cycles', 2)
+        ptree.put_int('ignore_cycles', 1)
+        ptree.put_double('dc_voltage', 0)
+        ptree.put_string('harmonics', '3')
+        ptree.put_string('amplitudes', '5e-3')
+        ptree.put_string('phases', '0')
+        eis = Experiment(ptree)
+
+        with File('trash.hdf5', 'w') as fout:
+            eis.run(device, fout)
+        spectrum_data = eis._data
+
+        with File('trash.hdf5', 'r') as fin:
+            retrieved_data = retrieve_impedance_spectrum(fin)
+
         print(spectrum_data['impedance']-retrieved_data['impedance'])
         print(retrieved_data)
         self.assertEqual(linalg.norm(spectrum_data['frequency'] -
@@ -116,6 +93,23 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
                                     retrieved_data['impedance'], inf), 1e-10)
 
     def test_verification_with_equivalent_circuit(self):
+        R = 50.0e-3   # ohm
+        R_L = 500.0   # ohm
+        C = 3.0       # farad
+        # setup EIS experiment
+        ptree = PropertyTree()
+        ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
+        ptree.put_double('frequency_upper_limit', 1e+4)
+        ptree.put_double('frequency_lower_limit', 1e-6)
+        ptree.put_int('steps_per_decade', 3)
+        ptree.put_int('steps_per_cycle', 1024)
+        ptree.put_int('cycles', 2)
+        ptree.put_int('ignore_cycles', 1)
+        ptree.put_double('dc_voltage', 0)
+        ptree.put_string('harmonics', '3')
+        ptree.put_string('amplitudes', '5e-3')
+        ptree.put_string('phases', '0')
+        eis = Experiment(ptree)
         # setup equivalent circuit database
         device_database = PropertyTree()
         device_database.put_double('series_resistance', R)
@@ -131,7 +125,8 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
             device = EnergyStorageDevice(device_database)
             # setup experiment and measure
             eis.reset()
-            eis.run(device)
+            with File('trash.hdf5', 'w') as fout:
+                eis.run(device, fout)
             f = eis._data['frequency']
             Z_computed = eis._data['impedance']
             # compute the exact solution
@@ -150,7 +145,36 @@ class capImpedanceSpectroscopyTestCase(unittest.TestCase):
             self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
 
     def test_export_eclab_ascii_format(self):
-            pass
+        # define dummy experiment
+        # it is quicker than building an actual EIS experiment
+        class DummyExperiment(Experiment):
+            def __new__(cls, *args, **kwargs):
+                return object.__new__(DummyExperiment)
+            def __init__(self, ptree):
+                Experiment.__init__(self)
+        dummy = DummyExperiment(PropertyTree())
+        # produce dummy data for the experiment
+        # here just a circle on the complex plane
+        n = 10
+        f = ones(n, dtype=float)
+        Z = ones(n, dtype=complex)
+        for i in range(n):
+            f[i] = 10**(i/(n-1))
+            Z[i] = cos(2*pi*i/(n-1)) + 1j * sin(2*pi*i/(n-1))
+        dummy._data['frequency'] = f
+        dummy._data['impedance'] = Z
+
+        # export the data to ECLab format
+        eclab = ECLabAsciiFile('untitled.mpt')
+        eclab.update(dummy)
+
+        # check that all lines end up with Windows-style line break '/r/n'
+        # file need to be open in byte mode or the line ending will be
+        # converted to \'n'...
+        with open('untitled.mpt', mode='rb') as fin:
+            for line in fin.readlines():
+                self.assertNotEqual(line.find(b'\r\n'), -1)
+                self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
 
 if __name__ == '__main__':
     unittest.main()
