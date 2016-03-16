@@ -268,7 +268,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_load(
     double const time_step, double const load)
 {
   // TODO: this is a temporary solution
-  evolve_one_time_step_linear_load(time_step, load);
+  evolve_one_time_step_constant_load(time_step, load);
 }
 
 template <int dim>
