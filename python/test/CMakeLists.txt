@@ -59,6 +59,7 @@ ENDFUNCTION()
 
 COPY_CAP_INPUT_FILE(device.xml    python/test/data)
 COPY_CAP_INPUT_FILE(eis.xml       python/test/data)
+COPY_CAP_INPUT_FILE(BC52-7-100C_C01.mpt python/test/data)
 COPY_CAP_INPUT_FILE(series_rc.info       cpp/test/data)
 COPY_CAP_INPUT_FILE(parallel_rc.info     cpp/test/data)
 COPY_CAP_INPUT_FILE(super_capacitor.info cpp/test/data)

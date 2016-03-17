@@ -305,12 +305,12 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     _ptree : PropertyTree
     _data : dict
         Stores the frequency as a numpy.array of floating point numbers
-        and the impedance as a numpy.arry of complex numbers.
+        and the impedance as a numpy.array of complex numbers.
 
     Examples
     --------
     ptree = PropertyTree()
-    ptree.parse_xml(eis.info)
+    ptree.parse_info(eis.info)
     eis = Experiment(ptree)
 
     observer = NyquistPlot("nyquist_plot.png")

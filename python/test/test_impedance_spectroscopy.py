@@ -170,7 +170,7 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
 
         # check that all lines end up with Windows-style line break '/r/n'
         # file need to be open in byte mode or the line ending will be
-        # converted to \'n'...
+        # converted to '\n'...
         with open('untitled.mpt', mode='rb') as fin:
             for line in fin.readlines():
                 self.assertNotEqual(line.find(b'\r\n'), -1)
