@@ -12,18 +12,13 @@
 #include <cap/energy_storage_device.h>
 #include <cap/equivalent_circuit.h>
 #include <boost/property_tree/info_parser.hpp>
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/range/combine.hpp>
 #include <boost/algorithm/cxx11/is_sorted.hpp>
-#include <boost/format.hpp>
-#include <fstream>
 
-namespace cap {
-
-
-} // end namespace cap
-
-BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
+BOOST_DATA_TEST_CASE( test_equivalent_circuit,
+    boost::unit_test::data::make({true, false}),
+    with_faradaic_processes )
 {
     boost::mpi::communicator world;
 
@@ -36,6 +31,9 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     boost::property_tree::ptree super_capacitor_database;
     boost::property_tree::info_parser::read_info("super_capacitor.info",
                                                  super_capacitor_database);
+    if (!with_faradaic_processes)
+        super_capacitor_database.put("material_properties.electrode_material"
+                                     ".exchange_current_density", 0.0);
 
     // database passed to compute_equivalent_circuit(...) must be empty
     boost::property_tree::ptree not_empty_database;
@@ -49,6 +47,15 @@ BOOST_AUTO_TEST_CASE( test_equivalent_circuit )
     boost::property_tree::ptree equivalent_circuit_database;
     cap::compute_equivalent_circuit(super_capacitor_database,
                                     equivalent_circuit_database);
+
+    if (with_faradaic_processes)
+        BOOST_TEST(
+            equivalent_circuit_database.get<std::string>("type").compare("ParallelRC")
+                == 0);
+    else
+        BOOST_TEST(
+            equivalent_circuit_database.get<std::string>("type").compare("SeriesRC")
+                == 0);
 
     std::shared_ptr<cap::EnergyStorageDevice> super_capacitor =
         cap::EnergyStorageDevice::build(world, super_capacitor_database);
