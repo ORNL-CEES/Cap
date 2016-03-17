@@ -26,7 +26,7 @@ std::shared_ptr<cap::EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & py_ptree,
                             boost::python::object & py_comm);
 
-std::shared_ptr<boost::property_tree::ptree> compute_equivalent_circuit(boost::python::object & python_object);
+boost::property_tree::ptree compute_equivalent_circuit(boost::python::object & python_object);
 
 } // end namespace pycap
 
