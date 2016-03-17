@@ -22,11 +22,6 @@ BOOST_DATA_TEST_CASE( test_equivalent_circuit,
 {
     boost::mpi::communicator world;
 
-    // parse input file
-    boost::property_tree::ptree input_database;
-    boost::property_tree::info_parser::read_info("equivalent_circuits.info",
-                                                 input_database);
-
     // read the property tree for building the supercapacitor
     boost::property_tree::ptree super_capacitor_database;
     boost::property_tree::info_parser::read_info("super_capacitor.info",
