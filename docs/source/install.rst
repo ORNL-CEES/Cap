@@ -19,7 +19,7 @@ We recommend out-of-source builds.
 Install third-party libraries
 -----------------------------
 
-Cap has a required dependency on C++11.
+Cap has a required dependency on C++14.
 
 +-----------------------------+------------+---------+
 | Packages                    | Dependency | Version |
@@ -57,14 +57,14 @@ Assuming that you have downloaded `boost_1_59_0.tar.bz2` into the
     $ tar -xf ${PREFIX}/archive/boost_1_59_0.tar.bz2 -C ${PREFIX}/source/boost --strip-components=1
     $ cd ${PREFIX}/source/boost && ./bootstrap.sh --prefix=${PREFIX}/install/boost
     $ echo "using mpi ;" >> project-config.jam
-    $ ./b2 install -j<N> variant=release cxxflags="-std=c++11"
+    $ ./b2 install -j<N> variant=release cxxflags="-std=c++14"
 
 deal.II
 ^^^^^^^
 
 The open source finite element library deal.II is optional.
 It is only required to work with energy storage devices of type ``SuperCapacitor``.
-Version 8.4.0 or later compiled with C++11/MPI/Boost/p4est/Trilinos support is required.
+Version 8.4.0 or later compiled with C++14/MPI/Boost/p4est/Trilinos support is required.
 The development sources can be found `here <https://github.com/dealii/dealii>`_.
 
 To download the release version 8.4.0, do:
@@ -86,7 +86,7 @@ It is a good idea to make a `configure_dealii` script such as:
     cmake                                                \
         -D CMAKE_INSTALL_PREFIX=${PREFIX}/install/dealii \
         -D CMAKE_BUILD_TYPE=Release                      \
-        -D DEAL_II_WITH_CXX11=ON                         \
+        -D DEAL_II_WITH_CXX14=ON                         \
         -D DEAL_II_WITH_MPI=ON                           \
         -D BOOST_DIR=${PREFIX}/install/boost             \
         -D P4EST_DIR=${PREFIX}/install/p4est             \
