@@ -57,11 +57,3 @@ if(ENABLE_GSL)
     find_package(GSL REQUIRED)
     add_definitions(-DWITH_GSL)
 ENDIF()
-
-#### Tasmanian ###############################################################
-IF(DEFINED TASMANIAN_INSTALL_DIR)
-    MESSAGE("TASMANIAN_INSTALL_DIR = ${TASMANIAN_INSTALL_DIR}")
-    INCLUDE(SetupTasmanian)
-    SET(ENABLE_TASMANIAN ON)
-ENDIF()
-
