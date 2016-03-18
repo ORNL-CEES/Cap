@@ -28,6 +28,31 @@
 namespace cap
 {
 template <int dim>
+void New_SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
+{
+  static int i = 0;
+  New_SuperCapacitor<dim> *supercapacitor =
+      dynamic_cast<New_SuperCapacitor<dim> *>(device);
+  std::vector<std::string> keys =
+      supercapacitor->post_processor->get_vector_keys();
+  std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
+      supercapacitor->geometry->get_triangulation();
+  if (!keys.empty())
+  {
+    dealii::DataOut<dim> data_out;
+    data_out.attach_triangulation(*triangulation);
+    BOOST_FOREACH (std::string const &key, keys)
+      data_out.add_data_vector(supercapacitor->post_processor->get(key), key);
+    data_out.build_patches();
+    std::string const filename =
+        "solution-" + dealii::Utilities::int_to_string(i++, 4) + ".vtk";
+    std::ofstream fout(filename.c_str());
+    data_out.write_vtk(fout);
+    fout.close();
+  }
+}
+
+template <int dim>
 New_SuperCapacitor<dim>::New_SuperCapacitor(
     boost::mpi::communicator const &comm,
     boost::property_tree::ptree const &ptree)

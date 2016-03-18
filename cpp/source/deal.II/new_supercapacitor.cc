@@ -35,6 +35,8 @@ public:
   }
 } global_New_SuperCapacitorBuilder;
 
+template class New_SuperCapacitorInspector<2>;
+template class New_SuperCapacitorInspector<3>;
 template class New_SuperCapacitor<2>;
 template class New_SuperCapacitor<3>;
 

@@ -21,6 +21,14 @@ namespace cap
 {
 
 template <int dim>
+class New_SuperCapacitorInspector : public EnergyStorageDeviceInspector
+{
+public:
+  New_SuperCapacitorInspector() = default;
+  void inspect(EnergyStorageDevice *device);
+};
+
+template <int dim>
 class New_SuperCapacitor : public EnergyStorageDevice
 {
 public:
@@ -115,6 +123,9 @@ private:
   std::shared_ptr<New_SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
   std::shared_ptr<New_SuperCapacitorPostprocessor<dim>> post_processor;
+
+  template <int dimension>
+  friend class New_SuperCapacitorInspector;
 };
 }
 
