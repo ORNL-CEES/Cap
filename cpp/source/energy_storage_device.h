@@ -33,9 +33,9 @@ public:
   virtual ~EnergyStorageDevice();
 
   // DEPRECATED ///////////////////////////////////////
-  virtual void print_data(std::ostream &os) const = 0;
-  virtual void reset_voltage(double const voltage) = 0;
-  virtual void reset_current(double const current) = 0;
+  [[deprecated]] virtual void print_data(std::ostream &os) const = 0;
+  [[deprecated]] virtual void reset_voltage(double const voltage) = 0;
+  [[deprecated]] virtual void reset_current(double const current) = 0;
   /////////////////////////////////////////////////////
 
   virtual void get_voltage(double &voltage) const = 0;
@@ -177,7 +177,7 @@ public:
   static T##Builder global_##T##Builder;
 
 // DEPRECATED /////////////////////////////////////////////////////////
-std::shared_ptr<EnergyStorageDevice>
+[[deprecated]] std::shared_ptr<EnergyStorageDevice>
 buildEnergyStorageDevice(boost::mpi::communicator const &communicator,
                          boost::property_tree::ptree const &ptree);
 ///////////////////////////////////////////////////////////////////////

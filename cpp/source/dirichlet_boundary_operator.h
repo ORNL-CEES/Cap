@@ -19,7 +19,7 @@ namespace cap
 class DirichletBoundaryOperator
 {
 public:
-  DirichletBoundaryOperator(
+  [[deprecated]] DirichletBoundaryOperator(
       std::map<dealii::types::global_dof_index, double> const &bv,
       std::shared_ptr<boost::property_tree::ptree> database)
       : boundary_values(bv)

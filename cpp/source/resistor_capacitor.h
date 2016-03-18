@@ -28,11 +28,11 @@ public:
   /**
    * Output the current, the voltage, and the voltage across the capacitor.
    */
-  void print_data(std::ostream &os) const override;
+  [[deprecated]] void print_data(std::ostream &os) const override;
 
-  void reset_voltage(double const voltage) override;
+  [[deprecated]] void reset_voltage(double const voltage) override;
 
-  void reset_current(double const current) override;
+  [[deprecated]] void reset_current(double const current) override;
 
   void evolve_one_time_step_constant_current(double const delta_t,
                                              double const current) override;
@@ -111,11 +111,11 @@ public:
   /**
    * Output the current, the voltage, and the voltage across the capacitor.
    */
-  void print_data(std::ostream &os) const override;
+  [[deprecated]] void print_data(std::ostream &os) const override;
 
-  void reset_voltage(double const voltage) override;
+  [[deprecated]] void reset_voltage(double const voltage) override;
 
-  void reset_current(double const current) override;
+  [[deprecated]] void reset_current(double const current) override;
 
   void evolve_one_time_step_constant_current(double const delta_t,
                                              double const current) override;

@@ -28,8 +28,8 @@ template <int dim>
 class SuperCapacitor : public EnergyStorageDevice
 {
 public:
-  SuperCapacitor(boost::mpi::communicator const &comm,
-                 boost::property_tree::ptree const &ptree);
+  [[deprecated]] SuperCapacitor(boost::mpi::communicator const &comm,
+                                boost::property_tree::ptree const &ptree);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 

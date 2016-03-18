@@ -34,7 +34,7 @@ template <int dim>
 class ElectrochemicalOperatorParameters : public OperatorParameters<dim>
 {
 public:
-  ElectrochemicalOperatorParameters(
+  [[deprecated]] ElectrochemicalOperatorParameters(
       std::shared_ptr<boost::property_tree::ptree const> d)
       : OperatorParameters<dim>(d)
   {
@@ -55,7 +55,7 @@ template <int dim>
 class ElectrochemicalOperator : public Operator<dim>
 {
 public:
-  ElectrochemicalOperator(
+  [[deprecated]] ElectrochemicalOperator(
       std::shared_ptr<OperatorParameters<dim> const> parameters);
 
   void

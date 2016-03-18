@@ -35,6 +35,9 @@ public:
     return this->triangulation;
   }
 
+  /**
+   * This class modifies an existing triangulation. It does not read a new mesh.
+   */
   virtual void
   reset(std::shared_ptr<boost::property_tree::ptree const> const &database) = 0;
 

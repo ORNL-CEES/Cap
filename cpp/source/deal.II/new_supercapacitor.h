@@ -32,7 +32,7 @@ public:
   /**
    * This function is not implemented and will throw and exception.
    */
-  void print_data(std::ostream &os) const override;
+  [[deprecated]] void print_data(std::ostream &os) const override;
 
   void get_voltage(double &voltage) const override;
 
@@ -41,12 +41,12 @@ public:
   /**
    * This function is not implemented and will throw an exception.
    */
-  void reset_voltage(double const voltage) override;
+  [[deprecated]] void reset_voltage(double const voltage) override;
 
   /**
    * This function is not implemented and will throw an exception.
    */
-  void reset_current(double const current) override;
+  [[deprecated]] void reset_current(double const current) override;
 
   void evolve_one_time_step_constant_current(double const time_step,
                                              double const current) override;
