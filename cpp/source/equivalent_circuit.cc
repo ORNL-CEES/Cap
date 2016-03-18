@@ -6,6 +6,7 @@
  */
 
 #include <cap/mp_values.h>
+#include <cap/energy_storage_device.h>
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -17,12 +18,12 @@ namespace cap
 // reads database for finite element model and write database for equivalent
 // circuit model
 void compute_equivalent_circuit(
-    std::shared_ptr<boost::property_tree::ptree const> input_database,
-    std::shared_ptr<boost::property_tree::ptree> output_database)
+    boost::property_tree::ptree const & input_database,
+    boost::property_tree::ptree & output_database)
 {
   // TODO: of course we could clear the database or just overwrite but for
   // now let's just throw an exception if it is not empty
-  if (!output_database->empty())
+  if (!output_database.empty())
     throw std::runtime_error("output_database was not empty...");
 
   auto to_meters = [](double const &cm)
@@ -35,21 +36,21 @@ void compute_equivalent_circuit(
   };
 
   double const cross_sectional_area =
-      to_square_meters(input_database->get<double>("geometry.geometric_area"));
+      to_square_meters(input_database.get<double>("geometry.geometric_area"));
   // clang-format off
-  double const electrode_width = to_meters(input_database->get<double>("geometry.anode_electrode_thickness"));
-  double const separator_width = to_meters(input_database->get<double>("geometry.separator_thickness"      ));
-  double const collector_width = to_meters(input_database->get<double>("geometry.anode_collector_thickness"));
+  double const electrode_width = to_meters(input_database.get<double>("geometry.anode_electrode_thickness"));
+  double const separator_width = to_meters(input_database.get<double>("geometry.separator_thickness"      ));
+  double const collector_width = to_meters(input_database.get<double>("geometry.anode_collector_thickness"));
   // clang-format on
 
   // getting the material parameters values
   std::shared_ptr<boost::property_tree::ptree> material_properties_database =
       std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("material_properties"));
+          input_database.get_child("material_properties"));
   cap::MPValuesParameters<2> mp_values_params(material_properties_database);
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("geometry"));
+          input_database.get_child("geometry"));
   mp_values_params.geometry =
       std::make_shared<cap::DummyGeometry<2>>(geometry_database);
   std::shared_ptr<cap::MPValues<2>> mp_values =
@@ -60,7 +61,7 @@ void compute_equivalent_circuit(
   dealii::DoFHandler<2> dof_handler(triangulation);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
   // electrode
-  cell->set_material_id(input_database->get<dealii::types::material_id>(
+  cell->set_material_id(input_database.get<dealii::types::material_id>(
       "geometry.anode_electrode_material_id"));
   std::vector<double> electrode_solid_electrical_conductivity_values(1);
   std::vector<double> electrode_liquid_electrical_conductivity_values(1);
@@ -100,7 +101,7 @@ void compute_equivalent_circuit(
   std::cout << "    width=" << electrode_width << "\n";
   std::cout << "    cross_sectional_area=" << cross_sectional_area << "\n";
   // separator
-  cell->set_material_id(input_database->get<dealii::types::material_id>(
+  cell->set_material_id(input_database.get<dealii::types::material_id>(
       "geometry.separator_material_id"));
   std::vector<double> separator_liquid_electrical_conductivity_values(1);
   mp_values->get_values("liquid_electrical_conductivity", cell,
@@ -115,7 +116,7 @@ void compute_equivalent_circuit(
   std::cout << "    width=" << separator_width << "\n";
   std::cout << "    cross_sectional_area=" << cross_sectional_area << "\n";
   // collector
-  cell->set_material_id(input_database->get<dealii::types::material_id>(
+  cell->set_material_id(input_database.get<dealii::types::material_id>(
       "geometry.anode_collector_material_id"));
   std::vector<double> collector_solid_electrical_conductivity_values(1);
   mp_values->get_values("solid_electrical_conductivity", cell,
@@ -148,13 +149,30 @@ void compute_equivalent_circuit(
   std::cout << "sandwich_leakage_resistance=" << sandwich_leakage_resistance
             << "\n";
 
-  output_database->put("capacitance", sandwich_capacitance);
-  output_database->put("series_resistance", sandwich_resistance);
-  output_database->put("parallel_resistance", sandwich_leakage_resistance);
+  output_database.put("capacitance", sandwich_capacitance);
+  output_database.put("series_resistance", sandwich_resistance);
+  output_database.put("parallel_resistance", sandwich_leakage_resistance);
   if (std::isfinite(sandwich_leakage_resistance))
-    output_database->put("type", "ParallelRC");
+    output_database.put("type", "ParallelRC");
   else
-    output_database->put("type", "SeriesRC");
+    output_database.put("type", "SeriesRC");
 }
+
+class EquivalentCircuitBuilder : public EnergyStorageDeviceBuilder
+{
+public:
+  EquivalentCircuitBuilder()
+  {
+    register_energy_storage_device("EquivalentCircuit", this);
+  }
+  std::unique_ptr<EnergyStorageDevice>
+  build(boost::mpi::communicator const &comm,
+        boost::property_tree::ptree const &ptree)
+  {
+      boost::property_tree::ptree other;
+      compute_equivalent_circuit(ptree, other);
+      return EnergyStorageDevice::build(comm, other);
+  }
+} global_EquivalentCircuitBuilder;
 
 } // end namespace cap

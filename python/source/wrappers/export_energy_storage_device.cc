@@ -81,29 +81,6 @@ char const evolve_one_time_step_constant_load_docstring[] =
   "    The load in ohms.                                                    \n"
   ;
 
-char const compute_equivalent_circuit_docstring[] =
-  "Compute the equivalent circuit to a supercapacitor.                      \n"
-  "                                                                         \n"
-  "Parameters                                                               \n"
-  "----------                                                               \n"
-  "ptree : pycap.PropertyTree                                               \n"
-  "    The tree to build a supercapacitor.                                  \n"
-  "                                                                         \n"
-  "Returns                                                                  \n"
-  "-------                                                                  \n"
-  "pycap.PropertyTree                                                       \n"
-  "    The tree to build the equivalent circuit.                            \n"
-  "                                                                         \n"
-  "Examples                                                                 \n"
-  "--------                                                                 \n"
-  ">>> from pycap import PropertyTree, EnergyStorageDevice                  \n"
-  ">>> super_capacitor_ptree = PropertyTree()                               \n"
-  ">>> super_capacitor_ptree.parse_info('super_capacitor.info')             \n"
-  ">>> super_capacitor = EnergyStorageDevice(super_capacitor_ptree)         \n"
-  ">>> equivalent_circuit_ptree = EnergyStorageDevice.compute_equivalent_circuit(super_capacitor_ptree)\n"
-  ">>> equivalent_circuit = EnergyStorageDevice(equivalent_circuit_ptree)   \n"
-  ;
-
 void export_energy_storage_device()
 {
   boost::python::class_<EnergyStorageDeviceWrap,
@@ -158,10 +135,6 @@ void export_energy_storage_device()
     .def("evolve_one_time_step_linear_load",
          boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_load),
          boost::python::args("self", "time_step", "load") )
-    .def("compute_equivalent_circuit", &compute_equivalent_circuit,
-         compute_equivalent_circuit_docstring,
-         boost::python::args("ptree") )
-    .staticmethod("compute_equivalent_circuit")
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
 }

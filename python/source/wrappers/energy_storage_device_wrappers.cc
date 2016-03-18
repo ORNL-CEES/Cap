@@ -72,17 +72,15 @@ build_energy_storage_device(boost::python::object & py_ptree,
     return cap::EnergyStorageDevice::build(comm, ptree);
 }
 
-std::shared_ptr<boost::property_tree::ptree>
+boost::property_tree::ptree
 compute_equivalent_circuit(boost::python::object & python_object)
 {
-    boost::property_tree::ptree const & ptree =
+    boost::property_tree::ptree const & device_database =
         boost::python::extract<boost::property_tree::ptree const &>(python_object);
-    std::shared_ptr<boost::property_tree::ptree> device_database =
-        std::make_shared<boost::property_tree::ptree>(ptree);
-    std::shared_ptr<boost::property_tree::ptree> equivalent_circuit_database =
-        std::make_shared<boost::property_tree::ptree>();
+    boost::property_tree::ptree equivalent_circuit_database;
     cap::compute_equivalent_circuit(device_database, equivalent_circuit_database);
     return equivalent_circuit_database;
 }
+
 } // end namespace pycap
 

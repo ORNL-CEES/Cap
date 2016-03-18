@@ -16,7 +16,7 @@ IF(ENABLE_DEAL_II)
         test_geometry
         test_postprocessor
         test_mp_values
-        test_equivalent_circuit-2
+        test_equivalent_circuit
         test_supercapacitor
         test_exact_transient_solution
         test_exact_transient_solution-2
@@ -33,12 +33,10 @@ ENDIF()
 COPY_CAP_INPUT_FILE(input_ragone_chart.info          )
 COPY_CAP_INPUT_FILE(input_impedance_spectroscopy.info)
 COPY_CAP_INPUT_FILE(input_resistor_capacitor.info    )
-COPY_CAP_INPUT_FILE(input_equivalent_circuit         )
 COPY_CAP_INPUT_FILE(input_verification_problem       )
 COPY_CAP_INPUT_FILE(series_rc.info                   )
 COPY_CAP_INPUT_FILE(parallel_rc.info                 )
 COPY_CAP_INPUT_FILE(super_capacitor.info             )
-COPY_CAP_INPUT_FILE(equivalent_circuits.info         )
 COPY_CAP_INPUT_FILE(verification_problems.info       )
 
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
