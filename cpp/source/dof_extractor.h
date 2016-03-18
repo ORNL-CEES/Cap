@@ -19,9 +19,9 @@ namespace cap
 class DoFExtractor
 {
 public:
-  DoFExtractor(dealii::ComponentMask const &row_mask,
-               dealii::ComponentMask const &column_mask,
-               unsigned int const dofs_per_cell);
+  [[deprecated]] DoFExtractor(dealii::ComponentMask const &row_mask,
+                              dealii::ComponentMask const &column_mask,
+                              unsigned int const dofs_per_cell);
   void reset(dealii::ComponentMask const &row_mask,
              dealii::ComponentMask const &column_mask,
              unsigned int const dofs_per_cell);

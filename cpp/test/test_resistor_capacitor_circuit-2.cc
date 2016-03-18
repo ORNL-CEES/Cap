@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
+        cap::EnergyStorageDevice::build(boost::mpi::communicator(), *device_database);
 
 
     double const series_resistance   = input_database->get<double>("device.series_resistance"              );
@@ -58,7 +58,8 @@ BOOST_AUTO_TEST_CASE( test_resistor_capacitor )
     double const pi        = std::acos(-1.0);
     BOOST_CHECK_EQUAL(std::acos(-1.0), boost::math::constants::pi<double>());
 
-    device->reset_voltage(initial_voltage);
+    for (unsigned int i=0; i<20; ++i)
+      device->evolve_one_time_step_linear_voltage(10., initial_voltage);
     double voltage;
     double current;
     std::fstream fout;

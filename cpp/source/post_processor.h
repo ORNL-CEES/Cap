@@ -71,7 +71,7 @@ class SuperCapacitorPostprocessorParameters
     : public PostprocessorParameters<dim>
 {
 public:
-  SuperCapacitorPostprocessorParameters(
+  [[deprecated]] SuperCapacitorPostprocessorParameters(
       std::shared_ptr<boost::property_tree::ptree const> d);
 };
 
@@ -80,7 +80,7 @@ template <int dim>
 class SuperCapacitorPostprocessor : public Postprocessor<dim>
 {
 public:
-  SuperCapacitorPostprocessor(
+  [[deprecated]] SuperCapacitorPostprocessor(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters);
   void reset(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;

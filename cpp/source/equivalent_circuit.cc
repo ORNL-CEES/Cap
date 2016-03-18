@@ -18,8 +18,8 @@ namespace cap
 // reads database for finite element model and write database for equivalent
 // circuit model
 void compute_equivalent_circuit(
-    boost::property_tree::ptree const & input_database,
-    boost::property_tree::ptree & output_database)
+    boost::property_tree::ptree const &input_database,
+    boost::property_tree::ptree &output_database)
 {
   // TODO: of course we could clear the database or just overwrite but for
   // now let's just throw an exception if it is not empty
@@ -169,9 +169,9 @@ public:
   build(boost::mpi::communicator const &comm,
         boost::property_tree::ptree const &ptree)
   {
-      boost::property_tree::ptree other;
-      compute_equivalent_circuit(ptree, other);
-      return EnergyStorageDevice::build(comm, other);
+    boost::property_tree::ptree other;
+    compute_equivalent_circuit(ptree, other);
+    return EnergyStorageDevice::build(comm, other);
   }
 } global_EquivalentCircuitBuilder;
 

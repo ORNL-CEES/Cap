@@ -20,7 +20,8 @@ template <int dim, int spacedim = dim>
 class BoundaryValuesParameters
 {
 public:
-  BoundaryValuesParameters(std::shared_ptr<boost::property_tree::ptree> d)
+  [[deprecated]] BoundaryValuesParameters(
+      std::shared_ptr<boost::property_tree::ptree> d)
       : database(d)
   {
   }
@@ -36,7 +37,9 @@ class BoundaryValues
 public:
   typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
       active_cell_iterator;
-  BoundaryValues(BoundaryValuesParameters<dim, spacedim> const &) {}
+  [[deprecated]] BoundaryValues(BoundaryValuesParameters<dim, spacedim> const &)
+  {
+  }
   virtual ~BoundaryValues() = default;
   virtual void get_values(std::string const &key,
                           active_cell_iterator const &cell,

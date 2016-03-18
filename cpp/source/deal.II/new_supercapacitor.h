@@ -21,6 +21,14 @@ namespace cap
 {
 
 template <int dim>
+class New_SuperCapacitorInspector : public EnergyStorageDeviceInspector
+{
+public:
+  New_SuperCapacitorInspector() = default;
+  void inspect(EnergyStorageDevice *device);
+};
+
+template <int dim>
 class New_SuperCapacitor : public EnergyStorageDevice
 {
 public:
@@ -29,24 +37,9 @@ public:
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
-  /**
-   * This function is not implemented and will throw and exception.
-   */
-  void print_data(std::ostream &os) const override;
-
   void get_voltage(double &voltage) const override;
 
   void get_current(double &current) const override;
-
-  /**
-   * This function is not implemented and will throw an exception.
-   */
-  void reset_voltage(double const voltage) override;
-
-  /**
-   * This function is not implemented and will throw an exception.
-   */
-  void reset_current(double const current) override;
 
   void evolve_one_time_step_constant_current(double const time_step,
                                              double const current) override;
@@ -130,6 +123,9 @@ private:
   std::shared_ptr<New_SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
   std::shared_ptr<New_SuperCapacitorPostprocessor<dim>> post_processor;
+
+  template <int dimension>
+  friend class New_SuperCapacitorInspector;
 };
 }
 

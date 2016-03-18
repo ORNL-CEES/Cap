@@ -12,7 +12,7 @@ namespace cap
 {
 
 void compute_equivalent_circuit(
-    boost::property_tree::ptree const & input_database,
-    boost::property_tree::ptree & output_database);
+    boost::property_tree::ptree const &input_database,
+    boost::property_tree::ptree &output_database);
 
 } // end namespace cap

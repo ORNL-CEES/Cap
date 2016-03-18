@@ -21,7 +21,7 @@ template <int dim>
 class ThermalOperatorParameters : public OperatorParameters<dim>
 {
 public:
-  ThermalOperatorParameters(
+  [[deprecated]] ThermalOperatorParameters(
       std::shared_ptr<boost::property_tree::ptree const> d)
       : OperatorParameters<dim>(d)
   {
@@ -37,7 +37,8 @@ template <int dim>
 class ThermalOperator : public Operator<dim>
 {
 public:
-  ThermalOperator(std::shared_ptr<OperatorParameters<dim> const> parameters);
+  [[deprecated]] ThermalOperator(
+      std::shared_ptr<OperatorParameters<dim> const> parameters);
 
   void
   reset(std::shared_ptr<OperatorParameters<dim> const> parameters) override;

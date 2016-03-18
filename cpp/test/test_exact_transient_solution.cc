@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_CASE( test_exact_transient_solution )
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     device_database->put("type", "New_SuperCapacitor");
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
+        cap::EnergyStorageDevice::build(boost::mpi::communicator(), *device_database);
 
     // measure discharge curve
     std::fstream fout;

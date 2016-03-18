@@ -103,8 +103,8 @@ BOOST_AUTO_TEST_CASE( test_serialization )
     {
         boost::property_tree::ptree ptree;
         boost::property_tree::info_parser::read_info(filename, ptree);
-        auto original_device = cap::buildEnergyStorageDevice(
-            boost::mpi::communicator(), ptree );
+        std::shared_ptr<cap::EnergyStorageDevice> original_device = 
+          cap::EnergyStorageDevice::build(boost::mpi::communicator(), ptree);
 
         original_device->evolve_one_time_step_constant_voltage(0.1, 2.1);
         double original_voltage;

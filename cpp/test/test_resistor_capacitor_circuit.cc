@@ -46,6 +46,32 @@ boost::property_tree::ptree initialize_database()
     return database;
 }
 
+void set_voltage(cap::SeriesRC &rc, double voltage)
+{
+  rc.U_C = voltage;
+  rc.U   = rc.U_C;
+  rc.I   = 0.0;
+}
+
+void set_current(cap::SeriesRC &rc, double current)
+{
+  rc.I = current;
+  rc.U = rc.U_C + rc.R * rc.I;
+}
+
+void set_voltage(cap::ParallelRC &rc, double voltage)
+{
+  rc.U   = voltage;
+  rc.U_C = rc.R_parallel / (rc.R_series + rc.R_parallel) * rc.U;
+  rc.I   = rc.U / (rc.R_series + rc.R_parallel);
+}
+
+void set_current(cap::ParallelRC &rc, double current)
+{
+  rc.I = current;
+  rc.U = rc.R_series * rc.I + rc.U_C;
+}
+
 
 
 BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
@@ -66,7 +92,7 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_voltage )
     }
 
     // DISCHARGE
-    rc.reset_voltage(U);
+    set_voltage(rc, U);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U_C, U * std::exp(-t/TAU), TOLERANCE);
@@ -88,8 +114,8 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_current )
     cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
-    rc.reset_voltage(0.0);
-    rc.reset_current(I  );
+    set_voltage(rc, 0.0);
+    set_current(rc, I);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U, I * (R_SERIES + t / C), TOLERANCE);
@@ -97,8 +123,8 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_current )
     }
 
     // DISCHARGE
-    rc.reset_voltage( U);
-    rc.reset_current(-I);
+    set_voltage(rc, U);
+    set_current(rc, -I);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U, U - I * (R_SERIES + t / C), TOLERANCE);
@@ -122,10 +148,10 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
     cap::SeriesRC rc_fixed_point(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
-    rc_newton     .reset_current(0.0);
-    rc_newton     .reset_voltage(U  );
-    rc_fixed_point.reset_current(0.0);
-    rc_fixed_point.reset_voltage(U  );
+    set_current(rc_newton, 0.0);
+    set_voltage(rc_newton, U);
+    set_current(rc_fixed_point, 0.0);
+    set_voltage(rc_fixed_point, U);
 
     BOOST_FOREACH(double const & t, time)
     {
@@ -140,10 +166,10 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_power )
    BOOST_CHECK_THROW(rc_newton.evolve_one_time_step_constant_power(DELTA_T, P, "INVALID_ROOT_FINDING_METHOD"), std::runtime_error);
 
     // DISCHARGE
-    rc_newton     .reset_current(0.0);
-    rc_newton     .reset_voltage(U  );
-    rc_fixed_point.reset_current(0.0);
-    rc_fixed_point.reset_voltage(U  );
+    set_current(rc_newton, 0.0);
+    set_voltage(rc_newton, U);
+    set_current(rc_fixed_point, 0.0);
+    set_voltage(rc_fixed_point, U);
     BOOST_FOREACH(double const & t, time)
     {
         std::ignore = t; 
@@ -170,7 +196,7 @@ BOOST_AUTO_TEST_CASE( test_series_rc_constant_load )
     cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
 
     // DISCHARGE
-    rc.reset_voltage(U);
+    set_voltage(rc, U);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U, U * std::exp(- t / ((R_SERIES + R_LOAD) * C)) * (1.0 - ((t > 0.0) ? R_SERIES / (R_SERIES + R_LOAD) : 0.0)), TOLERANCE);
@@ -193,8 +219,8 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_current )
     rc.R_series = 0.0;
 
     // CHARGE
-    rc.reset_voltage(0.0);
-    rc.reset_current(I  );
+    set_voltage(rc, 0.0);
+    set_current(rc, I);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U_C, R_PARALLEL * I * (1.0 - std::exp(-t/(R_PARALLEL*C))), TOLERANCE);
@@ -202,8 +228,8 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_current )
     }
 
     // RELAXATION
-    rc.reset_voltage(U  );
-    rc.reset_current(0.0);
+    set_voltage(rc,U  );
+    set_current(rc,0.0);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U_C, U * std::exp(-t/(R_PARALLEL*C)), TOLERANCE);
@@ -225,7 +251,7 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_voltage )
     cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
-    rc.reset_voltage(0.0);
+    set_voltage(rc, 0.0);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U_C, 
@@ -252,10 +278,10 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_power )
     cap::SeriesRC rc_fixed_point(boost::mpi::communicator(), initialize_database());
 
     // CHARGE
-    rc_newton     .reset_current(0.0);
-    rc_newton     .reset_voltage(U  );
-    rc_fixed_point.reset_current(0.0);
-    rc_fixed_point.reset_voltage(U  );
+    set_current(rc_newton, 0.0);
+    set_voltage(rc_newton, U  );
+    set_current(rc_fixed_point, 0.0);
+    set_voltage(rc_fixed_point, U  );
 
     BOOST_FOREACH(double const & t, time)
     {
@@ -270,10 +296,10 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_power )
     BOOST_CHECK_THROW(rc_newton.evolve_one_time_step_constant_power(DELTA_T, P, "INVALID_ROOT_FINDING_METHOD"), std::runtime_error);
 
     // DISCHARGE
-    rc_newton     .reset_current(0.0);
-    rc_newton     .reset_voltage(U  );
-    rc_fixed_point.reset_current(0.0);
-    rc_fixed_point.reset_voltage(U  );
+    set_current(rc_newton, 0.0);
+    set_voltage(rc_newton, U  );
+    set_current(rc_fixed_point, 0.0);
+    set_voltage(rc_fixed_point, U  );
 
     BOOST_FOREACH(double const & t, time)
     {
@@ -301,7 +327,7 @@ BOOST_AUTO_TEST_CASE( test_parallel_rc_constant_load )
     rc.R_series = 0.0;
 
     // DISCHARGE
-    rc.reset_voltage(U);
+    set_voltage(rc, U);
     BOOST_FOREACH(double const & t, time)
     {
         BOOST_CHECK_CLOSE(rc.U, U * std::exp(- t * (1.0 + (R_SERIES + R_LOAD)/R_PARALLEL) / ((R_SERIES + R_LOAD) * C)) * (1.0 - ((t > 0.0) ? R_SERIES * (1.0 + (R_SERIES + R_LOAD)/R_PARALLEL) / (R_SERIES + R_LOAD) : 0.0)), TOLERANCE);

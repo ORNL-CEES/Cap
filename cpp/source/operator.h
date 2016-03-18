@@ -28,7 +28,8 @@ template <int dim>
 class OperatorParameters
 {
 public:
-  OperatorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
+  [[deprecated]] OperatorParameters(
+      std::shared_ptr<boost::property_tree::ptree const> d)
       : database(d)
   {
   }
@@ -61,7 +62,8 @@ template <int dim>
 class Operator
 {
 public:
-  Operator(std::shared_ptr<OperatorParameters<dim> const> parameters);
+  [[deprecated]] Operator(
+      std::shared_ptr<OperatorParameters<dim> const> parameters);
 
   virtual ~Operator() = default;
 

@@ -28,6 +28,31 @@
 namespace cap
 {
 template <int dim>
+void New_SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
+{
+  static int i = 0;
+  New_SuperCapacitor<dim> *supercapacitor =
+      dynamic_cast<New_SuperCapacitor<dim> *>(device);
+  std::vector<std::string> keys =
+      supercapacitor->post_processor->get_vector_keys();
+  std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
+      supercapacitor->geometry->get_triangulation();
+  if (!keys.empty())
+  {
+    dealii::DataOut<dim> data_out;
+    data_out.attach_triangulation(*triangulation);
+    BOOST_FOREACH (std::string const &key, keys)
+      data_out.add_data_vector(supercapacitor->post_processor->get(key), key);
+    data_out.build_patches();
+    std::string const filename =
+        "solution-" + dealii::Utilities::int_to_string(i++, 4) + ".vtk";
+    std::ofstream fout(filename.c_str());
+    data_out.write_vtk(fout);
+    fout.close();
+  }
+}
+
+template <int dim>
 New_SuperCapacitor<dim>::New_SuperCapacitor(
     boost::mpi::communicator const &comm,
     boost::property_tree::ptree const &ptree)
@@ -132,13 +157,6 @@ void New_SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::print_data(std::ostream &os) const
-{
-  std::ignore = os;
-  throw std::runtime_error("This function is not implemented");
-}
-
-template <int dim>
 void New_SuperCapacitor<dim>::get_voltage(double &voltage) const
 {
   post_processor->get("voltage", voltage);
@@ -148,20 +166,6 @@ template <int dim>
 void New_SuperCapacitor<dim>::get_current(double &current) const
 {
   post_processor->get("current", current);
-}
-
-template <int dim>
-void New_SuperCapacitor<dim>::reset_voltage(double const voltage)
-{
-  std::ignore = voltage;
-  throw std::runtime_error("This function is not implemented");
-}
-
-template <int dim>
-void New_SuperCapacitor<dim>::reset_current(double const current)
-{
-  std::ignore = current;
-  throw std::runtime_error("This function is not implemented");
 }
 
 template <int dim>
