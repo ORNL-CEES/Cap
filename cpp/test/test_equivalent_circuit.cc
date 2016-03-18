@@ -16,6 +16,30 @@
 #include <boost/range/combine.hpp>
 #include <boost/algorithm/cxx11/is_sorted.hpp>
 
+BOOST_AUTO_TEST_CASE( build_equivalent_circuit )
+{
+    boost::mpi::communicator world;
+
+    // read the property tree for building a supercapacitor`
+    boost::property_tree::ptree ptree;
+    boost::property_tree::info_parser::read_info("super_capacitor.info",
+                                                 ptree);
+
+    // this is the new prefered way to make an equivalent circuit
+    //
+    ptree.put("type", "EquivalentCircuit");
+    auto device = cap::EnergyStorageDevice::build(world, ptree);
+
+    // database passed to compute_equivalent_circuit(...) must be empty
+    boost::property_tree::ptree not_empty_database;
+    not_empty_database.put("something", "not_empty");
+    BOOST_CHECK_THROW(
+        cap::compute_equivalent_circuit(ptree,
+                                        not_empty_database),
+        std::runtime_error);
+
+}
+
 BOOST_DATA_TEST_CASE( test_equivalent_circuit,
     boost::unit_test::data::make({true, false}),
     with_faradaic_processes )
@@ -29,14 +53,6 @@ BOOST_DATA_TEST_CASE( test_equivalent_circuit,
     if (!with_faradaic_processes)
         super_capacitor_database.put("material_properties.electrode_material"
                                      ".exchange_current_density", 0.0);
-
-    // database passed to compute_equivalent_circuit(...) must be empty
-    boost::property_tree::ptree not_empty_database;
-    not_empty_database.put("something", "not_empty");
-    BOOST_CHECK_THROW(
-        cap::compute_equivalent_circuit(super_capacitor_database,
-                                        not_empty_database),
-        std::runtime_error);
 
     // get the property tree to build the equivalent circuit
     boost::property_tree::ptree equivalent_circuit_database;

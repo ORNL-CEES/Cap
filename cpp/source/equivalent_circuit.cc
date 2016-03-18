@@ -6,6 +6,7 @@
  */
 
 #include <cap/mp_values.h>
+#include <cap/energy_storage_device.h>
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -156,5 +157,22 @@ void compute_equivalent_circuit(
   else
     output_database.put("type", "SeriesRC");
 }
+
+class EquivalentCircuitBuilder : public EnergyStorageDeviceBuilder
+{
+public:
+  EquivalentCircuitBuilder()
+  {
+    register_energy_storage_device("EquivalentCircuit", this);
+  }
+  std::unique_ptr<EnergyStorageDevice>
+  build(boost::mpi::communicator const &comm,
+        boost::property_tree::ptree const &ptree)
+  {
+      boost::property_tree::ptree other;
+      compute_equivalent_circuit(ptree, other);
+      return EnergyStorageDevice::build(comm, other);
+  }
+} global_EquivalentCircuitBuilder;
 
 } // end namespace cap
