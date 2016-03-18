@@ -64,7 +64,8 @@ find_power_energy(std::shared_ptr<cap::EnergyStorageDevice> dev, std::shared_ptr
         step   = 0;
         time   = 0.0;
         energy = 0.0;
-        dev->reset_voltage(initial_voltage);
+        for (unsigned int i=0; i<20; ++i)
+          dev->evolve_one_time_step_constant_voltage(10., initial_voltage);
         for (voltage = initial_voltage ; voltage >= final_voltage; )
         {
             ++step;
@@ -344,7 +345,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_power )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
+        cap::EnergyStorageDevice::build(boost::mpi::communicator(), *device_database);
 
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_power"));
@@ -370,7 +371,7 @@ BOOST_AUTO_TEST_CASE( test_ragone_chart_constant_current )
     std::shared_ptr<boost::property_tree::ptree> device_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("device"));
     std::shared_ptr<cap::EnergyStorageDevice> device =
-        cap::buildEnergyStorageDevice(boost::mpi::communicator(), *device_database);
+        cap::EnergyStorageDevice::build(boost::mpi::communicator(), *device_database);
 
     std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
         std::make_shared<boost::property_tree::ptree>(input_database->get_child("ragone_chart_constant_current"));

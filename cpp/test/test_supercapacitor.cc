@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( test_supercapacitor, *
         "super_capacitor.info", ptree);
     boost::mpi::communicator world; 
     std::shared_ptr<cap::EnergyStorageDevice> supercap =
-        cap::buildEnergyStorageDevice(world, ptree);
+        cap::EnergyStorageDevice::build(world, ptree);
 
     // check sanity
     cap::check_sanity(supercap);

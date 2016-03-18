@@ -30,10 +30,11 @@ SeriesRC::SeriesRC(boost::mpi::communicator const &comm,
                    boost::property_tree::ptree const &ptree)
     : EnergyStorageDevice(comm)
 {
-  R = ptree.get<double>("series_resistance");
-  C = ptree.get<double>("capacitance");
-  U = ptree.get<double>("initial_voltage", 0.0);
-  this->reset_voltage(U);
+  R   = ptree.get<double>("series_resistance");
+  C   = ptree.get<double>("capacitance");
+  U   = ptree.get<double>("initial_voltage", 0.0);
+  U_C = U;
+  I   = 0.0;
 }
 
 void SeriesRC::print_data(std::ostream &os) const
@@ -165,8 +166,9 @@ ParallelRC::ParallelRC(boost::mpi::communicator const &comm,
   R_series   = ptree.get<double>("series_resistance");
   R_parallel = ptree.get<double>("parallel_resistance");
   C          = ptree.get<double>("capacitance");
-  U = ptree.get<double>("initial_voltage", 0.0);
-  this->reset_voltage(U);
+  U          = ptree.get<double>("initial_voltage", 0.0);
+  U_C        = R_parallel / (R_series + R_parallel) * U;
+  I          = U / (R_series + R_parallel);
 }
 
 void ParallelRC::print_data(std::ostream &os) const
