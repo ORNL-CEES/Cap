@@ -13,6 +13,7 @@ Provider      | Service       | Status
 Read the Docs | documentation | [![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
 Travis CI     | unit tests    | [![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
 Codecov       | coverage      | [![codecov.io](https://codecov.io/github/ORNL-CEES/Cap/coverage.svg?branch=master)](https://codecov.io/github/ORNL-CEES/Cap?branch=master)
+Slack         | messaging     | [![Slack](https://img.shields.io/badge/Slack-%23cap-ff69b4.svg)](https://ornl-cees.slack.com/archives/cap)
 
 
 NEW - Escape dependency hell
