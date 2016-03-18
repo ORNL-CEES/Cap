@@ -6,22 +6,19 @@ services:
 notifications:
   email: false
 
-before_script:
+before_install:
+  - pip install codecov
   - docker pull dalg24/cap-stack
 
 script:
   - docker --version
   - pwd
   - docker run
-        -e CI=true
-        -e TRAVIS=true
-        -e TRAVIS_BRANCH=${TRAVIS_BRANCH}
-        -e TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER}
-        -e TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
-        -e TRAVIS_JOB_ID=${TRAVIS_JOB_ID}
-        -e TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}
-        -e TRAVIS_COMMIT=${TRAVIS_COMMIT}
-        -e TRAVIS_BUILD_DIR=/scratch/source/cap
-        -v ${PWD}:/scratch/source/cap
+        -v ${TRAVIS_BUILD_DIR}:/scratch/source/cap
         dalg24/cap-stack
         /scratch/source/cap/docker/build_cap.sh
+
+after_success:
+  - codecov
+        --disable gcov search pycov
+        --file lcov.info coverage.xml
