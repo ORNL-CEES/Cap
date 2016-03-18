@@ -339,7 +339,8 @@ RUN cd ${PREFIX}/source && \
         ipyparallel \
         ipywidgets \
         mpi4py \
-        sympy
+        sympy \
+        coverage
 
 RUN CFLAGS="-I${MPI_DIR}/include -I${HDF5_DIR}/include" \
     LDFLAGS="-L${HDF5_DIR}/lib" \

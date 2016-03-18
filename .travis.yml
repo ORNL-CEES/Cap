@@ -10,17 +10,22 @@ language: python
 
 before_install:
   - docker pull dalg24/cap-stack
+  - docker run
+        -d -it --name=test-machine
+        -v ${TRAVIS_BUILD_DIR}:/scratch/source/cap
+        dalg24/cap-stack
+        bash
+  - docker ps -a
+  - docker exec test-machine
+        /scratch/source/cap/docker/build_cap.sh
+  - docker cp test-machine:/scratch/build/cap/lcov.info .
+  - docker cp test-machine:/scratch/build/cap/coverage.xml .
 
 install:
   - pip install -q codecov
 
 script:
-  - docker --version
-  - pwd
-  - docker run
-        -v ${TRAVIS_BUILD_DIR}:/scratch/source/cap
-        dalg24/cap-stack
-        /scratch/source/cap/docker/build_cap.sh
+  - echo "Hello World"
 
 after_success:
   - codecov
