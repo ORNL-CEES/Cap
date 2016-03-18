@@ -132,13 +132,6 @@ void New_SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::print_data(std::ostream &os) const
-{
-  std::ignore = os;
-  throw std::runtime_error("This function is not implemented");
-}
-
-template <int dim>
 void New_SuperCapacitor<dim>::get_voltage(double &voltage) const
 {
   post_processor->get("voltage", voltage);
@@ -148,20 +141,6 @@ template <int dim>
 void New_SuperCapacitor<dim>::get_current(double &current) const
 {
   post_processor->get("current", current);
-}
-
-template <int dim>
-void New_SuperCapacitor<dim>::reset_voltage(double const voltage)
-{
-  std::ignore = voltage;
-  throw std::runtime_error("This function is not implemented");
-}
-
-template <int dim>
-void New_SuperCapacitor<dim>::reset_current(double const current)
-{
-  std::ignore = current;
-  throw std::runtime_error("This function is not implemented");
 }
 
 template <int dim>

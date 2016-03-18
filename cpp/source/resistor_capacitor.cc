@@ -37,24 +37,6 @@ SeriesRC::SeriesRC(boost::mpi::communicator const &comm,
   I   = 0.0;
 }
 
-void SeriesRC::print_data(std::ostream &os) const
-{
-  os << boost::format("  %10.7f  %10.7f  %10.7f  \n") % I % U % U_C;
-}
-
-void SeriesRC::reset_voltage(double const voltage)
-{
-  U_C = voltage;
-  U   = U_C;
-  I   = 0.0;
-}
-
-void SeriesRC::reset_current(double const current)
-{
-  I = current;
-  U = U_C + R * I;
-}
-
 void SeriesRC::reset(double const capacitor_voltage)
 {
   U_C = capacitor_voltage;
@@ -169,24 +151,6 @@ ParallelRC::ParallelRC(boost::mpi::communicator const &comm,
   U          = ptree.get<double>("initial_voltage", 0.0);
   U_C        = R_parallel / (R_series + R_parallel) * U;
   I          = U / (R_series + R_parallel);
-}
-
-void ParallelRC::print_data(std::ostream &os) const
-{
-  os << boost::format("  %10.7f  %10.7f  %10.7f  \n") % I % U % U_C;
-}
-
-void ParallelRC::reset_voltage(double const voltage)
-{
-  U   = voltage;
-  U_C = R_parallel / (R_series + R_parallel) * U;
-  I   = U / (R_series + R_parallel);
-}
-
-void ParallelRC::reset_current(double const current)
-{
-  I = current;
-  U = R_series * I + U_C;
 }
 
 void ParallelRC::reset(double const capacitor_voltage)
