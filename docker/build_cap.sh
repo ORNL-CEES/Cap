@@ -26,6 +26,6 @@ export LD_LIBRARY_PATH=${BOOST_DIR}/lib:$LD_LIBRARY_PATH && \
 export PATH=${PYTHON_DIR}/bin:${PATH} && \
 ctest -j2 -V && \
 make coverage-cpp && make coverage-python && \
-sed "s|/dummy/cap||g" lcov.info > ${PREFIX}/source/cap/lcov.info && \
-sed "s|python/pycap|python/source|g" coverage.xml > ${PREFIX}/source/cap/coverage.xml && \
+sed -i.fixpath "s|/dummy/cap||g" lcov.info && \
+sed -i.fixpath "s|python/pycap|python/source|g" coverage.xml
 EOF
