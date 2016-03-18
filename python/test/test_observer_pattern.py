@@ -1,4 +1,4 @@
-from pycap import PropertyTree, Observer, Observable
+from pycap import PropertyTree, Observer, Observable, Experiment
 import unittest
 
 class ObserverObservableTestCase(unittest.TestCase):
@@ -97,6 +97,37 @@ class ObserverObservableTestCase(unittest.TestCase):
         subject.attach(ConcreteObserver())
         self.assertRaises(RuntimeError, subject.notify)
 
+class ExperimentTestCase(unittest.TestCase):
+    def test_abstract_class(self):
+        # Declare a concrete Experiment
+        class DummyExperiment(Experiment):
+            def __new__(cls, *args, **kwargs):
+                return object.__new__(DummyExperiment)
+            def __init__(self, ptree):
+                Experiment.__init__(self)
+        # Do not forget to register it to the builders dictionary.
+        Observable._builders['Dummy'] = DummyExperiment
+
+        # Construct directly via DummyExperiment with a PropertyTree as a
+        # positional arguemnt
+        ptree = PropertyTree()
+        dummy = DummyExperiment(ptree)
+
+        # ... or directly via Experiment by specifying the ``type`` of
+        # Experiment.
+        ptree.put_string('type', 'Dummy')
+        dummy = Experiment(ptree)
+
+        # The method run() must be overloaded.
+        self.assertRaises(RuntimeError, dummy.run, None)
+
+        # Override the method run().
+        def run(self, device):
+            pass
+        DummyExperiment.run = run
+
+        # Now calling it without raising an error.
+        dummy.run(None)
 
 if __name__ == '__main__':
     unittest.main()

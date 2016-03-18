@@ -8,6 +8,7 @@ from pycap import PropertyTree, EnergyStorageDevice
 from pycap import measure_performance, retrieve_performance_data
 from numpy import sqrt, log, inf, linalg
 from mpi4py import MPI
+from h5py import File
 import unittest
 
 comm = MPI.COMM_WORLD
@@ -35,11 +36,6 @@ def setup_expertiment():
 
 class capRagonePlotTestCase(unittest.TestCase):
     def testRetrieveData(self):
-        try:
-            from h5py import File
-        except ImportError:
-            print('module h5py not found')
-            return
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)

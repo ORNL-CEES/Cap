@@ -14,7 +14,7 @@ from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
 from .observer_pattern import Observer, Observable, Experiment
 
-__all__ = ['measure_impedance_spectrum', 'plot_nyquist', 'plot_bode',
+__all__ = ['plot_nyquist', 'plot_bode',
            'fourier_analysis', 'retrieve_impedance_spectrum',
            'NyquistPlot', 'BodePlot', 'ECLabAsciiFile',
            'ElectrochemicalImpedanceSpectroscopy']
@@ -91,37 +91,6 @@ def run_one_cycle(device, ptree):
             report_data(data, time, device)
 
     return data
-
-
-def measure_impedance_spectrum(device, ptree, fout=None, dummy=None):
-    '''Deprecated
-
-    See Also
-    -------
-    ElectrochemicalImpedanceSpectroscopy
-    '''
-    frequency_upper_limit = ptree.get_double('frequency_upper_limit')
-    frequency_lower_limit = ptree.get_double('frequency_lower_limit')
-    steps_per_decade = ptree.get_int('steps_per_decade')
-    eis_data = {'frequency': array([], dtype=float),
-                'impedance': array([], dtype=complex)}
-    frequency = frequency_upper_limit
-    while frequency >= frequency_lower_limit:
-        # print frequency
-        ptree.put_double('frequency', frequency)
-        data = run_one_cycle(device, ptree)
-        if fout:
-            path = '/eis_data/frequency=' + str(frequency) + 'Hz'
-            save_data(data, path, fout)
-        f, Z = fourier_analysis(data, ptree)
-        eis_data['frequency'] = append(eis_data['frequency'], f)
-        eis_data['impedance'] = append(eis_data['impedance'], Z)
-        if dummy:
-            dummy(eis_data)
-        frequency /= power(10.0, 1.0/steps_per_decade)
-
-    return eis_data
-
 
 def retrieve_impedance_spectrum(fin):
     path = 'eis_data'
@@ -336,12 +305,12 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     _ptree : PropertyTree
     _data : dict
         Stores the frequency as a numpy.array of floating point numbers
-        and the impedance as a numpy.arry of complex numbers.
+        and the impedance as a numpy.array of complex numbers.
 
     Examples
     --------
     ptree = PropertyTree()
-    ptree.parse_xml(eis.info)
+    ptree.parse_info(eis.info)
     eis = Experiment(ptree)
 
     observer = NyquistPlot("nyquist_plot.png")
@@ -361,6 +330,8 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
         self._frequency_lower_limit = ptree.get_double('frequency_lower_limit')
         self._steps_per_decade = ptree.get_int('steps_per_decade')
         self._ptree = copy(ptree)
+        self.reset()
+    def reset(self):
         self._data = {
             'frequency': array([], dtype=float),
             'impedance': array([], dtype=complex)
@@ -378,4 +349,5 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             self._data['impedance'] = append(self._data['impedance'], Z)
             frequency /= power(10.0, 1.0/self._steps_per_decade)
             self.notify()
-Experiment._builders['EIS'] = ElectrochemicalImpedanceSpectroscopy
+for alias in ['EIS', 'ElectrochemicalImpedanceSpectroscopy']:
+    Experiment._builders[alias] = ElectrochemicalImpedanceSpectroscopy
