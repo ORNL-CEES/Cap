@@ -4,7 +4,8 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license. 
 
-from pycap import PropertyTree, EnergyStorageDevice
+from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
+                  RagoneAnalysis, RagonePlot
 from pycap import measure_performance, retrieve_performance_data
 from numpy import sqrt, log, inf, linalg
 from mpi4py import MPI
@@ -34,21 +35,30 @@ def setup_expertiment():
     return ragone_database
 
 
-class capRagonePlotTestCase(unittest.TestCase):
-    def testRetrieveData(self):
-        device_database = PropertyTree()
-        device_database.put_string('type', 'SeriesRC')
-        device_database.put_double('series_resistance', R)
-        device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, comm)
-        ragone_database = setup_expertiment()
-        ragone_database.put_int('min_steps_per_discharge', 20)
-        ragone_database.put_int('max_steps_per_discharge', 30)
-        ragone_database.put_int('steps_per_decade', 2)
-        ragone_database.put_double('time_step', 1.5)
-        fout = File('trash.hdf5', 'w')
-        performance_data = measure_performance(device, ragone_database, fout)
-        fout.close()
+class RagoneAnalysisTestCase(unittest.TestCase):
+    def test_retrieve_data(self):
+        ptree = PropertyTree()
+        ptree.put_string('type', 'SeriesRC')
+        ptree.put_double('series_resistance', 50e-3)
+        ptree.put_double('capacitance', 3)
+        device = EnergyStorageDevice(ptree)
+
+        ptree = PropertyTree()
+        ptree.put_string('type', 'RagoneAnalysis')
+        ptree.put_double('discharge_power_lower_limit', 1e-1)
+        ptree.put_double('discharge_power_upper_limit', 1e+1)
+        ptree.put_int('steps_per_decade', 1)
+        ptree.put_double('initial_voltage', 2.1)
+        ptree.put_double('final_voltage', 0.7)
+        ptree.put_double('time_step', 1.5)
+        ptree.put_int('min_steps_per_discharge', 20)
+        ptree.put_int('max_steps_per_discharge', 30)
+        ragone = Experiment(ptree)
+       
+        with File('trash.hdf5', 'w') as fout:
+            ragone.run(device, fout)
+        performance_data = ragone._data
+
         fin = File('trash.hdf5', 'r')
         retrieved_data = retrieve_performance_data(fin)
         fin.close()
@@ -59,15 +69,27 @@ class capRagonePlotTestCase(unittest.TestCase):
                                      retrieved_data['energy'], inf), 0.0)
 
     def testSeriesRC(self):
+        # setup experiment
+        ptree = PropertyTree()
+        ptree.put_double('discharge_power_lower_limit', 1e-2)
+        ptree.put_double('discharge_power_upper_limit', 1e+2)
+        ptree.put_int('steps_per_decade', 3)
+        ptree.put_double('initial_voltage', U_i)
+        ptree.put_double('final_voltage', U_f)
+        ptree.put_double('time_step', 15)
+        ptree.put_int('min_steps_per_discharge', 2000)
+        ptree.put_int('max_steps_per_discharge', 3000)
+        ragone = RagoneAnalysis(ptree)
         # make series RC equivalent circuit
         device_database = PropertyTree()
         device_database.put_string('type', 'SeriesRC')
         device_database.put_double('series_resistance', R)
+        device_database.put_double('parallel_resistance', R_L)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, comm)
+        device = EnergyStorageDevice(device_database)
         # setup experiment and measure
-        ragone_database = setup_expertiment()
-        performance_data = measure_performance(device, ragone_database)
+        ragone.run(device)
+        performance_data = ragone._data
         # extract data
         E_computed = performance_data['energy']
         P = performance_data['power']
