@@ -68,6 +68,10 @@ class RagoneAnalysisTestCase(unittest.TestCase):
         self.assertEqual(linalg.norm(performance_data['energy'] -
                                      retrieved_data['energy'], inf), 0.0)
 
+        # TODO: probably want to move this into its own test
+        ragoneplot = RagonePlot("ragone.png")
+        ragoneplot.update(ragone)
+
     def testSeriesRC(self):
         # setup experiment
         ptree = PropertyTree()

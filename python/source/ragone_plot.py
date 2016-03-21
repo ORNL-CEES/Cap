@@ -120,7 +120,6 @@ def measure_performance(device, ptree, fout=None, dummy=None):
         except RuntimeError:
             print('Failed to discharge at {0} watt'.format(discharge_power))
             break
-        # TODO:
         performance_data['energy'] = append(performance_data['energy'],
                                             -energy_out)
         performance_data['power'] = append(performance_data['power'],
@@ -220,7 +219,7 @@ class RagoneAnalysis(Experiment):
                 for measurement in ['first', 'second']:
                     data = run_discharge(device, self._ptree)
                     if fout:
-                        path = '/ragone_chart_data'
+                        path = 'ragone_chart_data'
                         path += '/power=' + str(discharge_power) + 'W'
                         path += '/' + measurement
                         save_data(data, path, fout)
@@ -236,7 +235,6 @@ class RagoneAnalysis(Experiment):
             except RuntimeError:
                 print('Failed to discharge at {0} watt'.format(discharge_power))
                 break
-            # TODO:
             self._data['energy'] = append(self._data['energy'],
                                           -energy_out)
             self._data['power'] = append(self._data['power'],
