@@ -5,7 +5,7 @@
 # for the text and further information on this license. 
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
-                  ECLabAsciiFile
+                  ECLabAsciiFile, NyquistPlot, BodePlot
 from pycap import retrieve_impedance_spectrum,\
                   fourier_analysis, initialize_data
 from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
@@ -175,6 +175,15 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             for line in fin.readlines():
                 self.assertNotEqual(line.find(b'\r\n'), -1)
                 self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
+
+        # check Nyquist plot does not throw
+        nyquist = NyquistPlot('nyquist.png')
+        nyquist.update(dummy)
+
+        # check Bode plot
+        # TODO: BodePlot is not implemented yet
+#        bode = BodePlot('bode.png')
+#        bode.update(dummy)
 
 if __name__ == '__main__':
     unittest.main()

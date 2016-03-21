@@ -342,7 +342,8 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             self._ptree.put_double('frequency', frequency)
             data = run_one_cycle(device, self._ptree)
             if fout:
-                path = '/eis_data/frequency=' + str(frequency) + 'Hz'
+                path = 'eis_data'
+                path += '/frequency=' + str(frequency) + 'Hz'
                 save_data(data, path, fout)
             f, Z = fourier_analysis(data, self._ptree)
             self._data['frequency'] = append(self._data['frequency'], f)
