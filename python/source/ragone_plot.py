@@ -12,7 +12,7 @@ from .charge_discharge import Charge, Discharge
 from .data_helpers import initialize_data, save_data
 from .observer_pattern import Experiment, Observer
 
-__all__ = ['measure_performance', 'plot_ragone', 'retrieve_performance_data',
+__all__ = ['plot_ragone', 'retrieve_performance_data',
            'RagonePlot', 'RagoneAnalysis']
 
 
@@ -87,48 +87,6 @@ def examine_discharge(data):
     energy_out = trapz(power[mask], time[mask])
 
     return [energy_in, energy_out]
-
-
-def measure_performance(device, ptree, fout=None, dummy=None):
-    discharge_power_lower_limit = ptree.get_double('discharge_power_lower_limit')
-    discharge_power_upper_limit = ptree.get_double('discharge_power_upper_limit')
-    steps_per_decade = ptree.get_int('steps_per_decade')
-    min_steps_per_discharge = ptree.get_int('min_steps_per_discharge')
-    max_steps_per_discharge = ptree.get_int('max_steps_per_discharge')
-    discharge_power = discharge_power_lower_limit
-    performance_data = {'energy': array([], dtype=float),
-                        'power': array([], dtype=float)}
-    while discharge_power <= discharge_power_upper_limit:
-        # print discharge_power
-        ptree.put_double('discharge_power', discharge_power)
-        try:
-            # this loop control the number of time steps in the discharge
-            for measurement in ['first', 'second']:
-                data = run_discharge(device, ptree)
-                if fout:
-                    path = 'ragone_chart_data'
-                    path += '/power='+str(discharge_power)+'W'
-                    path += '/'+measurement
-                    save_data(data, path, fout)
-                energy_in, energy_out = examine_discharge(data)
-                steps = count_nonzero(data['time'] > 0)
-                if steps >= min_steps_per_discharge:
-                    break
-                else:
-                    ptree.put_double('time_step',
-                                     data['time'][-1]/max_steps_per_discharge)
-        except RuntimeError:
-            print('Failed to discharge at {0} watt'.format(discharge_power))
-            break
-        performance_data['energy'] = append(performance_data['energy'],
-                                            -energy_out)
-        performance_data['power'] = append(performance_data['power'],
-                                           discharge_power)
-        if dummy:
-            dummy(performance_data)
-        discharge_power *= power(10.0, 1.0/steps_per_decade)
-
-    return performance_data
 
 
 def retrieve_performance_data(fin):
