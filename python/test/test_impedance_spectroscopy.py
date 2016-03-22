@@ -5,7 +5,7 @@
 # for the text and further information on this license. 
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
-                  ECLabAsciiFile
+                  ECLabAsciiFile, NyquistPlot, BodePlot
 from pycap import retrieve_impedance_spectrum,\
                   fourier_analysis, initialize_data
 from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
@@ -93,9 +93,9 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
                                     retrieved_data['impedance'], inf), 1e-10)
 
     def test_verification_with_equivalent_circuit(self):
-        R = 50.0e-3   # ohm
-        R_L = 500.0   # ohm
-        C = 3.0       # farad
+        R = 50e-3   # ohm
+        R_L = 500   # ohm
+        C = 3       # farad
         # setup EIS experiment
         ptree = PropertyTree()
         ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
@@ -125,8 +125,7 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             device = EnergyStorageDevice(device_database)
             # setup experiment and measure
             eis.reset()
-            with File('trash.hdf5', 'w') as fout:
-                eis.run(device, fout)
+            eis.run(device)
             f = eis._data['frequency']
             Z_computed = eis._data['impedance']
             # compute the exact solution
@@ -175,6 +174,15 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             for line in fin.readlines():
                 self.assertNotEqual(line.find(b'\r\n'), -1)
                 self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
+
+        # check Nyquist plot does not throw
+        nyquist = NyquistPlot('nyquist.png')
+        nyquist.update(dummy)
+
+        # check Bode plot
+        # TODO: BodePlot is not implemented yet
+#        bode = BodePlot('bode.png')
+#        bode.update(dummy)
 
 if __name__ == '__main__':
     unittest.main()

@@ -6,11 +6,14 @@
 
 from numpy import trapz, count_nonzero, array, append, power, argsort
 from matplotlib import pyplot
+from copy import copy
 from .PyCap import PropertyTree
 from .charge_discharge import Charge, Discharge
 from .data_helpers import initialize_data, save_data
+from .observer_pattern import Experiment, Observer
 
-__all__ = ['measure_performance', 'plot_ragone', 'retrieve_performance_data']
+__all__ = ['plot_ragone', 'retrieve_performance_data',
+           'RagonePlot', 'RagoneAnalysis']
 
 
 def plot_ragone(data, figure=None, ls='r-o'):
@@ -86,49 +89,6 @@ def examine_discharge(data):
     return [energy_in, energy_out]
 
 
-def measure_performance(device, ptree, fout=None, dummy=None):
-    discharge_power_lower_limit = ptree.get_double('discharge_power_lower_limit')
-    discharge_power_upper_limit = ptree.get_double('discharge_power_upper_limit')
-    steps_per_decade = ptree.get_int('steps_per_decade')
-    min_steps_per_discharge = ptree.get_int('min_steps_per_discharge')
-    max_steps_per_discharge = ptree.get_int('max_steps_per_discharge')
-    discharge_power = discharge_power_lower_limit
-    performance_data = {'energy': array([], dtype=float),
-                        'power': array([], dtype=float)}
-    while discharge_power <= discharge_power_upper_limit:
-        # print discharge_power
-        ptree.put_double('discharge_power', discharge_power)
-        try:
-            # this loop control the number of time steps in the discharge
-            for measurement in ['first', 'second']:
-                data = run_discharge(device, ptree)
-                if fout:
-                    path = 'ragone_chart_data'
-                    path += '/power='+str(discharge_power)+'W'
-                    path += '/'+measurement
-                    save_data(data, path, fout)
-                energy_in, energy_out = examine_discharge(data)
-                steps = count_nonzero(data['time'] > 0)
-                if steps >= min_steps_per_discharge:
-                    break
-                else:
-                    ptree.put_double('time_step',
-                                     data['time'][-1]/max_steps_per_discharge)
-        except RuntimeError:
-            print('Failed to discharge at {0} watt'.format(discharge_power))
-            break
-        # TODO:
-        performance_data['energy'] = append(performance_data['energy'],
-                                            -energy_out)
-        performance_data['power'] = append(performance_data['power'],
-                                           discharge_power)
-        if dummy:
-            dummy(performance_data)
-        discharge_power *= power(10.0, 1.0/steps_per_decade)
-
-    return performance_data
-
-
 def retrieve_performance_data(fin):
     path = 'ragone_chart_data'
     performance_data = {'power': array([], dtype=float),
@@ -151,3 +111,94 @@ def retrieve_performance_data(fin):
     performance_data['energy'] = performance_data['energy'][sort]
 
     return performance_data
+
+class RagonePlot(Observer):
+    '''Ragone plot.
+
+    Plots the values of specific energy versus specific power. Both axes are
+    logarithmic.
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(RagonePlot)
+    def __init__(self, filename=None):
+        self._figure = pyplot.figure(figsize=(14, 14))
+        self._filename = filename
+    def update(self, subject, *args, **kwargs):
+        plot_ragone(subject._data, figure=self._figure)
+        if self._filename is not None:
+            pyplot.savefig(self._filename, bbox_inches='tight')
+Observer._builders['RagonePlot'] = RagonePlot
+
+# TODO: Probably want to make that class more general to do discharges at
+# constant current as well.
+# For batteries plot voltage vs capacity
+class RagoneAnalysis(Experiment):
+    '''Record a Ragone plot
+
+    Performs a series of discharge at various rates and neasures the energy.
+
+    Attributes
+    ----------
+    _discharge_power_lower_limit : float
+    _discharge_upper_lower_limit : float
+    _steps_per_decade : int
+    _ptree : PropertyTree
+    _data : dict
+        Stores power and energy as numpy.array(s) of floating point numbers.
+
+    See Also
+    --------
+    RagonePlot
+    '''
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(RagoneAnalysis)
+    def __init__(self, ptree):
+        Experiment.__init__(self)
+        self._discharge_power_lower_limit = ptree.get_double('discharge_power_lower_limit')
+        self._discharge_power_upper_limit = ptree.get_double('discharge_power_upper_limit')
+        self._steps_per_decade = ptree.get_int('steps_per_decade')
+        self._min_steps_per_discharge = ptree.get_int('min_steps_per_discharge')
+        self._max_steps_per_discharge = ptree.get_int('max_steps_per_discharge')
+        self._time_step_initial_guess = ptree.get_double('time_step')
+        self._ptree = copy(ptree)
+        self.reset()
+    def reset(self):
+        self._ptree.put_double('time_step', self._time_step_initial_guess)
+        self._data = {
+            'energy': array([], dtype=float),
+            'power': array([], dtype=float)
+        }
+
+    def run(self, device, fout=None):
+        discharge_power = self._discharge_power_lower_limit
+        while discharge_power <= self._discharge_power_upper_limit:
+            # print discharge_power
+            self._ptree.put_double('discharge_power', discharge_power)
+            try:
+                # this loop control the number of time steps in the discharge
+                for measurement in ['first', 'second']:
+                    data = run_discharge(device, self._ptree)
+                    if fout:
+                        path = 'ragone_chart_data'
+                        path += '/power=' + str(discharge_power) + 'W'
+                        path += '/' + measurement
+                        save_data(data, path, fout)
+                    energy_in, energy_out = examine_discharge(data)
+                    steps = count_nonzero(data['time'] > 0)
+                    if steps >= self._min_steps_per_discharge:
+                        break
+                    else:
+                        time_step = data['time'][-1]
+                        time_step /= self._max_steps_per_discharge
+                        self._ptree.put_double('time_step', time_step)
+                                               
+            except RuntimeError:
+                print('Failed to discharge at {0} watt'.format(discharge_power))
+                break
+            self._data['energy'] = append(self._data['energy'],
+                                          -energy_out)
+            self._data['power'] = append(self._data['power'],
+                                         discharge_power)
+            discharge_power *= power(10.0, 1.0/self._steps_per_decade)
+            self.notify()
+Experiment._builders['RagoneAnalysis'] = RagoneAnalysis

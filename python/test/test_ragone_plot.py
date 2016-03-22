@@ -4,51 +4,37 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license. 
 
-from pycap import PropertyTree, EnergyStorageDevice
-from pycap import measure_performance, retrieve_performance_data
+from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
+                  RagoneAnalysis, RagonePlot
+from pycap import retrieve_performance_data
 from numpy import sqrt, log, inf, linalg
-from mpi4py import MPI
 from h5py import File
 import unittest
 
-comm = MPI.COMM_WORLD
+class RagoneAnalysisTestCase(unittest.TestCase):
+    def test_retrieve_data(self):
+        ptree = PropertyTree()
+        ptree.put_string('type', 'SeriesRC')
+        ptree.put_double('series_resistance', 50e-3)
+        ptree.put_double('capacitance', 3)
+        device = EnergyStorageDevice(ptree)
 
-R = 50.0e-3  # ohm
-R_L = 500.0  # ohm
-C = 3.0      # farad
-U_i = 2.7    # volt
-U_f = 1.2    # volt
+        ptree = PropertyTree()
+        ptree.put_string('type', 'RagoneAnalysis')
+        ptree.put_double('discharge_power_lower_limit', 1e-1)
+        ptree.put_double('discharge_power_upper_limit', 1e+1)
+        ptree.put_int('steps_per_decade', 1)
+        ptree.put_double('initial_voltage', 2.1)
+        ptree.put_double('final_voltage', 0.7)
+        ptree.put_double('time_step', 1.5)
+        ptree.put_int('min_steps_per_discharge', 20)
+        ptree.put_int('max_steps_per_discharge', 30)
+        ragone = Experiment(ptree)
+       
+        with File('trash.hdf5', 'w') as fout:
+            ragone.run(device, fout)
+        performance_data = ragone._data
 
-
-def setup_expertiment():
-    ragone_database = PropertyTree()
-    ragone_database.put_double('discharge_power_lower_limit', 1e-2)
-    ragone_database.put_double('discharge_power_upper_limit', 1e+2)
-    ragone_database.put_int('steps_per_decade', 5)
-    ragone_database.put_double('initial_voltage', U_i)
-    ragone_database.put_double('final_voltage', U_f)
-    ragone_database.put_double('time_step', 15)
-    ragone_database.put_int('min_steps_per_discharge', 2000)
-    ragone_database.put_int('max_steps_per_discharge', 3000)
-
-    return ragone_database
-
-
-class capRagonePlotTestCase(unittest.TestCase):
-    def testRetrieveData(self):
-        device_database = PropertyTree()
-        device_database.put_string('type', 'SeriesRC')
-        device_database.put_double('series_resistance', R)
-        device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, comm)
-        ragone_database = setup_expertiment()
-        ragone_database.put_int('min_steps_per_discharge', 20)
-        ragone_database.put_int('max_steps_per_discharge', 30)
-        ragone_database.put_int('steps_per_decade', 2)
-        ragone_database.put_double('time_step', 1.5)
-        fout = File('trash.hdf5', 'w')
-        performance_data = measure_performance(device, ragone_database, fout)
-        fout.close()
         fin = File('trash.hdf5', 'r')
         retrieved_data = retrieve_performance_data(fin)
         fin.close()
@@ -58,49 +44,65 @@ class capRagonePlotTestCase(unittest.TestCase):
         self.assertEqual(linalg.norm(performance_data['energy'] -
                                      retrieved_data['energy'], inf), 0.0)
 
-    def testSeriesRC(self):
-        # make series RC equivalent circuit
-        device_database = PropertyTree()
-        device_database.put_string('type', 'SeriesRC')
-        device_database.put_double('series_resistance', R)
-        device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, comm)
-        # setup experiment and measure
-        ragone_database = setup_expertiment()
-        performance_data = measure_performance(device, ragone_database)
-        # extract data
-        E_computed = performance_data['energy']
-        P = performance_data['power']
-        # compute the exact solution
-        U_0 = U_i/2+sqrt(U_i**2/4-R*P)
-        E_exact = C/2*(-R*P*log(U_0**2/U_f**2)+U_0**2-U_f**2)
-        # ensure the error is small
-        max_percent_error = 100*linalg.norm((E_computed-E_exact)/E_computed,
-                                            inf)
-        self.assertLess(max_percent_error, 0.1)
+        # TODO: probably want to move this into its own test
+        ragoneplot = RagonePlot("ragone.png")
+        ragoneplot.update(ragone)
 
-    def testParallelRC(self):
-        # make parallel RC equivalent circuit
+        # check reset reinitialize the time step and empty the data
+        ragone.reset()
+        self.assertEqual(ragone._ptree.get_double('time_step'), 1.5)
+        self.assertFalse(ragone._data['power'])
+        self.assertFalse(ragone._data['energy'])
+
+    def test_verification_with_equivalent_circuit(self):
+        R = 50e-3  # ohm
+        R_L = 500  # ohm
+        C = 3      # farad
+        U_i = 2.7  # volt
+        U_f = 1.2  # volt
+        # setup experiment
+        ptree = PropertyTree()
+        ptree.put_double('discharge_power_lower_limit', 1e-2)
+        ptree.put_double('discharge_power_upper_limit', 1e+2)
+        ptree.put_int('steps_per_decade', 5)
+        ptree.put_double('initial_voltage', U_i)
+        ptree.put_double('final_voltage', U_f)
+        ptree.put_double('time_step', 15)
+        ptree.put_int('min_steps_per_discharge', 2000)
+        ptree.put_int('max_steps_per_discharge', 3000)
+        ragone = RagoneAnalysis(ptree)
+        # setup equivalent circuit database
         device_database = PropertyTree()
-        device_database.put_string('type', 'ParallelRC')
         device_database.put_double('series_resistance', R)
         device_database.put_double('parallel_resistance', R_L)
         device_database.put_double('capacitance', C)
-        device = EnergyStorageDevice(device_database, comm)
-        # setup experiment and measure
-        ragone_database = setup_expertiment()
-        performance_data = measure_performance(device, ragone_database)
-        # extract data
-        E_computed = performance_data['energy']
-        P = performance_data['power']
-        # compute the exact solution
-        U_0 = U_i/2+sqrt(U_i**2/4-R*P)
-        tmp = (U_f**2/R_L+P*(1+R/R_L))/(U_0**2/R_L+P*(1+R/R_L))
-        E_exact = C/2*(-R_L*P*log(tmp)-R*R_L/(R+R_L)*P*log(tmp*U_0**2/U_f**2))
-        # ensure the error is small
-        max_percent_error = 100*linalg.norm((E_computed-E_exact)/E_computed,
-                                            inf)
-        self.assertLess(max_percent_error, 0.1)
+        # analytical solutions
+        E = {}
+        def E_SeriesRC(P):
+            U_0 = U_i/2+sqrt(U_i**2/4-R*P)
+            return C/2*(-R*P*log(U_0**2/U_f**2)+U_0**2-U_f**2)
+        E['SeriesRC'] = E_SeriesRC
+        def E_ParallelRC(P):
+            U_0 = U_i/2+sqrt(U_i**2/4-R*P)
+            tmp = (U_f**2/R_L+P*(1+R/R_L))/(U_0**2/R_L+P*(1+R/R_L))
+            return C/2*(-R_L*P*log(tmp)-R*R_L/(R+R_L)*P*log(tmp*U_0**2/U_f**2))
+        E['ParallelRC'] = E_ParallelRC
+        for device_type in ['SeriesRC', 'ParallelRC']:
+            # create a device
+            device_database.put_string('type', device_type)
+            device = EnergyStorageDevice(device_database)
+            # setup experiment and measure
+            ragone.reset()
+            ragone.run(device)
+            P = ragone._data['power']
+            E_computed = ragone._data['energy']
+            # compute the exact solution
+            E_exact = E[device_type](P)
+            # ensure the error is small
+            max_percent_error = 100*linalg.norm(
+                (E_computed-E_exact)/E_computed,
+                inf)
+            self.assertLess(max_percent_error, 0.1)
 
 if __name__ == '__main__':
     unittest.main()

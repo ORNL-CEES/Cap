@@ -61,10 +61,10 @@ char const * pycap_docstring =
   "    Records charge and discharge curves through a number of cycles.      \n"
   "CyclicVoltammetry                                                        \n"
   "    Applies cyclic linear voltage ramps.                                 \n"
-  "measure_impedance_spectrum                                               \n"
+  "ElectrochemicalImpedanceSpectroscopy                                     \n"
   "    Measures the complex electrochemaical impedance over a range of      \n"
   "    frequencies.                                                         \n"
-  "measure_performance                                                      \n"
+  "RagoneAnalysis                                                           \n"
   "    Complete a series of discharges at various rate to produce a ragone  \n"
   "    plot.                                                                \n"
   ;
