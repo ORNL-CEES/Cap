@@ -159,9 +159,11 @@ class RagoneAnalysis(Experiment):
         self._steps_per_decade = ptree.get_int('steps_per_decade')
         self._min_steps_per_discharge = ptree.get_int('min_steps_per_discharge')
         self._max_steps_per_discharge = ptree.get_int('max_steps_per_discharge')
+        self._time_step_initial_guess = ptree.get_double('time_step')
         self._ptree = copy(ptree)
         self.reset()
     def reset(self):
+        self._ptree.put_double('time_step', self._time_step_initial_guess)
         self._data = {
             'energy': array([], dtype=float),
             'power': array([], dtype=float)

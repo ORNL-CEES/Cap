@@ -48,6 +48,12 @@ class RagoneAnalysisTestCase(unittest.TestCase):
         ragoneplot = RagonePlot("ragone.png")
         ragoneplot.update(ragone)
 
+        # check reset reinitialize the time step and empty the data
+        ragone.reset()
+        self.assertEqual(ragone._ptree.get_double('time_step'), 1.5)
+        self.assertFalse(ragone._data['power'])
+        self.assertFalse(ragone._data['energy'])
+
     def test_verification_with_equivalent_circuit(self):
         R = 50e-3  # ohm
         R_L = 500  # ohm
@@ -87,10 +93,6 @@ class RagoneAnalysisTestCase(unittest.TestCase):
             device = EnergyStorageDevice(device_database)
             # setup experiment and measure
             ragone.reset()
-            # reset the time step for slow discharge rates
-            # TODO: that's a tricky one, if you don't do that, it might take
-            # a long looooong time...
-            ragone._ptree.put_double('time_step', 15)
             ragone.run(device)
             P = ragone._data['power']
             E_computed = ragone._data['energy']
