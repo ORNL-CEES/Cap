@@ -47,49 +47,6 @@ EnergyStorageDevice::EnergyStorageDevice(
 {
 }
 
-std::shared_ptr<EnergyStorageDevice>
-buildEnergyStorageDevice(boost::mpi::communicator const &comm,
-                         boost::property_tree::ptree const &ptree)
-{
-  std::string const type = ptree.get<std::string>("type", "unknown_type");
-  if (type.compare("SeriesRC") == 0)
-    return std::make_shared<cap::SeriesRC>(comm, ptree);
-  else if (type.compare("ParallelRC") == 0)
-    return std::make_shared<cap::ParallelRC>(comm, ptree);
-  else if (type.compare("SuperCapacitor") == 0)
-  {
-#ifdef WITH_DEAL_II
-    int const dim = ptree.get<int>("dim");
-    if (dim == 2)
-      return std::make_shared<cap::SuperCapacitor<2>>(comm, ptree);
-    else if (dim == 3)
-      return std::make_shared<cap::SuperCapacitor<3>>(comm, ptree);
-    else
-      throw std::runtime_error("dim=" + std::to_string(dim) +
-                               " must be 2 or 3");
-#else
-    throw std::runtime_error("reconfigure with deal.II");
-#endif
-  }
-  else if (type.compare("New_SuperCapacitor") == 0)
-  {
-#ifdef WITH_DEAL_II
-    int const dim = ptree.get<int>("dim");
-    if (dim == 2)
-      return std::make_shared<cap::New_SuperCapacitor<2>>(comm, ptree);
-    else if (dim == 3)
-      return std::make_shared<cap::New_SuperCapacitor<3>>(comm, ptree);
-    else
-      throw std::runtime_error("dim=" + std::to_string(dim) +
-                               " must be 2 or 3");
-#else
-    throw std::runtime_error("reconfigure with deal.II");
-#endif
-  }
-  else
-    throw std::runtime_error("invalid energy storage type ``" + type + "''\n");
-}
-
 EnergyStorageDevice::~EnergyStorageDevice() = default;
 
 } // end namespace cap
