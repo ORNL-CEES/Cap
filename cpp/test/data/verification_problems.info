@@ -6,8 +6,8 @@ verification_problem_subramanian {
     terms_in_truncation_of_infinite_series 10000
 
     charge_current        5.0e-3 ;  [amperes]
-    charge_time           2.0    ;  [seconds]
-    time_step             0.01   ;  [seconds]
+    charge_time           0.01   ;  [seconds]
+    time_step             1e-4   ;  [seconds]
 
     percent_tolerance     0.1    ;  [percent]
 }
