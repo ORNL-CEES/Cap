@@ -9,15 +9,20 @@ notifications:
 language: python
 
 before_install:
+  - env
   - docker pull dalg24/cap-stack
   - docker run
-        -d -it --name=test-machine
-        -v ${TRAVIS_BUILD_DIR}:/scratch/source/cap
+        --detach --tty
+        --name=test-machine
+        --volume ${TRAVIS_BUILD_DIR}:/scratch/source/cap
+        --env TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
+        --env CTEST_BUILD_NAME="$(./docker/get_build_info.sh)"
         dalg24/cap-stack
-        bash
   - docker ps -a
   - docker exec test-machine
         /scratch/source/cap/docker/build_cap.sh
+  - docker exec test-machine
+        bash -c "cd /scratch/build/cap && make coverage-cpp && make coverage-python && sed -i.fixpath 's|/dummy/cap||g' lcov.info && sed -i.fixpath 's|python/pycap|python/source|g' coverage.xml"
   - docker cp test-machine:/scratch/build/cap/lcov.info .
   - docker cp test-machine:/scratch/build/cap/coverage.xml .
 
