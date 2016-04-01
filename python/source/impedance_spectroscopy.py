@@ -13,6 +13,7 @@ from io import open # to be able to use parameter ``encoding`` with Python2.7
 from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
 from .observer_pattern import Observer, Observable, Experiment
+import pycap
 
 __all__ = ['plot_nyquist', 'plot_bode',
            'fourier_analysis', 'retrieve_impedance_spectrum',
@@ -243,10 +244,44 @@ class ECLabAsciiFile(Observer):
     def __init__(self, filename):
         self._filename = filename
         self._encoding = 'iso-8859-1'
-        # read the headers from a template file that Frank gave me
-        with open('BC52-7-100C_C01.mpt',
-                  mode='r', encoding=self._encoding) as fin:
-            self._headers = fin.readlines()[:60]
+        # building the headers
+        headers = [
+           'EC-Lab ASCII FILE\r\n',
+           'Nb header lines : {header_lines}\r\n',
+           '\r\n',
+           'Potentio Electrochemical Impedance Spectroscopy\r\n',
+           '\r\n',
+           'Generated using Cap version "{git_commit_hash}"\r\n',
+           'See {git_remote_url}\r\n'
+           '\r\n',
+           'Electrode geometric area {geometric_area} [cm2]\r\n',
+           'Electrode thickness      {electrode_thickness} [cm]\r\n',
+           'Double layer capacitance {capacitance} [muF/cm2]',
+           '\r\n',
+           'Electrode surface area   {surface_area} [cm2]\r\n',
+           'Mass active material     {mass} [g]\r\n',
+           '\r\n',
+           'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
+           'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
+           'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
+           'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
+        ]
+        NaN = 255
+        formated_headers = ''
+        separator = '|X|'
+        for line in headers:
+            formated_headers += line + separator
+        self._headers = formated_headers.rstrip(separator).format(
+            header_lines=len(headers),
+            git_commit_hash=pycap.__git_commit_hash__,
+            git_remote_url=pycap.__git_remote_url__,
+            geometric_area=NaN,
+            electrode_thickness=NaN,
+            capacitance=NaN,
+            surface_area=NaN,
+            mass=NaN
+        ).split(separator)
+
         # build a template for each line in the results
         self._template = u''
         for i in range(18):
@@ -260,7 +295,7 @@ class ECLabAsciiFile(Observer):
 
             # write headers
             for line in self._headers:
-                fout.write(line.replace('\n','\r\n'))
+                fout.write(line)
 
             # write data
             n = subject._data['frequency'].size
