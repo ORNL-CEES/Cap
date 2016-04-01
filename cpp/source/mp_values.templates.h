@@ -135,6 +135,15 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       (1.0 + pores_geometry_factor) * void_volume_fraction /
       pores_characteristic_dimension;
   (this->properties)
+      .emplace("specific_surface_area",
+               [specific_surface_area_per_unit_volume]
+               (active_cell_iterator const &,
+                std::vector<double> &values)
+               {
+                 std::fill(values.begin(), values.end(),
+                           specific_surface_area_per_unit_volume);
+               });
+  (this->properties)
       .emplace("specific_capacitance",
                [specific_surface_area_per_unit_volume,
                 differential_capacitance](active_cell_iterator const &,
@@ -249,6 +258,7 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
   {
     std::fill(values.begin(), values.end(), 0.0);
   };
+  (this->properties).emplace("specific_surface_area", null_property);
   (this->properties).emplace("specific_capacitance", null_property);
   (this->properties).emplace("faradaic_reaction_coefficient", null_property);
   (this->properties).emplace("liquid_electrical_conductivity", null_property);

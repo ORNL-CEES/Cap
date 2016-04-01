@@ -444,4 +444,12 @@ void SuperCapacitor<dim>::get_voltage(double &voltage) const
 {
   (*this->post_processor).get("voltage", voltage);
 }
+
+template <int dim>
+std::shared_ptr<Postprocessor<dim>>
+SuperCapacitor<dim>::get_post_processor() const
+{
+  return post_processor;
+}
+
 } // end namespace cap

@@ -79,6 +79,10 @@ public:
   // TODO: move to private.
   void evolve_one_time_step(double const time_step);
 
+  /**
+  * Granting access to the post processor for the inspector
+  */
+  std::shared_ptr<Postprocessor<dim>> get_post_processor() const;
 private:
   /**
    * Maximum number of iterations of the Krylov solver in
