@@ -6,7 +6,7 @@
  */
 
 #include <pycap/energy_storage_device_wrappers.h>
-#include <cap/equivalent_circuit.h>
+#include <cap/default_inspector.h>
 #include <mpi4py/mpi4py.h>
 
 namespace pycap {
@@ -58,11 +58,13 @@ double get_voltage(cap::EnergyStorageDevice const & dev)
     return voltage;
 }
 
-boost::python::dict inspect(cap::EnergyStorageDevice const & dev)
+boost::python::dict inspect(cap::EnergyStorageDevice & dev)
 {
+    cap::DefaultInspector inspector;
+    dev.inspect(&inspector);
     boost::python::dict data;
-    data["a"] = "aaa";
-    data["b"] = -1;
+    for (auto x : inspector.get_data())
+        data[x.first] = x.second;
     return data;
 }
 
@@ -78,16 +80,6 @@ build_energy_storage_device(boost::python::object & py_ptree,
     if (comm_p == nullptr) boost::python::throw_error_already_set();
     boost::mpi::communicator comm(*comm_p, boost::mpi::comm_attach);
     return cap::EnergyStorageDevice::build(comm, ptree);
-}
-
-boost::property_tree::ptree
-compute_equivalent_circuit(boost::python::object & python_object)
-{
-    boost::property_tree::ptree const & device_database =
-        boost::python::extract<boost::property_tree::ptree const &>(python_object);
-    boost::property_tree::ptree equivalent_circuit_database;
-    cap::compute_equivalent_circuit(device_database, equivalent_circuit_database);
-    return equivalent_circuit_database;
 }
 
 } // end namespace pycap
