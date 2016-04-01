@@ -37,6 +37,14 @@ char const get_current_docstring[] =
   "    The electrical current in amperes.                                   \n"
   ;
 
+char const inspect_docstring[] =
+  "TODO                                                                     \n"
+  "                                                                         \n"
+  "Returns                                                                  \n"
+  "-------                                                                  \n"
+  "dict                                                                     \n"
+  ;
+
 char const evolve_one_time_step_constant_current_docstring[] =
   "Impose the electrical current and evolve in time.                        \n"
   "                                                                         \n"
@@ -106,6 +114,8 @@ void export_energy_storage_device()
     .def("get_voltage", &get_voltage, get_voltage_docstring,
          boost::python::args("self") )
     .def("get_current", &get_current, get_current_docstring,
+         boost::python::args("self") )
+    .def("inspect", &inspect, inspect_docstring,
          boost::python::args("self") )
     .def("evolve_one_time_step_constant_current",
          boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current),

@@ -58,6 +58,14 @@ double get_voltage(cap::EnergyStorageDevice const & dev)
     return voltage;
 }
 
+boost::python::dict inspect(cap::EnergyStorageDevice const & dev)
+{
+    boost::python::dict data;
+    data["a"] = "aaa";
+    data["b"] = -1;
+    return data;
+}
+
 std::shared_ptr<cap::EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & py_ptree,
                             boost::python::object & py_comm)

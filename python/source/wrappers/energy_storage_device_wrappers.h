@@ -4,6 +4,7 @@
 #include <cap/energy_storage_device.h>
 #include <boost/python/object.hpp>
 #include <boost/python/wrapper.hpp>
+#include <boost/python/dict.hpp>
 
 namespace pycap {
 
@@ -21,6 +22,7 @@ struct EnergyStorageDeviceWrap : cap::EnergyStorageDevice, boost::python::wrappe
 
 double get_current(cap::EnergyStorageDevice const & device);
 double get_voltage(cap::EnergyStorageDevice const & device);
+boost::python::dict inspect(cap::EnergyStorageDevice const & device);
 
 std::shared_ptr<cap::EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & py_ptree,
