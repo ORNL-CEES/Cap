@@ -83,6 +83,12 @@ public:
   * Granting access to the post processor for the inspector
   */
   std::shared_ptr<Postprocessor<dim>> get_post_processor() const;
+
+  /**
+  * Provides a copy of the property tree used to build the supercapacitor to
+  * the inspector
+  */
+  boost::property_tree::ptree const* get_property_tree() const;
 private:
   /**
    * Maximum number of iterations of the Krylov solver in
@@ -125,6 +131,7 @@ private:
   std::shared_ptr<SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
   std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
+  boost::property_tree::ptree const _ptree;
 };
 
 } // end namespace cap

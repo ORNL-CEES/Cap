@@ -11,15 +11,20 @@ void DefaultInspector::inspect(EnergyStorageDevice *device)
         auto post_processor = super_capacitor->get_post_processor();
         double value;
         post_processor->get("interfacial_surface_area", value);
-        _data["interfacial_surface_area"] = value;
+        _data["surface_area"] = value;
         post_processor->get("mass", value);
         _data["mass"] = value;
+
+        auto ptree = super_capacitor->get_property_tree();
+        _data["geometric_area"] =
+            ptree->get<double>("geometry.geometric_area");
+        _data["electrode_thickness"] =
+            ptree->get<double>("geometry.anode_electrode_thickness");
         // TODO
-        double const NaN = 255;
-        _data["geometric_area"] = NaN;
-        _data["electrode_thickness"] = NaN;
-        _data["capacitance"] = NaN;
-        _data["surface_area"] = NaN;
+        std::string tmp =
+            ptree->get<std::string>("material_properties.anode.matrix_phase");
+        _data["capacitance"] =
+            ptree->get<double>("material_properties."+tmp+".differential_capacitance");
     }
 
 }
