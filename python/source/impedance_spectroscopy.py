@@ -276,6 +276,10 @@ class ECLabAsciiFile(Observer):
         self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
+        m_to_cm = lambda x: 100*x
+        m2_to_cm2 = lambda x: 10000*x
+        kg_to_g = lambda x: 1000*x
+        Fperm2_to_muFpercm2 = lambda x: 100*x
         with open(self._filename, mode='w', encoding=self._encoding) as fout:
             NaN = 255
             extra_data = subject._extra_data
@@ -287,11 +291,11 @@ class ECLabAsciiFile(Observer):
                 header_lines=len(headers),
                 git_commit_hash=pycap.__git_commit_hash__,
                 git_remote_url=pycap.__git_remote_url__,
-                geometric_area=extra_data['geometric_area'],
-                electrode_thickness=extra_data['electrode_thickness'],
-                capacitance=extra_data['capacitance'],
-                surface_area=extra_data['surface_area'],
-                mass=extra_data['mass']
+                geometric_area=m2_to_cm2(extra_data['geometric_area']),
+                electrode_thickness=m_to_cm(extra_data['electrode_thickness']),
+                capacitance=Fperm2_to_muFpercm2(extra_data['capacitance']),
+                surface_area=m2_to_cm2(extra_data['surface_area']),
+                mass=kg_to_g(extra_data['mass'])
             ).split(separator)
 
             # write headers
