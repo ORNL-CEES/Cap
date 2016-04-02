@@ -227,9 +227,10 @@ class ECLabAsciiFile(Observer):
     ----------
     _filename : string
         Name of the file to be exported.
-    _headers : list of strings
-        Headers from a template to be added to the exported file.
-    _template : string
+    _unformated_headers : list of strings
+        Headers with a number of placeholders that are meant to be be
+        formated before exporting to the output file.
+    _line_template : string
         Template for a line that will be written. It contains replacement fields
         and is meant to be formatted.
     _encoding : string
@@ -245,7 +246,7 @@ class ECLabAsciiFile(Observer):
         self._filename = filename
         self._encoding = 'iso-8859-1'
         # building the headers
-        headers = [
+        self._unformated_headers = [
            'EC-Lab ASCII FILE\r\n',
            'Nb header lines : {header_lines}\r\n',
            '\r\n',
@@ -266,35 +267,35 @@ class ECLabAsciiFile(Observer):
            'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
            'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
         ]
-        NaN = 255
-        formated_headers = ''
-        separator = '|X|'
-        for line in headers:
-            formated_headers += line + separator
-        self._headers = formated_headers.rstrip(separator).format(
-            header_lines=len(headers),
-            git_commit_hash=pycap.__git_commit_hash__,
-            git_remote_url=pycap.__git_remote_url__,
-            geometric_area=NaN,
-            electrode_thickness=NaN,
-            capacitance=NaN,
-            surface_area=NaN,
-            mass=NaN
-        ).split(separator)
-
         # build a template for each line in the results
-        self._template = u''
+        self._line_template = u''
         for i in range(18):
-            self._template += '{left}{0}:{format_spec}{right}{separator}'\
+            self._line_template += '{left}{0}:{format_spec}{right}{separator}'\
                 .format(i, format_spec='{format_spec}',
                         left='{', right='}', separator='\t')
-        self._template += '\r\n'
+        self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
         with open(self._filename, mode='w', encoding=self._encoding) as fout:
+            NaN = 255
+            extra_data = subject._extra_data
+            headers = ''
+            separator = '|X|'
+            for line in self._unformated_headers:
+                headers += line + separator
+            headers = headers.rstrip(separator).format(
+                header_lines=len(headers),
+                git_commit_hash=pycap.__git_commit_hash__,
+                git_remote_url=pycap.__git_remote_url__,
+                geometric_area=extra_data['geometric_area'],
+                electrode_thickness=extra_data['electrode_thickness'],
+                capacitance=extra_data['capacitance'],
+                surface_area=extra_data['surface_area'],
+                mass=extra_data['mass']
+            ).split(separator)
 
             # write headers
-            for line in self._headers:
+            for line in headers:
                 fout.write(line)
 
             # write data
@@ -303,26 +304,27 @@ class ECLabAsciiFile(Observer):
                 f = subject._data['frequency'][i]
                 Z = subject._data['impedance'][i]
                 Y = 1.0 / Z
-                place_holder = 255
-                line = self._template.format(float(f),
-                                             float(real(Z)),
-                                             -float(imag(Z)),
-                                             float(absolute(Z)),
-                                             float(angle(Z, deg=True)),
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             float(real(Y)),
-                                             float(imag(Y)),
-                                             float(absolute(Y)),
-                                             float(angle(Y, deg=True)),
-                                             format_spec='.7e')
+                line = self._line_template.format(
+                    float(f),
+                    float(real(Z)),
+                    -float(imag(Z)),
+                    float(absolute(Z)),
+                    float(angle(Z, deg=True)),
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    float(real(Y)),
+                    float(imag(Y)),
+                    float(absolute(Y)),
+                    float(angle(Y, deg=True)),
+                    format_spec='.7e'
+                )
                 fout.write(line)
 Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
 
@@ -341,6 +343,9 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     _data : dict
         Stores the frequency as a numpy.array of floating point numbers
         and the impedance as a numpy.array of complex numbers.
+    _extra_data : dict
+        Stores the information computed by the postprocessor and some of the
+        input data that need to be saved.
 
     Examples
     --------
@@ -372,6 +377,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             'impedance': array([], dtype=complex)
         }
     def run(self, device, fout=None):
+        self._extra_data = device.inspect()
         frequency = self._frequency_upper_limit
         while frequency >= self._frequency_lower_limit:
             self._ptree.put_double('frequency', frequency)

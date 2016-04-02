@@ -14,6 +14,12 @@ void DefaultInspector::inspect(EnergyStorageDevice *device)
         _data["interfacial_surface_area"] = value;
         post_processor->get("mass", value);
         _data["mass"] = value;
+        // TODO
+        double const NaN = 255;
+        _data["geometric_area"] = NaN;
+        _data["electrode_thickness"] = NaN;
+        _data["capacitance"] = NaN;
+        _data["surface_area"] = NaN;
     }
 
 }

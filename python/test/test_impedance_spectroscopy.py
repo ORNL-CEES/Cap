@@ -162,6 +162,12 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             Z[i] = cos(2*pi*i/(n-1)) + 1j * sin(2*pi*i/(n-1))
         dummy._data['frequency'] = f
         dummy._data['impedance'] = Z
+        # need a supercapacitor here to make sure method inspect() is kept in
+        # sync with the EC-Lab headers
+        ptree = PropertyTree()
+        ptree.parse_info('super_capacitor.info')
+        super_capacitor = EnergyStorageDevice(ptree)
+        dummy._extra_data = super_capacitor.inspect()
 
         # export the data to ECLab format
         eclab = ECLabAsciiFile('untitled.mpt')
