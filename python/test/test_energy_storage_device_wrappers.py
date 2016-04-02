@@ -44,7 +44,13 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         # method inspect() takes no argument and returns a dictionary
         data = device.inspect()
         self.assertTrue(isinstance(data, dict))
-        for key in ['interfacial_surface_area', 'mass']:
+        for key in [
+            'surface_area',
+            'mass',
+            'capacitance',
+            'electrode_thickness',
+            'geometric_area',
+            ]:
             self.assertTrue(key in data)
         print(data)
 
