@@ -1,5 +1,5 @@
-#ifndef CAP_TYPES.h
-#define CAP_TYPES .h
+#ifndef CAP_TYPES_H
+#define CAP_TYPES_H
 
 /**
  * Shorten dealii::TrilinosWrappers::MPI to dealii::Trilinos::MPI and

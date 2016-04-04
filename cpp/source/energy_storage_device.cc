@@ -5,10 +5,7 @@
  * for the text and further information on this license.
  */
 
-#include <cap/resistor_capacitor.h>
-#ifdef WITH_DEAL_II
-#include <cap/supercapacitor.h>
-#endif
+#include <cap/energy_storage_device.h>
 
 namespace cap
 {
