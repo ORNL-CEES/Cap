@@ -1,4 +1,4 @@
-type SuperCapacitor
+type New_SuperCapacitor
 dim  2
 
 geometry {

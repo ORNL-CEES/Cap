@@ -7,7 +7,6 @@
 
 #include <cap/resistor_capacitor.h>
 #ifdef WITH_DEAL_II
-#include <cap/supercapacitor.h>
 #include <cap/new_supercapacitor.h>
 #endif
 

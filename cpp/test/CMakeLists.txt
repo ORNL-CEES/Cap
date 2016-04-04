@@ -17,7 +17,6 @@ IF(ENABLE_DEAL_II)
         test_postprocessor
         test_mp_values
         test_equivalent_circuit
-        test_supercapacitor
         test_exact_transient_solution
         test_new_supercapacitor
         )

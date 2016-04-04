@@ -9,10 +9,8 @@
 #define CAP_POSTPROCESSOR_H
 
 #include <cap/mp_values.h>
-#include <cap/boundary_values.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/sparse_matrix.h>
-//#include <deal.II/lac/vector.h>
 #include <deal.II/lac/block_vector.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
@@ -36,7 +34,6 @@ public:
   std::shared_ptr<dealii::BlockVector<double> const> solution;
 
   std::shared_ptr<MPValues<dim> const> mp_values;
-  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 
   std::shared_ptr<boost::property_tree::ptree const> database;
 };
@@ -59,38 +56,9 @@ protected:
   std::shared_ptr<dealii::BlockVector<double> const> solution;
 
   std::shared_ptr<MPValues<dim> const> mp_values;
-  std::shared_ptr<BoundaryValues<dim> const> boundary_values;
 
   std::unordered_map<std::string, dealii::Vector<double>> vectors;
   std::unordered_map<std::string, double> values;
-};
-
-//////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS //////////
-template <int dim>
-class SuperCapacitorPostprocessorParameters
-    : public PostprocessorParameters<dim>
-{
-public:
-  [[deprecated]] SuperCapacitorPostprocessorParameters(
-      std::shared_ptr<boost::property_tree::ptree const> d);
-};
-
-//////////////////////// SUPERCAPACITOR POSTPROCESSOR /////////////////////
-template <int dim>
-class SuperCapacitorPostprocessor : public Postprocessor<dim>
-{
-public:
-  [[deprecated]] SuperCapacitorPostprocessor(
-      std::shared_ptr<PostprocessorParameters<dim> const> parameters);
-  void reset(
-      std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
-
-private:
-  bool debug_material_ids;
-  bool debug_boundary_ids;
-  std::vector<std::string> debug_material_properties;
-  std::vector<std::string> debug_solution_fields;
-  std::vector<std::string> debug_solution_fluxes;
 };
 
 //////////////////////// NEW_SUPERCAPCITOR POSTPROCESSOR PARAMETERS ////
