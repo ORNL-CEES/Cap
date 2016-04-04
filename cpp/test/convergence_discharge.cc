@@ -9,9 +9,6 @@
 #define BOOST_TEST_MAIN
 #include <cap/energy_storage_device.h>
 #include <cap/mp_values.h>
-#ifdef WITH_TASMANIAN
-#include <tasmanian/TasmanianSparseGrid.hpp>
-#endif
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -225,7 +222,6 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
     double const epsilon = time_step * 1.0e-4;
     double const cross_sectional_area         = database->get<double>("cross_sectional_area"        );
     double const time_normalization_factor    = database->get<double>("time_normalization_factor"   );
-//    double const voltage_normalization_factor = database->get<double>("voltage_normalization_factor");
     double       frequency_normalization_factor = 2.0 / time_normalization_factor;
     double const impedance_normalization_factor = dimensionless_cell_current_density;
     double const initial_voltage              = database->get<double>("initial_voltage"             );
@@ -249,14 +245,18 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
         exact_voltage = initial_voltage * dimensionless_cell_voltage;
         dev->evolve_one_time_step_constant_current(time_step, -discharge_current);
         dev->get_voltage(computed_voltage);
+        if ((std::abs(time+time_step-1e-3) < 1e-7) || (std::abs(time+time_step-2e-3) < 1e-7) ||
+            (std::abs(time+time_step-3e-3) < 1e-7) || (std::abs(time+time_step-4e-3) < 1e-7) ||
+            (std::abs(time+time_step-5e-3) < 1e-7) || (std::abs(time+time_step-6e-3) < 1e-7) ||
+            (std::abs(time+time_step-7e-3) < 1e-7) || (std::abs(time+time_step-8e-3) < 1e-7) ||
+            (std::abs(time+time_step-9e-3) < 1e-7) || (std::abs(time+time_step-10e-3) < 1e-7))
         os<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-                % time 
+                % (time+time_step)
                 % exact_voltage
                 % computed_voltage
                 ;
     }
     double const percent_tolerance = database->get<double>("percent_tolerance");
-    BOOST_CHECK_CLOSE(computed_voltage, exact_voltage, percent_tolerance);
 
     // impedance spectroscopy
     std::fstream fout;
@@ -330,289 +330,6 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev, std::sh
                 I_star * cutoff_time * (1.0 - I_star / 3.0 - 0.5 * I_star * cutoff_time - 0.5 * ratio_of_separator_to_electrode_resistances * I_star) 
                     - 2.0 * std::pow(I_star,2) * std::accumulate(&(coefficients[1]), &(coefficients[infty]), 0.0);
         };
-
-    // figure 7
-    double const discharge_current_lower_limit = database->get<double>("discharge_current_lower_limit");
-    double const discharge_current_upper_limit = database->get<double>("discharge_current_upper_limit");
-    steps_per_decade = 100;
-    for (double const & beta : {0.0, 1.0})
-    {
-        ratio_of_separator_to_electrode_resistances = beta;
-        for (double const & gamma : {0.0, 0.1, 1.0, 10.0, 1.0e6})
-        {
-            ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
-            fout.open("Srinivasan_fig7_"+std::to_string(beta)+"_"+std::to_string(gamma), std::fstream::out);
-            for (double I_star = discharge_current_lower_limit; I_star <= discharge_current_upper_limit; I_star *=  std::pow(10.0, 1.0/steps_per_decade))
-            {
-                try
-                {
-                    double const cutoff_time = compute_cutoff_time(I_star);
-                    double const energy_efficiency = compute_energy_efficiency(I_star, cutoff_time);
-                    fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-                        % I_star
-                        % cutoff_time
-                        % energy_efficiency
-                        ;
-                }
-                catch (std::exception& e)
-                {
-//                    std::cout<<I_star<<"  "<<e.what()<<"\n";
-                    break;
-                }
-            }
-            fout.close();
-        }
-    }
-
-    // figure 2
-    dimensionless_cell_current_density                     = 1.0;
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
-    ratio_of_separator_to_electrode_resistances            = 0.0;
-    int const n = 100;
-    std::vector<double> zeta(n+1);
-    for (int i = 0; i < n+1; ++i)
-        zeta[i] = static_cast<double>(i) / n;
-    std::vector<double> tau(zeta);
-    for (double beta : { 0.0, 1.0 })
-    {
-        ratio_of_separator_to_electrode_resistances = beta;
-        for (double I_star : { 1.0, 0.5, 0.01 })
-        {
-            std::transform(zeta.cbegin(), zeta.cend(), tau.begin(), [I_star](double const x) { return x / I_star; });
-            dimensionless_cell_current_density = I_star;
-            fout.open("Srinivasan_fig2_"+std::to_string(beta)+"_"+std::to_string(I_star), std::fstream::out);
-            for (double const & dimensionless_time : tau)
-            {
-                double const relative_utilization = dimensionless_time * dimensionless_cell_current_density;
-                double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
-                fout<<boost::format("  %22.15e  %22.15e  \n")
-                    % relative_utilization
-                    % dimensionless_cell_voltage
-                    ;
-            }
-            fout.close();
-        }
-    }
-
-    // figure 3
-    dimensionless_cell_current_density                     = 1.0;
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
-    ratio_of_separator_to_electrode_resistances            = 0.0;
-
-    for (double const & dimensionless_time : { 0.02, 0.04, 0.1, 0.2, 0.4, 0.65 })
-    {
-        fout.open("Srinivasan_fig3_"+std::to_string(dimensionless_time), std::fstream::out);
-        for (double const & dimensionless_position : zeta)
-        {
-            double const dimensionless_double_layer_current_density = compute_dimensionless_double_layer_current_density(dimensionless_time, dimensionless_position);
-            fout<<boost::format("  %22.15e  %22.15e  \n")
-                % dimensionless_position
-                % dimensionless_double_layer_current_density
-                ;
-        }
-        fout.close();
-    }
-
-    // figure 4
-    dimensionless_cell_current_density                     = 1.0;
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.0;
-    ratio_of_separator_to_electrode_resistances            = 0.0;
-    for (double const & dimensionless_time : { 0.02, 0.04, 0.1, 0.2, 0.4, 0.65 })
-    {
-        fout.open("Srinivasan_fig4_"+std::to_string(dimensionless_time), std::fstream::out);
-        for (double const & dimensionless_position : zeta)
-        {
-            double const dimensionless_overpotential = compute_dimensionless_overpotential(dimensionless_time, dimensionless_position);
-            fout<<boost::format("  %22.15e  %22.15e  \n")
-                % dimensionless_position
-                % dimensionless_overpotential
-                ;
-        }
-        fout.close();
-    }
-
-    // figure 5
-    ratio_of_separator_to_electrode_resistances            = 0.0;
-    for (double const & gamma : {0.0, 0.1, 1.0, 10.0, 1.0e6})
-    {
-        ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
-        for (double const & I_star : { 1.0, 2.0 })
-        {
-            std::transform(zeta.cbegin(), zeta.cend(), tau.begin(), [I_star](double const x) { return x / I_star; });
-            dimensionless_cell_current_density = I_star;
-            fout.open("Srinivasan_fig5_"+std::to_string(gamma)+"_"+std::to_string(I_star), std::fstream::out);
-            for (double const & dimensionless_time : tau)
-            {
-                double const relative_utilization = dimensionless_time * dimensionless_cell_current_density;
-                double const dimensionless_cell_voltage = compute_dimensionless_cell_voltage(dimensionless_time);
-                fout<<boost::format("  %22.15e  %22.15e  \n")
-                    % relative_utilization
-                    % dimensionless_cell_voltage
-                    ;
-            }
-            fout.close();
-        }
-    }
-
-    // figure 6
-    dimensionless_cell_current_density                     = 1.0;
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 1.0;
-    ratio_of_separator_to_electrode_resistances            = 0.0;
-    for (double const & dimensionless_time : { 0.02, 0.04, 0.1, 0.2, 0.4, 0.65 })
-    {
-        fout.open("Srinivasan_fig6_"+std::to_string(dimensionless_time), std::fstream::out);
-        for (double const & dimensionless_position : zeta)
-        {
-            double const dimensionless_double_layer_current_density = compute_dimensionless_double_layer_current_density(dimensionless_time, dimensionless_position);
-            fout<<boost::format("  %22.15e  %22.15e  \n")
-                % dimensionless_position
-                % dimensionless_double_layer_current_density
-                ;
-        }
-        fout.close();
-    }
-
-    // figure 11
-    ratio_of_separator_to_electrode_resistances = 0.0;
-    int const m = 1000;
-    std::vector<double> omega_star(m+1);
-    for (int i = 0; i < m+1; ++i)
-        omega_star[i] = 1.0 + 99.0 * static_cast<double>(i) / m;
-    for (double const & gamma : { 0.0, 0.1, 1.0, 10.0, 1.0e6})
-    {
-        fout.open("Srinivasan_fig11_"+std::to_string(gamma), std::fstream::out);
-        ratio_of_solution_phase_to_matrix_phase_conductivities = gamma;
-        for (double const & dimensionless_angular_frequency : omega_star)
-        {
-            std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-            fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-                % dimensionless_angular_frequency
-                % dimensionless_complex_impedance.real()
-                % dimensionless_complex_impedance.imag()
-                ;
-        }
-        fout.close();
-    }
-
-#ifdef WITH_TASMANIAN
-    // beta distribution
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.1;
-    double const alpha = database->get<double>("alpha");
-    double const beta  = database->get<double>("beta" );
-    double const a     = database->get<double>("a"    );
-    double const b     = database->get<double>("b"    );
-    int    const depth = database->get<int   >("depth");
-    boost::math::beta_distribution<double> distribution(alpha, beta);
-    TasGrid::TasmanianSparseGrid grid;
-    grid.makeGlobalGrid(1, 0, depth, TasGrid::type_level, TasGrid::rule_gaussjacobi, 0, alpha, beta);
-    grid.setDomainTransform(&a, &b);
-//    grid.updateGlobalGrid(depth, TasGrid::type_level, 0);
-    std::cout<<grid.getNumPoints()<<"  "<<grid.getNumDimensions()+1<<"\n";
-    std::cout<<"alpha = "<<alpha<<"\n";
-    std::cout<<"beta  = "<<beta<<"\n";
-    std::cout<<"[a b] = ["<<a<<" "<<b<<"]\n";
-    int    const   n_points = grid.getNumPoints        ();
-    double const * weights  = grid.getQuadratureWeights();
-    double const * points   = grid.getPoints           ();
-    for (int q = 0; q < n_points; ++q)
-    {
-        std::cout<<"  "<<weights[q]<<"  "<<points[q]<<"\n";
-        BOOST_CHECK_GE(points[q], a);
-        BOOST_CHECK_LE(points[q], b);
-    }
-
-    frequency_upper_limit = 1.0e+3;
-    frequency_lower_limit = 1.0e-3;
-
-    fout.open("impedance_spectroscopy_data_mean", std::fstream::out);
-    frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
-    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        double const dimensionless_angular_frequency =
-            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
-    }
-    fout.close();
-    fout.open("impedance_spectroscopy_data_min", std::fstream::out);
-    frequency_normalization_factor = a;
-    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        double const dimensionless_angular_frequency =
-            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
-    }
-    fout.close();
-    fout.open("impedance_spectroscopy_data_max", std::fstream::out);
-    frequency_normalization_factor = b;
-    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        double const dimensionless_angular_frequency =
-            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-        std::complex<double> const dimensionless_complex_impedance = compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
-    }
-    fout.close();
-    fout.open("impedance_spectroscopy_data_series", std::fstream::out);
-    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        std::complex<double> dimensionless_complex_impedance = 0.0;
-        for (int q = 0; q < n_points; ++q)
-        {
-            frequency_normalization_factor = points[q];
-            double const dimensionless_angular_frequency =
-                std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-            dimensionless_complex_impedance += weights[q] * compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        }
-        dimensionless_complex_impedance /= std::accumulate(&(weights[0]), &(weights[n_points]), 0.0);
-        frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
-        double const dimensionless_angular_frequency =
-            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
-    }
-    fout.close();
-    fout.open("impedance_spectroscopy_data_parallel", std::fstream::out);
-    ratio_of_solution_phase_to_matrix_phase_conductivities = 0.1;
-    for (double frequency = frequency_upper_limit; frequency >= frequency_lower_limit; frequency /= std::pow(10.0, 1.0/steps_per_decade))
-    {
-        std::complex<double> dimensionless_complex_admittance = 0.0;
-        for (int q = 0; q < n_points; ++q)
-        {
-            frequency_normalization_factor = points[q];
-            double const dimensionless_angular_frequency =
-                std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-            dimensionless_complex_admittance += weights[q] / compute_dimensionless_complex_impedance(dimensionless_angular_frequency);
-        }
-        dimensionless_complex_admittance /= std::accumulate(&(weights[0]), &(weights[n_points]), 0.0);
-        std::complex<double> const dimensionless_complex_impedance = 1.0 / dimensionless_complex_admittance;
-        frequency_normalization_factor = a + (b - a) * boost::math::mean(distribution);
-        double const dimensionless_angular_frequency =
-            std::sqrt(2.0 * pi * frequency / frequency_normalization_factor);
-        fout<<boost::format("  %22.15e  %22.15e  %22.15e  \n")
-            % dimensionless_angular_frequency
-            % dimensionless_complex_impedance.real()
-            % dimensionless_complex_impedance.imag()
-            ;
-    }
-    fout.close();
-#endif
 }
 
 } // end namespace cap
