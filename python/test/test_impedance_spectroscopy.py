@@ -176,10 +176,19 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         # check that all lines end up with Windows-style line break '/r/n'
         # file need to be open in byte mode or the line ending will be
         # converted to '\n'...
+        # also check that the number of lines in the headers has been computed
+        # correctly and that the last one contains the column headers
         with open('untitled.mpt', mode='rb') as fin:
-            for line in fin.readlines():
+            lines = fin.readlines()
+            for line in lines:
                 self.assertNotEqual(line.find(b'\r\n'), -1)
                 self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
+            header_lines = int(lines[1].split(b':')[1].lstrip(b'').rstrip(b'\r\n'))
+            self.assertEqual(
+                header_lines,
+                len(eclab._unformated_headers)
+            )
+            self.assertEqual(lines[header_lines-1].find(b'freq/Hz'), 0)
 
         # check Nyquist plot does not throw
         nyquist = NyquistPlot('nyquist.png')
