@@ -295,7 +295,7 @@ class ECLabAsciiFile(Observer):
             NaN = 255
             extra_data = subject._extra_data
             headers = u''
-            separator = u'|X|'
+            separator = '|X|'
             for line in self._unformated_headers:
                 headers += line + separator
             headers = headers.rstrip(separator).format(

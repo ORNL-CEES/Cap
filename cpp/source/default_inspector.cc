@@ -3,11 +3,13 @@
 
 namespace cap {
 
-void DefaultInspector::inspect(EnergyStorageDevice *device)
+template <int dim>
+std::map<std::string, double>
+extract_data_from_super_capacitor(EnergyStorageDevice *device)
 {
-    auto super_capacitor = dynamic_cast<SuperCapacitor<2>*>(device);
-    if (super_capacitor)
-    {
+    std::map<std::string, double> data;
+    auto super_capacitor = dynamic_cast<SuperCapacitor<dim>*>(device);
+    if (super_capacitor) {
         // get some values from the post processor
         auto post_processor = super_capacitor->get_post_processor();
         double value;
@@ -19,27 +21,42 @@ void DefaultInspector::inspect(EnergyStorageDevice *device)
              })
         {
             post_processor->get(key, value);
-            _data[key] = value;
+            data[key] = value;
         }
 
         // get other values from the property tree
-        auto ptree = super_capacitor->get_property_tree();
-        _data["geometric_area"] =
+        boost::property_tree::ptree const* ptree =
+            super_capacitor->get_property_tree();
+        data["geometric_area"] =
             ptree->get<double>("geometry.geometric_area");
-        _data["anode_electrode_thickness"] =
+        data["anode_electrode_thickness"] =
             ptree->get<double>("geometry.anode_electrode_thickness");
-        _data["cathode_electrode_thickness"] =
+        data["cathode_electrode_thickness"] =
             ptree->get<double>("geometry.cathode_electrode_thickness");
         // TODO
         for (std::string const & electrode : {"anode", "cathode"})
         {
             std::string tmp =
                 ptree->get<std::string>("material_properties."+electrode+".matrix_phase");
-            _data[electrode+"_electrode_double_layer_capacitance"] =
+            data[electrode+"_electrode_double_layer_capacitance"] =
                 ptree->get<double>("material_properties."+tmp+".differential_capacitance");
         }
+    } else {
+        throw std::runtime_error("Downcasting failed");
     }
+    return data;
+}
 
+
+void DefaultInspector::inspect(EnergyStorageDevice *device)
+{
+    if (dynamic_cast<SuperCapacitor<2>*>(device)) {
+        _data = extract_data_from_super_capacitor<2>(device);
+    } else if (dynamic_cast<SuperCapacitor<3>*>(device)) {
+        _data = extract_data_from_super_capacitor<3>(device);
+    } else {
+        // do nothing
+    }
 }
 
 std::map<std::string, double> DefaultInspector::get_data()
