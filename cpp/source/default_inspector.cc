@@ -14,6 +14,11 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
   {
     // get some values from the post processor
     auto post_processor = super_capacitor->get_post_processor();
+    if (post_processor == nullptr)
+    {
+      post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
+          super_capacitor->get_post_processor_parameters());
+    }
     double value;
     for (std::string const &key : {
              "anode_electrode_interfacial_surface_area",

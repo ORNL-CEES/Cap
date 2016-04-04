@@ -348,6 +348,13 @@ void SuperCapacitor<dim>::evolve_one_time_step(
 }
 
 template <int dim>
+std::shared_ptr<PostprocessorParameters<dim>>
+SuperCapacitor<dim>::get_post_processor_parameters() const
+{
+  return post_processor_params;
+}
+
+template <int dim>
 std::shared_ptr<Postprocessor<dim>>
 SuperCapacitor<dim>::get_post_processor() const
 {

@@ -78,6 +78,12 @@ public:
                                         double const load) override;
 
   /**
+   * Granting access to the post-processor parameters for the inspector.
+   */
+  std::shared_ptr<PostprocessorParameters<dim>>
+  get_post_processor_parameters() const;
+
+  /**
    * Granting access to the post-processor for the inspector.
    */
   std::shared_ptr<Postprocessor<dim>> get_post_processor() const;
