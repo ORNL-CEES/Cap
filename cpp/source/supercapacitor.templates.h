@@ -33,8 +33,7 @@ void SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
 template <int dim>
 SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
                                     boost::property_tree::ptree const &ptree)
-    : EnergyStorageDevice(comm),
-      _ptree(ptree)
+    : EnergyStorageDevice(comm), _ptree(ptree)
 {
   // get database
   std::shared_ptr<boost::property_tree::ptree const> database =
@@ -454,7 +453,7 @@ SuperCapacitor<dim>::get_post_processor() const
 }
 
 template <int dim>
-boost::property_tree::ptree const*
+boost::property_tree::ptree const *
 SuperCapacitor<dim>::get_property_tree() const
 {
   return &_ptree;

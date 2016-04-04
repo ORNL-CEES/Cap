@@ -77,6 +77,17 @@ public:
   void evolve_one_time_step_linear_load(double const time_step,
                                         double const load) override;
 
+  /**
+   * Granting access to the post-processor for the inspector.
+   */
+  std::shared_ptr<Postprocessor<dim>> get_post_processor() const;
+
+  /**
+   * Provides a copy of the property tree used to build the supercapacitor to
+   * the inspector.
+   */
+  boost::property_tree::ptree const *get_property_tree() const;
+
 private:
   /**
    * Helper function to advance time by @p time_step second.
@@ -123,6 +134,7 @@ private:
   std::shared_ptr<SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
   std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
+  boost::property_tree::ptree const _ptree;
 
   template <int dimension>
   friend class SuperCapacitorInspector;
