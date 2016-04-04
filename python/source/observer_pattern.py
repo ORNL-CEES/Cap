@@ -174,10 +174,13 @@ class Experiment(Observable):
     ----------
     _data : dict
         Holds the measurement information.
+    _extra_data : dict
+        Holds other informations such as properties of the device.
     '''
     def __init__(self):
         Observable.__init__(self)
         self._data = {}
+        self._extra_data = {}
     def run(self, device):
         '''Run the experiment on an energy storage device.
 

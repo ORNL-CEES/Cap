@@ -1,3 +1,5 @@
+# This Python file uses the following encoding: iso-8859-1
+#
 # Copyright (c) 2016, the Cap authors.
 #
 # This file is subject to the Modified BSD License and may not be distributed
@@ -13,6 +15,7 @@ from io import open # to be able to use parameter ``encoding`` with Python2.7
 from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
 from .observer_pattern import Observer, Observable, Experiment
+import pycap
 
 __all__ = ['plot_nyquist', 'plot_bode',
            'fourier_analysis', 'retrieve_impedance_spectrum',
@@ -226,9 +229,10 @@ class ECLabAsciiFile(Observer):
     ----------
     _filename : string
         Name of the file to be exported.
-    _headers : list of strings
-        Headers from a template to be added to the exported file.
-    _template : string
+    _unformated_headers : list of strings
+        Headers with a number of placeholders that are meant to be be
+        formated before exporting to the output file.
+    _line_template : string
         Template for a line that will be written. It contains replacement fields
         and is meant to be formatted.
     _encoding : string
@@ -243,24 +247,75 @@ class ECLabAsciiFile(Observer):
     def __init__(self, filename):
         self._filename = filename
         self._encoding = 'iso-8859-1'
-        # read the headers from a template file that Frank gave me
-        with open('BC52-7-100C_C01.mpt',
-                  mode='r', encoding=self._encoding) as fin:
-            self._headers = fin.readlines()[:60]
+        # building the headers
+        self._unformated_headers = [
+           u'EC-Lab ASCII FILE\r\n',
+           u'Nb header lines : {header_lines}\r\n',
+           u'\r\n',
+           u'Potentio Electrochemical Impedance Spectroscopy\r\n',
+           u'\r\n',
+           u'Generated using Cap version "{git_commit_hash}"\r\n',
+           u'See {git_remote_url}\r\n'
+           u'\r\n',
+           u'Anode\r\n',
+           u'-----\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
+           u'thickness                [cm]     {anode_electrode_thickness}\r\n',
+           u'double layer capacitance [µF/cm²] {anode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {anode_electrode_interfacial_surface_area}\r\n',
+           u'mass active material     [g]      {anode_electrode_mass_of_active_material}\r\n',
+           u'\r\n',
+           u'Cathode\r\n',
+           u'-------\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
+           u'thickness                [cm]     {cathode_electrode_thickness}\r\n',
+           u'double layer capacitance [µF/cm²] {cathode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {cathode_electrode_interfacial_surface_area}\r\n',
+           u'mass active material     [g]      {cathode_electrode_mass_of_active_material}\r\n',
+           u'\r\n',
+           u'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
+           u'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
+           u'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
+           u'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
+        ]
         # build a template for each line in the results
-        self._template = u''
+        self._line_template = u''
         for i in range(18):
-            self._template += '{left}{0}:{format_spec}{right}{separator}'\
+            self._line_template += '{left}{0}:{format_spec}{right}{separator}'\
                 .format(i, format_spec='{format_spec}',
                         left='{', right='}', separator='\t')
-        self._template += '\r\n'
+        self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
+        m_to_cm = lambda x: 100*x
+        m2_to_cm2 = lambda x: 10000*x
+        kg_to_g = lambda x: 1000*x
+        Fperm2_to_muFpercm2 = lambda x: 100*x
         with open(self._filename, mode='w', encoding=self._encoding) as fout:
+            NaN = 255
+            extra_data = subject._extra_data
+            headers = u''
+            separator = '|X|'
+            for line in self._unformated_headers:
+                headers += line + separator
+            headers = headers.rstrip(separator).format(
+                header_lines=len(headers),
+                git_commit_hash=pycap.__git_commit_hash__,
+                git_remote_url=pycap.__git_remote_url__,
+                geometric_area=m2_to_cm2(extra_data['geometric_area']),
+                anode_electrode_thickness=m_to_cm(extra_data['anode_electrode_thickness']),
+                anode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['anode_electrode_double_layer_capacitance']),
+                anode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['anode_electrode_interfacial_surface_area']),
+                anode_electrode_mass_of_active_material=kg_to_g(extra_data['anode_electrode_mass_of_active_material']),
+                cathode_electrode_thickness=m_to_cm(extra_data['cathode_electrode_thickness']),
+                cathode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['cathode_electrode_double_layer_capacitance']),
+                cathode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['cathode_electrode_interfacial_surface_area']),
+                cathode_electrode_mass_of_active_material=kg_to_g(extra_data['cathode_electrode_mass_of_active_material']),
+            ).split(separator)
 
             # write headers
-            for line in self._headers:
-                fout.write(line.replace('\n','\r\n'))
+            for line in headers:
+                fout.write(line)
 
             # write data
             n = subject._data['frequency'].size
@@ -268,26 +323,27 @@ class ECLabAsciiFile(Observer):
                 f = subject._data['frequency'][i]
                 Z = subject._data['impedance'][i]
                 Y = 1.0 / Z
-                place_holder = 255
-                line = self._template.format(float(f),
-                                             float(real(Z)),
-                                             -float(imag(Z)),
-                                             float(absolute(Z)),
-                                             float(angle(Z, deg=True)),
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             place_holder,
-                                             float(real(Y)),
-                                             float(imag(Y)),
-                                             float(absolute(Y)),
-                                             float(angle(Y, deg=True)),
-                                             format_spec='.7e')
+                line = self._line_template.format(
+                    float(f),
+                    float(real(Z)),
+                    -float(imag(Z)),
+                    float(absolute(Z)),
+                    float(angle(Z, deg=True)),
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    NaN,
+                    float(real(Y)),
+                    float(imag(Y)),
+                    float(absolute(Y)),
+                    float(angle(Y, deg=True)),
+                    format_spec='.7e'
+                )
                 fout.write(line)
 Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
 
@@ -306,6 +362,9 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     _data : dict
         Stores the frequency as a numpy.array of floating point numbers
         and the impedance as a numpy.array of complex numbers.
+    _extra_data : dict
+        Stores the information computed by the postprocessor and some of the
+        input data that need to be saved.
 
     Examples
     --------
@@ -337,6 +396,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             'impedance': array([], dtype=complex)
         }
     def run(self, device, fout=None):
+        self._extra_data = device.inspect()
         frequency = self._frequency_upper_limit
         while frequency >= self._frequency_lower_limit:
             self._ptree.put_double('frequency', frequency)

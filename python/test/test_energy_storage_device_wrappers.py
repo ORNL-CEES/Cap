@@ -37,5 +37,26 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, copy, device)
         self.assertRaises(RuntimeError, deepcopy, device)
 
+    def test_inspect_device(self):
+        ptree = PropertyTree()
+        ptree.parse_info('super_capacitor.info')
+        device = EnergyStorageDevice(ptree, comm)
+        # method inspect() takes no argument and returns a dictionary
+        data = device.inspect()
+        self.assertTrue(isinstance(data, dict))
+        for key in [
+            'anode_electrode_interfacial_surface_area',
+            'anode_electrode_mass_of_active_material',
+            'anode_electrode_double_layer_capacitance',
+            'anode_electrode_thickness',
+            'cathode_electrode_interfacial_surface_area',
+            'cathode_electrode_mass_of_active_material',
+            'cathode_electrode_double_layer_capacitance',
+            'cathode_electrode_thickness',
+            'geometric_area',
+            ]:
+            self.assertTrue(key in data)
+        print(data)
+
 if __name__ == '__main__':
     unittest.main()
