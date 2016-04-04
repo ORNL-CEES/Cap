@@ -7,7 +7,7 @@
 
 #include <cap/resistor_capacitor.h>
 #ifdef WITH_DEAL_II
-#include <cap/new_supercapacitor.h>
+#include <cap/supercapacitor.h>
 #endif
 
 namespace cap

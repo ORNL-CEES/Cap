@@ -5,17 +5,17 @@
  * for the text and further information on this license.
  */
 
-#include <cap/new_supercapacitor.templates.h>
+#include <cap/supercapacitor.templates.h>
 
 namespace cap
 {
 
-class New_SuperCapacitorBuilder : public EnergyStorageDeviceBuilder
+class SuperCapacitorBuilder : public EnergyStorageDeviceBuilder
 {
 public:
-  New_SuperCapacitorBuilder()
+  SuperCapacitorBuilder()
   {
-    register_energy_storage_device("New_SuperCapacitor", this);
+    register_energy_storage_device("SuperCapacitor", this);
   }
 
   std::unique_ptr<EnergyStorageDevice>
@@ -24,20 +24,20 @@ public:
   {
     int const dim = ptree.get<int>("dim");
     if (dim == 2)
-      return std::make_unique<New_SuperCapacitor<2>>(
-          New_SuperCapacitor<2>(comm, ptree));
+      return std::make_unique<SuperCapacitor<2>>(
+          SuperCapacitor<2>(comm, ptree));
     else if (dim == 3)
-      return std::make_unique<New_SuperCapacitor<3>>(
-          New_SuperCapacitor<3>(comm, ptree));
+      return std::make_unique<SuperCapacitor<3>>(
+          SuperCapacitor<3>(comm, ptree));
     else
       throw std::runtime_error("dim=" + std::to_string(dim) +
                                " must be 2 or 3");
   }
-} global_New_SuperCapacitorBuilder;
+} global_SuperCapacitorBuilder;
 
-template class New_SuperCapacitorInspector<2>;
-template class New_SuperCapacitorInspector<3>;
-template class New_SuperCapacitor<2>;
-template class New_SuperCapacitor<3>;
+template class SuperCapacitorInspector<2>;
+template class SuperCapacitorInspector<3>;
+template class SuperCapacitor<2>;
+template class SuperCapacitor<3>;
 
 } // end namespace cap

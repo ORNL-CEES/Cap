@@ -59,18 +59,18 @@ std::vector<std::string> Postprocessor<dim>::get_vector_keys() const
   return keys;
 }
 
-//////////////////////// NEW_SUPERCAPACITOR POSTPROCESSOR PARAMETERS //////
+//////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS //////
 template <int dim>
-New_SuperCapacitorPostprocessorParameters<dim>::
-    New_SuperCapacitorPostprocessorParameters(
+SuperCapacitorPostprocessorParameters<dim>::
+    SuperCapacitorPostprocessorParameters(
         std::shared_ptr<boost::property_tree::ptree const> d)
     : PostprocessorParameters<dim>(d)
 {
 }
 
-//////////////////////// NEW_SUPERCAPACITOR POSTPROCESSOR /////////////////
+//////////////////////// SUPERCAPACITOR POSTPROCESSOR /////////////////
 template <int dim>
-New_SuperCapacitorPostprocessor<dim>::New_SuperCapacitorPostprocessor(
+SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     : Postprocessor<dim>(parameters)
 {
@@ -122,7 +122,7 @@ New_SuperCapacitorPostprocessor<dim>::New_SuperCapacitorPostprocessor(
 }
 
 template <int dim>
-void New_SuperCapacitorPostprocessor<dim>::reset(
+void SuperCapacitorPostprocessor<dim>::reset(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 {
   dealii::DoFHandler<dim> const &dof_handler  = *(this->dof_handler);

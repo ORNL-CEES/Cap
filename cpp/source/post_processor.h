@@ -61,22 +61,22 @@ protected:
   std::unordered_map<std::string, double> values;
 };
 
-//////////////////////// NEW_SUPERCAPCITOR POSTPROCESSOR PARAMETERS ////
+//////////////////////// SUPERCAPCITOR POSTPROCESSOR PARAMETERS ////
 template <int dim>
-class New_SuperCapacitorPostprocessorParameters
+class SuperCapacitorPostprocessorParameters
     : public PostprocessorParameters<dim>
 {
 public:
-  New_SuperCapacitorPostprocessorParameters(
+  SuperCapacitorPostprocessorParameters(
       std::shared_ptr<boost::property_tree::ptree const> d);
 };
 
-//////////////////////// NEW_SUPERCAPCITOR POSTPROCESSOR ///////////////
+//////////////////////// SUPERCAPCITOR POSTPROCESSOR ///////////////
 template <int dim>
-class New_SuperCapacitorPostprocessor : public Postprocessor<dim>
+class SuperCapacitorPostprocessor : public Postprocessor<dim>
 {
 public:
-  New_SuperCapacitorPostprocessor(
+  SuperCapacitorPostprocessor(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters);
   void reset(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
