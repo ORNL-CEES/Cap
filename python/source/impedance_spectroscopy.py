@@ -1,4 +1,4 @@
-# This Python file uses the following encoding: iso-8859-1
+# This Python file uses the following encoding: latin-1
 #
 # Copyright (c) 2016, the Cap authors.
 #
@@ -246,7 +246,7 @@ class ECLabAsciiFile(Observer):
         return object.__new__(ECLabAsciiFile)
     def __init__(self, filename):
         self._filename = filename
-        self._encoding = 'iso-8859-1'
+        self._encoding = 'latin-1'
         # building the headers
         self._unformated_headers = [
            u'EC-Lab ASCII FILE\r\n',
@@ -259,27 +259,27 @@ class ECLabAsciiFile(Observer):
            u'\r\n',
            u'Anode\r\n',
            u'-----\r\n',
-           u'geometric area           [cmÂ²]    {geometric_area}\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
            u'thickness                [cm]     {anode_electrode_thickness}\r\n',
-           u'double layer capacitance [ÂµF/cmÂ²] {anode_electrode_double_layer_capacitance}\r\n',
-           u'interfacial surface area [cmÂ²]    {anode_electrode_interfacial_surface_area}\r\n',
+           u'double layer capacitance [µF/cm²] {anode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {anode_electrode_interfacial_surface_area}\r\n',
            u'mass active material     [g]      {anode_electrode_mass_of_active_material}\r\n',
            u'\r\n',
            u'Cathode\r\n',
            u'-------\r\n',
-           u'geometric area           [cmÂ²]    {geometric_area}\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
            u'thickness                [cm]     {cathode_electrode_thickness}\r\n',
-           u'double layer capacitance [ÂµF/cmÂ²] {cathode_electrode_double_layer_capacitance}\r\n',
-           u'interfacial surface area [cmÂ²]    {cathode_electrode_interfacial_surface_area}\r\n',
+           u'double layer capacitance [µF/cm²] {cathode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {cathode_electrode_interfacial_surface_area}\r\n',
            u'mass active material     [g]      {cathode_electrode_mass_of_active_material}\r\n',
            u'\r\n',
            u'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
-           u'time/s\t<Ewe>/V\t<I>/mA\tCs/ÂµF\tCp/ÂµF\t'
+           u'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
            u'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
            u'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
         ]
         # build a template for each line in the results
-        self._line_template = u''
+        self._line_template = ''
         for i in range(18):
             self._line_template += '{left}{0}:{format_spec}{right}{separator}'\
                 .format(i, format_spec='{format_spec}',
@@ -291,7 +291,7 @@ class ECLabAsciiFile(Observer):
         m2_to_cm2 = lambda x: 10000*x
         kg_to_g = lambda x: 1000*x
         Fperm2_to_muFpercm2 = lambda x: 100*x
-        with open(self._filename, mode='w', encoding=self._encoding) as fout:
+        with open(self._filename, mode='wb') as fout:
             NaN = 255
             extra_data = subject._extra_data
             headers = u''
@@ -315,7 +315,7 @@ class ECLabAsciiFile(Observer):
 
             # write headers
             for line in headers:
-                fout.write(line)
+                fout.write(line.encode(self._encoding))
 
             # write data
             n = subject._data['frequency'].size
@@ -344,7 +344,7 @@ class ECLabAsciiFile(Observer):
                     float(angle(Y, deg=True)),
                     format_spec='.7e'
                 )
-                fout.write(line)
+                fout.write(line.encode(self._encoding))
 Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
 
 class ElectrochemicalImpedanceSpectroscopy(Experiment):
