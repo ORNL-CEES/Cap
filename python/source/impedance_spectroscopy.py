@@ -255,7 +255,7 @@ class ECLabAsciiFile(Observer):
            u'Potentio Electrochemical Impedance Spectroscopy\r\n',
            u'\r\n',
            u'Generated using Cap version "{git_commit_hash}"\r\n',
-           u'See {git_remote_url}\r\n'
+           u'See {git_remote_url}\r\n',
            u'\r\n',
            u'Anode\r\n',
            u'-----\r\n',
@@ -299,7 +299,7 @@ class ECLabAsciiFile(Observer):
             for line in self._unformated_headers:
                 headers += line + separator
             headers = headers.rstrip(separator).format(
-                header_lines=len(headers),
+                header_lines=len(self._unformated_headers),
                 git_commit_hash=pycap.__git_commit_hash__,
                 git_remote_url=pycap.__git_remote_url__,
                 geometric_area=m2_to_cm2(extra_data['geometric_area']),

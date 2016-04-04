@@ -183,12 +183,12 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             for line in lines:
                 self.assertNotEqual(line.find(b'\r\n'), -1)
                 self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
-            header_lines = int(lines[1].split(':')[1].lstrip('').rstrip('\r\n'))
+            header_lines = int(lines[1].split(b':')[1].lstrip(b'').rstrip(b'\r\n'))
             self.assertEqual(
                 header_lines,
                 len(eclab._unformated_headers)
             )
-            self.assertEqual(lines[header_lines-1].find('freq/Hz'), 0)
+            self.assertEqual(lines[header_lines-1].find(b'freq/Hz'), 0)
 
         # check Nyquist plot does not throw
         nyquist = NyquistPlot('nyquist.png')
