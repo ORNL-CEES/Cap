@@ -83,7 +83,10 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->values["surface_area"]               = 0.0;
   this->values["volume"]                     = 0.0;
   this->values["mass"]                       = 0.0;
-  this->values["interfacial_surface_area"]   = 0.0;
+  this->values["anode_electrode_interfacial_surface_area"]   = 0.0;
+  this->values["anode_electrode_mass_of_active_material"]    = 0.0;
+  this->values["cathode_electrode_interfacial_surface_area"] = 0.0;
+  this->values["cathode_electrode_mass_of_active_material"]  = 0.0;
 
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
@@ -169,6 +172,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::vector<double> solid_electrical_conductivity_values(n_q_points);
   std::vector<double> liquid_electrical_conductivity_values(n_q_points);
   std::vector<double> density_values(n_q_points);
+  std::vector<double> density_of_active_material_values(n_q_points);
   std::vector<double> specific_surface_area_values(n_q_points);
   std::vector<dealii::Tensor<1, dim>> temperature_gradients(n_q_points);
   std::vector<dealii::Tensor<1, dim>> solid_potential_gradients(n_q_points);
@@ -197,6 +201,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
     this->mp_values->get_values("liquid_electrical_conductivity", cell,
                                 liquid_electrical_conductivity_values);
     this->mp_values->get_values("density", cell, density_values);
+    this->mp_values->get_values("density_of_active_material", cell,
+                                density_of_active_material_values);
     this->mp_values->get_values("specific_surface_area", cell,
                                 specific_surface_area_values);
     fe_values[temperature].get_function_gradients(solution,
@@ -222,14 +228,16 @@ void SuperCapacitorPostprocessor<dim>::reset(
           fe_values.JxW(q_point);
       this->values["volume"] += fe_values.JxW(q_point);
       this->values["mass"] += density_values[q_point] * fe_values.JxW(q_point);
-      this->values["interfacial_surface_area"] +=
-          specific_surface_area_values[q_point] * fe_values.JxW(q_point);
       if (cell->material_id() == anode_electrode_material_id)
       {
         anode_electrode_potential += (solid_potential_values[q_point] -
                                       liquid_potential_values[q_point]) *
                                      fe_values.JxW(q_point);
         anode_electrode_volume += fe_values.JxW(q_point);
+        this->values["anode_electrode_interfacial_surface_area"] +=
+            specific_surface_area_values[q_point] * fe_values.JxW(q_point);
+        this->values["anode_electrode_mass_of_active_material"] +=
+            density_of_active_material_values[q_point] * fe_values.JxW(q_point);
       }
       else if (cell->material_id() == cathode_electrode_material_id)
       {
@@ -237,6 +245,10 @@ void SuperCapacitorPostprocessor<dim>::reset(
                                         liquid_potential_values[q_point]) *
                                        fe_values.JxW(q_point);
         cathode_electrode_volume += fe_values.JxW(q_point);
+        this->values["cathode_electrode_interfacial_surface_area"] +=
+            specific_surface_area_values[q_point] * fe_values.JxW(q_point);
+        this->values["cathode_electrode_mass_of_active_material"] +=
+            density_of_active_material_values[q_point] * fe_values.JxW(q_point);
       }
       else
       {

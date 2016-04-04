@@ -45,10 +45,14 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         data = device.inspect()
         self.assertTrue(isinstance(data, dict))
         for key in [
-            'surface_area',
-            'mass',
-            'capacitance',
-            'electrode_thickness',
+            'anode_electrode_interfacial_surface_area',
+            'anode_electrode_mass_of_active_material',
+            'anode_electrode_double_layer_capacitance',
+            'anode_electrode_thickness',
+            'cathode_electrode_interfacial_surface_area',
+            'cathode_electrode_mass_of_active_material',
+            'cathode_electrode_double_layer_capacitance',
+            'cathode_electrode_thickness',
             'geometric_area',
             ]:
             self.assertTrue(key in data)

@@ -226,6 +226,14 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
                            void_volume_fraction * electrolyte_mass_density +
                                (1.0 - void_volume_fraction) * mass_density);
                });
+  (this->properties)
+      .emplace("density_of_active_material",
+               [mass_density, void_volume_fraction](
+                   active_cell_iterator const &, std::vector<double> &values)
+               {
+                 std::fill(values.begin(), values.end(),
+                           (1.0 - void_volume_fraction) * mass_density);
+               });
 }
 
 template <int dim, int spacedim>
@@ -258,6 +266,7 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
   {
     std::fill(values.begin(), values.end(), 0.0);
   };
+  (this->properties).emplace("density_of_active_material", null_property);
   (this->properties).emplace("specific_surface_area", null_property);
   (this->properties).emplace("specific_capacitance", null_property);
   (this->properties).emplace("faradaic_reaction_coefficient", null_property);

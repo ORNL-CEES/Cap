@@ -1,3 +1,5 @@
+# This Python file uses the following encoding: iso-8859-1
+#
 # Copyright (c) 2016, the Cap authors.
 #
 # This file is subject to the Modified BSD License and may not be distributed
@@ -247,25 +249,34 @@ class ECLabAsciiFile(Observer):
         self._encoding = 'iso-8859-1'
         # building the headers
         self._unformated_headers = [
-           'EC-Lab ASCII FILE\r\n',
-           'Nb header lines : {header_lines}\r\n',
-           '\r\n',
-           'Potentio Electrochemical Impedance Spectroscopy\r\n',
-           '\r\n',
-           'Generated using Cap version "{git_commit_hash}"\r\n',
-           'See {git_remote_url}\r\n'
-           '\r\n',
-           'Electrode geometric area {geometric_area} [cm2]\r\n',
-           'Electrode thickness      {electrode_thickness} [cm]\r\n',
-           'Double layer capacitance {capacitance} [muF/cm2]',
-           '\r\n',
-           'Electrode surface area   {surface_area} [cm2]\r\n',
-           'Mass active material     {mass} [g]\r\n',
-           '\r\n',
-           'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
-           'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
-           'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
-           'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
+           u'EC-Lab ASCII FILE\r\n',
+           u'Nb header lines : {header_lines}\r\n',
+           u'\r\n',
+           u'Potentio Electrochemical Impedance Spectroscopy\r\n',
+           u'\r\n',
+           u'Generated using Cap version "{git_commit_hash}"\r\n',
+           u'See {git_remote_url}\r\n'
+           u'\r\n',
+           u'Anode\r\n',
+           u'-----\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
+           u'thickness                [cm]     {anode_electrode_thickness}\r\n',
+           u'double layer capacitance [µF/cm²] {anode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {anode_electrode_interfacial_surface_area}\r\n',
+           u'mass active material     [g]      {anode_electrode_mass_of_active_material}\r\n',
+           u'\r\n',
+           u'Cathode\r\n',
+           u'-------\r\n',
+           u'geometric area           [cm²]    {geometric_area}\r\n',
+           u'thickness                [cm]     {cathode_electrode_thickness}\r\n',
+           u'double layer capacitance [µF/cm²] {cathode_electrode_double_layer_capacitance}\r\n',
+           u'interfacial surface area [cm²]    {cathode_electrode_interfacial_surface_area}\r\n',
+           u'mass active material     [g]      {cathode_electrode_mass_of_active_material}\r\n',
+           u'\r\n',
+           u'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
+           u'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
+           u'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
+           u'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
         ]
         # build a template for each line in the results
         self._line_template = u''
@@ -283,8 +294,8 @@ class ECLabAsciiFile(Observer):
         with open(self._filename, mode='w', encoding=self._encoding) as fout:
             NaN = 255
             extra_data = subject._extra_data
-            headers = ''
-            separator = '|X|'
+            headers = u''
+            separator = u'|X|'
             for line in self._unformated_headers:
                 headers += line + separator
             headers = headers.rstrip(separator).format(
@@ -292,10 +303,14 @@ class ECLabAsciiFile(Observer):
                 git_commit_hash=pycap.__git_commit_hash__,
                 git_remote_url=pycap.__git_remote_url__,
                 geometric_area=m2_to_cm2(extra_data['geometric_area']),
-                electrode_thickness=m_to_cm(extra_data['electrode_thickness']),
-                capacitance=Fperm2_to_muFpercm2(extra_data['capacitance']),
-                surface_area=m2_to_cm2(extra_data['surface_area']),
-                mass=kg_to_g(extra_data['mass'])
+                anode_electrode_thickness=m_to_cm(extra_data['anode_electrode_thickness']),
+                anode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['anode_electrode_double_layer_capacitance']),
+                anode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['anode_electrode_interfacial_surface_area']),
+                anode_electrode_mass_of_active_material=kg_to_g(extra_data['anode_electrode_mass_of_active_material']),
+                cathode_electrode_thickness=m_to_cm(extra_data['cathode_electrode_thickness']),
+                cathode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['cathode_electrode_double_layer_capacitance']),
+                cathode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['cathode_electrode_interfacial_surface_area']),
+                cathode_electrode_mass_of_active_material=kg_to_g(extra_data['cathode_electrode_mass_of_active_material']),
             ).split(separator)
 
             # write headers
