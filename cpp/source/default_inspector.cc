@@ -33,7 +33,6 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
             ptree->get<double>("geometry.anode_electrode_thickness");
         data["cathode_electrode_thickness"] =
             ptree->get<double>("geometry.cathode_electrode_thickness");
-        // TODO
         for (std::string const & electrode : {"anode", "cathode"})
         {
             std::string tmp =
