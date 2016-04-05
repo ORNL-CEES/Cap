@@ -70,7 +70,6 @@ public:
   inline dealii::Vector<double> const &get_system_rhs() const
   {
     return this->system_rhs;
-    ;
   }
 
 protected:
