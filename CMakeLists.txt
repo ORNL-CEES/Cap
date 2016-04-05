@@ -8,6 +8,9 @@ include(SetupCap)
 if(ENABLE_COVERAGE)
     include(CodeCoverage)
 endif()
+if(ENABLE_AUTO_FORMAT)
+    include(CodeAutoFormat)
+endif()
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
