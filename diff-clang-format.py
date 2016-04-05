@@ -8,7 +8,7 @@ Option:
   -h --help                    Show this screen
   -q --quiet                   Do not print the diff
   --file-extension=<arg>       Filename extension with a dot [default: .hpp .cpp]
-  --style=<style>              Coding style supportted by clang-format [default: LLVM]
+  --style=<style>              Coding style supported by clang-format [default: LLVM]
   --configuration-file=<file>  Style configuation .clang-format file
 '''
 
@@ -47,16 +47,8 @@ def diff_with_formatted_source(original_file, style):
     stdout, stderr = p.communicate()
     if stderr:
         raise RuntimeError('diff failed')
-    ostream = b''
-    if stdout:
-        headers = ''
-        headers += '<<< ' + original_file + '\n'
-        headers += '--- diff ---\n'
-        headers += '>>>' + formatted_file + '\n'
-        ostream += headers.encode('utf-8')
-        ostream += stdout
     remove(formatted_file)
-    return ostream
+    return stdout
 
 def run(paths, file_extensions, style, config):
     '''
@@ -79,10 +71,11 @@ def run(paths, file_extensions, style, config):
     for path in paths:
         for root, dirs, files in walk(path):
             for file in files:
+                file_path = root+'/'+file
                 if (any([file.endswith(extension) for extension in file_extensions])):
-                    diff = diff_with_formatted_source(root+'/'+file, style)
+                    diff = diff_with_formatted_source(file_path, style)
                     if diff:
-                        diffs[root+'/'+file] = diff
+                        diffs[file_path] = diff
     return diffs
 
 if __name__ == '__main__':
@@ -100,7 +93,7 @@ if __name__ == '__main__':
                 print('####', file, '####')
                 print(diff.decode('utf-8'))
         print('Bad format')
-        exit(1)
     else:
         print('OK')
-        exit(0)
+    reformatted_files = len(diffs)
+    exit(reformatted_files)
