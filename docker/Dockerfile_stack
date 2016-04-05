@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
         git \
         cmake \
         lcov \
+        valgrind \
+        clang-format-3.7 \
         libssl-dev \
         libpng-dev \
         libfreetype6-dev \
@@ -340,7 +342,9 @@ RUN cd ${PREFIX}/source && \
         ipywidgets \
         mpi4py \
         sympy \
-        coverage
+        coverage \
+        autopep8 \
+        docopt
 
 RUN CFLAGS="-I${MPI_DIR}/include -I${HDF5_DIR}/include" \
     LDFLAGS="-L${HDF5_DIR}/lib" \
