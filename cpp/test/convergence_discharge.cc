@@ -31,12 +31,14 @@ void compute_parameters(
     std::shared_ptr<boost::property_tree::ptree const> input_database,
     std::shared_ptr<boost::property_tree::ptree> output_database)
 {
+  double const cm2_to_m2 = 0.0001;
+  double const cm_to_m = 0.01;
   double const cross_sectional_area =
-      0.0001 * input_database->get<double>("geometry.geometric_area");
+      cm2_to_m2 * input_database->get<double>("geometry.geometric_area");
   double const electrode_width =
-      0.01 * input_database->get<double>("geometry.anode_electrode_thickness");
+      cm_to_m * input_database->get<double>("geometry.anode_electrode_thickness");
   double const separator_width =
-      0.01 * input_database->get<double>("geometry.separator_thickness");
+      cm_to_m * input_database->get<double>("geometry.separator_thickness");
 
   // getting the material parameters values
   std::shared_ptr<boost::property_tree::ptree> material_properties_database =
