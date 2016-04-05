@@ -6,18 +6,6 @@ else()
     message(FATAL_ERROR "-- clang-format not found")
 endif()
 add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/.clang-format
-    DEPENDS ${CMAKE_SOURCE_DIR}/.clang-format
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy ${CMAKE_SOURCE_DIR}/.clang-format
-        ${CMAKE_BINARY_DIR}/.clang-format
-    COMMENT "Copying .clang-format"
-)
-add_custom_target(
-    .clang-format
-    DEPENDS ${CMAKE_BINARY_DIR}/.clang-format
-)
-add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/diff-clang-format.py
     DEPENDS ${CMAKE_SOURCE_DIR}/diff-clang-format.py
     COMMAND ${CMAKE_COMMAND}
@@ -33,9 +21,10 @@ add_custom_target(format-cpp
     ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/diff-clang-format.py
         --file-extension='.h'
         --file-extension='.cc'
+        --style=file
+        --config="${CMAKE_SOURCE_DIR}/.clang-format"
         ${CMAKE_SOURCE_DIR}/cpp
     DEPENDS
-        ${CMAKE_BINARY_DIR}/.clang-format
         ${CMAKE_BINARY_DIR}/diff-clang-format.py
 )
 
