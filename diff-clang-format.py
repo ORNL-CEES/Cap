@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 '''
-Usage: diff-clang-format.py [--file-extension=<arg>]... [PATHS ...]
+Usage: diff-clang-format.py [--quiet] [--file-extension=<arg>]... [PATHS ...]
 
 Options:
   -h --help               Show this screen
+  -q --quiet              Do not print the diff
   --file-extension=<arg>  File extensions [default: .hpp .cpp]
 '''
 
@@ -45,12 +46,23 @@ def print_diff_with_formatted_source(original_file):
     remove(formatted_file)
     return ostream
 
-if __name__ == '__main__':
-    args = docopt(__doc__)
+def run(paths, file_extensions):
+    ostream = b''
     for path in args['PATHS']:
         for root, dirs, files in walk(path):
             for file in files:
-                if (any([file.endswith(extension) for extension in args['--file-extension']])):
-                    ostream = print_diff_with_formatted_source(root+'/'+file)
-                    if ostream:
-                        print(ostream.decode('utf-8'))
+                if (any([file.endswith(extension) for extension in file_extensions])):
+                    ostream += print_diff_with_formatted_source(root+'/'+file)
+    return ostream
+
+if __name__ == '__main__':
+    args = docopt(__doc__)
+    ostream = run(args['PATHS'], args['--file-extension'])
+    if ostream:
+        if not args['--quiet']:
+            print(ostream.decode('utf-8'))
+        print('Bad format')
+        exit(1)
+    else:
+        print('OK')
+        exit(0)
