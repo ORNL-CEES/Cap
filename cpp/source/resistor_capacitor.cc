@@ -30,17 +30,17 @@ SeriesRC::SeriesRC(boost::mpi::communicator const &comm,
                    boost::property_tree::ptree const &ptree)
     : EnergyStorageDevice(comm)
 {
-  R   = ptree.get<double>("series_resistance");
-  C   = ptree.get<double>("capacitance");
-  U   = ptree.get<double>("initial_voltage", 0.0);
+  R = ptree.get<double>("series_resistance");
+  C = ptree.get<double>("capacitance");
+  U = ptree.get<double>("initial_voltage", 0.0);
   U_C = U;
-  I   = 0.0;
+  I = 0.0;
 }
 
 void SeriesRC::reset(double const capacitor_voltage)
 {
   U_C = capacitor_voltage;
-  U   = U_C + R * I;
+  U = U_C + R * I;
 }
 
 void SeriesRC::evolve_one_time_step_constant_load(double const delta_t,
@@ -114,11 +114,11 @@ std::size_t SeriesRC::evolve_one_time_step_constant_power(
     double const delta_t, double const power, std::string const &method)
 {
   // TODO: if P is zero do constant current 0
-  double const P          = power;
-  double const ATOL       = 1.0e-14;
-  double const RTOL       = 1.0e-14;
+  double const P = power;
+  double const ATOL = 1.0e-14;
+  double const RTOL = 1.0e-14;
   std::size_t const MAXIT = 30;
-  double const TOL        = std::abs(P) * RTOL + ATOL;
+  double const TOL = std::abs(P) * RTOL + ATOL;
   size_t k = 0;
   while (true)
   {
@@ -145,18 +145,18 @@ ParallelRC::ParallelRC(boost::mpi::communicator const &comm,
                        boost::property_tree::ptree const &ptree)
     : EnergyStorageDevice(comm)
 {
-  R_series   = ptree.get<double>("series_resistance");
+  R_series = ptree.get<double>("series_resistance");
   R_parallel = ptree.get<double>("parallel_resistance");
-  C          = ptree.get<double>("capacitance");
-  U          = ptree.get<double>("initial_voltage", 0.0);
-  U_C        = R_parallel / (R_series + R_parallel) * U;
-  I          = U / (R_series + R_parallel);
+  C = ptree.get<double>("capacitance");
+  U = ptree.get<double>("initial_voltage", 0.0);
+  U_C = R_parallel / (R_series + R_parallel) * U;
+  I = U / (R_series + R_parallel);
 }
 
 void ParallelRC::reset(double const capacitor_voltage)
 {
   U_C = capacitor_voltage;
-  U   = R_series * I + U_C;
+  U = R_series * I + U_C;
 }
 
 void ParallelRC::evolve_one_time_step_constant_current(double const delta_t,
@@ -241,11 +241,11 @@ std::size_t ParallelRC::evolve_one_time_step_constant_power(
     double const delta_t, double const power, std::string const &method)
 {
   // TODO: if P is zero do constant current 0
-  double const P          = power;
-  double const ATOL       = 1.0e-14;
-  double const RTOL       = 1.0e-14;
+  double const P = power;
+  double const ATOL = 1.0e-14;
+  double const RTOL = 1.0e-14;
   std::size_t const MAXIT = 30;
-  double const TOL        = std::abs(P) * RTOL + ATOL;
+  double const TOL = std::abs(P) * RTOL + ATOL;
   size_t k = 0;
   while (true)
   {

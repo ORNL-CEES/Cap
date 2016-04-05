@@ -169,7 +169,7 @@ template <int dim>
 Geometry<dim>::Geometry(
     std::shared_ptr<boost::property_tree::ptree const> const &database)
 {
-  this->triangulation         = std::make_shared<dealii::Triangulation<dim>>();
+  this->triangulation = std::make_shared<dealii::Triangulation<dim>>();
   std::string const mesh_file = database->get<std::string>("mesh_file");
   dealii::GridIn<dim> mesh_reader;
   mesh_reader.attach_triangulation(*(this->triangulation));
@@ -250,7 +250,7 @@ SuperCapacitorGeometry<dim>::SuperCapacitorGeometry(
     }
   };
   int const vertices_per_cell = dealii::GeometryInfo<dim>::vertices_per_cell;
-  auto cell                   = (*this->triangulation).begin_active();
+  auto cell = (*this->triangulation).begin_active();
   auto end_cell = (*this->triangulation).end();
   for (; cell != end_cell; ++cell)
   {
@@ -259,10 +259,10 @@ SuperCapacitorGeometry<dim>::SuperCapacitorGeometry(
       add_vertex_to_bbox(cell->vertex(vertex), bboxes[material_id]);
   }
 
-  this->anode_tab_bbox         = bboxes[this->anode_collector_material_id];
-  this->anode_collector_bbox   = bboxes[this->anode_collector_material_id];
-  this->anode_electrode_bbox   = bboxes[this->anode_electrode_material_id];
-  this->separator_bbox         = bboxes[this->separator_material_id];
+  this->anode_tab_bbox = bboxes[this->anode_collector_material_id];
+  this->anode_collector_bbox = bboxes[this->anode_collector_material_id];
+  this->anode_electrode_bbox = bboxes[this->anode_electrode_material_id];
+  this->separator_bbox = bboxes[this->separator_material_id];
   this->cathode_electrode_bbox = bboxes[this->cathode_electrode_material_id];
   this->cathode_collector_bbox = bboxes[this->cathode_collector_material_id];
   this->cathode_tab_bbox = bboxes[this->cathode_collector_material_id];
@@ -425,13 +425,13 @@ void SuperCapacitorGeometry<dim>::reset(
     if (!found_it)
       throw std::runtime_error("Error while moving the vertices");
   } // end for cell
-  this->anode_tab_bbox         = new_anode_tab_bbox;
-  this->anode_collector_bbox   = new_anode_collector_bbox;
-  this->anode_electrode_bbox   = new_anode_electrode_bbox;
-  this->separator_bbox         = new_separator_bbox;
+  this->anode_tab_bbox = new_anode_tab_bbox;
+  this->anode_collector_bbox = new_anode_collector_bbox;
+  this->anode_electrode_bbox = new_anode_electrode_bbox;
+  this->separator_bbox = new_separator_bbox;
   this->cathode_collector_bbox = new_cathode_collector_bbox;
   this->cathode_electrode_bbox = new_cathode_electrode_bbox;
-  this->cathode_tab_bbox       = new_cathode_tab_bbox;
+  this->cathode_tab_bbox = new_cathode_tab_bbox;
 
   (*this->triangulation).clear_user_flags();
 }

@@ -2,12 +2,11 @@
 Language:        Cpp
 # BasedOnStyle:  LLVM 
 # Changes: 
-#   - AlignConsecutiveAssignments: false -> true
 #   - AlwaysBreakTemplateDeclarations: false -> true
 #   - BreakBeforeBraces: Attach -> Allman
 AccessModifierOffset: -2
 AlignAfterOpenBracket: true
-AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments: false
 AlignEscapedNewlinesLeft: false
 AlignOperands:   true
 AlignTrailingComments: true

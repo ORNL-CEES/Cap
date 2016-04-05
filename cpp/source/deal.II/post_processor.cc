@@ -133,7 +133,7 @@ void extract_duration_and_average_power(
                            average_power.empty();
   if (!valid_input)
     throw std::runtime_error("invalid input");
-  std::vector<std::string>::const_iterator it     = capacitor_state.begin();
+  std::vector<std::string>::const_iterator it = capacitor_state.begin();
   std::vector<std::string>::const_iterator end_it = capacitor_state.end();
   std::size_t first = 0;
   while (it != end_it)
@@ -149,7 +149,7 @@ void extract_duration_and_average_power(
     average_power.push_back((
         first != last - 1 ? (energy[last - 1] - energy[first]) / duration.back()
                           : 0.0));
-    it    = next;
+    it = next;
     first = last;
   }
 }

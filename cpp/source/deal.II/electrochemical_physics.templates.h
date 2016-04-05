@@ -55,7 +55,7 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   dealii::ComponentMask component_mask(mask);
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
-  dirichlet_boundary_condition[anode_boundary_id]             = &homogeneous_bc;
+  dirichlet_boundary_condition[anode_boundary_id] = &homogeneous_bc;
   std::unique_ptr<dealii::Function<dim>> cathode_dirichlet_bc = nullptr;
   bool inhomogeneous_bc = false;
   if (electrochemical_parameters->supercapacitor_state == ConstantVoltage)
@@ -105,7 +105,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                    "Problem during dowcasting the pointer");
 
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
-  dealii::FiniteElement<dim> const &fe       = dof_handler.get_fe();
+  dealii::FiniteElement<dim> const &fe = dof_handler.get_fe();
 
   dealii::FEValuesExtractors::Scalar const solid_potential(
       this->solid_potential_component);
@@ -117,7 +117,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                                dealii::update_JxW_values);
 
   unsigned int const dofs_per_cell = fe.dofs_per_cell;
-  unsigned int const n_q_points    = quadrature_rule.size();
+  unsigned int const n_q_points = quadrature_rule.size();
   double const time_step = electrochemical_parameters->time_step;
   dealii::Vector<double> cell_rhs(dofs_per_cell);
   dealii::FullMatrix<double> cell_system_matrix(dofs_per_cell, dofs_per_cell);
@@ -129,13 +129,13 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   std::vector<dealii::types::global_dof_index> local_dof_indices(dofs_per_cell);
 
   this->system_matrix = 0.0;
-  this->mass_matrix   = 0.0;
-  this->system_rhs    = 0.0;
+  this->mass_matrix = 0.0;
+  this->system_rhs = 0.0;
 
   for (auto cell : dof_handler.active_cell_iterators())
   {
     cell_system_matrix = 0.0;
-    cell_mass_matrix   = 0.0;
+    cell_mass_matrix = 0.0;
     cell_rhs = 0.0;
     fe_values.reinit(cell);
 
