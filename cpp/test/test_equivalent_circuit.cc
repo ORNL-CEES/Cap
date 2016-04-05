@@ -68,10 +68,10 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
   std::shared_ptr<cap::EnergyStorageDevice> equivalent_circuit =
       cap::EnergyStorageDevice::build(world, equivalent_circuit_database);
 
-  double time_step              = 0.1;     // [second]
-  double const maximum_duration = 15.0;    // [second]
-  double const charge_current   = 10.0e-3; // [ampere]
-  double const charge_stop_at = 2.0;       // [volt]
+  double time_step = 0.1;                // [second]
+  double const maximum_duration = 15.0;  // [second]
+  double const charge_current = 10.0e-3; // [ampere]
+  double const charge_stop_at = 2.0;     // [volt]
   auto charge_done =
       [charge_stop_at](std::shared_ptr<cap::EnergyStorageDevice const> dev)
   {

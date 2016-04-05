@@ -56,7 +56,7 @@ compute_signal_to_noise_ratio(std::vector<std::complex<double>> fft_data,
   for (int k : unexcited_harmonics)
     noise_power += std::norm(fft_data[k]);
   double total_power = dc_power + ac_power + noise_power;
-  std::ignore        = total_power;
+  std::ignore = total_power;
   // TODO:  definition is a bit shaky for multiple frequency
   // should compute for each individual excited freq vs nearby unex freq
   std::vector<double> ratios;
@@ -78,7 +78,7 @@ get_evolve_one_time_step(
   // clang-format on
   BOOST_ASSERT(harmonics.size() == amplitudes.size());
   BOOST_ASSERT(harmonics.size() == phases.size());
-  double const frequency            = database->get<double>("frequency");
+  double const frequency = database->get<double>("frequency");
   auto compute_ac_excitation_signal = [frequency, harmonics, amplitudes,
                                        phases](double time)
   {
@@ -124,9 +124,9 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
 {
   std::vector<int> const harmonics =
       cap::to_vector<int>(database->get<std::string>("harmonics"));
-  double const frequency    = database->get<double>("frequency");
-  int const cycles          = database->get<int>("cycles");
-  int const ignore_cycles   = database->get<int>("ignore_cycles");
+  double const frequency = database->get<double>("frequency");
+  int const cycles = database->get<int>("cycles");
+  int const ignore_cycles = database->get<int>("ignore_cycles");
   int const steps_per_cycle = database->get<int>("steps_per_cycle");
   auto evolve_one_time_step = get_evolve_one_time_step(database);
 

@@ -74,17 +74,17 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters)
     : Postprocessor<dim>(parameters)
 {
-  dealii::DoFHandler<dim> const &dof_handler                 = *(this->dof_handler);
-  this->values["voltage"]                                    = 0.0;
-  this->values["current"]                                    = 0.0;
-  this->values["joule_heating"]                              = 0.0;
-  this->values["surface_area"]                               = 0.0;
-  this->values["volume"]                                     = 0.0;
-  this->values["mass"]                                       = 0.0;
-  this->values["anode_electrode_interfacial_surface_area"]   = 0.0;
-  this->values["anode_electrode_mass_of_active_material"]    = 0.0;
+  dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
+  this->values["voltage"] = 0.0;
+  this->values["current"] = 0.0;
+  this->values["joule_heating"] = 0.0;
+  this->values["surface_area"] = 0.0;
+  this->values["volume"] = 0.0;
+  this->values["mass"] = 0.0;
+  this->values["anode_electrode_interfacial_surface_area"] = 0.0;
+  this->values["anode_electrode_mass_of_active_material"] = 0.0;
   this->values["cathode_electrode_interfacial_surface_area"] = 0.0;
-  this->values["cathode_electrode_mass_of_active_material"]  = 0.0;
+  this->values["cathode_electrode_mass_of_active_material"] = 0.0;
 
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
@@ -125,7 +125,7 @@ template <int dim>
 void SuperCapacitorPostprocessor<dim>::reset(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 {
-  dealii::DoFHandler<dim> const &dof_handler  = *(this->dof_handler);
+  dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
   dealii::BlockVector<double> const &solution = *(this->solution);
 
   std::for_each(this->values.begin(), this->values.end(),
@@ -163,7 +163,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
       dealii::update_values | dealii::update_gradients |
           dealii::update_JxW_values | dealii::update_normal_vectors);
   //    unsigned int const dofs_per_cell   = fe.dofs_per_cell;
-  unsigned int const n_q_points      = quadrature_rule.size();
+  unsigned int const n_q_points = quadrature_rule.size();
   unsigned int const n_face_q_points = face_quadrature_rule.size();
   std::vector<double> solid_electrical_conductivity_values(n_q_points);
   std::vector<double> liquid_electrical_conductivity_values(n_q_points);
@@ -174,10 +174,10 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::vector<dealii::Tensor<1, dim>> liquid_potential_gradients(n_q_points);
   std::vector<double> solid_potential_values(n_q_points);
   std::vector<double> liquid_potential_values(n_q_points);
-  double anode_electrode_potential   = 0.0;
+  double anode_electrode_potential = 0.0;
   double cathode_electrode_potential = 0.0;
-  double anode_electrode_volume      = 0.0;
-  double cathode_electrode_volume    = 0.0;
+  double anode_electrode_volume = 0.0;
+  double cathode_electrode_volume = 0.0;
 
   std::vector<double> face_solid_electrical_conductivity_values(
       n_face_q_points);
@@ -390,7 +390,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
   this->values["voltage"] /= this->values["surface_area"];
   anode_electrode_potential /= anode_electrode_volume;
   cathode_electrode_potential /= cathode_electrode_volume;
-  this->values["anode_potential"]   = anode_electrode_potential;
+  this->values["anode_potential"] = anode_electrode_potential;
   this->values["cathode_potential"] = cathode_electrode_potential;
 }
 

@@ -34,7 +34,8 @@ void compute_parameters(
   double const cross_sectional_area =
       cm2_to_m2 * input_database->get<double>("geometry.geometric_area");
   double const electrode_width =
-      cm_to_m * input_database->get<double>("geometry.anode_electrode_thickness");
+      cm_to_m *
+      input_database->get<double>("geometry.anode_electrode_thickness");
   double const separator_width =
       cm_to_m * input_database->get<double>("geometry.separator_thickness");
 
@@ -229,8 +230,8 @@ void verification_problem(
 
   // exact vs computed
   double const charge_current = database->get<double>("charge_current");
-  double const charge_time    = database->get<double>("charge_time");
-  double const time_step      = database->get<double>("time_step");
+  double const charge_time = database->get<double>("charge_time");
+  double const time_step = database->get<double>("time_step");
   double const epsilon = time_step * 1.0e-4;
   double const cross_sectional_area =
       database->get<double>("cross_sectional_area");

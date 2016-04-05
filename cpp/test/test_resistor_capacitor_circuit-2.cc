@@ -58,9 +58,9 @@ BOOST_AUTO_TEST_CASE(test_resistor_capacitor)
   double const tolerance =
       input_database->get<double>("impedance_spectroscopy.tolerance");
   double const initial_voltage = 0.0;
-  std::string const type       = input_database->get<std::string>("device.type");
+  std::string const type = input_database->get<std::string>("device.type");
 
-  double time            = 0.0;
+  double time = 0.0;
   double const time_step = 1.0 / frequency / steps_per_cycle;
   double const pi = std::acos(-1.0);
   BOOST_CHECK_EQUAL(std::acos(-1.0), boost::math::constants::pi<double>());

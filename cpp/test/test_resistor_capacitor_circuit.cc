@@ -27,13 +27,13 @@
 //  - Parallel RC constant power
 //  - Parallel RC constant load
 
-double const R_SERIES   = 55.0e-3;
+double const R_SERIES = 55.0e-3;
 double const R_PARALLEL = 2.5e6;
-double const C          = 3.0;
-double const TOLERANCE  = 1.0e-8; // in percentage units
-double const I          = 0.006;
-double const U          = 2.1;
-double const P          = 0.0017;
+double const C = 3.0;
+double const TOLERANCE = 1.0e-8; // in percentage units
+double const I = 0.006;
+double const U = 2.1;
+double const P = 0.0017;
 
 boost::property_tree::ptree initialize_database()
 {
@@ -47,8 +47,8 @@ boost::property_tree::ptree initialize_database()
 void set_voltage(cap::SeriesRC &rc, double voltage)
 {
   rc.U_C = voltage;
-  rc.U   = rc.U_C;
-  rc.I   = 0.0;
+  rc.U = rc.U_C;
+  rc.I = 0.0;
 }
 
 void set_current(cap::SeriesRC &rc, double current)
@@ -59,9 +59,9 @@ void set_current(cap::SeriesRC &rc, double current)
 
 void set_voltage(cap::ParallelRC &rc, double voltage)
 {
-  rc.U   = voltage;
+  rc.U = voltage;
   rc.U_C = rc.R_parallel / (rc.R_series + rc.R_parallel) * rc.U;
-  rc.I   = rc.U / (rc.R_series + rc.R_parallel);
+  rc.I = rc.U / (rc.R_series + rc.R_parallel);
 }
 
 void set_current(cap::ParallelRC &rc, double current)
@@ -72,7 +72,7 @@ void set_current(cap::ParallelRC &rc, double current)
 
 BOOST_AUTO_TEST_CASE(test_series_rc_constant_voltage)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
   std::vector<double> time;
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_voltage)
 
 BOOST_AUTO_TEST_CASE(test_series_rc_constant_current)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
 
   std::vector<double> time;
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_current)
 
 BOOST_AUTO_TEST_CASE(test_series_rc_constant_power)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
 
   std::vector<double> time;
@@ -179,9 +179,9 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_power)
 
 BOOST_AUTO_TEST_CASE(test_series_rc_constant_load)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
-  double const R_LOAD  = 5.0 * R_SERIES;
+  double const R_LOAD = 5.0 * R_SERIES;
 
   std::vector<double> time;
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_load)
 
 BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_current)
 {
-  double const TAU     = R_PARALLEL * C;
+  double const TAU = R_PARALLEL * C;
   double const DELTA_T = 0.1 * TAU;
   std::vector<double> time;
   for (double t = 0.0; t <= 5.0 * TAU; t += 0.1 * TAU)
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_current)
 
 BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_voltage)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
 
   std::vector<double> time;
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_voltage)
 
 BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_power)
 {
-  double const TAU     = R_SERIES * C;
+  double const TAU = R_SERIES * C;
   double const DELTA_T = 0.1 * TAU;
 
   std::vector<double> time;
@@ -311,9 +311,9 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_power)
 
 BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_load)
 {
-  double const TAU     = R_PARALLEL * C;
+  double const TAU = R_PARALLEL * C;
   double const DELTA_T = 0.1 * TAU;
-  double const R_LOAD  = 5.0 * R_SERIES;
+  double const R_LOAD = 5.0 * R_SERIES;
   std::vector<double> time;
   for (double t = 0.0; t <= 5.0 * TAU; t += 0.1 * TAU)
     time.push_back(t);

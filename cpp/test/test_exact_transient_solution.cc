@@ -29,9 +29,9 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
 {
   // gold vs computed
   double const charge_current = 5e-3;
-  double const charge_time    = 0.01;
-  double const time_step      = 1e-4;
-  double const epsilon        = time_step * 1.0e-4;
+  double const charge_time = 0.01;
+  double const time_step = 1e-4;
+  double const epsilon = time_step * 1.0e-4;
 
   unsigned int pos = 0;
   double computed_voltage;

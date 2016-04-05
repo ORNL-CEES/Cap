@@ -140,7 +140,7 @@ void compute_equivalent_circuit(
 
   // compute the effective resistance and capacitance
   double const sandwich_capacitance = electrode_capacitance / 2.0;
-  double const sandwich_resistance  = 2.0 * electrode_resistance +
+  double const sandwich_resistance = 2.0 * electrode_resistance +
                                      separator_resistance +
                                      2.0 * collector_resistance;
   double const sandwich_leakage_resistance = 2.0 * electrode_leakage_resistance;

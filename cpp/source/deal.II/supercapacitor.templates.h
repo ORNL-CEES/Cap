@@ -72,13 +72,13 @@ SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
   // get data tolerance and maximum number of iterations for the CG solver
   boost::property_tree::ptree const &solver_database =
       database.get_child("solver");
-  max_iter      = solver_database.get<unsigned int>("max_iter", 1000);
+  max_iter = solver_database.get<unsigned int>("max_iter", 1000);
   rel_tolerance = solver_database.get<double>("rel_tolerance", 1e-12);
   abs_tolerance = solver_database.get<double>("abs_tolerance", 1e-12);
-  verbose_lvl   = solver_database.get<unsigned int>("verbosity", 0);
+  verbose_lvl = solver_database.get<unsigned int>("verbosity", 0);
 
   // distribute degrees of freedom
-  fe          = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
+  fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
   dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
   dof_handler->distribute_dofs(*fe);
 
@@ -205,14 +205,14 @@ void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
   // The tolerance and the maximum number of iterations are for the picard
   // iterations done below. This is not related to the Krylov solver in
   // evolve_one_time_step.
-  int const max_iterations       = 10;
+  int const max_iterations = 10;
   double const percent_tolerance = 1.0e-2;
   double current(0.0);
   double voltage(0.0);
   get_voltage(voltage);
   for (int k = 0; k < max_iterations; ++k)
   {
-    current                               = power / voltage;
+    current = power / voltage;
     double const constant_current_density = current / surface_area;
     bool const rebuild =
         (electrochemical_physics_params->constant_current_density ==
@@ -283,7 +283,7 @@ void SuperCapacitor<dim>::evolve_one_time_step(
   // post-processor need to be iniatialized.
   if (electrochemical_physics_params->supercapacitor_state == Uninitialized)
   {
-    electrochemical_physics_params->time_step            = time_step;
+    electrochemical_physics_params->time_step = time_step;
     electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
     electrochemical_physics.reset(
         new ElectrochemicalPhysics<dim>(electrochemical_physics_params));
@@ -310,7 +310,7 @@ void SuperCapacitor<dim>::evolve_one_time_step(
            (supercapacitor_state !=
             electrochemical_physics_params->supercapacitor_state))
   {
-    electrochemical_physics_params->time_step            = time_step;
+    electrochemical_physics_params->time_step = time_step;
     electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
     electrochemical_physics.reset(
         new ElectrochemicalPhysics<dim>(electrochemical_physics_params));

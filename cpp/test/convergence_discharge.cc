@@ -36,7 +36,8 @@ void compute_parameters(
   double const cross_sectional_area =
       cm2_to_m2 * input_database->get<double>("geometry.geometric_area");
   double const electrode_width =
-      cm_to_m * input_database->get<double>("geometry.anode_electrode_thickness");
+      cm_to_m *
+      input_database->get<double>("geometry.anode_electrode_thickness");
   double const separator_width =
       cm_to_m * input_database->get<double>("geometry.separator_thickness");
 
@@ -316,8 +317,8 @@ void verification_problem(
 
   // exact vs computed
   double const discharge_current = database->get<double>("discharge_current");
-  double const discharge_time    = database->get<double>("discharge_time");
-  double const time_step         = database->get<double>("time_step");
+  double const discharge_time = database->get<double>("discharge_time");
+  double const time_step = database->get<double>("time_step");
   double const epsilon = time_step * 1.0e-4;
   double const cross_sectional_area =
       database->get<double>("cross_sectional_area");
@@ -398,14 +399,14 @@ void verification_problem(
 
   // energy efficiency
   double const cutoff_voltage = 0.0;
-  auto compute_cutoff_time    = [&compute_dimensionless_cell_voltage,
+  auto compute_cutoff_time = [&compute_dimensionless_cell_voltage,
                               &dimensionless_cell_current_density,
                               &cutoff_voltage](double const I_star)
   {
-    double const tolerance             = 1.0e-10;
-    boost::uintmax_t iterations        = 100;
+    double const tolerance = 1.0e-10;
+    boost::uintmax_t iterations = 100;
     dimensionless_cell_current_density = I_star;
-    auto min_max                       = boost::math::tools::bisect(
+    auto min_max = boost::math::tools::bisect(
         [&compute_dimensionless_cell_voltage,
          cutoff_voltage](double const &dimensionless_time)
         {

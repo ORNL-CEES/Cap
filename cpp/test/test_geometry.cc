@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
             << "vertices=" << tria.n_used_vertices() << "\n";
 
   std::unordered_map<dealii::types::material_id, double> measure;
-  auto cell     = tria.begin_active();
+  auto cell = tria.begin_active();
   auto end_cell = tria.end();
   for (; cell != end_cell; ++cell)
   {

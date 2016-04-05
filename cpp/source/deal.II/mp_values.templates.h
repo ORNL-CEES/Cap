@@ -23,7 +23,7 @@ MPValues<dim, spacedim>::MPValues(
     // bloucle
     for (auto const &m : *(geometry->get_materials()))
     {
-      std::string const &material_name                            = m.first;
+      std::string const &material_name = m.first;
       std::vector<dealii::types::material_id> const &material_ids = m.second;
       //            std::shared_ptr<boost::property_tree::ptree const>
       //            material_database =

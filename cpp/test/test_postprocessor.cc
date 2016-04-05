@@ -25,9 +25,9 @@ BOOST_AUTO_TEST_CASE(test_compute_energy)
   double const tolerance = 1e-6;
   std::fstream fout("data", std::fstream::out);
 
-  double const pi           = M_PI;
+  double const pi = M_PI;
   double const initial_time = 0.0;
-  double const final_time   = 2.0 * pi;
+  double const final_time = 2.0 * pi;
   std::size_t const n = 10001;
   std::vector<double> time(n);
   std::vector<double> power(n);

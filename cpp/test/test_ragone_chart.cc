@@ -81,8 +81,8 @@ find_power_energy(std::shared_ptr<cap::EnergyStorageDevice> dev,
   int step;
   for (int i = 0; i < 2; ++i)
   {
-    step   = 0;
-    time   = 0.0;
+    step = 0;
+    time = 0.0;
     energy = 0.0;
     for (unsigned int i = 0; i < 20; ++i)
       dev->evolve_one_time_step_constant_voltage(10., initial_voltage);
@@ -278,7 +278,7 @@ get_compute_exact(
           std::shared_ptr<boost::property_tree::ptree const> database)
       {
         double const discharge_power = database->get<double>("discharge_power");
-        double const power           = -1.0 * discharge_power;
+        double const power = -1.0 * discharge_power;
         double const tmp = 0.5 * initial_voltage +
                            std::sqrt(initial_voltage * initial_voltage / 4.0 +
                                      series_resistance * power);
@@ -299,7 +299,7 @@ get_compute_exact(
           std::shared_ptr<boost::property_tree::ptree const> database)
       {
         double const discharge_power = database->get<double>("discharge_power");
-        double const power           = -1.0 * discharge_power;
+        double const power = -1.0 * discharge_power;
         double const tmp = 0.5 * initial_voltage +
                            std::sqrt(initial_voltage * initial_voltage / 4.0 +
                                      series_resistance * power);
@@ -336,8 +336,8 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
           std::ostream &os = std::cout)
 {
   auto initialize = get_initialize(ragone_database);
-  auto condition  = get_condition(ragone_database);
-  auto increase   = get_increase(ragone_database);
+  auto condition = get_condition(ragone_database);
+  auto increase = get_increase(ragone_database);
   double expe_time;
   double expe_power;
   double expe_energy;
@@ -363,10 +363,10 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
       std::cerr << e.what() << "\n";
       break;
     }
-    expe_time           = dummy_database->get<double>("discharge_time");
-    theo_power          = theo_energy / theo_time;
+    expe_time = dummy_database->get<double>("discharge_time");
+    theo_power = theo_energy / theo_time;
     int const min_steps = dummy_database->get<int>("min_steps_per_discharge");
-    steps               = dummy_database->get<int>("steps");
+    steps = dummy_database->get<int>("steps");
     time_step = dummy_database->get<double>("time_step");
     if (steps <= 1)
       break;
