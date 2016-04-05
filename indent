@@ -2,3 +2,4 @@ clang-format --style=file -i cpp/source/*.cc
 clang-format --style=file -i cpp/source/*.h
 clang-format --style=file -i cpp/source/deal.II/*.cc
 clang-format --style=file -i cpp/source/deal.II/*.h
+clang-format --style=file -i cpp/test/*.cc
