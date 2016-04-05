@@ -5,8 +5,8 @@
  * for the text and further information on this license.
  */
 
-#ifndef CAP_DEAL_II_NEW_SUPERCAPACITOR_H
-#define CAP_DEAL_II_NEW_SUPERCAPACITOR_H
+#ifndef CAP_DEAL_II_SUPERCAPACITOR_H
+#define CAP_DEAL_II_SUPERCAPACITOR_H
 
 #include <cap/energy_storage_device.h>
 #include <cap/geometry.h>
@@ -21,19 +21,19 @@ namespace cap
 {
 
 template <int dim>
-class New_SuperCapacitorInspector : public EnergyStorageDeviceInspector
+class SuperCapacitorInspector : public EnergyStorageDeviceInspector
 {
 public:
-  New_SuperCapacitorInspector() = default;
+  SuperCapacitorInspector() = default;
   void inspect(EnergyStorageDevice *device);
 };
 
 template <int dim>
-class New_SuperCapacitor : public EnergyStorageDevice
+class SuperCapacitor : public EnergyStorageDevice
 {
 public:
-  New_SuperCapacitor(boost::mpi::communicator const &comm,
-                     boost::property_tree::ptree const &ptree);
+  SuperCapacitor(boost::mpi::communicator const &comm,
+                 boost::property_tree::ptree const &ptree);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -76,6 +76,23 @@ public:
    */
   void evolve_one_time_step_linear_load(double const time_step,
                                         double const load) override;
+
+  /**
+   * Granting access to the post-processor parameters for the inspector.
+   */
+  std::shared_ptr<PostprocessorParameters<dim>>
+  get_post_processor_parameters() const;
+
+  /**
+   * Granting access to the post-processor for the inspector.
+   */
+  std::shared_ptr<Postprocessor<dim>> get_post_processor() const;
+
+  /**
+   * Provides a copy of the property tree used to build the supercapacitor to
+   * the inspector.
+   */
+  boost::property_tree::ptree const *get_property_tree() const;
 
 private:
   /**
@@ -120,12 +137,13 @@ private:
   std::shared_ptr<ElectrochemicalPhysicsParameters<dim>>
       electrochemical_physics_params;
   std::shared_ptr<ElectrochemicalPhysics<dim>> electrochemical_physics;
-  std::shared_ptr<New_SuperCapacitorPostprocessorParameters<dim>>
+  std::shared_ptr<SuperCapacitorPostprocessorParameters<dim>>
       post_processor_params;
-  std::shared_ptr<New_SuperCapacitorPostprocessor<dim>> post_processor;
+  std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
+  boost::property_tree::ptree const _ptree;
 
   template <int dimension>
-  friend class New_SuperCapacitorInspector;
+  friend class SuperCapacitorInspector;
 };
 }
 

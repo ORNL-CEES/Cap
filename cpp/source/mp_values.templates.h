@@ -136,9 +136,8 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       pores_characteristic_dimension;
   (this->properties)
       .emplace("specific_surface_area",
-               [specific_surface_area_per_unit_volume]
-               (active_cell_iterator const &,
-                std::vector<double> &values)
+               [specific_surface_area_per_unit_volume](
+                   active_cell_iterator const &, std::vector<double> &values)
                {
                  std::fill(values.begin(), values.end(),
                            specific_surface_area_per_unit_volume);

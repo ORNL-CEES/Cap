@@ -88,7 +88,8 @@ public:
   * Provides a copy of the property tree used to build the supercapacitor to
   * the inspector
   */
-  boost::property_tree::ptree const* get_property_tree() const;
+  boost::property_tree::ptree const *get_property_tree() const;
+
 private:
   /**
    * Maximum number of iterations of the Krylov solver in

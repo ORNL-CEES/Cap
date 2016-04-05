@@ -17,14 +17,8 @@ if(ENABLE_DEAL_II)
     set(Cap_HEADERS
        ${Cap_HEADERS}
        ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/dof_extractor.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/operator.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/thermal_operator.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_operator.h
        ${CMAKE_CURRENT_SOURCE_DIR}/post_processor.h
        ${CMAKE_CURRENT_SOURCE_DIR}/geometry.h
-       ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.h
        ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.h
     )
 endif()
@@ -33,14 +27,8 @@ if(ENABLE_DEAL_II)
     SET(Cap_SOURCES
         ${Cap_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/mp_values.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/boundary_values.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/dof_extractor.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/operator.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/thermal_operator.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/electrochemical_operator.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/post_processor.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/supercapacitor.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/equivalent_circuit.cc
     )
 endif()

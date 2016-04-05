@@ -5,10 +5,10 @@
  * for the text and further information on this license.
  */
 
-#ifndef CAP_DEAL_II_NEW_SUPERCAPACITOR_TEMPLATES_H
-#define CAP_DEAL_II_NEW_SUPERCAPACITOR_TEMPLATES_H
+#ifndef CAP_DEAL_II_SUPERCAPACITOR_TEMPLATES_H
+#define CAP_DEAL_II_SUPERCAPACITOR_TEMPLATES_H
 
-#include <cap/new_supercapacitor.h>
+#include <cap/supercapacitor.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/dofs/dof_renumbering.h>
@@ -28,11 +28,11 @@
 namespace cap
 {
 template <int dim>
-void New_SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
+void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
 {
   static int i = 0;
-  New_SuperCapacitor<dim> *supercapacitor =
-      dynamic_cast<New_SuperCapacitor<dim> *>(device);
+  SuperCapacitor<dim> *supercapacitor =
+      dynamic_cast<SuperCapacitor<dim> *>(device);
   std::vector<std::string> keys =
       supercapacitor->post_processor->get_vector_keys();
   std::shared_ptr<dealii::Triangulation<dim> const> triangulation =
@@ -53,10 +53,9 @@ void New_SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
 }
 
 template <int dim>
-New_SuperCapacitor<dim>::New_SuperCapacitor(
-    boost::mpi::communicator const &comm,
-    boost::property_tree::ptree const &ptree)
-    : EnergyStorageDevice(comm)
+SuperCapacitor<dim>::SuperCapacitor(boost::mpi::communicator const &comm,
+                                    boost::property_tree::ptree const &ptree)
+    : EnergyStorageDevice(comm), _ptree(ptree)
 {
   // get database
   boost::property_tree::ptree const &database = ptree;
@@ -146,30 +145,30 @@ New_SuperCapacitor<dim>::New_SuperCapacitor(
 
   // Create the post-processor
   post_processor_params =
-      std::make_shared<New_SuperCapacitorPostprocessorParameters<dim>>(
+      std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
           std::make_shared<boost::property_tree::ptree>(database));
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
+void SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
 {
   inspector->inspect(this);
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::get_voltage(double &voltage) const
+void SuperCapacitor<dim>::get_voltage(double &voltage) const
 {
   post_processor->get("voltage", voltage);
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::get_current(double &current) const
+void SuperCapacitor<dim>::get_current(double &current) const
 {
   post_processor->get("current", current);
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_constant_current(
+void SuperCapacitor<dim>::evolve_one_time_step_constant_current(
     double const time_step, double const current)
 {
   BOOST_ASSERT_MSG(surface_area > 0.,
@@ -186,7 +185,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_current(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
+void SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
     double const time_step, double const voltage)
 {
   bool const rebuild =
@@ -197,7 +196,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
+void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
     double const time_step, double const power)
 {
   BOOST_ASSERT_MSG(surface_area > 0.,
@@ -234,7 +233,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_power(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_constant_load(
+void SuperCapacitor<dim>::evolve_one_time_step_constant_load(
     double const time_step, double const load)
 {
   electrochemical_physics_params->constant_load_density = load * surface_area;
@@ -244,7 +243,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_constant_load(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_linear_current(
+void SuperCapacitor<dim>::evolve_one_time_step_linear_current(
     double const time_step, double const current)
 {
   // TODO: this is a temporary solution
@@ -252,7 +251,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_current(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_linear_voltage(
+void SuperCapacitor<dim>::evolve_one_time_step_linear_voltage(
     double const time_step, double const voltage)
 {
   // TODO: this is a temporary solution
@@ -260,7 +259,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_voltage(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_linear_power(
+void SuperCapacitor<dim>::evolve_one_time_step_linear_power(
     double const time_step, double const power)
 {
   // TODO: this is a temporary solution
@@ -268,7 +267,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_power(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step_linear_load(
+void SuperCapacitor<dim>::evolve_one_time_step_linear_load(
     double const time_step, double const load)
 {
   // TODO: this is a temporary solution
@@ -276,7 +275,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step_linear_load(
 }
 
 template <int dim>
-void New_SuperCapacitor<dim>::evolve_one_time_step(
+void SuperCapacitor<dim>::evolve_one_time_step(
     double const time_step, SuperCapacitorState supercapacitor_state,
     bool rebuild)
 {
@@ -299,7 +298,7 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(
     post_processor_params->solution = solution;
     post_processor_params->mp_values =
         electrochemical_physics_params->mp_values;
-    post_processor = std::make_shared<New_SuperCapacitorPostprocessor<dim>>(
+    post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
         post_processor_params);
 
     post_processor->reset(post_processor_params);
@@ -347,6 +346,28 @@ void New_SuperCapacitor<dim>::evolve_one_time_step(
   // Update the data in post-processor
   post_processor->reset(post_processor_params);
 }
+
+template <int dim>
+std::shared_ptr<PostprocessorParameters<dim>>
+SuperCapacitor<dim>::get_post_processor_parameters() const
+{
+  return post_processor_params;
+}
+
+template <int dim>
+std::shared_ptr<Postprocessor<dim>>
+SuperCapacitor<dim>::get_post_processor() const
+{
+  return post_processor;
+}
+
+template <int dim>
+boost::property_tree::ptree const *
+SuperCapacitor<dim>::get_property_tree() const
+{
+  return &_ptree;
+}
+
 } // end namespace cap
 
 #endif
