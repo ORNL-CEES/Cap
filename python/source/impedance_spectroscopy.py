@@ -287,10 +287,8 @@ class ECLabAsciiFile(Observer):
         self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
-        m_to_cm = lambda x: 100*x
         m2_to_cm2 = lambda x: 10000*x
         kg_to_g = lambda x: 1000*x
-        Fperm2_to_muFpercm2 = lambda x: 100*x
         with open(self._filename, mode='wb') as fout:
             NaN = 255
             extra_data = subject._extra_data
@@ -302,13 +300,13 @@ class ECLabAsciiFile(Observer):
                 header_lines=len(self._unformated_headers),
                 git_commit_hash=pycap.__git_commit_hash__,
                 git_remote_url=pycap.__git_remote_url__,
-                geometric_area=m2_to_cm2(extra_data['geometric_area']),
-                anode_electrode_thickness=m_to_cm(extra_data['anode_electrode_thickness']),
-                anode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['anode_electrode_double_layer_capacitance']),
+                geometric_area=extra_data['geometric_area'],
+                anode_electrode_thickness=extra_data['anode_electrode_thickness'],
+                anode_electrode_double_layer_capacitance=extra_data['anode_electrode_double_layer_capacitance'],
                 anode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['anode_electrode_interfacial_surface_area']),
                 anode_electrode_mass_of_active_material=kg_to_g(extra_data['anode_electrode_mass_of_active_material']),
-                cathode_electrode_thickness=m_to_cm(extra_data['cathode_electrode_thickness']),
-                cathode_electrode_double_layer_capacitance=Fperm2_to_muFpercm2(extra_data['cathode_electrode_double_layer_capacitance']),
+                cathode_electrode_thickness=extra_data['cathode_electrode_thickness'],
+                cathode_electrode_double_layer_capacitance=extra_data['cathode_electrode_double_layer_capacitance'],
                 cathode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['cathode_electrode_interfacial_surface_area']),
                 cathode_electrode_mass_of_active_material=kg_to_g(extra_data['cathode_electrode_mass_of_active_material']),
             ).split(separator)
