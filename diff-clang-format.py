@@ -17,8 +17,8 @@ from subprocess import Popen, PIPE
 from os import walk, getcwd, remove
 from shutil import copy
 
-def print_diff_with_formatted_source(original_file, style):
-    '''Print the diff between the C++ source code and its formatted version
+def diff_with_formatted_source(original_file, style):
+    '''Compute the diff between the C++ source code and its formatted version
     using clang-format.
 
     Parameters
@@ -69,19 +69,21 @@ def run(paths, file_extensions, style, config):
 
     Returns
     -------
-    bytes
-        Concatenated output of all the diff(s).
+    dict
+        Gather output of all the diffs.
     '''
     if config:
         copy(config, getcwd()+'/'+'.clang-format')
 
-    ostream = b''
+    diffs = {}
     for path in paths:
         for root, dirs, files in walk(path):
             for file in files:
                 if (any([file.endswith(extension) for extension in file_extensions])):
-                    ostream += print_diff_with_formatted_source(root+'/'+file, style)
-    return ostream
+                    diff = diff_with_formatted_source(root+'/'+file, style)
+                    if diff:
+                        diffs[root+'/'+file] = diff
+    return diffs
 
 if __name__ == '__main__':
     args = docopt(__doc__)
@@ -91,10 +93,12 @@ if __name__ == '__main__':
     style = args['--style']
     config = args['--configuration-file']
 
-    ostream = run(paths, extensions, style, config)
-    if ostream:
+    diffs = run(paths, extensions, style, config)
+    if diffs:
         if not args['--quiet']:
-            print(ostream.decode('utf-8'))
+            for file, diff in diffs.items():
+                print('####', file, '####')
+                print(diff.decode('utf-8'))
         print('Bad format')
         exit(1)
     else:
