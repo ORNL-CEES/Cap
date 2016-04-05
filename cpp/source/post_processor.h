@@ -61,7 +61,7 @@ protected:
   std::unordered_map<std::string, double> values;
 };
 
-//////////////////////// SUPERCAPCITOR POSTPROCESSOR PARAMETERS ////
+//////////////////////// SUPERCAPACITOR POSTPROCESSOR PARAMETERS ////
 template <int dim>
 class SuperCapacitorPostprocessorParameters
     : public PostprocessorParameters<dim>
@@ -71,7 +71,7 @@ public:
       std::shared_ptr<boost::property_tree::ptree const> d);
 };
 
-//////////////////////// SUPERCAPCITOR POSTPROCESSOR ///////////////
+//////////////////////// SUPERCAPACITOR POSTPROCESSOR ///////////////
 template <int dim>
 class SuperCapacitorPostprocessor : public Postprocessor<dim>
 {
