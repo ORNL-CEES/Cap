@@ -10,14 +10,15 @@ Option:
   --file-extension=<arg>       Filename extension with a dot [default: .hpp .cpp]
   --style=<style>              Coding style supported by clang-format [default: LLVM]
   --configuration-file=<file>  Style configuation .clang-format file
+  --apply-patch                Apply diff patch to the original source
 '''
 
 from docopt import docopt
 from subprocess import Popen, PIPE
-from os import walk, getcwd, remove
+from os import walk, getcwd, remove, rename
 from shutil import copy
 
-def diff_with_formatted_source(original_file, style):
+def diff_with_formatted_source(original_file, style, patch):
     '''Compute the diff between the C++ source code and its formatted version
     using clang-format.
 
@@ -47,10 +48,13 @@ def diff_with_formatted_source(original_file, style):
     stdout, stderr = p.communicate()
     if stderr:
         raise RuntimeError('diff failed')
-    remove(formatted_file)
+    if patch:
+        rename(formatted_file, original_file)
+    else:
+        remove(formatted_file)
     return stdout
 
-def run(paths, file_extensions, style, config):
+def run(paths, file_extensions, style, config, patch):
     '''
     Parameters
     ----------
@@ -73,7 +77,7 @@ def run(paths, file_extensions, style, config):
             for file in files:
                 file_path = root+'/'+file
                 if (any([file.endswith(extension) for extension in file_extensions])):
-                    diff = diff_with_formatted_source(file_path, style)
+                    diff = diff_with_formatted_source(file_path, style, patch)
                     if diff:
                         diffs[file_path] = diff
     return diffs
@@ -85,8 +89,9 @@ if __name__ == '__main__':
     extensions = args['--file-extension']
     style = args['--style']
     config = args['--configuration-file']
+    patch = args['--apply-patch']
 
-    diffs = run(paths, extensions, style, config)
+    diffs = run(paths, extensions, style, config, patch)
     if diffs:
         if not args['--quiet']:
             for file, diff in diffs.items():
@@ -96,4 +101,7 @@ if __name__ == '__main__':
     else:
         print('OK')
     reformatted_files = len(diffs)
-    exit(reformatted_files)
+    if patch:
+        exit(0)
+    else:
+        exit(reformatted_files)

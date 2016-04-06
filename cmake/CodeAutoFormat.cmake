@@ -23,6 +23,7 @@ add_custom_target(format-cpp
         --file-extension='.cc'
         --style=file
         --config="${CMAKE_SOURCE_DIR}/.clang-format"
+        --apply-patch
         ${CMAKE_SOURCE_DIR}/cpp
     DEPENDS
         ${CMAKE_BINARY_DIR}/diff-clang-format.py
