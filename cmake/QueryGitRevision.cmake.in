@@ -28,5 +28,5 @@ MESSAGE("GIT_BRANCH=${GIT_BRANCH}")
 MESSAGE("GIT_REMOTE_URL=${GIT_REMOTE_URL}")
 CONFIGURE_FILE(
     @CMAKE_SOURCE_DIR@/cmake/version.cc.in
-    @CMAKE_SOURCE_DIR@/cpp/source/version.cc
+    @CMAKE_BINARY_DIR@/cpp/source/version.cc
     )
