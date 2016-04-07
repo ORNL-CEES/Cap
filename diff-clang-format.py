@@ -55,13 +55,21 @@ def diff_with_formatted_source(original_file, style, patch):
     return stdout
 
 def run(paths, file_extensions, style, config, patch):
-    '''
+    '''Search recursively for files ending with extension and check the format
+    of the source code.
+
     Parameters
     ----------
     paths : list of str
+        Search paths.
     file_extensions : list of str
+        File extensions with a dot.
     style : str
+        Coding style supported by clang-format.
     config : str or None
+        Style configuration .clang-format file.
+    patch : bool
+        Apply the diff patch to the original sources.
 
     Returns
     -------
@@ -97,11 +105,13 @@ if __name__ == '__main__':
             for file, diff in diffs.items():
                 print('####', file, '####')
                 print(diff.decode('utf-8'))
-        print('Bad format')
+        print('{0} file(s) not formatted properly:'.format(len(diffs)))
+        for key in diffs.keys():
+            print('    {0}'.format(key))
     else:
         print('OK')
-    reformatted_files = len(diffs)
     if patch:
         exit(0)
     else:
+        reformatted_files = len(diffs)
         exit(reformatted_files)
