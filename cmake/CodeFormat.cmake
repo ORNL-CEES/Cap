@@ -14,18 +14,43 @@ add_custom_command(
     COMMENT "Copying diff-clang-format.py"
 )
 add_custom_target(
-    diff-clang-format.py
+    diff-clang-format.py ALL
     DEPENDS ${CMAKE_BINARY_DIR}/diff-clang-format.py
 )
 add_custom_target(format-cpp
-    ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/diff-clang-format.py
+    ${CMAKE_BINARY_DIR}/diff-clang-format.py
         --file-extension='.h'
         --file-extension='.cc'
         --style=file
-        --config="${CMAKE_SOURCE_DIR}/.clang-format"
+        --config=${CMAKE_SOURCE_DIR}/.clang-format
+        --apply-patch
         ${CMAKE_SOURCE_DIR}/cpp
     DEPENDS
         ${CMAKE_BINARY_DIR}/diff-clang-format.py
+)
+file(WRITE
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check_format_cpp.sh
+    "#!/usr/bin/env bash\n"
+    "\n"
+    "${PYTHON_EXECUTABLE} "
+    "${CMAKE_BINARY_DIR}/diff-clang-format.py "
+    "--file-extension='.h' --file-extension='.cc' "
+    "--style=file "
+    "--config=${CMAKE_SOURCE_DIR}/.clang-format "
+    "${CMAKE_SOURCE_DIR}/cpp"
+)
+file(COPY
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check_format_cpp.sh
+    DESTINATION
+        ${CMAKE_BINARY_DIR}
+    FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+)
+add_test(
+    NAME check_format
+    COMMAND ${CMAKE_BINARY_DIR}/check_format_cpp.sh
 )
 
 ## Python format ##############################################################

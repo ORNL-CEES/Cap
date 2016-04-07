@@ -7,7 +7,7 @@ set(Cap_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.h
 )
 set(Cap_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/version.cc
+    ${CMAKE_BINARY_DIR}/cpp/source/version.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/utils.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/default_inspector.cc

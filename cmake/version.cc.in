@@ -5,7 +5,8 @@
 #define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
 #define GIT_REMOTE_URL "@GIT_REMOTE_URL@"
 
-namespace cap {
+namespace cap
+{
 
 std::string version() { return CAP_VERSION; }
 
