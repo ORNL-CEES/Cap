@@ -3,6 +3,16 @@
 set -x
 cd ${PREFIX}/source
 git clone https://github.com/dalg24/cap-data.git
+apt-get install -y clang-format-3.7
+cp /usr/bin/clang-format-3.7 /usr/bin/clang-format
+apt-get remove -y \
+    libpython-stdlib \
+    libpython2.7-minimal \
+    libpython2.7-stdlib \
+    python \
+    python-minimal \
+    python2.7 \
+    python2.7-minimal
 useradd -m -s /bin/bash -N -u 1000 jovyan
 chown jovyan ${PREFIX} -R
 su jovyan <<EOF
