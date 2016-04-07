@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
         cmake \
         lcov \
         valgrind \
-        clang-format-3.7 \
         libssl-dev \
         libpng-dev \
         libfreetype6-dev \
@@ -22,6 +21,17 @@ RUN apt-get update && apt-get install -y \
         openssh-server \
         && \
     apt-get clean
+
+RUN apt-get install -y clang-format-3.7 && \
+    cp /usr/bin/clang-format-3.7 /usr/bin/clang-format && \
+    apt-get remove -y \
+        libpython-stdlib \
+        libpython2.7-minimal \
+        libpython2.7-stdlib \
+        python \
+        python-minimal \
+        python2.7 \
+        python2.7-minimal
     
 ENV PREFIX=/scratch
 RUN mkdir -p ${PREFIX} && \
