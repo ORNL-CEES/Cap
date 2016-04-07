@@ -19,16 +19,16 @@ public:
   }
 
   std::unique_ptr<EnergyStorageDevice>
-  build(boost::mpi::communicator const &comm,
-        boost::property_tree::ptree const &ptree)
+  build(boost::property_tree::ptree const &ptree,
+        boost::mpi::communicator const &comm)
   {
     int const dim = ptree.get<int>("dim");
     if (dim == 2)
       return std::make_unique<SuperCapacitor<2>>(
-          SuperCapacitor<2>(comm, ptree));
+          SuperCapacitor<2>(ptree, comm));
     else if (dim == 3)
       return std::make_unique<SuperCapacitor<3>>(
-          SuperCapacitor<3>(comm, ptree));
+          SuperCapacitor<3>(ptree, comm));
     else
       throw std::runtime_error("dim=" + std::to_string(dim) +
                                " must be 2 or 3");

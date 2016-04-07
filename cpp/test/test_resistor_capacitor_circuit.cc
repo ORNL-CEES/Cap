@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE ResistorCapacitorCircuit
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/resistor_capacitor.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/foreach.hpp>

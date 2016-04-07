@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE ExactTransientSolution
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/energy_storage_device.h>
 #include <cap/mp_values.h>
 #include <deal.II/base/types.h>
@@ -82,8 +84,8 @@ BOOST_AUTO_TEST_CASE(test_exact_transient_solution)
                                                device_database);
 
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(boost::mpi::communicator(),
-                                      device_database);
+      cap::EnergyStorageDevice::build(device_database,
+                                      boost::mpi::communicator());
 
   cap::verification_problem(device);
 }

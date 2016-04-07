@@ -19,9 +19,10 @@ namespace cap
 //////////////////////// POSTPROCESSOR ////////////////////////////
 template <int dim>
 Postprocessor<dim>::Postprocessor(
-    std::shared_ptr<PostprocessorParameters<dim> const> parameters)
-    : dof_handler(parameters->dof_handler), solution(parameters->solution),
-      mp_values(parameters->mp_values)
+    std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+    boost::mpi::communicator mpi_communicator)
+    : _communicator(mpi_communicator), dof_handler(parameters->dof_handler),
+      solution(parameters->solution), mp_values(parameters->mp_values)
 {
 }
 
@@ -71,8 +72,9 @@ SuperCapacitorPostprocessorParameters<dim>::
 //////////////////////// SUPERCAPACITOR POSTPROCESSOR /////////////////
 template <int dim>
 SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
-    std::shared_ptr<PostprocessorParameters<dim> const> parameters)
-    : Postprocessor<dim>(parameters)
+    std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+    boost::mpi::communicator mpi_communicator)
+    : Postprocessor<dim>(parameters, mpi_communicator)
 {
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
   this->values["voltage"] = 0.0;
@@ -98,27 +100,28 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->debug_boundary_ids = database->get("debug.boundary_ids", false);
   this->debug_material_ids = database->get("debug.material_ids", false);
 
+  // n_active_cells is the total number of locally owned cells. This includes
+  // the ghost cells and the artificial cells. They are filtered out by DataOut
+  unsigned int const n_active_cells =
+      dof_handler.get_triangulation().n_active_cells();
   if (this->debug_material_ids)
-    this->vectors["material_id"] = dealii::Vector<double>(
-        dof_handler.get_triangulation().n_active_cells());
+    this->vectors["material_id"] = dealii::Vector<double>(n_active_cells);
   if (this->debug_boundary_ids)
     throw dealii::StandardExceptions::ExcMessage("not implemented yet");
   for (std::vector<std::string>::const_iterator it =
            this->debug_material_properties.begin();
        it != this->debug_material_properties.end(); ++it)
-    this->vectors[*it] = dealii::Vector<double>(
-        dof_handler.get_triangulation().n_active_cells());
+    this->vectors[*it] = dealii::Vector<double>(n_active_cells);
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fields.begin();
        it != this->debug_solution_fields.end(); ++it)
-    this->vectors[*it] = dealii::Vector<double>(
-        dof_handler.get_triangulation().n_active_cells());
+    this->vectors[*it] = dealii::Vector<double>(n_active_cells);
   for (std::vector<std::string>::const_iterator it =
            this->debug_solution_fluxes.begin();
        it != this->debug_solution_fluxes.end(); ++it)
     for (int d = 0; d < dim; ++d)
-      this->vectors[(*it) + "_" + std::to_string(d)] = dealii::Vector<double>(
-          dof_handler.get_triangulation().n_active_cells());
+      this->vectors[(*it) + "_" + std::to_string(d)] =
+          dealii::Vector<double>(n_active_cells);
 }
 
 template <int dim>
@@ -126,7 +129,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters)
 {
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
-  dealii::BlockVector<double> const &solution = *(this->solution);
+  dealii::Trilinos::MPI::BlockVector const &solution = *(this->solution);
 
   std::for_each(this->values.begin(), this->values.end(),
                 [](std::unordered_map<std::string, double>::value_type &p)
@@ -145,9 +148,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
   // clang-format on
 
-  dealii::Triangulation<dim> const &triangulation =
-      dof_handler.get_triangulation();
-  dealii::Vector<double> joule_heating(triangulation.n_active_cells());
+  dealii::Vector<double> joule_heating(
+      dof_handler.get_triangulation().n_active_cells());
 
   dealii::FiniteElement<dim> const &fe =
       dof_handler.get_fe(); // TODO: don't want to use directly fe because we
@@ -186,207 +188,231 @@ void SuperCapacitorPostprocessor<dim>::reset(
       n_face_q_points);
   std::vector<dealii::Tensor<1, dim>> normal_vectors(n_face_q_points);
 
-  for (auto cell : dof_handler.active_cell_iterators())
+  unsigned int cell_index = 0;
+  for (auto cell : dof_handler.cell_iterators())
   {
-    fe_values.reinit(cell);
-    this->mp_values->get_values("solid_electrical_conductivity", cell,
-                                solid_electrical_conductivity_values);
-    this->mp_values->get_values("liquid_electrical_conductivity", cell,
-                                liquid_electrical_conductivity_values);
-    this->mp_values->get_values("density", cell, density_values);
-    this->mp_values->get_values("density_of_active_material", cell,
-                                density_of_active_material_values);
-    this->mp_values->get_values("specific_surface_area", cell,
-                                specific_surface_area_values);
-    fe_values[solid_potential].get_function_gradients(
-        solution, solid_potential_gradients);
-    fe_values[liquid_potential].get_function_gradients(
-        solution, liquid_potential_gradients);
-    fe_values[solid_potential].get_function_values(solution,
-                                                   solid_potential_values);
-    fe_values[liquid_potential].get_function_values(solution,
-                                                    liquid_potential_values);
-    for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
+    if (cell->active() && cell->is_locally_owned())
     {
-      this->values["joule_heating"] +=
-          (solid_electrical_conductivity_values[q_point] *
-               solid_potential_gradients[q_point] *
-               solid_potential_gradients[q_point] +
-           liquid_electrical_conductivity_values[q_point] *
-               liquid_potential_gradients[q_point] *
-               liquid_potential_gradients[q_point]) *
-          fe_values.JxW(q_point);
-      this->values["volume"] += fe_values.JxW(q_point);
-      this->values["mass"] += density_values[q_point] * fe_values.JxW(q_point);
-      if (cell->material_id() == anode_electrode_material_id)
+      fe_values.reinit(cell);
+      this->mp_values->get_values("solid_electrical_conductivity", cell,
+                                  solid_electrical_conductivity_values);
+      this->mp_values->get_values("liquid_electrical_conductivity", cell,
+                                  liquid_electrical_conductivity_values);
+      this->mp_values->get_values("density", cell, density_values);
+      this->mp_values->get_values("density_of_active_material", cell,
+                                  density_of_active_material_values);
+      this->mp_values->get_values("specific_surface_area", cell,
+                                  specific_surface_area_values);
+      fe_values[solid_potential].get_function_gradients(
+          solution, solid_potential_gradients);
+      fe_values[liquid_potential].get_function_gradients(
+          solution, liquid_potential_gradients);
+      fe_values[solid_potential].get_function_values(solution,
+                                                     solid_potential_values);
+      fe_values[liquid_potential].get_function_values(solution,
+                                                      liquid_potential_values);
+      for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
       {
-        anode_electrode_potential += (solid_potential_values[q_point] -
-                                      liquid_potential_values[q_point]) *
-                                     fe_values.JxW(q_point);
-        anode_electrode_volume += fe_values.JxW(q_point);
-        this->values["anode_electrode_interfacial_surface_area"] +=
-            specific_surface_area_values[q_point] * fe_values.JxW(q_point);
-        this->values["anode_electrode_mass_of_active_material"] +=
-            density_of_active_material_values[q_point] * fe_values.JxW(q_point);
-      }
-      else if (cell->material_id() == cathode_electrode_material_id)
-      {
-        cathode_electrode_potential += (solid_potential_values[q_point] -
+        this->values["joule_heating"] +=
+            (solid_electrical_conductivity_values[q_point] *
+                 solid_potential_gradients[q_point] *
+                 solid_potential_gradients[q_point] +
+             liquid_electrical_conductivity_values[q_point] *
+                 liquid_potential_gradients[q_point] *
+                 liquid_potential_gradients[q_point]) *
+            fe_values.JxW(q_point);
+        this->values["volume"] += fe_values.JxW(q_point);
+        this->values["mass"] +=
+            density_values[q_point] * fe_values.JxW(q_point);
+        if (cell->material_id() == anode_electrode_material_id)
+        {
+          anode_electrode_potential += (solid_potential_values[q_point] -
                                         liquid_potential_values[q_point]) *
                                        fe_values.JxW(q_point);
-        cathode_electrode_volume += fe_values.JxW(q_point);
-        this->values["cathode_electrode_interfacial_surface_area"] +=
-            specific_surface_area_values[q_point] * fe_values.JxW(q_point);
-        this->values["cathode_electrode_mass_of_active_material"] +=
-            density_of_active_material_values[q_point] * fe_values.JxW(q_point);
-      }
-      else
+          anode_electrode_volume += fe_values.JxW(q_point);
+          this->values["anode_electrode_interfacial_surface_area"] +=
+              specific_surface_area_values[q_point] * fe_values.JxW(q_point);
+          this->values["anode_electrode_mass_of_active_material"] +=
+              density_of_active_material_values[q_point] *
+              fe_values.JxW(q_point);
+        }
+        else if (cell->material_id() == cathode_electrode_material_id)
+        {
+          cathode_electrode_potential += (solid_potential_values[q_point] -
+                                          liquid_potential_values[q_point]) *
+                                         fe_values.JxW(q_point);
+          cathode_electrode_volume += fe_values.JxW(q_point);
+          this->values["cathode_electrode_interfacial_surface_area"] +=
+              specific_surface_area_values[q_point] * fe_values.JxW(q_point);
+          this->values["cathode_electrode_mass_of_active_material"] +=
+              density_of_active_material_values[q_point] *
+              fe_values.JxW(q_point);
+        }
+        else
+        {
+          // do nothing
+        }
+      } // end for quadrature point
+      if (this->debug_material_ids)
+        this->vectors["material_id"][cell->active_cell_index()] =
+            static_cast<double>(cell->material_id());
+      for (std::vector<std::string>::const_iterator it =
+               this->debug_material_properties.begin();
+           it != this->debug_material_properties.end(); ++it)
       {
-        // do nothing
-      }
-    } // end for quadrature point
-    if (this->debug_material_ids)
-      this->vectors["material_id"][cell->active_cell_index()] =
-          static_cast<double>(cell->material_id());
-    for (std::vector<std::string>::const_iterator it =
-             this->debug_material_properties.begin();
-         it != this->debug_material_properties.end(); ++it)
-    {
-      std::vector<double> values(n_q_points);
-      this->mp_values->get_values(*it, cell, values);
-      double cell_averaged_value = 0.0;
-      for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
-      {
-        cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
-      }
-      cell_averaged_value /= cell->measure();
-      this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
-    }
-    for (std::vector<std::string>::const_iterator it =
-             this->debug_solution_fields.begin();
-         it != this->debug_solution_fields.end(); ++it)
-    {
-      std::vector<double> values(n_q_points);
-      if (it->compare("solid_potential") == 0)
-      {
-        values = solid_potential_values;
-      }
-      else if (it->compare("liquid_potential") == 0)
-      {
-        values = liquid_potential_values;
-      }
-      else if (it->compare("overpotential") == 0)
-      {
-        std::transform(solid_potential_values.begin(),
-                       solid_potential_values.end(),
-                       liquid_potential_values.begin(), values.begin(),
-                       std::minus<double>());
-      }
-      else if (it->compare("joule_heating") == 0)
-      {
+        std::vector<double> values(n_q_points);
+        this->mp_values->get_values(*it, cell, values);
+        double cell_averaged_value = 0.0;
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
         {
-          values[q_point] =
-              liquid_electrical_conductivity_values[q_point] *
-                  liquid_potential_gradients[q_point].norm_square() +
-              solid_electrical_conductivity_values[q_point] *
-                  solid_potential_gradients[q_point].norm_square();
+          cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
         }
+        cell_averaged_value /= cell->measure();
+        this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
       }
-      else
+      for (std::vector<std::string>::const_iterator it =
+               this->debug_solution_fields.begin();
+           it != this->debug_solution_fields.end(); ++it)
       {
-        throw dealii::StandardExceptions::ExcMessage(
-            "Solution field '" + (*it) + "' is not recognized");
-      }
-      double cell_averaged_value = 0.0;
-      for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
-      {
-        cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
-      }
-      cell_averaged_value /= cell->measure();
-      this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
-    }
-    for (std::vector<std::string>::const_iterator it =
-             this->debug_solution_fluxes.begin();
-         it != this->debug_solution_fluxes.end(); ++it)
-    {
-      std::vector<dealii::Tensor<1, dim>> values(n_q_points);
-      if (it->compare("solid_current_density") == 0)
-      {
-        std::transform(solid_electrical_conductivity_values.begin(),
-                       solid_electrical_conductivity_values.end(),
-                       solid_potential_gradients.begin(), values.begin(),
-                       [](double const x, dealii::Tensor<1, dim> const &y)
-                       {
-                         return x * y;
-                       });
-      }
-      else if (it->compare("liquid_current_density") == 0)
-      {
-        std::transform(liquid_electrical_conductivity_values.begin(),
-                       liquid_electrical_conductivity_values.end(),
-                       liquid_potential_gradients.begin(), values.begin(),
-                       [](double const x, dealii::Tensor<1, dim> const &y)
-                       {
-                         return x * y;
-                       });
-      }
-      else
-      {
-        throw dealii::StandardExceptions::ExcMessage("Solution flux '" + (*it) +
-                                                     "' is not recognized");
-      }
-      dealii::Tensor<1, dim> cell_averaged_value;
-      cell_averaged_value = 0.0;
-      for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
-      {
-        cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
-      }
-      cell_averaged_value /= cell->measure();
-      for (int d = 0; d < dim; ++d)
-        this->vectors[(*it) + "_" +
-                      std::to_string(d)][cell->active_cell_index()] =
-            cell_averaged_value[d];
-    }
-
-    if (cell->at_boundary())
-    {
-      for (unsigned int face = 0;
-           face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
-      {
-        if (cell->face(face)->at_boundary())
+        std::vector<double> values(n_q_points);
+        if (it->compare("solid_potential") == 0)
         {
-          if (cell->face(face)->boundary_id() == cathode_boundary_id)
+          values = solid_potential_values;
+        }
+        else if (it->compare("liquid_potential") == 0)
+        {
+          values = liquid_potential_values;
+        }
+        else if (it->compare("overpotential") == 0)
+        {
+          std::transform(solid_potential_values.begin(),
+                         solid_potential_values.end(),
+                         liquid_potential_values.begin(), values.begin(),
+                         std::minus<double>());
+        }
+        else if (it->compare("joule_heating") == 0)
+        {
+          for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
           {
-            fe_face_values.reinit(cell, face);
-            this->mp_values->get_values(
-                "solid_electrical_conductivity", cell,
-                face_solid_electrical_conductivity_values); // TODO: should take
-                                                            // face as an
-                                                            // argument...
-            fe_face_values[solid_potential].get_function_gradients(
-                solution, face_solid_potential_gradients);
-            fe_face_values[solid_potential].get_function_values(
-                solution, face_solid_potential_values);
-            normal_vectors = fe_face_values.get_all_normal_vectors();
-            for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
-                 ++face_q_point)
+            values[q_point] =
+                liquid_electrical_conductivity_values[q_point] *
+                    liquid_potential_gradients[q_point].norm_square() +
+                solid_electrical_conductivity_values[q_point] *
+                    solid_potential_gradients[q_point].norm_square();
+          }
+        }
+        else
+        {
+          throw dealii::StandardExceptions::ExcMessage(
+              "Solution field '" + (*it) + "' is not recognized");
+        }
+        double cell_averaged_value = 0.0;
+        for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
+        {
+          cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
+        }
+        cell_averaged_value /= cell->measure();
+        this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
+      }
+      for (std::vector<std::string>::const_iterator it =
+               this->debug_solution_fluxes.begin();
+           it != this->debug_solution_fluxes.end(); ++it)
+      {
+        std::vector<dealii::Tensor<1, dim>> values(n_q_points);
+        if (it->compare("solid_current_density") == 0)
+        {
+          std::transform(solid_electrical_conductivity_values.begin(),
+                         solid_electrical_conductivity_values.end(),
+                         solid_potential_gradients.begin(), values.begin(),
+                         [](double const x, dealii::Tensor<1, dim> const &y)
+                         {
+                           return x * y;
+                         });
+        }
+        else if (it->compare("liquid_current_density") == 0)
+        {
+          std::transform(liquid_electrical_conductivity_values.begin(),
+                         liquid_electrical_conductivity_values.end(),
+                         liquid_potential_gradients.begin(), values.begin(),
+                         [](double const x, dealii::Tensor<1, dim> const &y)
+                         {
+                           return x * y;
+                         });
+        }
+        else
+        {
+          throw dealii::StandardExceptions::ExcMessage(
+              "Solution flux '" + (*it) + "' is not recognized");
+        }
+        dealii::Tensor<1, dim> cell_averaged_value;
+        cell_averaged_value = 0.0;
+        for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
+        {
+          cell_averaged_value += values[q_point] * fe_values.JxW(q_point);
+        }
+        cell_averaged_value /= cell->measure();
+        for (int d = 0; d < dim; ++d)
+          this->vectors[(*it) + "_" +
+                        std::to_string(d)][cell->active_cell_index()] =
+              cell_averaged_value[d];
+      }
+
+      if (cell->at_boundary())
+      {
+        for (unsigned int face = 0;
+             face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
+        {
+          if (cell->face(face)->at_boundary())
+          {
+            if (cell->face(face)->boundary_id() == cathode_boundary_id)
             {
-              this->values["current"] +=
-                  (face_solid_electrical_conductivity_values[face_q_point] *
-                   face_solid_potential_gradients[face_q_point] *
-                   normal_vectors[face_q_point]) *
-                  fe_face_values.JxW(face_q_point);
-              this->values["voltage"] +=
-                  face_solid_potential_values[face_q_point] *
-                  fe_face_values.JxW(face_q_point);
-              this->values["surface_area"] += fe_face_values.JxW(face_q_point);
-            } // end for face quadrature point
-          }   // end if cathode
-        }     // end if face at boundary
-      }       // end for face
-    }         // end if cell at boundary
-  }           // end for cell
+              fe_face_values.reinit(cell, face);
+              this->mp_values->get_values(
+                  "solid_electrical_conductivity", cell,
+                  face_solid_electrical_conductivity_values); // TODO: should
+                                                              // take
+                                                              // face as an
+                                                              // argument...
+              fe_face_values[solid_potential].get_function_gradients(
+                  solution, face_solid_potential_gradients);
+              fe_face_values[solid_potential].get_function_values(
+                  solution, face_solid_potential_values);
+              normal_vectors = fe_face_values.get_all_normal_vectors();
+              for (unsigned int face_q_point = 0;
+                   face_q_point < n_face_q_points; ++face_q_point)
+              {
+                this->values["current"] +=
+                    (face_solid_electrical_conductivity_values[face_q_point] *
+                     face_solid_potential_gradients[face_q_point] *
+                     normal_vectors[face_q_point]) *
+                    fe_face_values.JxW(face_q_point);
+                this->values["voltage"] +=
+                    face_solid_potential_values[face_q_point] *
+                    fe_face_values.JxW(face_q_point);
+                this->values["surface_area"] +=
+                    fe_face_values.JxW(face_q_point);
+              } // end for face quadrature point
+            }   // end if cathode
+          }     // end if face at boundary
+        }       // end for face
+      }         // end if cell at boundary
+    }
+    ++cell_index;
+  } // end for cell
+  // AllReduce to get the scalar quantities
+  this->values["surface_area"] = dealii::Utilities::MPI::sum(
+      this->values["surface_area"], this->_communicator);
+  this->values["voltage"] =
+      dealii::Utilities::MPI::sum(this->values["voltage"], this->_communicator);
+  anode_electrode_potential = dealii::Utilities::MPI::sum(
+      anode_electrode_potential, this->_communicator);
+  anode_electrode_volume =
+      dealii::Utilities::MPI::sum(anode_electrode_volume, this->_communicator);
+  cathode_electrode_potential = dealii::Utilities::MPI::sum(
+      cathode_electrode_potential, this->_communicator);
+  cathode_electrode_volume = dealii::Utilities::MPI::sum(
+      cathode_electrode_volume, this->_communicator);
+
   this->values["voltage"] /= this->values["surface_area"];
   anode_electrode_potential /= anode_electrode_volume;
   cathode_electrode_potential /= cathode_electrode_volume;

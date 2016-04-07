@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(build_equivalent_circuit)
   // this is the new prefered way to make an equivalent circuit
   //
   ptree.put("type", "EquivalentCircuit");
-  auto device = cap::EnergyStorageDevice::build(world, ptree);
+  auto device = cap::EnergyStorageDevice::build(ptree, world);
 
   // database passed to compute_equivalent_circuit(...) must be empty
   boost::property_tree::ptree not_empty_database;
@@ -64,9 +64,9 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
                    .compare("SeriesRC") == 0);
 
   std::shared_ptr<cap::EnergyStorageDevice> super_capacitor =
-      cap::EnergyStorageDevice::build(world, super_capacitor_database);
+      cap::EnergyStorageDevice::build(super_capacitor_database, world);
   std::shared_ptr<cap::EnergyStorageDevice> equivalent_circuit =
-      cap::EnergyStorageDevice::build(world, equivalent_circuit_database);
+      cap::EnergyStorageDevice::build(equivalent_circuit_database, world);
 
   double time_step = 0.1;                // [second]
   double const maximum_duration = 15.0;  // [second]
@@ -91,9 +91,9 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
 
   std::map<std::string, std::shared_ptr<cap::EnergyStorageDevice>> device;
   device.emplace("super_capacitor", cap::EnergyStorageDevice::build(
-                                        world, super_capacitor_database));
+                                        super_capacitor_database, world));
   device.emplace("equivalent_circuit", cap::EnergyStorageDevice::build(
-                                           world, equivalent_circuit_database));
+                                           equivalent_circuit_database, world));
 
   std::map<std::string, std::vector<double>> data;
   data.emplace("super_capacitor", std::vector<double>());

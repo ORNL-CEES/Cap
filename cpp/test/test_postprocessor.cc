@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE TestPostProcessor
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/post_processor.h>
 #include <cap/utils.h>
 #include <boost/format.hpp>

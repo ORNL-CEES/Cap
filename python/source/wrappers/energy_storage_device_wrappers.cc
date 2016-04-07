@@ -79,7 +79,7 @@ build_energy_storage_device(boost::python::object & py_ptree,
     MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
     if (comm_p == nullptr) boost::python::throw_error_already_set();
     boost::mpi::communicator comm(*comm_p, boost::mpi::comm_attach);
-    return cap::EnergyStorageDevice::build(comm, ptree);
+    return cap::EnergyStorageDevice::build(ptree, comm);
 }
 
 } // end namespace pycap

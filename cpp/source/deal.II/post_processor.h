@@ -11,7 +11,7 @@
 #include <cap/mp_values.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/sparse_matrix.h>
-#include <deal.II/lac/block_vector.h>
+#include <deal.II/lac/trilinos_parallel_block_vector.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <unordered_map>
@@ -31,7 +31,7 @@ public:
   virtual ~PostprocessorParameters() = default;
 
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  std::shared_ptr<dealii::BlockVector<double> const> solution;
+  std::shared_ptr<dealii::Trilinos::MPI::BlockVector const> solution;
 
   std::shared_ptr<MPValues<dim> const> mp_values;
 
@@ -43,7 +43,8 @@ template <int dim>
 class Postprocessor
 {
 public:
-  Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters);
+  Postprocessor(std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+                boost::mpi::communicator mpi_communicator);
   virtual ~Postprocessor() = default;
   virtual void reset(std::shared_ptr<PostprocessorParameters<dim> const>) {}
 
@@ -52,11 +53,14 @@ public:
   std::vector<std::string> get_vector_keys() const;
 
 protected:
+  boost::mpi::communicator _communicator;
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
-  std::shared_ptr<dealii::BlockVector<double> const> solution;
+  std::shared_ptr<dealii::Trilinos::MPI::BlockVector const> solution;
 
   std::shared_ptr<MPValues<dim> const> mp_values;
 
+  // This values are only local to a processor, so we don't use
+  // Trilinos::MPI::Vector.
   std::unordered_map<std::string, dealii::Vector<double>> vectors;
   std::unordered_map<std::string, double> values;
 };
@@ -77,7 +81,8 @@ class SuperCapacitorPostprocessor : public Postprocessor<dim>
 {
 public:
   SuperCapacitorPostprocessor(
-      std::shared_ptr<PostprocessorParameters<dim> const> parameters);
+      std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+      boost::mpi::communicator mpi_communicator);
   void reset(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
 

@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE TestGeometry
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/utils.h>
 #include <cap/geometry.h>
 #include <deal.II/grid/grid_out.h>
@@ -20,7 +22,8 @@
 
 template <int dim>
 void write_mesh(std::string const &mesh_file,
-                std::shared_ptr<dealii::Triangulation<dim> const> triangulation)
+                std::shared_ptr<dealii::distributed::Triangulation<dim> const>
+                    triangulation)
 {
   dealii::GridOut mesh_writer;
   std::fstream fout;
@@ -60,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
   params->put("material_0.name", "all");
   params->put("material_0.material_id", "1,2,3,4,5");
 
-  cap::SuperCapacitorGeometry<2> geo(params);
+  cap::Geometry<2> geo(params, boost::mpi::communicator());
   write_mesh("output_test_geometry_0.vtu", geo.get_triangulation());
 
   dealii::Triangulation<2> const &tria = *geo.get_triangulation();
@@ -94,15 +97,4 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
                           (0.0001 * params->get<double>("geometric_area") +
                            0.01 * params->get<double>("tab_height")),
                       percent_tolerance);
-
-  params->put("anode_collector_thickness", 5.0e-4);
-  params->put("anode_electrode_thickness", 50.0e-4);
-  params->put("separator_thickness", 25.0e-4);
-  params->put("cathode_electrode_thickness", 50.0e-4);
-  params->put("cathode_collector_thickness", 5.0e-4);
-  params->put("geometric_area", 25.0e-2);
-  params->put("tab_height", 5.0e-4);
-
-  geo.reset(params);
-  write_mesh("output_test_geometry_1.vtu", geo.get_triangulation());
 }

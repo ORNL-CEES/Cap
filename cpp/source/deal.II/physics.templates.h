@@ -16,8 +16,10 @@
 namespace cap
 {
 template <int dim>
-Physics<dim>::Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters)
-    : dof_handler(parameters->dof_handler), mp_values(parameters->mp_values)
+Physics<dim>::Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters,
+                      boost::mpi::communicator mpi_communicator)
+    : mpi_communicator(mpi_communicator), dof_handler(parameters->dof_handler),
+      mp_values(parameters->mp_values)
 {
 }
 }

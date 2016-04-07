@@ -40,13 +40,13 @@ BOOST_AUTO_TEST_CASE(test_energy_storage_device_builders)
   {
     boost::property_tree::ptree ptree;
     boost::property_tree::info_parser::read_info(filename, ptree);
-    BOOST_CHECK_NO_THROW(cap::EnergyStorageDevice::build(world, ptree));
+    BOOST_CHECK_NO_THROW(cap::EnergyStorageDevice::build(ptree, world));
   }
 
   // invalid type must throw an exception
   boost::property_tree::ptree ptree;
   ptree.put("type", "InvalidDeviceType");
-  BOOST_CHECK_THROW(cap::EnergyStorageDevice::build(world, ptree),
+  BOOST_CHECK_THROW(cap::EnergyStorageDevice::build(ptree, world),
                     std::runtime_error);
 }
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_energy_storage_device_inspectors)
     boost::mpi::communicator world;
     boost::property_tree::ptree ptree;
     boost::property_tree::info_parser::read_info(valid_device_input[i], ptree);
-    auto device = cap::EnergyStorageDevice::build(world, ptree);
+    auto device = cap::EnergyStorageDevice::build(ptree, world);
     double voltage;
     device->get_voltage(voltage);
     BOOST_TEST(voltage != 1.4);
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_serialization)
     boost::property_tree::ptree ptree;
     boost::property_tree::info_parser::read_info(filename, ptree);
     std::shared_ptr<cap::EnergyStorageDevice> original_device =
-        cap::EnergyStorageDevice::build(boost::mpi::communicator(), ptree);
+        cap::EnergyStorageDevice::build(ptree, boost::mpi::communicator());
 
     original_device->evolve_one_time_step_constant_voltage(0.1, 2.1);
     double original_voltage;

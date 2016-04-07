@@ -19,8 +19,9 @@ namespace cap
 {
 template <int dim>
 ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
-    std::shared_ptr<PhysicsParameters<dim> const> parameters)
-    : Physics<dim>(parameters)
+    std::shared_ptr<PhysicsParameters<dim> const> parameters,
+    boost::mpi::communicator mpi_communicator)
+    : Physics<dim>(parameters, mpi_communicator)
 {
   boost::property_tree::ptree const &database = parameters->database;
 
@@ -41,7 +42,14 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   BOOST_ASSERT_MSG(electrochemical_parameters != nullptr,
                    "Problem during dowcasting the pointer");
 
+  // Initialize locally_owned_dofs and locally_relevant_dofs
+  this->locally_owned_dofs = this->dof_handler->locally_owned_dofs();
+  dealii::DoFTools::extract_locally_relevant_dofs(*(this->dof_handler),
+                                                  this->locally_relevant_dofs);
+
   // Take care of hanging nodes
+  this->constraint_matrix.clear();
+  this->constraint_matrix.reinit(this->locally_relevant_dofs);
   dealii::DoFTools::make_hanging_node_constraints(*(this->dof_handler),
                                                   this->constraint_matrix);
 
@@ -76,18 +84,18 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   this->constraint_matrix.close();
 
   // Create sparsity pattern
-  unsigned int const max_couplings =
-      this->dof_handler->max_couplings_between_dofs();
-  dealii::types::global_dof_index const n_dofs = this->dof_handler->n_dofs();
-  this->sparsity_pattern.reinit(n_dofs, n_dofs, max_couplings);
+  this->sparsity_pattern.reinit(
+      this->locally_owned_dofs, this->locally_owned_dofs,
+      this->locally_relevant_dofs, this->mpi_communicator);
   dealii::DoFTools::make_sparsity_pattern(
-      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix);
+      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix,
+      true, dealii::Utilities::MPI::this_mpi_process(this->mpi_communicator));
   this->sparsity_pattern.compress();
 
   // Initialize matrices and vectors
   this->system_matrix.reinit(this->sparsity_pattern);
   this->mass_matrix.reinit(this->sparsity_pattern);
-  this->system_rhs.reinit(n_dofs);
+  this->system_rhs.reinit(this->locally_owned_dofs, this->mpi_communicator);
 
   assemble_system(parameters, inhomogeneous_bc);
 }
@@ -134,78 +142,73 @@ void ElectrochemicalPhysics<dim>::assemble_system(
 
   for (auto cell : dof_handler.active_cell_iterators())
   {
-    cell_system_matrix = 0.0;
-    cell_mass_matrix = 0.0;
-    cell_rhs = 0.0;
-    fe_values.reinit(cell);
+    if (cell->is_locally_owned())
+    {
+      cell_system_matrix = 0.0;
+      cell_mass_matrix = 0.0;
+      cell_rhs = 0.0;
+      fe_values.reinit(cell);
 
-    // clang-format off
-    (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
-    (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
-    (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
-    (this->mp_values)->get_values("faradaic_reaction_coefficient", cell, faradaic_reaction_coefficient_values);
-    // clang-format on
+      // clang-format off
+      (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
+      (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+      (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
+      (this->mp_values)->get_values("faradaic_reaction_coefficient", cell, faradaic_reaction_coefficient_values);
+      // clang-format on
 
-    // The coefficients are zeros when the physics does not make sense.
-    for (unsigned int q = 0; q < n_q_points; ++q)
-      for (unsigned int i = 0; i < dofs_per_cell; ++i)
-      {
-        for (unsigned int j = 0; j < dofs_per_cell; ++j)
+      // The coefficients are zeros when the physics does not make sense.
+      for (unsigned int q = 0; q < n_q_points; ++q)
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
         {
-          // Mass matrix terms
-          double const mass_matrix_val =
-              specific_capacitance_values[q] *
-              (fe_values[solid_potential].value(i, q) *
-                   fe_values[solid_potential].value(j, q) -
-               fe_values[solid_potential].value(i, q) *
-                   fe_values[liquid_potential].value(j, q) -
-               fe_values[liquid_potential].value(i, q) *
-                   fe_values[solid_potential].value(j, q) +
-               fe_values[liquid_potential].value(i, q) *
-                   fe_values[liquid_potential].value(j, q)) *
-              fe_values.JxW(q);
-          cell_mass_matrix(i, j) += mass_matrix_val;
-          cell_system_matrix(i, j) +=
-              mass_matrix_val +
-              time_step *
-                  // Stiffness matrix terms
-                  (solid_phase_diffusion_coefficient_values[q] *
-                       (fe_values[solid_potential].gradient(i, q) *
-                        fe_values[solid_potential].gradient(j, q)) +
-                   liquid_phase_diffusion_coefficient_values[q] *
-                       (fe_values[liquid_potential].gradient(i, q) *
-                        fe_values[liquid_potential].gradient(j, q)) +
-                   faradaic_reaction_coefficient_values[q] *
-                       ((fe_values[solid_potential].value(i, q) *
-                         fe_values[solid_potential].value(j, q)) -
-                        (fe_values[liquid_potential].value(i, q) *
-                         fe_values[solid_potential].value(j, q)) -
-                        (fe_values[solid_potential].value(i, q) *
-                         fe_values[liquid_potential].value(j, q)) +
-                        (fe_values[liquid_potential].value(i, q) *
-                         fe_values[liquid_potential].value(j, q)))) *
-                  fe_values.JxW(q);
+          for (unsigned int j = 0; j < dofs_per_cell; ++j)
+          {
+            // Mass matrix terms
+            double const mass_matrix_val =
+                specific_capacitance_values[q] *
+                (fe_values[solid_potential].value(i, q) *
+                     fe_values[solid_potential].value(j, q) -
+                 fe_values[solid_potential].value(i, q) *
+                     fe_values[liquid_potential].value(j, q) -
+                 fe_values[liquid_potential].value(i, q) *
+                     fe_values[solid_potential].value(j, q) +
+                 fe_values[liquid_potential].value(i, q) *
+                     fe_values[liquid_potential].value(j, q)) *
+                fe_values.JxW(q);
+            cell_mass_matrix(i, j) += mass_matrix_val;
+            cell_system_matrix(i, j) +=
+                mass_matrix_val +
+                time_step *
+                    // Stiffness matrix terms
+                    (solid_phase_diffusion_coefficient_values[q] *
+                         (fe_values[solid_potential].gradient(i, q) *
+                          fe_values[solid_potential].gradient(j, q)) +
+                     liquid_phase_diffusion_coefficient_values[q] *
+                         (fe_values[liquid_potential].gradient(i, q) *
+                          fe_values[liquid_potential].gradient(j, q)) +
+                     faradaic_reaction_coefficient_values[q] *
+                         ((fe_values[solid_potential].value(i, q) *
+                           fe_values[solid_potential].value(j, q)) -
+                          (fe_values[liquid_potential].value(i, q) *
+                           fe_values[solid_potential].value(j, q)) -
+                          (fe_values[solid_potential].value(i, q) *
+                           fe_values[liquid_potential].value(j, q)) +
+                          (fe_values[liquid_potential].value(i, q) *
+                           fe_values[liquid_potential].value(j, q)))) *
+                    fe_values.JxW(q);
+          }
         }
-      }
 
-    // Fill in the global matrices.
-    cell->get_dof_indices(local_dof_indices);
-    this->constraint_matrix.distribute_local_to_global(
-        cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
-        this->system_rhs, inhomogeneous_bc);
-    for (unsigned int i = 0; i < dofs_per_cell; ++i)
-      for (unsigned int j = 0; j < dofs_per_cell; ++j)
-        this->mass_matrix.add(local_dof_indices[i], local_dof_indices[j],
-                              cell_mass_matrix(i, j));
+      // Fill in the global matrices.
+      cell->get_dof_indices(local_dof_indices);
+      this->constraint_matrix.distribute_local_to_global(
+          cell_system_matrix, cell_rhs, local_dof_indices, this->system_matrix,
+          this->system_rhs, inhomogeneous_bc);
+      for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        for (unsigned int j = 0; j < dofs_per_cell; ++j)
+          this->mass_matrix.add(local_dof_indices[i], local_dof_indices[j],
+                                cell_mass_matrix(i, j));
+    }
   }
-
-  // Add the null space. This wouldn't be necessary if we were using a
-  // hp::DoFHandler object instead of a DoFHandler object but
-  // hp::DoFHandler does not work with MPI.
-  dealii::types::global_dof_index const n_dofs = this->dof_handler->n_dofs();
-  for (unsigned int i = 0; i < n_dofs; ++i)
-    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
-      this->system_matrix.diag_element(i) = 1.;
 
   // Apply Neumann boundary condition on the cathode (constant current
   // charge).
@@ -242,6 +245,23 @@ void ElectrochemicalPhysics<dim>::assemble_system(
             cell_rhs, local_dof_indices, this->system_rhs);
       }
   }
+
+  // We are done fill-in the matrices and the vector. So we can compress
+  // everything.
+  this->system_matrix.compress(dealii::VectorOperation::add);
+  this->mass_matrix.compress(dealii::VectorOperation::add);
+  this->system_rhs.compress(dealii::VectorOperation::add);
+
+  // Add the null space. This wouldn't be necessary if we were using a
+  // hp::DoFHandler object instead of a DoFHandler object but
+  // hp::DoFHandler does not work with MPI.
+  std::pair<dealii::types::global_dof_index, dealii::types::global_dof_index>
+      local_range = this->system_matrix.local_range();
+  for (dealii::types::global_dof_index i = local_range.first;
+       i < local_range.second; ++i)
+    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
+      this->system_matrix.set(i, i, 1.);
+  this->system_matrix.compress(dealii::VectorOperation::insert);
 }
 }
 

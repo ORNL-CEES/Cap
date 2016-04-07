@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE TestRagoneChart
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/resistor_capacitor.h>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -397,8 +399,8 @@ BOOST_AUTO_TEST_CASE(test_ragone_chart_constant_power)
       std::make_shared<boost::property_tree::ptree>(
           input_database->get_child("device"));
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(boost::mpi::communicator(),
-                                      *device_database);
+      cap::EnergyStorageDevice::build(*device_database,
+                                      boost::mpi::communicator());
 
   std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
       std::make_shared<boost::property_tree::ptree>(
@@ -425,8 +427,8 @@ BOOST_AUTO_TEST_CASE(test_ragone_chart_constant_current)
       std::make_shared<boost::property_tree::ptree>(
           input_database->get_child("device"));
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(boost::mpi::communicator(),
-                                      *device_database);
+      cap::EnergyStorageDevice::build(*device_database,
+                                      boost::mpi::communicator());
 
   std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
       std::make_shared<boost::property_tree::ptree>(

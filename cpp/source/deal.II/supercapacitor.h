@@ -32,8 +32,8 @@ template <int dim>
 class SuperCapacitor : public EnergyStorageDevice
 {
 public:
-  SuperCapacitor(boost::mpi::communicator const &comm,
-                 boost::property_tree::ptree const &ptree);
+  SuperCapacitor(boost::property_tree::ptree const &ptree,
+                 boost::mpi::communicator const &comm);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -129,10 +129,10 @@ private:
    */
   double surface_area;
 
-  std::shared_ptr<SuperCapacitorGeometry<dim>> geometry;
+  std::shared_ptr<Geometry<dim>> geometry;
   std::shared_ptr<dealii::FESystem<dim>> fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
-  std::shared_ptr<dealii::BlockVector<double>> solution;
+  std::shared_ptr<dealii::Trilinos::MPI::BlockVector> solution;
 
   std::shared_ptr<ElectrochemicalPhysicsParameters<dim>>
       electrochemical_physics_params;

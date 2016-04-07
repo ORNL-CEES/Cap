@@ -25,13 +25,13 @@ std::map<std::string, EnergyStorageDeviceBuilder *>
         std::map<std::string, EnergyStorageDeviceBuilder *>();
 
 std::unique_ptr<EnergyStorageDevice>
-EnergyStorageDevice::build(boost::mpi::communicator const &comm,
-                           boost::property_tree::ptree const &ptree)
+EnergyStorageDevice::build(boost::property_tree::ptree const &ptree,
+                           boost::mpi::communicator const &comm)
 {
   auto const type = ptree.get<std::string>("type");
   auto const it = _builders.find(type);
   if (it != _builders.end())
-    return (it->second)->build(comm, ptree);
+    return (it->second)->build(ptree, comm);
   else
     throw std::runtime_error("invalid EnergyStorageDevice type `" + type +
                              "`\n");
@@ -44,5 +44,10 @@ EnergyStorageDevice::EnergyStorageDevice(
 }
 
 EnergyStorageDevice::~EnergyStorageDevice() = default;
+
+boost::mpi::communicator EnergyStorageDevice::get_mpi_communicator() const
+{
+  return _communicator;
+}
 
 } // end namespace cap
