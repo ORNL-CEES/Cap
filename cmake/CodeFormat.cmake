@@ -49,7 +49,7 @@ file(COPY
         WORLD_READ WORLD_EXECUTE
 )
 add_test(
-    NAME check_format_cpp
+    NAME check_format
     COMMAND ${CMAKE_BINARY_DIR}/check_format_cpp.sh
 )
 
