@@ -1,0 +1,30 @@
+anode_collector_thickness    5.0e-4 ; [centimeter]
+anode_electrode_thickness   50.0e-4 ; [centimeter]
+separator_thickness         25.0e-4 ; [centimeter]
+cathode_electrode_thickness 50.0e-4 ; [centimeter]
+cathode_collector_thickness  5.0e-4 ; [centimeter]
+geometric_area              25.0e-2 ; [square centimeter]
+tab_height                   5.0e-4 ; [centimeter]
+
+collector {
+  divisions 3,4
+  dimensions 1.0,10.0
+}
+
+anode {
+  divisions 6,3
+  dimensions 4.0,9.0
+}
+
+separator {
+  divisions 9,3
+  dimensions 3.0,9.0
+}
+
+cathode {
+  divisions 8,3
+  dimensions 5.0,9.0
+}
+
+n_repetitions 1
+n_refinements 1

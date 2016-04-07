@@ -44,35 +44,64 @@ public:
 
   virtual ~Geometry() = default;
 
-  inline std::shared_ptr<dealii::distributed::Triangulation<dim> const>
+  dealii::types::boundary_id get_anode_boundary_id() const
+  {
+    return _anode_boundary_id;
+  }
+
+  dealii::types::boundary_id get_cathode_boundary_id() const
+  {
+    return _cathode_boundary_id;
+  }
+
+  std::shared_ptr<dealii::distributed::Triangulation<dim> const>
   get_triangulation() const
   {
-    return triangulation;
+    return _triangulation;
   }
 
-  inline boost::mpi::communicator get_mpi_communicator() const
+  boost::mpi::communicator get_mpi_communicator() const
   {
-    return mpi_communicator;
+    return _communicator;
   }
 
-  inline std::shared_ptr<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>> const>
+  std::shared_ptr<
+      std::unordered_map<std::string, std::vector<dealii::types::material_id>>>
   get_materials() const
   {
-    return materials;
+    return _materials;
   }
 
 private:
   /**
-   * Helper function for the constructor.
+   * Helper function for the constructor, when the mesh is loaded from a mesh.
    */
   void fill_materials_map(
       std::shared_ptr<boost::property_tree::ptree const> database);
 
-  boost::mpi::communicator mpi_communicator;
-  std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation;
+  /**
+   * Helper function for the constructor, when the mesh is generated from a
+   * database.
+   */
+  void fill_materials_map();
+
+  /**
+   * Create a mesh from a property tree.
+   */
+  void mesh_generator(boost::property_tree::ptree const &database);
+
+  /**
+   * Set the boundary IDs on the cathode and the anode.
+   */
+  void set_boundary_ids(double const collector_top,
+                        double const collector_bottom);
+
+  boost::mpi::communicator _communicator;
+  dealii::types::boundary_id _anode_boundary_id;
+  dealii::types::boundary_id _cathode_boundary_id;
+  std::shared_ptr<dealii::distributed::Triangulation<dim>> _triangulation;
   std::shared_ptr<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>> materials;
+      std::string, std::vector<dealii::types::material_id>>> _materials;
 };
 } // end namespace cap
 

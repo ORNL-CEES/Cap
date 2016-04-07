@@ -24,6 +24,7 @@ public:
 
   virtual ~PhysicsParameters() = default;
 
+  std::shared_ptr<Geometry<dim> const> geometry;
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
   std::shared_ptr<MPValues<dim> const> mp_values;
   boost::property_tree::ptree const database;

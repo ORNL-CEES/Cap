@@ -23,7 +23,8 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
       if (params->mp_values == nullptr)
         params->mp_values.reset(new MPValues<dim>());
       post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-          params, super_capacitor->get_mpi_communicator());
+          params, super_capacitor->get_geometry(),
+          super_capacitor->get_mpi_communicator());
     }
     double value;
     for (std::string const &key : {

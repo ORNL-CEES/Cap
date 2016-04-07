@@ -37,7 +37,7 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
   std::vector<std::string> keys =
       supercapacitor->post_processor->get_vector_keys();
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
-      supercapacitor->geometry->get_triangulation();
+      supercapacitor->_geometry->get_triangulation();
   if (!keys.empty())
   {
     dealii::DataOut<dim> data_out;
@@ -82,10 +82,10 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
           database.get_child("geometry"));
-  geometry = std::make_shared<cap::Geometry<dim>>(geometry_database,
-                                                  this->_communicator);
+  _geometry = std::make_shared<cap::Geometry<dim>>(geometry_database,
+                                                   this->_communicator);
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
-      geometry->get_triangulation();
+      _geometry->get_triangulation();
 
   // distribute degrees of freedom
   fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
@@ -120,13 +120,14 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
       std::make_shared<boost::property_tree::ptree>(
           database.get_child("material_properties"));
   MPValuesParameters<dim> params(material_properties_database);
-  params.geometry = geometry;
+  params.geometry = _geometry;
   std::shared_ptr<MPValues<dim>> mp_values =
       std::make_shared<MPValues<dim>>(params);
 
   // Initialize the electrochemical physics parameters
   electrochemical_physics_params.reset(
       new ElectrochemicalPhysicsParameters<dim>(database));
+  electrochemical_physics_params->geometry = _geometry;
   electrochemical_physics_params->dof_handler = dof_handler;
   electrochemical_physics_params->mp_values =
       std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
@@ -134,12 +135,13 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   // Compute the surface area. This is neeeded by several evolve_one_time_step_*
   surface_area = 0.;
   dealii::types::boundary_id cathode_boundary_id =
-      database.get<dealii::types::boundary_id>(
-          "boundary_values.cathode_boundary_id");
+      _geometry->get_cathode_boundary_id();
   dealii::QGauss<dim - 1> face_quadrature_rule(fe->degree + 1);
   unsigned int const n_face_q_points = face_quadrature_rule.size();
   dealii::FEFaceValues<dim> fe_face_values(*fe, face_quadrature_rule,
                                            dealii::update_JxW_values);
+  // TODO this can be simplified when using the next version of deal (current is
+  // 8.4)
   for (auto cell : dof_handler->active_cell_iterators())
     if (cell->is_locally_owned() && cell->at_boundary())
       for (unsigned int face = 0;
@@ -311,7 +313,7 @@ void SuperCapacitor<dim>::evolve_one_time_step(
     post_processor_params->mp_values =
         electrochemical_physics_params->mp_values;
     post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-        post_processor_params, this->_communicator);
+        post_processor_params, _geometry, this->_communicator);
 
     post_processor->reset(post_processor_params);
   }
@@ -357,6 +359,12 @@ void SuperCapacitor<dim>::evolve_one_time_step(
 
   // Update the data in post-processor
   post_processor->reset(post_processor_params);
+}
+
+template <int dim>
+std::shared_ptr<Geometry<dim>> SuperCapacitor<dim>::get_geometry() const
+{
+  return _geometry;
 }
 
 template <int dim>

@@ -2,39 +2,7 @@ type SuperCapacitor
 dim  2
 
 geometry {
-    mesh_file mesh_2d.ucd
-
-    anode_collector_thickness    5.0e-4 ; [centimeter]
-    anode_electrode_thickness   50.0e-4 ; [centimeter]
-    separator_thickness         25.0e-4 ; [centimeter]
-    cathode_electrode_thickness 50.0e-4 ; [centimeter]
-    cathode_collector_thickness  5.0e-4 ; [centimeter]
-    geometric_area              25.0e-2 ; [square centimeter]
-    tab_height                   5.0e-4 ; [centimeter]
-
-    anode_collector_material_id   4
-    anode_electrode_material_id   1
-    separator_material_id         2
-    cathode_electrode_material_id 3
-    cathode_collector_material_id 5
-
-    materials 4
-    material_0 {    
-        name            anode
-        material_id         1
-    }
-    material_1 {
-        name        separator
-        material_id         2
-    }
-    material_2 {
-        name          cathode
-        material_id         3
-    }
-    material_3 {
-        name        collector
-        material_id       4,5
-    }
+    #include "read_mesh.info"
 }
 
 solid_potential_component  0
@@ -98,24 +66,6 @@ material_properties {
         heat_capacity                    0.0       ; [joule per kilogram kelvin]
         thermal_conductivity             0.0       ; [watt per meter kelvin]
     }
-}
-
-boundary_values {
-    anode_boundary_id   1
-    cathode_boundary_id 2
-
-    ambient_temperature                300.0
-    heat_transfer_coefficient            8.0e-2
-
-    upper_boundary_id             3
-    lower_boundary_id             4
-    other_boundary_id             5
-
-    separator_material_id         3
-    anode_electrode_material_id   4
-    anode_collector_material_id   5
-    cathode_electrode_material_id 6
-    cathode_collector_material_id 7
 }
 
 solver {

@@ -87,6 +87,7 @@ class SuperCapacitorPostprocessor : public Postprocessor<dim>
 public:
   SuperCapacitorPostprocessor(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+      std::shared_ptr<Geometry<dim> const> _geometry,
       boost::mpi::communicator mpi_communicator);
   void reset(
       std::shared_ptr<PostprocessorParameters<dim> const> parameters) override;
@@ -97,6 +98,7 @@ private:
   std::vector<std::string> debug_material_properties;
   std::vector<std::string> debug_solution_fields;
   std::vector<std::string> debug_solution_fluxes;
+  std::shared_ptr<Geometry<dim> const> _geometry;
 };
 
 //////////////////////// MOVE SOMEWHERE ELSE LATER /////////////////////

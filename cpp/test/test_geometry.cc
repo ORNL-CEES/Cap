@@ -55,6 +55,8 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
   params->put("materials", 1);
   params->put("material_0.name", "all");
   params->put("material_0.material_id", "1,2,3,4,5");
+  params->put("boundary_values.anode_boundary_id", "1");
+  params->put("boundary_values.cathode_boundary_id", "2");
 
   cap::Geometry<2> geo(params, boost::mpi::communicator());
   write_mesh("output_test_geometry_0.vtu", geo.get_triangulation());
