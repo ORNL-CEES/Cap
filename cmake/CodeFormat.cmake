@@ -14,7 +14,7 @@ add_custom_command(
     COMMENT "Copying diff-clang-format.py"
 )
 add_custom_target(
-    diff-clang-format.py
+    diff-clang-format.py ALL
     DEPENDS ${CMAKE_BINARY_DIR}/diff-clang-format.py
 )
 add_custom_target(format-cpp
