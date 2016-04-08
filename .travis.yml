@@ -5,6 +5,7 @@ services:
 
 notifications:
   email: false
+  slack: ornl-cees:FX6IUxl1JcMpk2xRVJ7ygb7Y
 
 language: python
 
