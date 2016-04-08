@@ -80,8 +80,14 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         ptree.put_bool('is.that.a.good.idea', False)
         self.assertEqual(ptree.get_bool('is.that.a.good.idea'), False)
 
-    def test_get_child(self):
+    def test_get_children(self):
         ptree = PropertyTree()
+        # put child
+        child = PropertyTree()
+        child.put_double('prune', 6.10)
+        ptree.put_child('a.g', child)
+        self.assertEqual(ptree.get_double('a.g.prune'), 6.10)
+        # get child
         ptree.put_string('child.name', 'clement')
         ptree.put_int('child.age', -2)
         child = ptree.get_child('child')

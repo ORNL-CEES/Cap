@@ -133,4 +133,9 @@ boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, strin
     return ptree.get_child(path);
 }
 
+void put_child(boost::property_tree::ptree & ptree, string const & path, boost::property_tree::ptree const & child)
+{
+    ptree.put_child(path, child);
+}
+
 } // end namespace pycap
