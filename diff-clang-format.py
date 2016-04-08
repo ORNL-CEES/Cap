@@ -39,14 +39,17 @@ def diff_with_formatted_source(original_file, style, patch):
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     if p.returncode or stderr:
-        stdout, stderr = p.communicate()
+        print(cmd)
+        print(stderr.decode('utf-8'))
         raise RuntimeError('clang-format failed')
     with open(formatted_file, 'wb') as fout:
         fout.write(stdout)
     cmd = ['diff', formatted_file, original_file]
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
-    if stderr:
+    if p.returncode or stderr:
+        print(cmd)
+        print(stderr.decode('utf-8'))
         raise RuntimeError('diff failed')
     if patch:
         rename(formatted_file, original_file)

@@ -5,6 +5,7 @@ ARG NPROC=4
 RUN apt-get update && apt-get install -y \
         build-essential \
         gfortran \
+        m4 \
         wget \
         git \
         cmake \
@@ -20,18 +21,12 @@ RUN apt-get update && apt-get install -y \
         zlib1g-dev \
         openssh-server \
         && \
-    apt-get clean
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y clang-format-3.7 && \
-    cp /usr/bin/clang-format-3.7 /usr/bin/clang-format && \
-    apt-get remove -y \
-        libpython-stdlib \
-        libpython2.7-minimal \
-        libpython2.7-stdlib \
-        python \
-        python-minimal \
-        python2.7 \
-        python2.7-minimal
+# Set up time zone
+RUN echo "America/New_York" > /etc/timezone && \
+    dpkg-reconfigure --frontend noninteractive tzdata
     
 ENV PREFIX=/scratch
 RUN mkdir -p ${PREFIX} && \
@@ -155,8 +150,6 @@ RUN export HDF5_VERSION=1.8.16 && \
     rm -rf ${HDF5_BUILD_DIR} && \
     rm -rf ${HDF5_SOURCE_DIR}
 
-RUN apt-get install -y m4 && apt-get clean
-
 ENV HDF5_DIR=/opt/hdf5/1.8.16
 
 # install NETCDF
@@ -188,7 +181,7 @@ RUN export NETCDF_VERSION=4.4.0 && \
 ENV NETCDF_DIR=/opt/netcdf/4.4.0
 
 # install TRILINOS
-RUN apt-get install -y python2.7 && \
+RUN apt-get update && apt-get install -y python2.7 && \
     export TRILINOS_VERSION=12.6.1 && \
     export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-1.tar.gz && \
     export TRILINOS_ARCHIVE=${PREFIX}/archive/trilinos-${TRILINOS_VERSION}.tar.xz && \
@@ -265,6 +258,7 @@ RUN apt-get install -y python2.7 && \
     apt-get remove -y --purge python2.7 && \
     apt-get autoremove -y && \
     apt-get clean && \
+    rm -rf /var/lib/apt/lists/* &&\
     rm -rf ${DTK_SOURCE_DIR} && \
     rm -rf ${DTK_DATA_SOURCE_DIR}
 
@@ -360,6 +354,21 @@ RUN CFLAGS="-I${MPI_DIR}/include -I${HDF5_DIR}/include" \
     LDFLAGS="-L${HDF5_DIR}/lib" \
     pip install --no-cache-dir \
         h5py
+
+# install clang-format but remove Python2.7
+RUN apt-get update && apt-get install -y clang-format-3.7 && \
+    cp /usr/lib/llvm-3.7/bin/clang-format /usr/bin/clang-format && \
+    apt-get remove -y \
+        libpython-stdlib \
+        libpython2.7-minimal \
+        libpython2.7-stdlib \
+        python \
+        python-minimal \
+        python2.7 \
+        python2.7-minimal \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install tini
 RUN export TINI_VERSION=0.9.0 && \
