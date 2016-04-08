@@ -17,7 +17,7 @@ set(CPP_COVERAGE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/htmlcov-cpp)
 add_custom_target(coverage-cpp
     COMMAND ${LCOV_EXECUTABLE} 
     --capture
-    --directory ${CMAKE_BINARY_DIR}/cpp
+    --directory ${CMAKE_BINARY_DIR}
     --output-file=${CPP_COVERAGE_FILE}
     COMMAND ${GENHTML_EXECUTABLE} ${CPP_COVERAGE_FILE}
     --output-directory ${CPP_COVERAGE_OUTPUT_DIRECTORY}

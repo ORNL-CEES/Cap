@@ -13,5 +13,6 @@ ctest -j2 -V -S ${PREFIX}/source/cap/docker/TravisCI.cmake
 cd ${PREFIX}/build/cap
 make coverage-cpp && make coverage-python
 sed -i.fixpath "s|/dummy/cap||g" lcov.info
+sed -i.fixpath "s|/dummy/pycap||g" lcov.info
 sed -i.fixpath "s|python/pycap|python/source|g" coverage.xml
 EOF
