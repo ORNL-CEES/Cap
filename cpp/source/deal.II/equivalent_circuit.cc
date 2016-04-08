@@ -51,8 +51,6 @@ void compute_equivalent_circuit(
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
           input_database.get_child("geometry"));
-  std::shared_ptr<cap::MPValues<2>> mp_values =
-      std::shared_ptr<cap::MPValues<2>>(new cap::MPValues<2>(mp_values_params));
   // build dummy cell iterator and set its material id. Because we use a dummy
   // triangulation, we can use MPI_COMM_WORLD.
   std::shared_ptr<dealii::distributed::Triangulation<2>> triangulation(
@@ -61,6 +59,8 @@ void compute_equivalent_circuit(
   dealii::DoFHandler<2> dof_handler(*triangulation);
   mp_values_params.geometry =
       std::make_shared<cap::Geometry<2>>(geometry_database, triangulation);
+  std::shared_ptr<cap::MPValues<2>> mp_values =
+      std::shared_ptr<cap::MPValues<2>>(new cap::MPValues<2>(mp_values_params));
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
   // electrode
   cell->set_material_id(input_database.get<dealii::types::material_id>(

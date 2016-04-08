@@ -24,6 +24,9 @@ Postprocessor<dim>::Postprocessor(
     : _communicator(mpi_communicator), dof_handler(parameters->dof_handler),
       solution(parameters->solution), mp_values(parameters->mp_values)
 {
+  BOOST_ASSERT_MSG(dof_handler != nullptr, "Invalid DoFHandler");
+  BOOST_ASSERT_MSG(solution != nullptr, "Invalid solution vector.");
+  BOOST_ASSERT_MSG(mp_values != nullptr, "Invalid MPValues.");
 }
 
 template <int dim>
@@ -64,8 +67,9 @@ std::vector<std::string> Postprocessor<dim>::get_vector_keys() const
 template <int dim>
 SuperCapacitorPostprocessorParameters<dim>::
     SuperCapacitorPostprocessorParameters(
-        std::shared_ptr<boost::property_tree::ptree const> d)
-    : PostprocessorParameters<dim>(d)
+        std::shared_ptr<boost::property_tree::ptree const> d,
+        std::shared_ptr<dealii::DoFHandler<dim>> dof_handler)
+    : PostprocessorParameters<dim>(d, dof_handler)
 {
 }
 
@@ -101,7 +105,7 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->debug_material_ids = database->get("debug.material_ids", false);
 
   // n_active_cells is the total number of locally owned cells. This includes
-  // the ghost cells and the artificial cells. They are filtered out by DataOut
+  // the ghost cells and the artificial cells. They are filtered out by DataOut.
   unsigned int const n_active_cells =
       dof_handler.get_triangulation().n_active_cells();
   if (this->debug_material_ids)

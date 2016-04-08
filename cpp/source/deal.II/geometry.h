@@ -47,7 +47,7 @@ public:
   inline std::shared_ptr<dealii::distributed::Triangulation<dim> const>
   get_triangulation() const
   {
-    return this->triangulation;
+    return triangulation;
   }
 
   inline boost::mpi::communicator get_mpi_communicator() const
@@ -59,7 +59,7 @@ public:
       std::string, std::vector<dealii::types::material_id>> const>
   get_materials() const
   {
-    return this->materials;
+    return materials;
   }
 
 private:

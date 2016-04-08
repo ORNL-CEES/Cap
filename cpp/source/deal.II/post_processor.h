@@ -24,9 +24,13 @@ template <int dim>
 class PostprocessorParameters
 {
 public:
-  PostprocessorParameters(std::shared_ptr<boost::property_tree::ptree const> d)
-      : database(d)
+  PostprocessorParameters(
+      std::shared_ptr<boost::property_tree::ptree const> d,
+      std::shared_ptr<dealii::DoFHandler<dim>> const dof_handler)
+      : dof_handler(dof_handler), database(d)
   {
+    BOOST_ASSERT_MSG(dof_handler != nullptr, "Invalid DoFHandler.");
+    BOOST_ASSERT_MSG(database != nullptr, "Invalid database.");
   }
   virtual ~PostprocessorParameters() = default;
 
@@ -72,7 +76,8 @@ class SuperCapacitorPostprocessorParameters
 {
 public:
   SuperCapacitorPostprocessorParameters(
-      std::shared_ptr<boost::property_tree::ptree const> d);
+      std::shared_ptr<boost::property_tree::ptree const> d,
+      std::shared_ptr<dealii::DoFHandler<dim>> dof_handler);
 };
 
 //////////////////////// SUPERCAPACITOR POSTPROCESSOR ///////////////

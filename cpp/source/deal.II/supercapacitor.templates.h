@@ -149,7 +149,7 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   // Create the post-processor
   post_processor_params =
       std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
-          std::make_shared<boost::property_tree::ptree>(database));
+          std::make_shared<boost::property_tree::ptree>(database), dof_handler);
 }
 
 template <int dim>
@@ -298,7 +298,6 @@ void SuperCapacitor<dim>::evolve_one_time_step(
     solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
 
     // Initialize postprocessor
-    post_processor_params->dof_handler = dof_handler;
     post_processor_params->solution = solution;
     post_processor_params->mp_values =
         electrochemical_physics_params->mp_values;
