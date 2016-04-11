@@ -104,7 +104,7 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
                           'some.path.to.a.string')
 
     def test_parsers(self):
-        # populate a populate property tree from an input file
+        # populate a property tree from an input file
         ptree = PropertyTree()
         # INFO parser
         info_file = 'input.info'
