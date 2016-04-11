@@ -14,12 +14,10 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
 else
     DASHBOARD=Experimental
 fi
-export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
 echo 'set(CTEST_DROP_METHOD "http")' >>  ${PREFIX}/source/cap/CTestConfig.cmake
 echo 'set(CTEST_DROP_SITE "jupyterdocker.ornl.gov/CDash")' >> ${PREFIX}/source/cap/CTestConfig.cmake
 echo 'set(CTEST_DROP_LOCATION "/submit.php?project=Cap")' >> ${PREFIX}/source/cap/CTestConfig.cmake
 echo 'set(CTEST_DROP_SITE_CDASH TRUE)' >>  ${PREFIX}/source/cap/CTestConfig.cmake
-cat ${PREFIX}/source/cap/CTestConfig.cmake
 # build the code
 mkdir ${PREFIX}/build/cap
 cd ${PREFIX}/build/cap
@@ -43,9 +41,11 @@ cmake \
     ${PREFIX}/source/cap
 make -j${NPROC} -i
 # run unit tests
-ctest -j${NPROC} --dashboard ${DASHBOARD} -T Test
+export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
+ctest -j${NPROC} --dashboard ${DASHBOARD}
 # check code coverage
-make coverage-cpp && make coverage-python
+make coverage-cpp
+make coverage-python
 sed -i.fixpath "s|/dummy/cap||g" lcov.info
 sed -i.fixpath "s|/dummy/pycap||g" lcov.info
 sed -i.fixpath "s|python/pycap|python/source|g" coverage.xml
