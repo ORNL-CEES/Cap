@@ -5,6 +5,7 @@
 # for the text and further information on this license. 
 
 from pycap import PropertyTree
+from os import remove
 import unittest
 
 
@@ -79,8 +80,14 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         ptree.put_bool('is.that.a.good.idea', False)
         self.assertEqual(ptree.get_bool('is.that.a.good.idea'), False)
 
-    def test_get_child(self):
+    def test_get_children(self):
         ptree = PropertyTree()
+        # put child
+        child = PropertyTree()
+        child.put_double('prune', 6.10)
+        ptree.put_child('a.g', child)
+        self.assertEqual(ptree.get_double('a.g.prune'), 6.10)
+        # get child
         ptree.put_string('child.name', 'clement')
         ptree.put_int('child.age', -2)
         child = ptree.get_child('child')
@@ -96,10 +103,37 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, ptree.get_double,
                           'some.path.to.a.string')
 
-    # TODO
-    def test_parse(self):
+    def test_parsers(self):
+        # populate a property tree from an input file
         ptree = PropertyTree()
-        ptree.parse_xml('device.xml')
+        # INFO parser
+        info_file = 'input.info'
+        today = 'april 8th, 2016'
+        with open(info_file, 'w') as fout:
+            fout.write('date "'+today+'"')
+        ptree.parse_info(info_file)
+        self.assertEqual(ptree.get_string('date'), today)
+        remove(info_file)
+        # XML parser
+        xml_file = 'input.xml'
+        pi = 3.14
+        with open(xml_file, 'w') as fout:
+            fout.write('<pi>'+str(pi)+'</pi>')
+        ptree.parse_xml(xml_file)
+        self.assertEqual(ptree.get_double('pi'), pi)
+        remove(xml_file)
+        # JSON parser
+        json_file = 'input.json'
+        with open(json_file, 'w') as fout:
+            fout.write('{')
+            fout.write('  "foo":')
+            fout.write('  {')
+            fout.write('    "bar": false')
+            fout.write('  }')
+            fout.write('}')
+        ptree.parse_json(json_file)
+        self.assertFalse(ptree.get_bool('foo.bar'))
+        remove(json_file)
 
 if __name__ == '__main__':
     unittest.main()

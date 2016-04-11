@@ -77,6 +77,7 @@ void export_property_tree()
     .def("parse_json", &pycap::parse_json, parse_docstring("JSON").c_str(), boost::python::args("self", "filename") )
     .def("parse_info", &pycap::parse_info, parse_docstring("INFO").c_str(), boost::python::args("self", "filename") )
     .def("get_child", &pycap::get_child, "Get the child at the given path, or throw ptree_bad_path.", boost::python::args("self", "path") )
+    .def("put_child", &pycap::put_child, "Put the child at the given path, create any missing parents, replace if it already exists.", boost::python::args("self", "path", "PropertyTree") )
     .def_pickle(pycap::serializable_class_pickle_support<boost::property_tree::ptree>())
         ;
   boost::python::register_ptr_to_python<std::shared_ptr<boost::property_tree::ptree>>();
