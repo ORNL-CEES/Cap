@@ -10,6 +10,7 @@
 
 #include <cap/supercapacitor.h>
 #include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/multithread_info.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_handler.h>
@@ -61,6 +62,22 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   // get database
   boost::property_tree::ptree const &database = ptree;
 
+  // get data tolerance and maximum number of iterations for the CG solver
+  boost::property_tree::ptree const &solver_database =
+      database.get_child("solver");
+  max_iter = solver_database.get<unsigned int>("max_iter", 1000);
+  rel_tolerance = solver_database.get<double>("rel_tolerance", 1e-12);
+  abs_tolerance = solver_database.get<double>("abs_tolerance", 1e-12);
+  verbose_lvl = solver_database.get<unsigned int>("verbosity", 0);
+  // set the number of threads used by deal.II
+  unsigned int n_threads = solver_database.get<unsigned int>("n_threads", 1);
+  // if 0, let TBB uses all the available threads. This can also be used if one
+  // wants to use DEAL_II_NUM_THREADS
+  if (n_threads == 0)
+    dealii::MultithreadInfo::set_thread_limit();
+  else
+    dealii::MultithreadInfo::set_thread_limit(n_threads);
+
   // build triangulation
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
@@ -69,14 +86,6 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
                                                   this->_communicator);
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
       geometry->get_triangulation();
-
-  // get data tolerance and maximum number of iterations for the CG solver
-  boost::property_tree::ptree const &solver_database =
-      database.get_child("solver");
-  max_iter = solver_database.get<unsigned int>("max_iter", 1000);
-  rel_tolerance = solver_database.get<double>("rel_tolerance", 1e-12);
-  abs_tolerance = solver_database.get<double>("abs_tolerance", 1e-12);
-  verbose_lvl = solver_database.get<unsigned int>("verbosity", 0);
 
   // distribute degrees of freedom
   fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
