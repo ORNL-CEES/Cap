@@ -16,9 +16,14 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
     auto post_processor = super_capacitor->get_post_processor();
     if (post_processor == nullptr)
     {
+      std::shared_ptr<PostprocessorParameters<dim>> params =
+          super_capacitor->get_post_processor_parameters();
+      if (params->solution == nullptr)
+        params->solution.reset(new dealii::Trilinos::MPI::BlockVector());
+      if (params->mp_values == nullptr)
+        params->mp_values.reset(new MPValues<dim>());
       post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-          super_capacitor->get_post_processor_parameters(),
-          super_capacitor->get_mpi_communicator());
+          params, super_capacitor->get_mpi_communicator());
     }
     double value;
     for (std::string const &key : {

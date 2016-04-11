@@ -39,6 +39,8 @@ public:
   typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
       active_cell_iterator;
 
+  MPValues() = default;
+
   MPValues(MPValuesParameters<dim, spacedim> const &params);
 
   virtual ~MPValues() = default;

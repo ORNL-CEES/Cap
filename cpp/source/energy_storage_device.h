@@ -170,7 +170,7 @@ public:
     build(boost::property_tree::ptree const &ptree,                            \
           boost::mpi::communicator const &comm) override                       \
     {                                                                          \
-      return std::unique_ptr<T>(new T(comm, ptree));                           \
+      return std::unique_ptr<T>(new T(ptree, comm));                           \
     }                                                                          \
   };                                                                           \
   static T##Builder global_##T##Builder;

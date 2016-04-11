@@ -20,8 +20,8 @@ namespace cap
 class SeriesRC : public EnergyStorageDevice
 {
 public:
-  SeriesRC(boost::mpi::communicator const &comm,
-           boost::property_tree::ptree const &ptree);
+  SeriesRC(boost::property_tree::ptree const &ptree,
+           boost::mpi::communicator const &comm);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -94,8 +94,8 @@ private:
 class ParallelRC : public EnergyStorageDevice
 {
 public:
-  ParallelRC(boost::mpi::communicator const &comm,
-             boost::property_tree::ptree const &ptree);
+  ParallelRC(boost::property_tree::ptree const &ptree,
+             boost::mpi::communicator const &comm);
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -196,7 +196,7 @@ inline void load_construct_data(Archive &ar, cap::SeriesRC *rc,
   boost::property_tree::ptree ptree;
   ptree.put("series_resistance", R);
   ptree.put("capacitance", C);
-  ::new (rc) cap::SeriesRC(boost::mpi::communicator(), ptree);
+  ::new (rc) cap::SeriesRC(ptree, boost::mpi::communicator());
 }
 
 /**
@@ -224,7 +224,7 @@ inline void load_construct_data(Archive &ar, cap::ParallelRC *rc,
   ptree.put("series_resistance", R_series);
   ptree.put("parallel_resistance", R_parallel);
   ptree.put("capacitance", C);
-  ::new (rc) cap::ParallelRC(boost::mpi::communicator(), ptree);
+  ::new (rc) cap::ParallelRC(ptree, boost::mpi::communicator());
 }
 }
 } // namespace ...

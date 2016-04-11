@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_voltage)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
+  cap::SeriesRC rc(initialize_database(), boost::mpi::communicator());
 
   // CHARGE
   BOOST_FOREACH (double const &t, time)
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_current)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
+  cap::SeriesRC rc(initialize_database(), boost::mpi::communicator());
 
   // CHARGE
   set_voltage(rc, 0.0);
@@ -137,9 +137,9 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_power)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::SeriesRC rc_newton(boost::mpi::communicator(), initialize_database());
-  cap::SeriesRC rc_fixed_point(boost::mpi::communicator(),
-                               initialize_database());
+  cap::SeriesRC rc_newton(initialize_database(), boost::mpi::communicator());
+  cap::SeriesRC rc_fixed_point(initialize_database(),
+                               boost::mpi::communicator());
 
   // CHARGE
   set_current(rc_newton, 0.0);
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(test_series_rc_constant_load)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::SeriesRC rc(boost::mpi::communicator(), initialize_database());
+  cap::SeriesRC rc(initialize_database(), boost::mpi::communicator());
 
   // DISCHARGE
   set_voltage(rc, U);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_current)
   for (double t = 0.0; t <= 5.0 * TAU; t += 0.1 * TAU)
     time.push_back(t);
 
-  cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
+  cap::ParallelRC rc(initialize_database(), boost::mpi::communicator());
   rc.R_series = 0.0;
 
   // CHARGE
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_voltage)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
+  cap::ParallelRC rc(initialize_database(), boost::mpi::communicator());
 
   // CHARGE
   set_voltage(rc, 0.0);
@@ -268,9 +268,9 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_power)
   for (double t = 0.0; t <= 5.0 * TAU; t += DELTA_T)
     time.push_back(t);
 
-  cap::SeriesRC rc_newton(boost::mpi::communicator(), initialize_database());
-  cap::SeriesRC rc_fixed_point(boost::mpi::communicator(),
-                               initialize_database());
+  cap::SeriesRC rc_newton(initialize_database(), boost::mpi::communicator());
+  cap::SeriesRC rc_fixed_point(initialize_database(),
+                               boost::mpi::communicator());
 
   // CHARGE
   set_current(rc_newton, 0.0);
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc_constant_load)
   for (double t = 0.0; t <= 5.0 * TAU; t += 0.1 * TAU)
     time.push_back(t);
 
-  cap::ParallelRC rc(boost::mpi::communicator(), initialize_database());
+  cap::ParallelRC rc(initialize_database(), boost::mpi::communicator());
   rc.R_series = 0.0;
 
   // DISCHARGE
