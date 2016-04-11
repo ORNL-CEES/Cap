@@ -47,7 +47,7 @@ def diff_with_formatted_source(original_file, style, patch):
     cmd = ['diff', formatted_file, original_file]
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
-    if p.returncode or stderr:
+    if p.returncode > 1 or stderr:
         print(cmd)
         print(stderr.decode('utf-8'))
         raise RuntimeError('diff failed')
