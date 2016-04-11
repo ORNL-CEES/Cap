@@ -15,6 +15,7 @@ endif()
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 enable_testing()
+include(CTest)
 
 add_subdirectory(cpp)
 
