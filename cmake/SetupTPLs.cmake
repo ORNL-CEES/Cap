@@ -31,16 +31,18 @@ if(ENABLE_PYTHON)
     find_package(PythonInterp REQUIRED)
     find_package(PythonLibs REQUIRED)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
-        OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    message("PYTHON_SITE_PACKAGES=${PYTHON_SITE_PACKAGES}")
-    find_path(MPI4PY_INCLUDE_DIR mpi4py/mpi4py.h
-        PATHS ${PYTHON_SITE_PACKAGES}/mpi4py/include
-        NO_DEFAULT_PATH
+        COMMAND ${PYTHON_EXECUTABLE} -c "from mpi4py import get_include; print(get_include())"
+        OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR
     )
-    message("MPI4PY_INCLUDE_DIR=${MPI4PY_INCLUDE_DIR}")
+    find_path(MPI4PY_INCLUDE_DIR mpi4py/mpi4py.h 
+        PATH ${MPI4PY_INCLUDE_DIR}
+        NO_DEFAULT
+    )
+    if(MPI4PY_INCLUDE_DIR)
+        message("MPI4PY_INCLUDE_DIR=${MPI4PY_INCLUDE_DIR}")
+    else()
+        message(FATAL_ERROR "mpi4py not found.")
+    endif()
 endif()
 
 #### deal.II #################################################################
