@@ -66,8 +66,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
     {
       BOOST_CHECK_CLOSE(computed_voltage, gold_solution[pos],
                         percent_tolerance);
-      BOOST_CHECK_SMALL(computed_voltage - gold_solution[pos],
-                        tolerance);
+      BOOST_CHECK_SMALL(computed_voltage - gold_solution[pos], tolerance);
       ++pos;
     }
   }
