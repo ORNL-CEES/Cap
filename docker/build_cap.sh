@@ -8,16 +8,6 @@ git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
 mv ${MPI_DIR}/bin/mpiexec ${MPI_DIR}/bin/mpiexec.alias
 echo '#!/usr/bin/env bash\nmpiexec.alias --allow-run-as-root "$@"' > ${MPI_DIR}/bin/mpiexec
 chmod +x ${MPI_DIR}/bin/mpiexec
-# setup report to cdash
-if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
-    DASHBOARD=Continuous
-else
-    DASHBOARD=Experimental
-fi
-echo 'set(CTEST_DROP_METHOD "http")' >>  ${PREFIX}/source/cap/CTestConfig.cmake
-echo 'set(CTEST_DROP_SITE "jupyterdocker.ornl.gov/CDash")' >> ${PREFIX}/source/cap/CTestConfig.cmake
-echo 'set(CTEST_DROP_LOCATION "/submit.php?project=Cap")' >> ${PREFIX}/source/cap/CTestConfig.cmake
-echo 'set(CTEST_DROP_SITE_CDASH TRUE)' >>  ${PREFIX}/source/cap/CTestConfig.cmake
 # build the code
 mkdir ${PREFIX}/build/cap
 cd ${PREFIX}/build/cap
@@ -36,14 +26,11 @@ cmake \
     -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     -D ENABLE_COVERAGE=ON \
     -D ENABLE_FORMAT=ON \
-    -D SITE="travis-ci" \
-    -D BUILDNAME="\"${CTEST_BUILD_NAME}\"" \
     ${PREFIX}/source/cap
-cat DartConfiguration.tcl
 make -j${NPROC} -i
 # run unit tests
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
-ctest -j${NPROC} --dashboard ${DASHBOARD}Test
+ctest -j${NPROC} -V
 # check code coverage
 make coverage-cpp
 make coverage-python
