@@ -42,7 +42,7 @@ cmake \
 make -j${NPROC} -i
 # run unit tests
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
-ctest -j${NPROC} --dashboard ${DASHBOARD}
+ctest -j${NPROC} --dashboard ${DASHBOARD}Test
 # check code coverage
 make coverage-cpp
 make coverage-python
