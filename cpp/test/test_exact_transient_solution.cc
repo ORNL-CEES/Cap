@@ -35,7 +35,9 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
 
   unsigned int pos = 0;
   double computed_voltage;
-  double const percent_tolerance = 1e-6;
+  // check that error less than 1e-5 % AND less than 1 microvolt
+  double const percent_tolerance = 1e-5;
+  double const tolerance = 1e-6;
   std::vector<double> gold_solution(10);
   gold_solution[0] = 1.725914356067658e-01;
   gold_solution[1] = 1.802025636145941e-01;
@@ -64,6 +66,7 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
     {
       BOOST_CHECK_CLOSE(computed_voltage, gold_solution[pos],
                         percent_tolerance);
+      BOOST_CHECK_SMALL(computed_voltage - gold_solution[pos], tolerance);
       ++pos;
     }
   }
