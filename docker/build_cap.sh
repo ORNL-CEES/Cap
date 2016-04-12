@@ -39,6 +39,7 @@ cmake \
     -D SITE="travis-ci" \
     -D BUILDNAME="\"${CTEST_BUILD_NAME}\"" \
     ${PREFIX}/source/cap
+cat DartConfiguration.tcl
 make -j${NPROC} -i
 # run unit tests
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
