@@ -234,7 +234,7 @@ RUN apt-get update && apt-get install -y python2.7 && \
         -D Trilinos_ENABLE_Intrepid:BOOL=ON \
         -D Trilinos_ENABLE_Kokkos:BOOL=ON \
         -D Trilinos_ENABLE_ML:BOOL=ON \
-        -D Trilinos_ENABLE_MueLu:BOOL=OFF \
+        -D Trilinos_ENABLE_MueLu:BOOL=ON \
         -D Trilinos_ENABLE_Sacado:BOOL=ON \
         -D Trilinos_ENABLE_Shards:BOOL=ON \
         -D Trilinos_ENABLE_Stratimikos:BOOL=ON \
