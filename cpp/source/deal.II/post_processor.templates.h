@@ -7,8 +7,9 @@
 
 #include <cap/post_processor.h>
 #include <cap/utils.h>
-#include <deal.II/fe/fe_values.h>
 #include <deal.II/base/quadrature_lib.h>
+#include <deal.II/dofs/dof_tools.h>
+#include <deal.II/fe/fe_values.h>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -192,10 +193,16 @@ void SuperCapacitorPostprocessor<dim>::reset(
       n_face_q_points);
   std::vector<dealii::Tensor<1, dim>> normal_vectors(n_face_q_points);
 
-  unsigned int cell_index = 0;
-  for (auto cell : dof_handler.cell_iterators())
+  dealii::IndexSet locally_relevant_dofs;
+  dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
+                                                  locally_relevant_dofs);
+  std::vector<dealii::IndexSet> index_sets(1, locally_relevant_dofs);
+  dealii::Trilinos::MPI::BlockVector relevant_solution(index_sets);
+  relevant_solution = solution;
+
+  for (auto cell : dof_handler.active_cell_iterators())
   {
-    if (cell->active() && cell->is_locally_owned())
+    if (cell->is_locally_owned())
     {
       fe_values.reinit(cell);
       this->mp_values->get_values("solid_electrical_conductivity", cell,
@@ -207,14 +214,24 @@ void SuperCapacitorPostprocessor<dim>::reset(
                                   density_of_active_material_values);
       this->mp_values->get_values("specific_surface_area", cell,
                                   specific_surface_area_values);
-      fe_values[solid_potential].get_function_gradients(
-          solution, solid_potential_gradients);
-      fe_values[liquid_potential].get_function_gradients(
-          solution, liquid_potential_gradients);
-      fe_values[solid_potential].get_function_values(solution,
-                                                     solid_potential_values);
-      fe_values[liquid_potential].get_function_values(solution,
-                                                      liquid_potential_values);
+      if (*std::max_element(solid_electrical_conductivity_values.begin(),
+                            solid_electrical_conductivity_values.end()) >
+          1e-300)
+      {
+        fe_values[solid_potential].get_function_gradients(
+            relevant_solution, solid_potential_gradients);
+        fe_values[solid_potential].get_function_values(relevant_solution,
+                                                       solid_potential_values);
+      }
+      if (*std::max_element(liquid_electrical_conductivity_values.begin(),
+                            liquid_electrical_conductivity_values.end()) >
+          1e-300)
+      {
+        fe_values[liquid_potential].get_function_gradients(
+            relevant_solution, liquid_potential_gradients);
+        fe_values[liquid_potential].get_function_values(
+            relevant_solution, liquid_potential_values);
+      }
       for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
       {
         this->values["joule_heating"] +=
@@ -378,9 +395,9 @@ void SuperCapacitorPostprocessor<dim>::reset(
                                                               // face as an
                                                               // argument...
               fe_face_values[solid_potential].get_function_gradients(
-                  solution, face_solid_potential_gradients);
+                  relevant_solution, face_solid_potential_gradients);
               fe_face_values[solid_potential].get_function_values(
-                  solution, face_solid_potential_values);
+                  relevant_solution, face_solid_potential_values);
               normal_vectors = fe_face_values.get_all_normal_vectors();
               for (unsigned int face_q_point = 0;
                    face_q_point < n_face_q_points; ++face_q_point)
@@ -401,9 +418,10 @@ void SuperCapacitorPostprocessor<dim>::reset(
         }       // end for face
       }         // end if cell at boundary
     }
-    ++cell_index;
   } // end for cell
   // AllReduce to get the scalar quantities
+  this->values["current"] =
+      dealii::Utilities::MPI::sum(this->values["current"], this->_communicator);
   this->values["surface_area"] = dealii::Utilities::MPI::sum(
       this->values["surface_area"], this->_communicator);
   this->values["voltage"] =

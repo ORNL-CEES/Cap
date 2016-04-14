@@ -88,8 +88,7 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
       this->locally_owned_dofs, this->locally_owned_dofs,
       this->locally_relevant_dofs, this->mpi_communicator);
   dealii::DoFTools::make_sparsity_pattern(
-      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix,
-      true, dealii::Utilities::MPI::this_mpi_process(this->mpi_communicator));
+      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix);
   this->sparsity_pattern.compress();
 
   // Initialize matrices and vectors
@@ -223,7 +222,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
                                              dealii::update_values |
                                                  dealii::update_JxW_values);
     for (auto cell : dof_handler.active_cell_iterators())
-      if (cell->at_boundary())
+      if (cell->is_locally_owned() && cell->at_boundary())
       {
         cell_rhs = 0.0;
         for (unsigned int face = 0;
@@ -246,22 +245,20 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       }
   }
 
+  // Add the null space. This wouldn't be necessary if we were using a
+  // hp::DoFHandler object instead of a DoFHandler object but
+  // hp::DoFHandler does not work with MPI.
+  std::vector<dealii::types::global_dof_index> locally_owned_indices;
+  this->locally_owned_dofs.fill_index_vector(locally_owned_indices);
+  for (auto i : locally_owned_indices)
+    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
+      this->system_matrix.add(i, i, 1.);
+
   // We are done fill-in the matrices and the vector. So we can compress
   // everything.
   this->system_matrix.compress(dealii::VectorOperation::add);
   this->mass_matrix.compress(dealii::VectorOperation::add);
   this->system_rhs.compress(dealii::VectorOperation::add);
-
-  // Add the null space. This wouldn't be necessary if we were using a
-  // hp::DoFHandler object instead of a DoFHandler object but
-  // hp::DoFHandler does not work with MPI.
-  std::pair<dealii::types::global_dof_index, dealii::types::global_dof_index>
-      local_range = this->system_matrix.local_range();
-  for (dealii::types::global_dof_index i = local_range.first;
-       i < local_range.second; ++i)
-    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
-      this->system_matrix.set(i, i, 1.);
-  this->system_matrix.compress(dealii::VectorOperation::insert);
 }
 }
 
