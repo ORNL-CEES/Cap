@@ -6,7 +6,8 @@
 git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
 # append the option flag --allow-run-as-root to mpiexec
 mv ${MPI_DIR}/bin/mpiexec ${MPI_DIR}/bin/mpiexec.alias
-echo '#!/usr/bin/env bash\nmpiexec.alias --allow-run-as-root "$@"' > ${MPI_DIR}/bin/mpiexec
+echo '#!/usr/bin/env bash' > ${MPI_DIR}/bin/mpiexc
+echo 'mpiexec.alias --allow-run-as-root "$@"' >> ${MPI_DIR}/bin/mpiexec
 chmod +x ${MPI_DIR}/bin/mpiexec
 # build the code
 mkdir ${PREFIX}/build/cap
