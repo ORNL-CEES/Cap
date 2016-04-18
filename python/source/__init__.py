@@ -29,14 +29,14 @@ __doc__ = PyCap.__doc__
 
 # Override EnergyStorageDevice.__init__(...) to add a default value to the
 # ``comm`` parameter.
-def build(self, ptree, comm=MPI.COMM_WORLD):
+def build(self, ptree, comm=MPI.COMM_SELF):
     """
     Parameters
     ----------
     ptree : pycap.PropertyTree
         Property Tree
     comm : mpi4py.MPI.Comm
-        Communicator
+        Communicator (the default value is mpi4py.MPI.COMM_SELF).
     """
     return EnergyStorageDevice.build(self, ptree, comm)
 
