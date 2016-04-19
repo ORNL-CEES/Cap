@@ -119,7 +119,7 @@ std::size_t SeriesRC::evolve_one_time_step_constant_power(
   double const RTOL = 1.0e-14;
   std::size_t const MAXIT = 30;
   double const TOL = std::abs(P) * RTOL + ATOL;
-  size_t k = 0;
+  std::size_t k = 0;
   while (true)
   {
     ++k;
@@ -246,7 +246,7 @@ std::size_t ParallelRC::evolve_one_time_step_constant_power(
   double const RTOL = 1.0e-14;
   std::size_t const MAXIT = 30;
   double const TOL = std::abs(P) * RTOL + ATOL;
-  size_t k = 0;
+  std::size_t k = 0;
   while (true)
   {
     ++k;

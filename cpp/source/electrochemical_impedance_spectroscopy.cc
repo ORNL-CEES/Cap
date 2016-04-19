@@ -19,24 +19,24 @@ namespace cap
 {
 
 std::vector<std::complex<double>> compute_fft(double const *input,
-                                              size_t const n)
+                                              std::size_t const n)
 {
   std::vector<double> data(input, input + n);
   gsl_fft_real_radix2_transform(&(data[0]), 1, n);
   std::vector<double> unpacked_data(2 * n);
   gsl_fft_halfcomplex_radix2_unpack(&(data[0]), &(unpacked_data[0]), 1, n);
   std::vector<std::complex<double>> output(n / 2 + 1);
-  for (size_t k = 0; k < n / 2 + 1; ++k)
+  for (std::size_t k = 0; k < n / 2 + 1; ++k)
     output[k] =
         std::complex<double>(REAL(unpacked_data, k), IMAG(unpacked_data, k));
   return output;
 }
 
-std::vector<double> compute_fft_frequencies(size_t const n,
+std::vector<double> compute_fft_frequencies(std::size_t const n,
                                             double const frequency)
 {
   std::vector<double> fft_frequencies(n / 2 + 1);
-  for (size_t k = 0; k < n / 2 + 1; ++k)
+  for (std::size_t k = 0; k < n / 2 + 1; ++k)
     fft_frequencies[k] = k * frequency;
   return fft_frequencies;
 }
@@ -60,7 +60,7 @@ compute_signal_to_noise_ratio(std::vector<std::complex<double>> fft_data,
   // TODO:  definition is a bit shaky for multiple frequency
   // should compute for each individual excited freq vs nearby unex freq
   std::vector<double> ratios;
-  for (size_t k : excited_harmonics)
+  for (std::size_t k : excited_harmonics)
   {
     ratios.emplace_back(std::norm(fft_data[k]) / noise_power);
   }
@@ -83,7 +83,7 @@ get_evolve_one_time_step(
                                        phases](double time)
   {
     double excitation_signal = 0.0;
-    for (size_t k = 0; k < harmonics.size(); ++k)
+    for (std::size_t k = 0; k < harmonics.size(); ++k)
       excitation_signal +=
           amplitudes[k] *
           boost::math::sin_pi(2 * harmonics[k] * frequency * time + phases[k]);
@@ -156,9 +156,9 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
 
   //
   int const n = (cycles - ignore_cycles) * steps_per_cycle;
-  BOOST_ASSERT(fft_current.size() == static_cast<size_t>(n / 2 + 1));
-  BOOST_ASSERT(fft_voltage.size() == static_cast<size_t>(n / 2 + 1));
-  BOOST_ASSERT(fft_frequencies.size() == static_cast<size_t>(n / 2 + 1));
+  BOOST_ASSERT(fft_current.size() == static_cast<std::size_t>(n / 2 + 1));
+  BOOST_ASSERT(fft_voltage.size() == static_cast<std::size_t>(n / 2 + 1));
+  BOOST_ASSERT(fft_frequencies.size() == static_cast<std::size_t>(n / 2 + 1));
   std::vector<int> excited_harmonics;
   std::vector<int> unexcited_harmonics;
   for (int i = 1; i <= n / 2; ++i)

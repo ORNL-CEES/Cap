@@ -27,14 +27,14 @@
 
 BOOST_AUTO_TEST_CASE(test_discrete_fourier_transform)
 {
-  size_t const n = 32;
-  size_t const k = 3;
+  std::size_t const n = 32;
+  std::size_t const k = 3;
   std::vector<double> x(n);
-  for (size_t i = 0; i < n; ++i)
+  for (std::size_t i = 0; i < n; ++i)
     x[i] = static_cast<double>(i) / (n - 1);
   double const pi = acos(-1.0);
   std::vector<double> y(n);
-  for (size_t i = 0; i < n; ++i)
+  for (std::size_t i = 0; i < n; ++i)
     y[i] = 1.0 + std::sin(2 * pi * k * x[i]);
   auto fft_data = cap::compute_fft(&(y[0]), n);
   auto fft_freq = cap::compute_fft_frequencies(n, 1.0 / n);
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_discrete_fourier_transform)
       0.375,  0.40625, 0.4375, 0.46875, 0.5,
   };
   double const percent_tolerance = 1.0e-6;
-  for (size_t i = 0; i < n / 2 + 1; ++i)
+  for (std::size_t i = 0; i < n / 2 + 1; ++i)
   {
     BOOST_TEST(std::real(fft_data[i]) == real[i],
                boost::test_tools::tolerance(percent_tolerance));

@@ -18,9 +18,10 @@ namespace cap
 {
 
 std::vector<std::complex<double>> compute_fft(double const *data,
-                                              size_t const n);
+                                              std::size_t const n);
 
-std::vector<double> compute_fft_frequencies(size_t const n, double const f);
+std::vector<double> compute_fft_frequencies(std::size_t const n,
+                                            double const f);
 
 std::map<double, std::complex<double>>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> dev,
