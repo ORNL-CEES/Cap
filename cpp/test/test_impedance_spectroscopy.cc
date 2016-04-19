@@ -120,7 +120,7 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
     tmp->put("frequency", frequency);
     auto expe_results = measure_impedance(dev, tmp);
     auto theo_results = compute_exact(tmp);
-    for (size_t k = 0; k < harmonics.size(); ++k)
+    for (std::size_t k = 0; k < harmonics.size(); ++k)
     {
       auto it = expe_results.begin();
       std::advance(it, k);
