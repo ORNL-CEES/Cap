@@ -74,19 +74,27 @@ public:
 
 BOOST_AUTO_TEST_CASE(test_energy_storage_device_inspectors)
 {
-  std::string const filename = "series_rc.info";
-  boost::mpi::communicator world;
-  boost::property_tree::ptree ptree;
-  boost::property_tree::info_parser::read_info(filename, ptree);
-  auto device = cap::EnergyStorageDevice::build(world, ptree);
-  double voltage;
-  device->get_voltage(voltage);
-  BOOST_TEST(voltage != 1.4);
-  ExampleInspector inspector;
-  device->inspect(&inspector);
-  BOOST_TEST((inspector._type).compare("SeriesRC") == 0);
-  device->get_voltage(voltage);
-  BOOST_TEST(voltage == 1.4);
+  std::vector<std::string> filename(2);
+  filename[0] = "series_rc.info";
+  filename[1] = "parallel_rc.info";
+  std::vector<std::string> RC_type(2);
+  RC_type[0] = "SeriesRC";
+  RC_type[1] = "ParallelRC";
+  for (unsigned int i = 0; i < 2; ++i)
+  {
+    boost::mpi::communicator world;
+    boost::property_tree::ptree ptree;
+    boost::property_tree::info_parser::read_info(filename[i], ptree);
+    auto device = cap::EnergyStorageDevice::build(world, ptree);
+    double voltage;
+    device->get_voltage(voltage);
+    BOOST_TEST(voltage != 1.4);
+    ExampleInspector inspector;
+    device->inspect(&inspector);
+    BOOST_TEST((inspector._type).compare(RC_type[i]) == 0);
+    device->get_voltage(voltage);
+    BOOST_TEST(voltage == 1.4);
+  }
 }
 
 // TODO: won't work for SuperCapacitor
