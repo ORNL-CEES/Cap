@@ -30,9 +30,9 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, EnergyStorageDevice, ptree, comm)
 
     def test_energy_storage_device_not_copyable(self):
-        device_database = PropertyTree()
-        device_database.parse_xml('device.xml')
-        device = EnergyStorageDevice(device_database.get_child('device'), comm)
+        ptree = PropertyTree()
+        ptree.parse_info('series_rc.info')
+        device = EnergyStorageDevice(ptree, comm)
         from copy import copy, deepcopy
         self.assertRaises(RuntimeError, copy, device)
         self.assertRaises(RuntimeError, deepcopy, device)
