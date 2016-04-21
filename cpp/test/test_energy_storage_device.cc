@@ -56,13 +56,12 @@ public:
   // get the device type and set the voltage to 1.4 volt
   void inspect(cap::EnergyStorageDevice *device)
   {
+    _type = "Unrecognized";
     // use dynamic_cast to find out the actual type
     if (dynamic_cast<cap::SeriesRC *>(device) != nullptr)
       _type = "SeriesRC";
     else if (dynamic_cast<cap::ParallelRC *>(device) != nullptr)
       _type = "ParallelRC";
-    else
-      throw std::runtime_error("not an equivalent circuit model");
     // if we make ExampleInspector friend of the derived
     // class for the EnergyStorageDevice we could virtually
     // do anything
@@ -74,9 +73,9 @@ public:
 
 BOOST_AUTO_TEST_CASE(test_energy_storage_device_inspectors)
 {
-  std::vector<std::string> filename(2);
-  filename[0] = "series_rc.info";
-  filename[1] = "parallel_rc.info";
+  std::vector<std::string> valid_device_input(2);
+  valid_device_input[0] = "series_rc.info";
+  valid_device_input[1] = "parallel_rc.info";
   std::vector<std::string> RC_type(2);
   RC_type[0] = "SeriesRC";
   RC_type[1] = "ParallelRC";
@@ -84,7 +83,7 @@ BOOST_AUTO_TEST_CASE(test_energy_storage_device_inspectors)
   {
     boost::mpi::communicator world;
     boost::property_tree::ptree ptree;
-    boost::property_tree::info_parser::read_info(filename[i], ptree);
+    boost::property_tree::info_parser::read_info(valid_device_input[i], ptree);
     auto device = cap::EnergyStorageDevice::build(world, ptree);
     double voltage;
     device->get_voltage(voltage);
@@ -146,10 +145,6 @@ BOOST_AUTO_TEST_CASE(test_serialization)
     {
       BOOST_TEST_MESSAGE("unable to serialize the device");
       BOOST_TEST(false);
-    }
-    catch (...)
-    {
-      throw std::runtime_error("unexpected exception occured");
     }
   }
 }
