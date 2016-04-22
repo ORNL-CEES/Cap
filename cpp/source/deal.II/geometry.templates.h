@@ -175,16 +175,20 @@ Geometry<dim>::Geometry(
     fin.open(mesh_file->c_str(), std::fstream::in);
     std::string const file_extension =
         mesh_file->substr(mesh_file->find_last_of(".") + 1);
+    fill_materials_map(database);
+    boost::property_tree::ptree boundary_database =
+        database->get_child("boundary_values");
+    _anode_boundary_id =
+        boundary_database.get<dealii::types::boundary_id>("anode_boundary_id");
+    _cathode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
+        "cathode_boundary_id");
     if (file_extension.compare("ucd") == 0)
     {
-      fill_materials_map(database);
-      boost::property_tree::ptree boundary_database =
-          database->get_child("boundary_values");
-      _anode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
-          "anode_boundary_id");
-      _cathode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
-          "cathode_boundary_id");
       mesh_reader.read_ucd(fin);
+    }
+    else if (file_extension.compare("inp") == 0)
+    {
+      mesh_reader.read_abaqus(fin);
     }
     else
     {
