@@ -237,7 +237,8 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
                                                                 locally_owned),
                      _triangulation->end());
   anode_cell.set_to_next_positive(_triangulation->begin_active());
-  double const eps = 1e-12;
+  double const eps = 1e-6;
+  unsigned int boundary_id_set = 0;
   for (; anode_cell < anode_end_cell; ++anode_cell)
     if (anode_cell->at_boundary())
       for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
@@ -245,7 +246,12 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
         // Check that the face is on the top of the collector
         if (std::abs(anode_cell->face(i)->center()[dim - 1] - collector_top) <
             eps * anode_cell->measure())
+        {
           anode_cell->face(i)->set_boundary_id(_anode_boundary_id);
+          boundary_id_set = 1;
+        }
+  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
+  BOOST_ASSERT_MSG(boundary_id_set == 1, "Anode boundary id no set.");
 
   // Set the cathode boundary id
   std::set<dealii::types::material_id> collector_cathode(
@@ -257,6 +263,7 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
                            collector_cathode, locally_owned),
                        _triangulation->end());
   cathode_cell.set_to_next_positive(_triangulation->begin_active());
+  boundary_id_set = 0;
   for (; cathode_cell < cathode_end_cell; ++cathode_cell)
     if (cathode_cell->at_boundary())
       for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
@@ -264,7 +271,12 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
         // Check that the face is on the bottom of the collector
         if (std::abs(cathode_cell->face(i)->center()[dim - 1] -
                      collector_bottom) < eps * cathode_cell->measure())
+        {
           cathode_cell->face(i)->set_boundary_id(_cathode_boundary_id);
+          boundary_id_set = 1;
+        }
+  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
+  BOOST_ASSERT_MSG(boundary_id_set == 1, "Cathode boundary id no set.");
 }
 
 template <int dim>

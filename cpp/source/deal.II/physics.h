@@ -25,7 +25,7 @@ public:
   virtual ~PhysicsParameters() = default;
 
   std::shared_ptr<Geometry<dim> const> geometry;
-  std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+  std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   std::shared_ptr<MPValues<dim> const> mp_values;
   boost::property_tree::ptree const database;
 };
@@ -74,7 +74,7 @@ public:
 
 protected:
   boost::mpi::communicator mpi_communicator;
-  std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+  std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   dealii::IndexSet locally_owned_dofs;
   dealii::IndexSet locally_relevant_dofs;
   dealii::ConstraintMatrix constraint_matrix;

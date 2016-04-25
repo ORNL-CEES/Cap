@@ -32,29 +32,9 @@ void distributed_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
 {
   double const charge_current = 5e-3;
   // This is the values computed using one processor
-  double const exact_voltage = 0.243171;
+  double const exact_voltage = 0.211068;
   double const time_step = 1e-2;
   double const percent_tolerance = 1e-3;
-
-  dealii::GridOut mesh_writer;
-  std::fstream fout;
-  std::string mesh_file = "new_mesh.vtu";
-  fout.open(mesh_file, std::fstream::out);
-  std::string const file_extension =
-      mesh_file.substr(mesh_file.find_last_of(".") + 1);
-  if (file_extension.compare("vtu") == 0)
-  {
-    std::shared_ptr<SuperCapacitor<2>> supercap =
-        std::static_pointer_cast<SuperCapacitor<2>>(dev);
-    mesh_writer.write_vtu(*(supercap->get_geometry()->get_triangulation()),
-                          fout);
-  }
-  else
-  {
-    throw std::runtime_error("Bad output format ." + file_extension +
-                             " in mesh file " + mesh_file);
-  }
-  fout.close();
   double computed_voltage;
   double computed_current;
   for (unsigned int i = 0; i < 3; ++i)
