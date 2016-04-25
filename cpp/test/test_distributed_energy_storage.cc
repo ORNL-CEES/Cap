@@ -23,8 +23,6 @@
 #include <fstream>
 #include <numeric>
 
-#include <cap/supercapacitor.h>
-#include <deal.II/grid/grid_out.h>
 namespace cap
 {
 
