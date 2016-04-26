@@ -36,7 +36,7 @@ public:
 
   /**
    * This contructor uses the dealii::distributed::Triangulation @p
-   * triangulation. If the database is necessary to create the materials map.
+   * triangulation. The database is necessary to create the materials map.
    */
   Geometry(
       std::shared_ptr<boost::property_tree::ptree const> database,
