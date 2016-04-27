@@ -9,13 +9,18 @@ char const energy_storage_device_docstring[] =
   "                                                                         \n"
   "Examples                                                                 \n"
   "--------                                                                 \n"
+  "Here is how to build an energy storage device.                           \n"
   "                                                                         \n"
+  ">>> from pycap import PropertyTree, EnergyStorageDevice                  \n"
   ">>> ptree = PropertyTree()                                               \n"
-  ">>> ptree.parse_info('device.info')                                      \n"
+  ">>> ptree.parse_info('device.info') # <- parse input file                \n"
   ">>> device = EnergyStorageDevice(ptree)                                  \n"
-  ">>> delta_t, U = 1.0, 2.1 # units of seconds and volts                   \n"
-  ">>> device.evolve_one_time_step_constant_voltage(delta_t,U)              \n"
-  ">>> I = device.get_current() # amperes                                   \n"
+  "                                                                         \n"
+  "Here is how to impose operating conditions and measure the response.     \n"
+  "                                                                         \n"
+  ">>> dt, U = 1, 2.1 # <- time step in seconds and voltage in volts        \n"
+  ">>> device.evolve_one_time_step_constant_voltage(dt, U)                  \n"
+  ">>> I = device.get_current() # <- electric current in amperes            \n"
   "                                                                         \n"
   ;
 
@@ -25,7 +30,7 @@ char const get_voltage_docstring[] =
   "Returns                                                                  \n"
   "-------                                                                  \n"
   "float                                                                    \n"
-  "    The voltage across the device in volts.                              \n"
+  "    The voltage in volts.                                                \n"
   ;
 
 char const get_current_docstring[] =
@@ -91,8 +96,8 @@ char const evolve_one_time_step_constant_load_docstring[] =
 
 void export_energy_storage_device()
 {
-  boost::python::class_<EnergyStorageDeviceWrap,
-                        std::shared_ptr<EnergyStorageDeviceWrap>,
+  boost::python::class_<cap::EnergyStorageDevice,
+                        std::shared_ptr<cap::EnergyStorageDevice>,
                         boost::noncopyable> (
     "EnergyStorageDevice",
     energy_storage_device_docstring,
@@ -118,32 +123,32 @@ void export_energy_storage_device()
     .def("inspect", &inspect, inspect_docstring,
          boost::python::args("self") )
     .def("evolve_one_time_step_constant_current",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_current),
+         &cap::EnergyStorageDevice::evolve_one_time_step_constant_current,
          evolve_one_time_step_constant_current_docstring,
          boost::python::args("self", "time_step", "current") )
     .def("evolve_one_time_step_constant_voltage",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_voltage),
+         &cap::EnergyStorageDevice::evolve_one_time_step_constant_voltage,
          evolve_one_time_step_constant_voltage_docstring,
          boost::python::args("self", "time_step", "voltage") )
     .def("evolve_one_time_step_constant_power",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_power),
+         &cap::EnergyStorageDevice::evolve_one_time_step_constant_power,
          evolve_one_time_step_constant_power_docstring,
          boost::python::args("self", "time_step", "power") )
     .def("evolve_one_time_step_constant_load",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_constant_load),
+         &cap::EnergyStorageDevice::evolve_one_time_step_constant_load,
          evolve_one_time_step_constant_load_docstring,
          boost::python::args("self", "time_step", "load") )
     .def("evolve_one_time_step_linear_current",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_current),
+         &cap::EnergyStorageDevice::evolve_one_time_step_linear_current,
          boost::python::args("self", "time_step", "current") )
     .def("evolve_one_time_step_linear_voltage",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_voltage),
+         &cap::EnergyStorageDevice::evolve_one_time_step_linear_voltage,
          boost::python::args("self", "time_step", "voltage") )
     .def("evolve_one_time_step_linear_power",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_power),
+         &cap::EnergyStorageDevice::evolve_one_time_step_linear_power,
          boost::python::args("self", "time_step", "power") )
     .def("evolve_one_time_step_linear_load",
-         boost::python::pure_virtual(&cap::EnergyStorageDevice::evolve_one_time_step_linear_load),
+         &cap::EnergyStorageDevice::evolve_one_time_step_linear_load,
          boost::python::args("self", "time_step", "load") )
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;

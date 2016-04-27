@@ -34,7 +34,7 @@ def build(self, ptree, comm=MPI.COMM_SELF):
     Parameters
     ----------
     ptree : pycap.PropertyTree
-        Property Tree
+        Property tree.
     comm : mpi4py.MPI.Comm
         Communicator (the default value is mpi4py.MPI.COMM_SELF).
     """
