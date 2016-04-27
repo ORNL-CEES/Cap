@@ -11,39 +11,6 @@
 
 namespace pycap {
 
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_current(double const time_step, double const current)
-{
-    this->get_override("evolve_one_time_step_constant_current")(time_step, current);
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_voltage(double const time_step, double const voltage)
-{
-    this->get_override("evolve_one_time_step_constant_voltage")(time_step, voltage);
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_power  (double const time_step, double const power  )
-{
-    this->get_override("evolve_one_time_step_constant_power"  )(time_step, power  );
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_constant_load   (double const time_step, double const load   )
-{
-    this->get_override("evolve_one_time_step_constant_load"   )(time_step, load   );
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_linear_current  (double const time_step, double const current)
-{
-    this->get_override("evolve_one_time_step_new_current"     )(time_step, current);
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_linear_voltage  (double const time_step, double const voltage)
-{
-    this->get_override("evolve_one_time_step_linear_voltage"  )(time_step, voltage);
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_linear_power    (double const time_step, double const power  )
-{
-    this->get_override("evolve_one_time_step_linear_power"    )(time_step, power  );
-}
-void EnergyStorageDeviceWrap::evolve_one_time_step_linear_load     (double const time_step, double const load   )
-{
-    this->get_override("evolve_one_time_step_linear_load"     )(time_step, load   );
-}
-
 double get_current(cap::EnergyStorageDevice const & dev)
 {
     double current;
