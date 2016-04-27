@@ -103,11 +103,6 @@ private:
 
 //////////////////////// MOVE SOMEWHERE ELSE LATER /////////////////////
 
-void extract_duration_and_average_power(
-    std::vector<std::string> const &capacitor_state,
-    std::vector<double> const &time, std::vector<double> const &energy,
-    std::vector<double> &duration, std::vector<double> &average_power);
-
 /**
  * Compute the integral of the power using Dormand-Prince 5. A linear
  * interpolation is used for the power when necessary.

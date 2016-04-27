@@ -124,34 +124,4 @@ void compute_energy(std::vector<double> const &time,
   internal::evaluate_energy(computed_time, computed_energy, time, energy);
 }
 
-void extract_duration_and_average_power(
-    std::vector<std::string> const &capacitor_state,
-    std::vector<double> const &time, std::vector<double> const &energy,
-    std::vector<double> &duration, std::vector<double> &average_power)
-{
-  bool const valid_input = (time.size() == energy.size()) && duration.empty() &&
-                           average_power.empty();
-  if (!valid_input)
-    throw std::runtime_error("invalid input");
-  std::vector<std::string>::const_iterator it = capacitor_state.begin();
-  std::vector<std::string>::const_iterator end_it = capacitor_state.end();
-  std::size_t first = 0;
-  while (it != end_it)
-  {
-    auto same = [&it](std::string const &o)
-    {
-      return it->compare(o) == 0;
-    };
-    std::vector<std::string>::const_iterator next =
-        std::find_if_not(it, end_it, same);
-    std::size_t last = first + std::distance(it, next);
-    duration.push_back(time[last - 1] - time[first]);
-    average_power.push_back((
-        first != last - 1 ? (energy[last - 1] - energy[first]) / duration.back()
-                          : 0.0));
-    it = next;
-    first = last;
-  }
-}
-
 } // end namespace cap
