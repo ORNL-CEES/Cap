@@ -13,6 +13,7 @@
 namespace cap
 {
 
+template std::vector<unsigned int> to_vector(std::string const &s);
 template std::vector<int> to_vector(std::string const &s);
 template std::vector<float> to_vector(std::string const &s);
 template std::vector<double> to_vector(std::string const &s);

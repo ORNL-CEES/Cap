@@ -40,6 +40,8 @@ COPY_CAP_INPUT_FILE(series_rc.info                   )
 COPY_CAP_INPUT_FILE(parallel_rc.info                 )
 COPY_CAP_INPUT_FILE(super_capacitor.info             )
 COPY_CAP_INPUT_FILE(verification_problems.info       )
+COPY_CAP_INPUT_FILE(read_mesh.info                   )
+COPY_CAP_INPUT_FILE(generate_mesh.info               )
 
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd)

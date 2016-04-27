@@ -60,6 +60,7 @@ ENDFUNCTION()
 COPY_CAP_INPUT_FILE(series_rc.info       cpp/test/data)
 COPY_CAP_INPUT_FILE(parallel_rc.info     cpp/test/data)
 COPY_CAP_INPUT_FILE(super_capacitor.info cpp/test/data)
+COPY_CAP_INPUT_FILE(read_mesh.info cpp/test/data)
 FILE(COPY ${CAP_DATA_DIR}/meshes/cap_2d_4.ucd DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(RENAME ${CMAKE_CURRENT_BINARY_DIR}/cap_2d_4.ucd ${CMAKE_CURRENT_BINARY_DIR}/mesh_2d.ucd)
 

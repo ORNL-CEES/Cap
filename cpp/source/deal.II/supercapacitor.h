@@ -78,6 +78,11 @@ public:
                                         double const load) override;
 
   /**
+   * Return the underlying Geometry.
+   */
+  std::shared_ptr<Geometry<dim>> get_geometry() const;
+
+  /**
    * Granting access to the post-processor parameters for the inspector.
    */
   std::shared_ptr<PostprocessorParameters<dim>>
@@ -129,7 +134,7 @@ private:
    */
   double surface_area;
 
-  std::shared_ptr<Geometry<dim>> geometry;
+  std::shared_ptr<Geometry<dim>> _geometry;
   std::shared_ptr<dealii::FESystem<dim>> fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   std::shared_ptr<dealii::Trilinos::MPI::BlockVector> solution;

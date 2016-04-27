@@ -51,10 +51,13 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
   params->put("separator_material_id", 2);
   params->put("cathode_electrode_material_id", 3);
   params->put("cathode_collector_material_id", 5);
+  params->put("type", "file");
   params->put("mesh_file", "mesh_2d.ucd");
   params->put("materials", 1);
   params->put("material_0.name", "all");
   params->put("material_0.material_id", "1,2,3,4,5");
+  params->put("boundary_values.anode_boundary_id", "1");
+  params->put("boundary_values.cathode_boundary_id", "2");
 
   cap::Geometry<2> geo(params, boost::mpi::communicator());
   write_mesh("output_test_geometry_0.vtu", geo.get_triangulation());
@@ -91,4 +94,22 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
                       reference_measure[pos], percent_tolerance);
     ++pos;
   }
+}
+
+BOOST_AUTO_TEST_CASE(test_throw_geometry)
+{
+  std::shared_ptr<boost::property_tree::ptree> params(
+      new boost::property_tree::ptree);
+  params->put("type", "supercapacitor");
+  params->put("anode_collector_thickness", 5.0e-4);
+  params->put("anode_electrode_thickness", 50.0e-4);
+  params->put("separator_thickness", 25.0e-4);
+  params->put("cathode_electrode_thickness", 50.0e-4);
+  params->put("cathode_collector_thickness", 50.0e-4);
+  params->put("geometric_area", 25.0e-2);
+  params->put("tab_height", 5.0e-4);
+
+  // For now, both collectors must have the same dimensions.
+  BOOST_CHECK_THROW(cap::Geometry<2> geo(params, boost::mpi::communicator()),
+                    std::runtime_error);
 }

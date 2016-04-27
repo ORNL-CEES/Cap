@@ -78,8 +78,9 @@ SuperCapacitorPostprocessorParameters<dim>::
 template <int dim>
 SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters,
+    std::shared_ptr<Geometry<dim> const> geometry,
     boost::mpi::communicator mpi_communicator)
-    : Postprocessor<dim>(parameters, mpi_communicator)
+    : Postprocessor<dim>(parameters, mpi_communicator), _geometry(geometry)
 {
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
   this->values["voltage"] = 0.0;
@@ -145,10 +146,16 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
 
+  dealii::types::boundary_id const cathode_boundary_id =
+      _geometry->get_cathode_boundary_id();
+  std::shared_ptr<
+      std::unordered_map<std::string, std::vector<dealii::types::material_id>>>
+      materials = _geometry->get_materials();
+  dealii::types::material_id const anode_electrode_material_id =
+      (*materials)["anode"][0];
+  dealii::types::material_id const cathode_electrode_material_id =
+      (*materials)["cathode"][0];
   // clang-format off
-  dealii::types::material_id const anode_electrode_material_id   = database->get<dealii::types::material_id>("geometry.anode_electrode_material_id");
-  dealii::types::material_id const cathode_electrode_material_id = database->get<dealii::types::material_id>("geometry.cathode_electrode_material_id");
-  dealii::types::boundary_id const cathode_boundary_id           = database->get<dealii::types::boundary_id>("boundary_values.cathode_boundary_id");
   dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component"));
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
   // clang-format on

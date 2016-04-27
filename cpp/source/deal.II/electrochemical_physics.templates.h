@@ -30,10 +30,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   this->liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
   // clang-format on
 
-  anode_boundary_id = database.get<dealii::types::boundary_id>(
-      "boundary_values.anode_boundary_id");
-  cathode_boundary_id = database.get<dealii::types::boundary_id>(
-      "boundary_values.cathode_boundary_id");
+  anode_boundary_id = parameters->geometry->get_anode_boundary_id();
+  cathode_boundary_id = parameters->geometry->get_cathode_boundary_id();
 
   std::shared_ptr<
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
@@ -88,7 +86,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
       this->locally_owned_dofs, this->locally_owned_dofs,
       this->locally_relevant_dofs, this->mpi_communicator);
   dealii::DoFTools::make_sparsity_pattern(
-      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix);
+      *(this->dof_handler), this->sparsity_pattern, this->constraint_matrix,
+      true, dealii::Utilities::MPI::this_mpi_process(this->mpi_communicator));
   this->sparsity_pattern.compress();
 
   // Initialize matrices and vectors

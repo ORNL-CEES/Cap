@@ -20,22 +20,24 @@ MPValues<dim, spacedim>::MPValues(
   std::shared_ptr<Geometry<dim> const> geometry = params.geometry;
   if (geometry)
   { // vraiment bidon mais necessaire pour eviter d'appeler le constructeur en
-    // bloucle
+    // boucle
     for (auto const &m : *(geometry->get_materials()))
     {
       std::string const &material_name = m.first;
-      std::vector<dealii::types::material_id> const &material_ids = m.second;
-      //            std::shared_ptr<boost::property_tree::ptree const>
-      //            material_database =
-      //                std::make_shared<boost::property_tree::ptree>(database->get_child(material_name));
-      std::shared_ptr<MPValues<dim>> material =
-          buildMaterial<dim>(material_name, database);
-      for (dealii::types::material_id id : material_ids)
+      // For now, we skip collector_anode and collector_cathode
+      if ((material_name.compare("collector_anode") != 0) &&
+          (material_name.compare("collector_cathode") != 0))
       {
-        auto ret = (this->materials).emplace(id, material);
-        if (!ret.second)
-          throw std::runtime_error("material id " + std::to_string(id) +
-                                   " assigned to multiple times");
+        std::vector<dealii::types::material_id> const &material_ids = m.second;
+        std::shared_ptr<MPValues<dim>> material =
+            buildMaterial<dim>(material_name, database);
+        for (dealii::types::material_id id : material_ids)
+        {
+          auto ret = (this->materials).emplace(id, material);
+          if (!ret.second)
+            throw std::runtime_error("material id " + std::to_string(id) +
+                                     " assigned multiple times");
+        }
       }
     }
   }

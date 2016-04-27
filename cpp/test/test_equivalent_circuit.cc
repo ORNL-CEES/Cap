@@ -23,6 +23,10 @@ BOOST_AUTO_TEST_CASE(build_equivalent_circuit)
   // read the property tree for building a supercapacitor`
   boost::property_tree::ptree ptree;
   boost::property_tree::info_parser::read_info("super_capacitor.info", ptree);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("read_mesh.info",
+                                               geometry_database);
+  ptree.put_child("geometry", geometry_database);
 
   // this is the new prefered way to make an equivalent circuit
   //
@@ -46,6 +50,11 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
   boost::property_tree::ptree super_capacitor_database;
   boost::property_tree::info_parser::read_info("super_capacitor.info",
                                                super_capacitor_database);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("read_mesh.info",
+                                               geometry_database);
+  super_capacitor_database.put_child("geometry", geometry_database);
+
   if (!with_faradaic_processes)
     super_capacitor_database.put("material_properties.electrode_material"
                                  ".exchange_current_density",

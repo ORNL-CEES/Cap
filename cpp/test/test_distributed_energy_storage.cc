@@ -23,7 +23,6 @@
 #include <fstream>
 #include <numeric>
 
-#include <boost/mpi/environment.hpp>
 namespace cap
 {
 
@@ -31,10 +30,9 @@ void distributed_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
 {
   double const charge_current = 5e-3;
   // This is the values computed using one processor
-  double const exact_voltage = 0.243171;
+  double const exact_voltage = 0.2430746008;
   double const time_step = 1e-2;
-  double const percent_tolerance = 1e-3;
-
+  double const percent_tolerance = 2e-3;
   double computed_voltage;
   double computed_current;
   for (unsigned int i = 0; i < 3; ++i)
@@ -45,14 +43,18 @@ void distributed_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
   BOOST_CHECK_CLOSE(computed_voltage, exact_voltage, percent_tolerance);
   BOOST_CHECK_CLOSE(computed_current, charge_current, percent_tolerance);
 }
-} // end namespace cap
+}
 
 BOOST_AUTO_TEST_CASE(test_distributed_energy_storage)
 {
-  // parse input file
+  // Parse input file
   boost::property_tree::ptree device_database;
   boost::property_tree::info_parser::read_info("super_capacitor.info",
                                                device_database);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("generate_mesh.info",
+                                               geometry_database);
+  device_database.put_child("geometry", geometry_database);
 
   std::shared_ptr<cap::EnergyStorageDevice> device =
       cap::EnergyStorageDevice::build(device_database,
