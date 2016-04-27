@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE ExactTransientSolution
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/energy_storage_device.h>
 #include <cap/mp_values.h>
 #include <deal.II/base/types.h>
@@ -35,8 +37,8 @@ void verification_problem(std::shared_ptr<cap::EnergyStorageDevice> dev)
 
   unsigned int pos = 0;
   double computed_voltage;
-  // check that error less than 1e-5 % AND less than 1 microvolt
-  double const percent_tolerance = 1e-5;
+  // check that error less than 1e-3 % AND less than 1 microvolt
+  double const percent_tolerance = 1e-3;
   double const tolerance = 1e-6;
   std::vector<double> gold_solution(10);
   gold_solution[0] = 1.725914356067658e-01;
@@ -82,8 +84,8 @@ BOOST_AUTO_TEST_CASE(test_exact_transient_solution)
                                                device_database);
 
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(boost::mpi::communicator(),
-                                      device_database);
+      cap::EnergyStorageDevice::build(device_database,
+                                      boost::mpi::communicator());
 
   cap::verification_problem(device);
 }

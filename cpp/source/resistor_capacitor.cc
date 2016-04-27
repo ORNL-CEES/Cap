@@ -26,8 +26,8 @@ void SeriesRC::inspect(EnergyStorageDeviceInspector *inspector)
   inspector->inspect(this);
 }
 
-SeriesRC::SeriesRC(boost::mpi::communicator const &comm,
-                   boost::property_tree::ptree const &ptree)
+SeriesRC::SeriesRC(boost::property_tree::ptree const &ptree,
+                   boost::mpi::communicator const &comm)
     : EnergyStorageDevice(comm)
 {
   R = ptree.get<double>("series_resistance");
@@ -141,8 +141,8 @@ std::size_t SeriesRC::evolve_one_time_step_constant_power(
   return k;
 }
 
-ParallelRC::ParallelRC(boost::mpi::communicator const &comm,
-                       boost::property_tree::ptree const &ptree)
+ParallelRC::ParallelRC(boost::property_tree::ptree const &ptree,
+                       boost::mpi::communicator const &comm)
     : EnergyStorageDevice(comm)
 {
   R_series = ptree.get<double>("series_resistance");

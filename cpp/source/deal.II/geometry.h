@@ -8,8 +8,10 @@
 #ifndef CAP_GEOMETRY_H
 #define CAP_GEOMETRY_H
 
+#include <cap/types.h>
 #include <deal.II/base/types.h>
-#include <deal.II/grid/tria.h>
+#include <deal.II/distributed/tria.h>
+#include <boost/mpi.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <unordered_map>
@@ -17,7 +19,7 @@
 namespace cap
 {
 /**
- * Base class for the geometry. This class allows access to the underlying
+ * This class allows access to the underlying
  * triangulation and the material id map. It also creates the triangulation by
  * reading the mesh from a ucd file.
  */
@@ -25,87 +27,53 @@ template <int dim>
 class Geometry
 {
 public:
-  Geometry(std::shared_ptr<boost::property_tree::ptree const> const &database);
+  /**
+   * This contructor uses a mesh in ucd format. The database is used to get the
+   * name of the mesh file and to create the materials map.
+   */
+  Geometry(std::shared_ptr<boost::property_tree::ptree const> database,
+           boost::mpi::communicator mpi_communicator);
+
+  /**
+   * This contructor uses the dealii::distributed::Triangulation @p
+   * triangulation. The database is necessary to create the materials map.
+   */
+  Geometry(
+      std::shared_ptr<boost::property_tree::ptree const> database,
+      std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation);
 
   virtual ~Geometry() = default;
 
-  inline std::shared_ptr<dealii::Triangulation<dim> const>
+  inline std::shared_ptr<dealii::distributed::Triangulation<dim> const>
   get_triangulation() const
   {
-    return this->triangulation;
+    return triangulation;
   }
 
-  /**
-   * This class modifies an existing triangulation. It does not read a new mesh.
-   */
-  virtual void
-  reset(std::shared_ptr<boost::property_tree::ptree const> const &database) = 0;
+  inline boost::mpi::communicator get_mpi_communicator() const
+  {
+    return mpi_communicator;
+  }
 
   inline std::shared_ptr<std::unordered_map<
       std::string, std::vector<dealii::types::material_id>> const>
   get_materials() const
   {
-    return this->materials;
+    return materials;
   }
 
-protected:
-  std::shared_ptr<dealii::Triangulation<dim>> triangulation;
+private:
+  /**
+   * Helper function for the constructor.
+   */
+  void fill_materials_map(
+      std::shared_ptr<boost::property_tree::ptree const> database);
+
+  boost::mpi::communicator mpi_communicator;
+  std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation;
   std::shared_ptr<std::unordered_map<
       std::string, std::vector<dealii::types::material_id>>> materials;
 };
-
-/**
- * Empty geometry.
- */
-template <int dim>
-class DummyGeometry : public Geometry<dim>
-{
-public:
-  DummyGeometry(
-      std::shared_ptr<boost::property_tree::ptree const> const &database)
-      : Geometry<dim>(database)
-  {
-  }
-
-  void
-  reset(std::shared_ptr<boost::property_tree::ptree const> const &) override
-  {
-  }
-};
-
-/**
- * This class describes the geometry and the material ids of one cell of a
- * supercapacitor. This class assume that the geometry of the anode, the
- * cathode, the seperator, and the collectors can be described by rectangles in
- * 2D and rectangular cuboids in 3D.
- */
-template <int dim>
-class SuperCapacitorGeometry : public Geometry<dim>
-{
-public:
-  SuperCapacitorGeometry(
-      std::shared_ptr<boost::property_tree::ptree const> const &database);
-
-  void reset(std::shared_ptr<boost::property_tree::ptree const> const &database)
-      override;
-
-private:
-  dealii::types::material_id separator_material_id;
-  dealii::types::material_id anode_electrode_material_id;
-  dealii::types::material_id anode_collector_material_id;
-  dealii::types::material_id cathode_electrode_material_id;
-  dealii::types::material_id cathode_collector_material_id;
-
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> anode_tab_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> anode_collector_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> anode_electrode_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> separator_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> cathode_electrode_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> cathode_collector_bbox;
-  std::pair<dealii::Point<dim>, dealii::Point<dim>> cathode_tab_bbox;
-  static int const spacedim = dim;
-};
-
 } // end namespace cap
 
 #endif // CAP_GEOMETRY_H

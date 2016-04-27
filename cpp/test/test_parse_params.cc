@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE MyFirstTest
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/utils.h>
 #ifdef WITH_DEAL_II
 #include <deal.II/base/types.h>

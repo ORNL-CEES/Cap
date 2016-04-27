@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE TestImpedanceSpectroscopy
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/energy_storage_device.h>
 #include <cap/electrochemical_impedance_spectroscopy.h>
 #include <cap/utils.h>

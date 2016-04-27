@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE MaterialPropertyValues
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/geometry.h>
 #include <cap/mp_values.h>
 #include <boost/property_tree/ptree.hpp>
@@ -76,8 +78,9 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   geometry_database->put_child("material_2", material_2_database);
   geometry_database->put_child("material_3", material_3_database);
 
-  std::shared_ptr<cap::SuperCapacitorGeometry<2>> geometry =
-      std::make_shared<cap::SuperCapacitorGeometry<2>>(geometry_database);
+  std::shared_ptr<cap::Geometry<2>> geometry =
+      std::make_shared<cap::Geometry<2>>(geometry_database,
+                                         boost::mpi::communicator());
 
   // Fill in the material properties database
   std::shared_ptr<boost::property_tree::ptree> material_properties_database(

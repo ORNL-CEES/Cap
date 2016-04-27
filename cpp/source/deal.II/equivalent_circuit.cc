@@ -51,14 +51,16 @@ void compute_equivalent_circuit(
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
           input_database.get_child("geometry"));
+  // build dummy cell iterator and set its material id. Because we use a dummy
+  // triangulation, we can use MPI_COMM_WORLD.
+  std::shared_ptr<dealii::distributed::Triangulation<2>> triangulation(
+      new dealii::distributed::Triangulation<2>(MPI_COMM_WORLD));
+  dealii::GridGenerator::hyper_cube(*triangulation);
+  dealii::DoFHandler<2> dof_handler(*triangulation);
   mp_values_params.geometry =
-      std::make_shared<cap::DummyGeometry<2>>(geometry_database);
+      std::make_shared<cap::Geometry<2>>(geometry_database, triangulation);
   std::shared_ptr<cap::MPValues<2>> mp_values =
       std::shared_ptr<cap::MPValues<2>>(new cap::MPValues<2>(mp_values_params));
-  // build dummy cell iterator and set its material id
-  dealii::Triangulation<2> triangulation;
-  dealii::GridGenerator::hyper_cube(triangulation);
-  dealii::DoFHandler<2> dof_handler(triangulation);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
   // electrode
   cell->set_material_id(input_database.get<dealii::types::material_id>(
@@ -166,12 +168,12 @@ public:
     register_energy_storage_device("EquivalentCircuit", this);
   }
   std::unique_ptr<EnergyStorageDevice>
-  build(boost::mpi::communicator const &comm,
-        boost::property_tree::ptree const &ptree)
+  build(boost::property_tree::ptree const &ptree,
+        boost::mpi::communicator const &comm)
   {
     boost::property_tree::ptree other;
     compute_equivalent_circuit(ptree, other);
-    return EnergyStorageDevice::build(comm, other);
+    return EnergyStorageDevice::build(other, comm);
   }
 } global_EquivalentCircuitBuilder;
 

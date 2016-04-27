@@ -100,8 +100,8 @@ public:
    * Factory function that creates an EnergyStorageDevice object.
    */
   static std::unique_ptr<EnergyStorageDevice>
-  build(boost::mpi::communicator const &comm,
-        boost::property_tree::ptree const &ptree);
+  build(boost::property_tree::ptree const &ptree,
+        boost::mpi::communicator const &comm);
 
   /**
    * Visitor design pattern of the EnergyStorageDevice object. This allows to
@@ -109,6 +109,11 @@ public:
    * which it operates.
    */
   virtual void inspect(EnergyStorageDeviceInspector *inspector) = 0;
+
+  /**
+   * Return the underlying Boost MPI communicator.
+   */
+  boost::mpi::communicator get_mpi_communicator() const;
 
 protected:
   boost::mpi::communicator _communicator;
@@ -134,8 +139,8 @@ class EnergyStorageDeviceBuilder
 public:
   virtual ~EnergyStorageDeviceBuilder();
   virtual std::unique_ptr<EnergyStorageDevice>
-  build(boost::mpi::communicator const &comm,
-        boost::property_tree::ptree const &ptree) = 0;
+  build(boost::property_tree::ptree const &ptree,
+        boost::mpi::communicator const &comm) = 0;
 
   /**
    * This function registers the energy device storages so that they can be
@@ -162,10 +167,10 @@ public:
   public:                                                                      \
     T##Builder() { register_energy_storage_device(#T, this); }                 \
     virtual std::unique_ptr<EnergyStorageDevice>                               \
-    build(boost::mpi::communicator const &comm,                                \
-          boost::property_tree::ptree const &ptree) override                   \
+    build(boost::property_tree::ptree const &ptree,                            \
+          boost::mpi::communicator const &comm) override                       \
     {                                                                          \
-      return std::unique_ptr<T>(new T(comm, ptree));                           \
+      return std::unique_ptr<T>(new T(ptree, comm));                           \
     }                                                                          \
   };                                                                           \
   static T##Builder global_##T##Builder;

@@ -6,7 +6,9 @@
  */
 
 #define BOOST_TEST_MODULE TestResistorCapacitor2
-#define BOOST_TEST_MAIN
+
+#include "main.cc"
+
 #include <cap/energy_storage_device.h>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
@@ -38,8 +40,8 @@ BOOST_AUTO_TEST_CASE(test_resistor_capacitor)
       std::make_shared<boost::property_tree::ptree>(
           input_database->get_child("device"));
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(boost::mpi::communicator(),
-                                      *device_database);
+      cap::EnergyStorageDevice::build(*device_database,
+                                      boost::mpi::communicator());
 
   double const series_resistance =
       input_database->get<double>("device.series_resistance");

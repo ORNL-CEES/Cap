@@ -2,12 +2,14 @@
 #define CAP_PHYSICS_H
 
 #include <cap/mp_values.h>
+#include <cap/types.h>
 #include <boost/property_tree/ptree.hpp>
+#include <deal.II/base/index_set.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/lac/linear_operator.h>
-#include <deal.II/lac/sparse_matrix.h>
-#include <deal.II/lac/sparsity_pattern.h>
-#include <deal.II/lac/vector.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_sparsity_pattern.h>
+#include <deal.II/lac/trilinos_vector.h>
 
 namespace cap
 {
@@ -36,25 +38,22 @@ template <int dim>
 class Physics
 {
 public:
-  Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters);
+  Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters,
+          boost::mpi::communicator mpi_communicator);
 
   virtual ~Physics() = default;
 
-  inline dealii::SparseMatrix<double> const &get_system_matrix() const
+  inline boost::mpi::communicator get_mpi_communicator() const
+  {
+    return mpi_communicator;
+  }
+
+  inline dealii::Trilinos::SparseMatrix const &get_system_matrix() const
   {
     return system_matrix;
   }
 
-  /**
-   * Return the dealii::LinearOperator associated to system_matrix.
-   */
-  inline dealii::LinearOperator<dealii::Vector<double>, dealii::Vector<double>>
-  get_linear_operator() const
-  {
-    return linear_operator(system_matrix);
-  }
-
-  inline dealii::SparseMatrix<double> const &get_mass_matrix() const
+  inline dealii::Trilinos::SparseMatrix const &get_mass_matrix() const
   {
     return mass_matrix;
   }
@@ -67,18 +66,21 @@ public:
   /**
    * Return the right-hand side of system of equations.
    */
-  inline dealii::Vector<double> const &get_system_rhs() const
+  inline dealii::Trilinos::MPI::Vector const &get_system_rhs() const
   {
     return this->system_rhs;
   }
 
 protected:
+  boost::mpi::communicator mpi_communicator;
   std::shared_ptr<dealii::DoFHandler<dim> const> dof_handler;
+  dealii::IndexSet locally_owned_dofs;
+  dealii::IndexSet locally_relevant_dofs;
   dealii::ConstraintMatrix constraint_matrix;
-  dealii::SparsityPattern sparsity_pattern;
-  dealii::SparseMatrix<double> system_matrix;
-  dealii::SparseMatrix<double> mass_matrix;
-  dealii::Vector<double> system_rhs;
+  dealii::Trilinos::SparsityPattern sparsity_pattern;
+  dealii::Trilinos::SparseMatrix system_matrix;
+  dealii::Trilinos::SparseMatrix mass_matrix;
+  dealii::Trilinos::MPI::Vector system_rhs;
   std::shared_ptr<MPValues<dim> const> mp_values;
 };
 }

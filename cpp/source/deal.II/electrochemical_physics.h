@@ -49,7 +49,8 @@ class ElectrochemicalPhysics : public Physics<dim>
 {
 public:
   ElectrochemicalPhysics(
-      std::shared_ptr<PhysicsParameters<dim> const> parameters);
+      std::shared_ptr<PhysicsParameters<dim> const> parameters,
+      boost::mpi::communicator mpi_communicator);
 
 private:
   void assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters,
