@@ -51,6 +51,7 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
   params->put("separator_material_id", 2);
   params->put("cathode_electrode_material_id", 3);
   params->put("cathode_collector_material_id", 5);
+  params->put("type", "file");
   params->put("mesh_file", "mesh_2d.ucd");
   params->put("materials", 1);
   params->put("material_0.name", "all");

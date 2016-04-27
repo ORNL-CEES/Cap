@@ -77,7 +77,7 @@ dealii::Point<dim> transform_coll_c(dealii::Point<dim> const &in,
 }
 
 template <int dim>
-void read_component_database(boost::property_tree::ptree database,
+void read_component_database(boost::property_tree::ptree const &database,
                              Component<dim> &component)
 {
   std::vector<unsigned int> repetitions =
@@ -158,23 +158,71 @@ void Geometry<dim>::fill_materials_map()
 }
 
 template <int dim>
-Geometry<dim>::Geometry(
-    std::shared_ptr<boost::property_tree::ptree const> database,
-    boost::mpi::communicator mpi_communicator)
+void Geometry<dim>::convert_geometry_database(
+    std::shared_ptr<boost::property_tree::ptree> database)
+{
+  double const cm_to_m = 0.01;
+  double const cm2_to_m2 = 0.0001;
+  // TODO for now assume that the two collectors have the same dimensions.
+  double collector_thickness =
+      database->get<double>("anode_collector_thickness") * cm_to_m;
+  double anode_thickness =
+      database->get<double>("anode_electrode_thickness") * cm_to_m;
+  double separator_thickness =
+      database->get<double>("separator_thickness") * cm_to_m;
+  double cathode_thickness =
+      database->get<double>("cathode_electrode_thickness") * cm_to_m;
+  double tab_height = database->get<double>("tab_height") * cm_to_m;
+  double geometric_area = database->get<double>("geometric_area") * cm2_to_m2;
+
+  if (dim == 2)
+  {
+    std::string const area_str = std::to_string(geometric_area);
+    std::string collector_dim(std::to_string(collector_thickness) + "," +
+                              std::to_string(geometric_area + tab_height));
+    std::string anode_dim(std::to_string(anode_thickness) + "," + area_str);
+    std::string separator_dim(std::to_string(separator_thickness) + "," +
+                              area_str);
+    std::string cathode_dim(std::to_string(cathode_thickness) + "," + area_str);
+    database->put("collector.dimensions", collector_dim);
+    database->put("anode.dimensions", anode_dim);
+    database->put("separator.dimensions", separator_dim);
+    database->put("cathode.dimensions", cathode_dim);
+  }
+  else
+  {
+    std::string const area_str = std::to_string(geometric_area);
+    std::string collector_dim(std::to_string(collector_thickness) + ",1," +
+                              std::to_string(geometric_area + tab_height));
+    std::string anode_dim(std::to_string(anode_thickness) + "," + area_str);
+    std::string separator_dim(std::to_string(separator_thickness) + ",1," +
+                              area_str);
+    std::string cathode_dim(std::to_string(cathode_thickness) + ",1," +
+                            area_str);
+    database->put("collector.dimensions", collector_dim);
+    database->put("anode.dimensions", anode_dim);
+    database->put("separator.dimensions", separator_dim);
+    database->put("cathode.dimensions", cathode_dim);
+  }
+}
+
+template <int dim>
+Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
+                        boost::mpi::communicator mpi_communicator)
     : _communicator(mpi_communicator)
 {
   _triangulation = std::make_shared<dealii::distributed::Triangulation<dim>>(
       mpi_communicator);
-  // If mesh_file does not exist, we need generate the mesh.
-  if (boost::optional<std::string> mesh_file =
-          database->get_optional<std::string>("mesh_file"))
+  std::string mesh_type = database->get<std::string>("type");
+  if (mesh_type.compare("file") == 0)
   {
+    std::string mesh_file = database->get<std::string>("mesh_file");
     dealii::GridIn<dim> mesh_reader;
     mesh_reader.attach_triangulation(*_triangulation);
     std::fstream fin;
-    fin.open(mesh_file->c_str(), std::fstream::in);
+    fin.open(mesh_file.c_str(), std::fstream::in);
     std::string const file_extension =
-        mesh_file->substr(mesh_file->find_last_of(".") + 1);
+        mesh_file.substr(mesh_file.find_last_of(".") + 1);
     fill_materials_map(database);
     boost::property_tree::ptree boundary_database =
         database->get_child("boundary_values");
@@ -193,13 +241,44 @@ Geometry<dim>::Geometry(
     else
     {
       throw std::runtime_error("Bad mesh file extension ." + file_extension +
-                               " in mesh file " + *mesh_file);
+                               " in mesh file " + mesh_file);
     }
     fin.close();
   }
   else
   {
     fill_materials_map();
+    convert_geometry_database(database);
+
+    // If the mesh type is supercapacitor, we provide a default mesh
+    if (mesh_type.compare("supercapacitor") == 0)
+    {
+      if (dim == 2)
+      {
+        std::string collector_div("3,3");
+        std::string anode_div("5,2");
+        std::string separator_div("4,2");
+        std::string cathode_div("5,2");
+        database->put("collector.divisions", collector_div);
+        database->put("anode.divisions", anode_div);
+        database->put("separator.divisions", separator_div);
+        database->put("cathode.divisions", cathode_div);
+      }
+      else
+      {
+        std::string collector_div("3,3,3");
+        std::string anode_div("5,5,2");
+        std::string separator_div("4,4,2");
+        std::string cathode_div("5,5,2");
+        database->put("collector.divisions", collector_div);
+        database->put("anode.divisions", anode_div);
+        database->put("separator.divisions", separator_div);
+        database->put("cathode.divisions", cathode_div);
+      }
+
+      database->put("n_repetitions", 0);
+      database->put("n_refinements", 2);
+    }
     mesh_generator(*database);
   }
 }

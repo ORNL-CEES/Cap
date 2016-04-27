@@ -1,3 +1,5 @@
+type mesh_generator
+
 anode_collector_thickness    5.0e-4 ; [centimeter]
 anode_electrode_thickness   50.0e-4 ; [centimeter]
 separator_thickness         25.0e-4 ; [centimeter]
@@ -8,22 +10,18 @@ tab_height                   5.0e-4 ; [centimeter]
 
 collector {
   divisions 3,3
-  dimensions 5.0e-6,30.0e-6
 }
 
 anode {
   divisions 5,2
-  dimensions 50.0e-6,25.0e-6
 }
 
 separator {
   divisions 4,2
-  dimensions 25.0e-6,25e-6
 }
 
 cathode {
   divisions 5,2
-  dimensions 50.0e-6,25.0e-6
 }
 
 n_repetitions 0

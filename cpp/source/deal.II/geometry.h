@@ -31,7 +31,7 @@ public:
    * This contructor uses a mesh in ucd format. The database is used to get the
    * name of the mesh file and to create the materials map.
    */
-  Geometry(std::shared_ptr<boost::property_tree::ptree const> database,
+  Geometry(std::shared_ptr<boost::property_tree::ptree> database,
            boost::mpi::communicator mpi_communicator);
 
   /**
@@ -84,6 +84,12 @@ private:
    * database.
    */
   void fill_materials_map();
+
+  /**
+   * Convert the geometry database to one that can be used to generate a mesh.
+   */
+  void convert_geometry_database(
+      std::shared_ptr<boost::property_tree::ptree> database);
 
   /**
    * Create a mesh from a property tree.

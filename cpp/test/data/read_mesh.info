@@ -1,3 +1,5 @@
+type file
+
 mesh_file mesh_2d.ucd
 
 anode_collector_material_id   4

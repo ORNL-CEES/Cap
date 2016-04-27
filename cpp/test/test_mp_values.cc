@@ -59,6 +59,7 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   material_3_database.put("name", "collector");
   material_3_database.put("material_id", 4);
 
+  geometry_database->put("type", "file");
   geometry_database->put("mesh_file", "mesh_2d.ucd");
   geometry_database->put("anode_collector_thickness", 5.0e-4);
   geometry_database->put("anode_electrode_thickness", 50.0e-4);
