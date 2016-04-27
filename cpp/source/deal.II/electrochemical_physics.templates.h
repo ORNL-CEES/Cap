@@ -149,10 +149,10 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       fe_values.reinit(cell);
 
       // clang-format off
-      (this->mp_values)->get_values("specific_capacitance", cell, specific_capacitance_values);
-      (this->mp_values)->get_values("solid_electrical_conductivity", cell, solid_phase_diffusion_coefficient_values);
+      (this->mp_values)->get_values("specific_capacitance",           cell, specific_capacitance_values);
+      (this->mp_values)->get_values("solid_electrical_conductivity",  cell, solid_phase_diffusion_coefficient_values);
       (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
-      (this->mp_values)->get_values("faradaic_reaction_coefficient", cell, faradaic_reaction_coefficient_values);
+      (this->mp_values)->get_values("faradaic_reaction_coefficient",  cell, faradaic_reaction_coefficient_values);
       // clang-format on
 
       // The coefficients are zeros when the physics does not make sense.
