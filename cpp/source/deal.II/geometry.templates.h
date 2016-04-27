@@ -175,6 +175,10 @@ void Geometry<dim>::convert_geometry_database(
   double tab_height = database->get<double>("tab_height") * cm_to_m;
   double geometric_area = database->get<double>("geometric_area") * cm2_to_m2;
 
+  if (collector_thickness !=
+      database->get<double>("cathode_collector_thickness") * cm_to_m)
+    throw std::runtime_error("Both collectors must have the same thickness.");
+
   if (dim == 2)
   {
     std::string const area_str = std::to_string(geometric_area);
