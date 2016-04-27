@@ -95,3 +95,21 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
     ++pos;
   }
 }
+
+BOOST_AUTO_TEST_CASE(test_throw_geometry)
+{
+  std::shared_ptr<boost::property_tree::ptree> params(
+      new boost::property_tree::ptree);
+  params->put("type", "supercapacitor");
+  params->put("anode_collector_thickness", 5.0e-4);
+  params->put("anode_electrode_thickness", 50.0e-4);
+  params->put("separator_thickness", 25.0e-4);
+  params->put("cathode_electrode_thickness", 50.0e-4);
+  params->put("cathode_collector_thickness", 50.0e-4);
+  params->put("geometric_area", 25.0e-2);
+  params->put("tab_height", 5.0e-4);
+
+  // For now, both collectors must have the same dimensions.
+  BOOST_CHECK_THROW(cap::Geometry<2> geo(params, boost::mpi::communicator()),
+                    std::runtime_error);
+}
