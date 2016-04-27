@@ -99,22 +99,6 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
   dealii::DoFTools::count_dofs_per_component(*dof_handler, dofs_per_component);
 
-  // clang-format off
-  unsigned int const temperature_component      = database.get<unsigned int>("temperature_component");
-  unsigned int const solid_potential_component  = database.get<unsigned int>("solid_potential_component");
-  unsigned int const liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
-  unsigned int const thermal_block              = database.get<unsigned int>("thermal_block");
-  unsigned int const electrochemical_block      = database.get<unsigned int>("electrochemical_block");
-  unsigned int const n_blocks                   = database.get<unsigned int>("n_blocks");
-  // clang-format on
-  // For now, we have just one block so we can ignore some variable.
-  std::ignore = temperature_component;
-  std::ignore = solid_potential_component;
-  std::ignore = liquid_potential_component;
-  std::ignore = thermal_block;
-  std::ignore = electrochemical_block;
-  std::ignore = n_blocks;
-
   // read material properties
   std::shared_ptr<boost::property_tree::ptree> material_properties_database =
       std::make_shared<boost::property_tree::ptree>(
