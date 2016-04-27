@@ -82,6 +82,10 @@ BOOST_AUTO_TEST_CASE(test_exact_transient_solution)
   boost::property_tree::ptree device_database;
   boost::property_tree::info_parser::read_info("super_capacitor.info",
                                                device_database);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("read_mesh.info",
+                                               geometry_database);
+  device_database.put_child("geometry", geometry_database);
 
   std::shared_ptr<cap::EnergyStorageDevice> device =
       cap::EnergyStorageDevice::build(device_database,

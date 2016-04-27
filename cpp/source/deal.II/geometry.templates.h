@@ -255,10 +255,10 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
     {
       if (dim == 2)
       {
-        std::string collector_div("3,3");
-        std::string anode_div("5,2");
-        std::string separator_div("4,2");
-        std::string cathode_div("5,2");
+        std::string collector_div("1,6");
+        std::string anode_div("10,5");
+        std::string separator_div("5,5");
+        std::string cathode_div("10,5");
         database->put("collector.divisions", collector_div);
         database->put("anode.divisions", anode_div);
         database->put("separator.divisions", separator_div);
@@ -277,7 +277,7 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
       }
 
       database->put("n_repetitions", 0);
-      database->put("n_refinements", 2);
+      database->put("n_refinements", 1);
     }
     mesh_generator(*database);
   }

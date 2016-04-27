@@ -2,7 +2,15 @@ type SuperCapacitor
 dim  2
 
 geometry {
-    #include "read_mesh.info"
+    type supercapacitor
+    
+    anode_collector_thickness    5.0e-4 ; [centimeter]
+    anode_electrode_thickness   50.0e-4 ; [centimeter]
+    separator_thickness         25.0e-4 ; [centimeter]
+    cathode_electrode_thickness 50.0e-4 ; [centimeter]
+    cathode_collector_thickness  5.0e-4 ; [centimeter]
+    geometric_area              25.0e-2 ; [square centimeter]
+    tab_height                   5.0e-4 ; [centimeter]
 }
 
 solid_potential_component  0
