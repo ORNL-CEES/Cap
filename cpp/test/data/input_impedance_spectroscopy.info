@@ -20,5 +20,5 @@ impedance_spectroscopy {
   amplitudes             50.0e-3        ;
   phases                 0.0            ; [degree]
 
-  percent tolerance      1.0e-0         ;
+  percent_tolerance      1.0e-0         ;
 }
