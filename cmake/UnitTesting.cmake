@@ -14,7 +14,7 @@ function(Cap_ADD_BOOST_TEST TEST_NAME)
         set(NUMBER_OF_PROCESSES_TO_EXECUTE ${ARGN})
     else()
         set(NUMBER_OF_PROCESSES_TO_EXECUTE 1)
-    endiF()
+    endif()
     foreach(NPROC ${NUMBER_OF_PROCESSES_TO_EXECUTE})
         add_test(
             NAME ${TEST_NAME}_cpp_${NPROC}

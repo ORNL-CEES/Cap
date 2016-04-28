@@ -1,4 +1,5 @@
 INCLUDE(${CMAKE_SOURCE_DIR}/cmake/UnitTesting.cmake)
+
 set(PYTHON_TESTS
     test_property_tree_wrappers
     test_energy_storage_device_wrappers
@@ -11,7 +12,6 @@ set(PYTHON_TESTS
     test_impedance_spectroscopy
     test_observer_pattern
 )
-
 
 foreach(TEST_NAME ${PYTHON_TESTS})
     Cap_ADD_PYTHON_TEST(${TEST_NAME})

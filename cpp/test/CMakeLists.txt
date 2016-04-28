@@ -1,9 +1,12 @@
-INCLUDE(${CMAKE_SOURCE_DIR}/cmake/UnitTesting.cmake)
-ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/cpp/source/dummy)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/cpp/source/deal.II/dummy)
-SET(CPP_TESTS "")
-LIST(APPEND
+include(${CMAKE_SOURCE_DIR}/cmake/UnitTesting.cmake)
+
+add_definitions(-DBOOST_TEST_DYN_LINK)
+
+include_directories(${CMAKE_SOURCE_DIR}/cpp/source/dummy)
+include_directories(${CMAKE_SOURCE_DIR}/cpp/source/deal.II/dummy)
+
+set(CPP_TESTS "")
+list(APPEND
     CPP_TESTS
     test_parse_params
     test_energy_storage_device
@@ -11,8 +14,8 @@ LIST(APPEND
     test_resistor_capacitor_circuit-2
     test_ragone_chart
     )
-IF(ENABLE_DEAL_II)
-    LIST(APPEND
+if(ENABLE_DEAL_II)
+    list(APPEND
         CPP_TESTS
         test_geometry
         test_postprocessor
@@ -21,18 +24,21 @@ IF(ENABLE_DEAL_II)
         test_exact_transient_solution
         test_supercapacitor
         )
-ENDIF()
-FOREACH(TEST_NAME ${CPP_TESTS})
+endif()
+foreach(TEST_NAME ${CPP_TESTS})
     Cap_ADD_BOOST_TEST(${TEST_NAME})
-ENDFOREACH()
+endforeach()
+
 # Add tests that are run in parallel
-IF(ENABLE_DEAL_II)
+if(ENABLE_DEAL_II)
   Cap_ADD_BOOST_TEST(test_distributed_energy_storage 1 2 4)
-ENDIF()
-IF(ENABLE_GSL)
+endif()
+
+if(ENABLE_GSL)
     Cap_ADD_BOOST_TEST(test_impedance_spectroscopy      )
     Cap_ADD_BOOST_TEST(test_discrete_fourier_transform  )
-ENDIF()
+endif()
+
 Cap_COPY_INPUT_FILE(input_ragone_chart.info           cpp/test/data)
 Cap_COPY_INPUT_FILE(input_impedance_spectroscopy.info cpp/test/data)
 Cap_COPY_INPUT_FILE(input_resistor_capacitor.info     cpp/test/data)
