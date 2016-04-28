@@ -14,10 +14,10 @@ function(Cap_ADD_BOOST_TEST TEST_NAME)
     else()
         set(NUMBER_OF_PROCESSES_TO_EXECUTE 1)
     endiF()
-    foreach(PROCS ${NUMBER_OF_PROCESSES_TO_EXECUTE})
+    foreach(NPROC ${NUMBER_OF_PROCESSES_TO_EXECUTE})
         add_test(
-            NAME ${TEST_NAME}_cpp_${PROCS}_procs
-            COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${PROCS} ./${TEST_NAME}.exe
+            NAME ${TEST_NAME}_cpp_${NPROC}
+            COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ./${TEST_NAME}.exe
         )
     endforeach()
 endfunction()
