@@ -129,9 +129,6 @@ Get the source:
 .. code::
 
     $ git clone https://github.com/ORNL-CEES/cap.git ${PREFIX}/source/cap
-    $ git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
-
-`cap-data` contains a series of 2-D and 3-D meshes to model batteries or supercapacitors.
 
 Create a `configure_cap` script in `${PREFIX}/build`:
 
@@ -145,7 +142,6 @@ Create a `configure_cap` script in `${PREFIX}/build`:
         -D BOOST_DIR=${PREFIX}/install/boost \
         -D ENABLE_DEAL_II=ON \
         -D DEAL_II_DIR=${PREFIX}/install/dealii \
-        -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
         $EXTRA_ARGS \ 
         ${PREFIX}/source/cap
 
