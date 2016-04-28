@@ -3,7 +3,6 @@ FROM dalg24/cap-stack
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
     git clone https://github.com/ORNL-CEES/Cap.git cap && \
-    git clone https://github.com/dalg24/cap-data.git && \
     mkdir -p ${PREFIX}/build/cap && \
     cd ${PREFIX}/build/cap && \
     cmake \
@@ -17,7 +16,6 @@ RUN cd ${PREFIX}/source && \
         -D BOOST_DIR=${BOOST_DIR} \
         -D ENABLE_DEAL_II=ON \
         -D DEAL_II_DIR=${DEAL_II_DIR} \
-        -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
         ${PREFIX}/source/cap && \
    make -j2 install && \
    rm -rf ${PREFIX}/build/cap && \

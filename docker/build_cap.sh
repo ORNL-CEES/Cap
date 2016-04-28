@@ -2,8 +2,6 @@
 
 # number of processes with default value
 : ${NPROC:=2}
-# fetch the repo with the meshes
-git clone https://github.com/dalg24/cap-data.git ${PREFIX}/source/cap-data
 # append the option flag --allow-run-as-root to mpiexec
 mv ${MPI_DIR}/bin/mpiexec ${MPI_DIR}/bin/mpiexec.alias
 echo '#!/usr/bin/env bash' > ${MPI_DIR}/bin/mpiexc
@@ -24,7 +22,6 @@ cmake \
     -D BOOST_DIR=${BOOST_DIR} \
     -D ENABLE_DEAL_II=ON \
     -D DEAL_II_DIR=${DEAL_II_DIR} \
-    -D CAP_DATA_DIR=${PREFIX}/source/cap-data \
     -D ENABLE_COVERAGE=ON \
     -D ENABLE_FORMAT=ON \
     ${PREFIX}/source/cap

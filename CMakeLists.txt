@@ -26,9 +26,3 @@ endif()
 if(ENABLE_DOCUMENTATION)
     add_subdirectory(docs)
 endif()
-
-#### OUTDATED ####################################
-IF(MAKE_DOC)
-    ADD_SUBDIRECTORY(doc-old)
-ENDIF()
-##################################################
