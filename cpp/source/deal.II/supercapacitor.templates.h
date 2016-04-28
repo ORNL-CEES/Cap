@@ -141,10 +141,24 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   // Reduce the value computed on each processor.
   surface_area = dealii::Utilities::MPI::sum(surface_area, this->_communicator);
 
-  // Create the post-processor
+  // Create the post-processor parameters
   post_processor_params =
       std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
           std::make_shared<boost::property_tree::ptree>(database), dof_handler);
+
+  // Initialize the size solution
+  // Temporary keep using a BlockVector because of PostProcessor.
+  std::vector<dealii::IndexSet> index_set(
+      1, this->dof_handler->locally_owned_dofs());
+  solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
+
+  // Initialize the postprocessor
+  post_processor_params->solution = solution;
+  post_processor_params->mp_values = electrochemical_physics_params->mp_values;
+  post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
+      post_processor_params, _geometry, this->_communicator);
+
+  post_processor->reset(post_processor_params);
 }
 
 template <int dim>
@@ -285,21 +299,6 @@ void SuperCapacitor<dim>::evolve_one_time_step(
     electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
     electrochemical_physics.reset(new ElectrochemicalPhysics<dim>(
         electrochemical_physics_params, this->_communicator));
-
-    // Initialize the size solution
-    // Temporary keep using a BlockVector because of PostProcessor.
-    std::vector<dealii::IndexSet> index_set(
-        1, electrochemical_physics->get_system_rhs().locally_owned_elements());
-    solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
-
-    // Initialize postprocessor
-    post_processor_params->solution = solution;
-    post_processor_params->mp_values =
-        electrochemical_physics_params->mp_values;
-    post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-        post_processor_params, _geometry, this->_communicator);
-
-    post_processor->reset(post_processor_params);
   }
   // Rebuild the system if necessary
   else if ((rebuild == true) ||

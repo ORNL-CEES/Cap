@@ -14,18 +14,8 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
   {
     // get some values from the post processor
     auto post_processor = super_capacitor->get_post_processor();
-    if (post_processor == nullptr)
-    {
-      std::shared_ptr<PostprocessorParameters<dim>> params =
-          super_capacitor->get_post_processor_parameters();
-      if (params->solution == nullptr)
-        params->solution.reset(new dealii::Trilinos::MPI::BlockVector());
-      if (params->mp_values == nullptr)
-        params->mp_values.reset(new MPValues<dim>());
-      post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-          params, super_capacitor->get_geometry(),
-          super_capacitor->get_mpi_communicator());
-    }
+    BOOST_ASSERT_MSG(post_processor != nullptr,
+                     "The Postprocessor does not exist.");
     double value;
     for (std::string const &key : {
              "anode_electrode_interfacial_surface_area",

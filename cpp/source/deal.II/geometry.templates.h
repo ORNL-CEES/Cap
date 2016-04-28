@@ -29,7 +29,7 @@ public:
   Component(std::vector<dealii::Point<dim>> const &box,
             std::vector<unsigned int> const &repetitions,
             MPI_Comm mpi_communicator)
-      : box_dimensions(box), repetitions(repetitions),
+      : offset(0.), box_dimensions(box), repetitions(repetitions),
         triangulation(mpi_communicator)
   {
   }
