@@ -11,6 +11,7 @@
 
 #include <cap/energy_storage_device.h>
 #include <cap/resistor_capacitor.h>
+#include <cap/supercapacitor.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
@@ -62,6 +63,8 @@ public:
       _type = "SeriesRC";
     else if (dynamic_cast<cap::ParallelRC *>(device) != nullptr)
       _type = "ParallelRC";
+    else if (dynamic_cast<cap::SuperCapacitor<2> *>(device) != nullptr)
+      _type = "SuperCapacitor";
     // if we make ExampleInspector friend of the derived
     // class for the EnergyStorageDevice we could virtually
     // do anything
@@ -73,13 +76,15 @@ public:
 
 BOOST_AUTO_TEST_CASE(test_energy_storage_device_inspectors)
 {
-  std::vector<std::string> valid_device_input(2);
+  std::vector<std::string> valid_device_input(3);
   valid_device_input[0] = "series_rc.info";
   valid_device_input[1] = "parallel_rc.info";
-  std::vector<std::string> RC_type(2);
+  valid_device_input[2] = "super_capacitor.info";
+  std::vector<std::string> RC_type(3);
   RC_type[0] = "SeriesRC";
   RC_type[1] = "ParallelRC";
-  for (unsigned int i = 0; i < 2; ++i)
+  RC_type[2] = "SuperCapacitor";
+  for (unsigned int i = 0; i < 3; ++i)
   {
     boost::mpi::communicator world;
     boost::property_tree::ptree ptree;
