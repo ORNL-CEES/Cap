@@ -1,11 +1,3 @@
-#### cap-data ################################################################
-if(NOT DEFINED CAP_DATA_DIR)
-    message(FATAL_ERROR "\n"
-        "You must pass a flag -DCAP_DATA_DIR=/path/to/dir/with/meshes\n"
-        "to cmake.\n"
-        )
-endif()
-
 #### Message Passing Interface (MPI) #########################################
 find_package(MPI REQUIRED)
 
