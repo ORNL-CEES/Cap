@@ -1,4 +1,4 @@
-SET(PYTHON_TESTS
+set(PYTHON_TESTS
     test_property_tree_wrappers
     test_energy_storage_device_wrappers
     test_end_criterion
@@ -11,36 +11,43 @@ SET(PYTHON_TESTS
     test_observer_pattern
 )
 
-FUNCTION(ADD_CAP_PYTHON_TEST TEST_NAME)
-    ADD_CUSTOM_COMMAND(
+function(Cap_ADD_PYTHON_TEST TEST_NAME)
+    add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.py
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.py
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.py ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.py
         COMMENT "Copying ${TEST_NAME}.py"
     )
-    ADD_CUSTOM_TARGET(
+    add_custom_target(
         ${TEST_NAME}.py ALL
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.py
     )
-    if(ENABLE_COVERAGE)
-        add_test(
-            NAME ${TEST_NAME}_py
-            COMMAND ${COVERAGE_EXECUTABLE} run --append ${TEST_NAME}.py
-        )
+    if(ARGN)
+        set(NUMBER_OF_PROCESSES_TO_EXECUTE ${ARGN})
     else()
-        ADD_TEST(
-            NAME ${TEST_NAME}_py
-            COMMAND ${PYTHON_EXECUTABLE} ${TEST_NAME}.py
-        )
-    endif()
-ENDFUNCTION()
+        set(NUMBER_OF_PROCESSES_TO_EXECUTE 1)
+    endiF()
+    foreach(NPROC ${NUMBER_OF_PROCESSES_TO_EXECUTE})
+        if(ENABLE_COVERAGE)
+            add_test(
+                NAME ${TEST_NAME}_py_${NPROC}
+                COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ${COVERAGE_EXECUTABLE} run --append ${TEST_NAME}.py
+            )
+        else()
+            ADD_TEST(
+                NAME ${TEST_NAME}_py_${NPROC}
+                COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ${PYTHON_EXECUTABLE} ${TEST_NAME}.py
+            )
+        endif()
+        set_tests_properties(${TEST_NAME}_py_${NPROC} PROPERTIES
+            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH}")
+    endforeach()
+endfunction()
 
-FOREACH(TEST_NAME ${PYTHON_TESTS})
-    ADD_CAP_PYTHON_TEST(${TEST_NAME})
-    SET_TESTS_PROPERTIES(${TEST_NAME}_py PROPERTIES
-        ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH}")
-ENDFOREACH()
+foreach(TEST_NAME ${PYTHON_TESTS})
+    Cap_ADD_PYTHON_TEST(${TEST_NAME})
+endforeach()
 
 
 FUNCTION(COPY_CAP_INPUT_FILE INPUT_FILE PATH_TO_FILE)
