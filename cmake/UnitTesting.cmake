@@ -20,6 +20,9 @@ function(Cap_ADD_BOOST_TEST TEST_NAME)
             NAME ${TEST_NAME}_cpp_${NPROC}
             COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ./${TEST_NAME}.exe
         )
+        set_tests_properties(${TEST_NAME}_cpp_${NPROC} PROPERTIES
+            PROCESSORS ${NPROC}
+        )
     endforeach()
 endfunction()
 
@@ -54,7 +57,9 @@ function(Cap_ADD_PYTHON_TEST TEST_NAME)
             )
         endif()
         set_tests_properties(${TEST_NAME}_py_${NPROC} PROPERTIES
-            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH}")
+            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH}"
+            PROCESSORS ${NPROC}
+        )
     endforeach()
 endfunction()
 
