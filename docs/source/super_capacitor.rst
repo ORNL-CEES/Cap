@@ -66,20 +66,25 @@ Governing equations
     :math:`-\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_c
     = -\sigma \left.\frac{\partial \Phi_1}{\partial n}\right|_e`
 
-
 .. |alias2| replace::
     :math:`-\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_e
     = -\kappa \left.\frac{\partial \Phi_2}{\partial n}\right|_s`
 
-+------------------------------------------------------------------------+------------------------------------------------------------------------+
-| collector-electrode interface                                          |  electrode-separator interface                                         |
-+========================================================================+========================================================================+
-|                                                                        |                                                                        |
-|:math:`0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e` ||alias2|                                                                |
-|                                                                        |                                                                        |
-||alias1|                                                                |:math:`-\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e = 0` |
-|                                                                        |                                                                        |
-+------------------------------------------------------------------------+------------------------------------------------------------------------+
+.. |alias3| replace::
+    :math:`0 = -\kappa \left. \frac{\partial \Phi_2}{\partial n} \right|_e`
+
+.. |alias4| replace::
+    :math:`-\sigma \left. \frac{\partial \Phi_1}{\partial n} \right|_e = 0`
+
++-------------------------------+--------------------------------+
+| collector-electrode interface |  electrode-separator interface |
++===============================+================================+
+|                               |                                |
+| |alias3|                      | |alias2|                       |
+|                               |                                |
+| |alias1|                      | |alias4|                       |
+|                               |                                |
++-------------------------------+--------------------------------+
 
 +----------------------------------------------------------------+
 | boundary collector tab                                         |
@@ -179,5 +184,3 @@ The solid phase conductivity is also corrected for porosity (and tortuosity???)
 .. math::
 
     \sigma = \sigma_\infty (1-\varepsilon)
-
-
