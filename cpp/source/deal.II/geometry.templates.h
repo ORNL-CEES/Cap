@@ -24,7 +24,10 @@ template <int dim>
 struct Component
 {
 public:
-  Component(MPI_Comm mpi_communicator) : triangulation(mpi_communicator) {}
+  Component(MPI_Comm mpi_communicator)
+      : offset(0.), triangulation(mpi_communicator)
+  {
+  }
 
   Component(std::vector<dealii::Point<dim>> const &box,
             std::vector<unsigned int> const &repetitions,
