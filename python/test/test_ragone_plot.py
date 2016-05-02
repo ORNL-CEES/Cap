@@ -2,16 +2,18 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
-                  RagoneAnalysis, RagonePlot
+    RagoneAnalysis, RagonePlot
 from pycap import retrieve_performance_data
 from numpy import sqrt, log, inf, linalg
 from h5py import File
 import unittest
 
+
 class RagoneAnalysisTestCase(unittest.TestCase):
+
     def test_retrieve_data(self):
         ptree = PropertyTree()
         ptree.put_string('type', 'SeriesRC')
@@ -30,7 +32,7 @@ class RagoneAnalysisTestCase(unittest.TestCase):
         ptree.put_int('min_steps_per_discharge', 20)
         ptree.put_int('max_steps_per_discharge', 30)
         ragone = Experiment(ptree)
-       
+
         with File('trash.hdf5', 'w') as fout:
             ragone.run(device, fout)
         performance_data = ragone._data
@@ -78,14 +80,17 @@ class RagoneAnalysisTestCase(unittest.TestCase):
         device_database.put_double('capacitance', C)
         # analytical solutions
         E = {}
+
         def E_SeriesRC(P):
-            U_0 = U_i/2+sqrt(U_i**2/4-R*P)
-            return C/2*(-R*P*log(U_0**2/U_f**2)+U_0**2-U_f**2)
+            U_0 = U_i / 2 + sqrt(U_i**2 / 4 - R * P)
+            return C / 2 * (-R * P * log(U_0**2 / U_f**2) + U_0**2 - U_f**2)
         E['SeriesRC'] = E_SeriesRC
+
         def E_ParallelRC(P):
-            U_0 = U_i/2+sqrt(U_i**2/4-R*P)
-            tmp = (U_f**2/R_L+P*(1+R/R_L))/(U_0**2/R_L+P*(1+R/R_L))
-            return C/2*(-R_L*P*log(tmp)-R*R_L/(R+R_L)*P*log(tmp*U_0**2/U_f**2))
+            U_0 = U_i / 2 + sqrt(U_i**2 / 4 - R * P)
+            tmp = (U_f**2 / R_L + P * (1 + R / R_L)) / \
+                (U_0**2 / R_L + P * (1 + R / R_L))
+            return C / 2 * (-R_L * P * log(tmp) - R * R_L / (R + R_L) * P * log(tmp * U_0**2 / U_f**2))
         E['ParallelRC'] = E_ParallelRC
         for device_type in ['SeriesRC', 'ParallelRC']:
             # create a device
@@ -99,8 +104,8 @@ class RagoneAnalysisTestCase(unittest.TestCase):
             # compute the exact solution
             E_exact = E[device_type](P)
             # ensure the error is small
-            max_percent_error = 100*linalg.norm(
-                (E_computed-E_exact)/E_computed,
+            max_percent_error = 100 * linalg.norm(
+                (E_computed - E_exact) / E_computed,
                 inf)
             self.assertLess(max_percent_error, 0.1)
 

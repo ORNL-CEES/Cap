@@ -2,9 +2,11 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
-# downloaded from https://gist.github.com/endolith/250860#file-peakdetect-py on Oct 7th, 2015
+# downloaded from
+# https://gist.github.com/endolith/250860#file-peakdetect-py on Oct 7th,
+# 2015
 
 import sys
 from numpy import NaN, Inf, arange, isscalar, asarray, array
@@ -67,13 +69,13 @@ def peakdet(v, delta, x=None):
             mnpos = x[i]
 
         if lookformax:
-            if this < mx-delta:
+            if this < mx - delta:
                 maxtab.append((mxpos, mx))
                 mn = this
                 mnpos = x[i]
                 lookformax = False
         else:
-            if this > mn+delta:
+            if this > mn + delta:
                 mintab.append((mnpos, mn))
                 mx = this
                 mxpos = x[i]

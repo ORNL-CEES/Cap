@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree
 from os import remove
@@ -10,6 +10,7 @@ import unittest
 
 
 class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
+
     def test_pickle_support(self):
         import pickle
         src = PropertyTree()
@@ -110,7 +111,7 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         info_file = 'input.info'
         today = 'april 8th, 2016'
         with open(info_file, 'w') as fout:
-            fout.write('date "'+today+'"')
+            fout.write('date "' + today + '"')
         ptree.parse_info(info_file)
         self.assertEqual(ptree.get_string('date'), today)
         remove(info_file)
@@ -118,7 +119,7 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         xml_file = 'input.xml'
         pi = 3.14
         with open(xml_file, 'w') as fout:
-            fout.write('<pi>'+str(pi)+'</pi>')
+            fout.write('<pi>' + str(pi) + '</pi>')
         ptree.parse_xml(xml_file)
         self.assertEqual(ptree.get_double('pi'), pi)
         remove(xml_file)

@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice
 from pycap import Charge
@@ -18,6 +18,7 @@ device = EnergyStorageDevice(ptree, comm)
 
 
 class capChargeTestCase(unittest.TestCase):
+
     def test_charge_constant_current(self):
         ptree = PropertyTree()
         ptree.put_string('charge_mode', 'constant_current')
@@ -31,7 +32,7 @@ class capChargeTestCase(unittest.TestCase):
         self.assertAlmostEqual(data['current'][0], 10e-3)
         self.assertAlmostEqual(data['current'][-1], 10e-3)
         self.assertGreaterEqual(data['voltage'][-1], 1.4)
-        self.assertAlmostEqual(data['time'][1]-data['time'][0], 0.2)
+        self.assertAlmostEqual(data['time'][1] - data['time'][0], 0.2)
 
     def test_charge_constant_voltage(self):
         ptree = PropertyTree()

@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from .PyCap import *
 from .data_helpers import *
@@ -40,4 +40,4 @@ def build(self, ptree, comm=MPI.COMM_SELF):
     """
     return EnergyStorageDevice.build(self, ptree, comm)
 
-EnergyStorageDevice.__init__ = build;
+EnergyStorageDevice.__init__ = build

@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from matplotlib import pyplot
 from numpy import array, append
@@ -33,9 +33,9 @@ def report_data(data, time, device):
 
 
 def save_data(data, path, fout):
-    fout[path+'/time'] = data['time']
-    fout[path+'/current'] = data['current']
-    fout[path+'/voltage'] = data['voltage']
+    fout[path + '/time'] = data['time']
+    fout[path + '/current'] = data['current']
+    fout[path + '/voltage'] = data['voltage']
 
 
 def plot_data(data):

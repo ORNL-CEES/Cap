@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from numpy import trapz, count_nonzero, array, append, power, argsort
 from matplotlib import pyplot
@@ -80,7 +80,7 @@ def examine_discharge(data):
     time = data['time']
     current = data['current']
     voltage = data['voltage']
-    power = current[:]*voltage[:]
+    power = current[:] * voltage[:]
     mask = time[:] <= 0
     energy_in = trapz(power[mask], time[mask])
     mask = time[:] >= 0
@@ -94,7 +94,7 @@ def retrieve_performance_data(fin):
     performance_data = {'power': array([], dtype=float),
                         'energy': array([], dtype=float)}
     for key in fin[path].keys():
-        start = key.find('=')+1
+        start = key.find('=') + 1
         end = key.find('W')
         power = float(key[start:end])
         for measurement in ['second', 'first']:
@@ -112,6 +112,7 @@ def retrieve_performance_data(fin):
 
     return performance_data
 
+
 class RagonePlot(Observer):
     '''Ragone plot.
 
@@ -120,9 +121,11 @@ class RagonePlot(Observer):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(RagonePlot)
+
     def __init__(self, filename=None):
         self._figure = pyplot.figure(figsize=(14, 14))
         self._filename = filename
+
     def update(self, subject, *args, **kwargs):
         plot_ragone(subject._data, figure=self._figure)
         if self._filename is not None:
@@ -132,6 +135,8 @@ Observer._builders['RagonePlot'] = RagonePlot
 # TODO: Probably want to make that class more general to do discharges at
 # constant current as well.
 # For batteries plot voltage vs capacity
+
+
 class RagoneAnalysis(Experiment):
     '''Record a Ragone plot
 
@@ -152,16 +157,22 @@ class RagoneAnalysis(Experiment):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(RagoneAnalysis)
+
     def __init__(self, ptree):
         Experiment.__init__(self)
-        self._discharge_power_lower_limit = ptree.get_double('discharge_power_lower_limit')
-        self._discharge_power_upper_limit = ptree.get_double('discharge_power_upper_limit')
+        self._discharge_power_lower_limit = ptree.get_double(
+            'discharge_power_lower_limit')
+        self._discharge_power_upper_limit = ptree.get_double(
+            'discharge_power_upper_limit')
         self._steps_per_decade = ptree.get_int('steps_per_decade')
-        self._min_steps_per_discharge = ptree.get_int('min_steps_per_discharge')
-        self._max_steps_per_discharge = ptree.get_int('max_steps_per_discharge')
+        self._min_steps_per_discharge = ptree.get_int(
+            'min_steps_per_discharge')
+        self._max_steps_per_discharge = ptree.get_int(
+            'max_steps_per_discharge')
         self._time_step_initial_guess = ptree.get_double('time_step')
         self._ptree = copy(ptree)
         self.reset()
+
     def reset(self):
         self._ptree.put_double('time_step', self._time_step_initial_guess)
         self._data = {
@@ -191,14 +202,15 @@ class RagoneAnalysis(Experiment):
                         time_step = data['time'][-1]
                         time_step /= self._max_steps_per_discharge
                         self._ptree.put_double('time_step', time_step)
-                                               
+
             except RuntimeError:
-                print('Failed to discharge at {0} watt'.format(discharge_power))
+                print('Failed to discharge at {0} watt'.format(
+                    discharge_power))
                 break
             self._data['energy'] = append(self._data['energy'],
                                           -energy_out)
             self._data['power'] = append(self._data['power'],
                                          discharge_power)
-            discharge_power *= power(10.0, 1.0/self._steps_per_decade)
+            discharge_power *= power(10.0, 1.0 / self._steps_per_decade)
             self.notify()
 Experiment._builders['RagoneAnalysis'] = RagoneAnalysis

@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice, TimeEvolution
 from mpi4py import MPI
@@ -16,6 +16,7 @@ device = EnergyStorageDevice(ptree, comm)
 
 
 class capTimeEvolutionTestCase(unittest.TestCase):
+
     def test_evolve_constant_voltage(self):
         ptree = PropertyTree()
         ptree.put_string('mode', 'constant_voltage')
@@ -38,7 +39,8 @@ class capTimeEvolutionTestCase(unittest.TestCase):
         ptree.put_double('power', 0.3)
         evolve_one_time_step = TimeEvolution.factory(ptree)
         evolve_one_time_step(device, 0.1)
-        self.assertAlmostEqual(device.get_current()*device.get_voltage(), 0.3)
+        self.assertAlmostEqual(device.get_current() *
+                               device.get_voltage(), 0.3)
 
     def test_evolve_constant_load(self):
         ptree = PropertyTree()
@@ -46,7 +48,8 @@ class capTimeEvolutionTestCase(unittest.TestCase):
         ptree.put_double('load', 120)
         evolve_one_time_step = TimeEvolution.factory(ptree)
         evolve_one_time_step(device, 0.1)
-        self.assertAlmostEqual(device.get_voltage()/device.get_current(), -120)
+        self.assertAlmostEqual(device.get_voltage() /
+                               device.get_current(), -120)
 
     def test_hold(self):
         ptree = PropertyTree()

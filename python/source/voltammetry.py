@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from operator import lt, gt, sub, add
 from matplotlib import pyplot
@@ -39,13 +39,13 @@ def ramp(device, data, voltage_limit, scan_rate, step_size):
     else:
         compare = lt
         update = add
-    time_step = step_size/scan_rate
+    time_step = step_size / scan_rate
     if data:
         time = data['time'][-1]
     else:
         time = 0
     voltage = initial_voltage
-    while compare(voltage, update(final_voltage, -0.01*step_size)):
+    while compare(voltage, update(final_voltage, -0.01 * step_size)):
         step += 1
         voltage = update(voltage, step_size)
         time += time_step
@@ -57,6 +57,7 @@ def ramp(device, data, voltage_limit, scan_rate, step_size):
 
 
 class CyclicVoltammetry:
+
     def __init__(self, ptree):
         self.cycles = ptree.get_int('cycles')
         self.scan_limit_1 = ptree.get_double('scan_limit_1')
@@ -67,8 +68,8 @@ class CyclicVoltammetry:
         self.step_size = ptree.get_double('step_size')
 
     def run(self, device, data=None):
-        device.evolve_one_time_step_linear_voltage(self.step_size/self.scan_rate,
-                                                     self.initial_voltage)
+        device.evolve_one_time_step_linear_voltage(self.step_size / self.scan_rate,
+                                                   self.initial_voltage)
         if data:
             report_data(data, 0.0, device)
         steps = 0

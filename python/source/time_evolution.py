@@ -2,12 +2,13 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 __all__ = ['TimeEvolution']
 
 
 class TimeEvolution:
+
     def __init__(self, ptree):
         raise RuntimeError('Use TimeEvolution.factory to construct')
 
@@ -16,6 +17,7 @@ class TimeEvolution:
 
         if mode == 'constant_voltage' or mode == 'potentiostatic':
             constant_voltage = ptree.get_double('voltage')
+
             def evolve_one_time_step_constant_voltage(device, time_step):
                 device.evolve_one_time_step_constant_voltage(time_step,
                                                              constant_voltage)
@@ -23,6 +25,7 @@ class TimeEvolution:
 
         elif mode == 'constant_current' or mode == 'galvanostatic':
             constant_current = ptree.get_double('current')
+
             def evolve_one_time_step_constant_current(device, time_step):
                 device.evolve_one_time_step_constant_current(time_step,
                                                              constant_current)
@@ -30,6 +33,7 @@ class TimeEvolution:
 
         elif mode == 'constant_power':
             constant_power = ptree.get_double('power')
+
             def evolve_one_time_step_constant_power(device, time_step):
                 device.evolve_one_time_step_constant_power(time_step,
                                                            constant_power)
@@ -37,6 +41,7 @@ class TimeEvolution:
 
         elif mode == 'constant_load':
             constant_load = ptree.get_double('load')
+
             def evolve_one_time_step_constant_load(device, time_step):
                 device.evolve_one_time_step_constant_load(time_step,
                                                           constant_load)
@@ -54,6 +59,6 @@ class TimeEvolution:
             return evolve_one_time_step_rest
 
         else:
-            raise RuntimeError("invalid TimeEvolution mode '"+mode+"'")
+            raise RuntimeError("invalid TimeEvolution mode '" + mode + "'")
 
     factory = staticmethod(factory)
