@@ -11,6 +11,8 @@
 namespace cap
 {
 
+DefaultInspector::DefaultInspector() : _data(std::map<std::string, double>()) {}
+
 template <int dim>
 std::map<std::string, double>
 extract_data_from_super_capacitor(EnergyStorageDevice *device)
