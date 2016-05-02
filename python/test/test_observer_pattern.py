@@ -1,7 +1,9 @@
 from pycap import PropertyTree, Observer, Observable, Experiment
 import unittest
 
+
 class ObserverObservableTestCase(unittest.TestCase):
+
     def test_builders(self):
         for AbstractClass in [Observer, Observable]:
             # AbstractClass takes a PropertyTree as argument.
@@ -19,11 +21,14 @@ class ObserverObservableTestCase(unittest.TestCase):
 
             # Now declare a concrete class.
             class ConcreteClass(AbstractClass):
+
                 def __new__(cls, *args, **kwargs):
                     return object.__new__(ConcreteClass)
+
                 def __init__(*args, **kwargs):
                     pass
-            # Here is how to register a derived concrete class to the base abstract class.
+            # Here is how to register a derived concrete class to the base
+            # abstract class.
             AbstractClass._builders['ConcreteClass'] = ConcreteClass
 
             # Now instantiation works.
@@ -40,17 +45,20 @@ class ObserverObservableTestCase(unittest.TestCase):
     def test_update_attach_detach_notify(self):
         # Define an observable.
         class ConcreteObservable(Observable):
+
             def __new__(cls, *args, **kwargs):
                 return object.__new__(ConcreteObservable)
+
             def __init__(self):
                 Observable.__init__(self)
                 self._greetings = 'hello world'
         Observable._builders['ConcreteObservable'] = ConcreteObservable
- 
+
         subject = ConcreteObservable()
 
         # Define a concrete observer.
         class ConcreteObserver(Observer):
+
             def __new__(cls, *args, **kwargs):
                 return object.__new__(ConcreteObserver)
         Observer._builders['ConcreteObserver'] = ConcreteObserver
@@ -61,6 +69,7 @@ class ObserverObservableTestCase(unittest.TestCase):
 
         class ObserverUpdate(Exception):
             pass
+
         def update(self, subject, *args, **kwargs):
             print(subject._greetings)
             raise ObserverUpdate
@@ -97,12 +106,16 @@ class ObserverObservableTestCase(unittest.TestCase):
         subject.attach(ConcreteObserver())
         self.assertRaises(RuntimeError, subject.notify)
 
+
 class ExperimentTestCase(unittest.TestCase):
+
     def test_abstract_class(self):
         # Declare a concrete Experiment
         class DummyExperiment(Experiment):
+
             def __new__(cls, *args, **kwargs):
                 return object.__new__(DummyExperiment)
+
             def __init__(self, ptree):
                 Experiment.__init__(self)
         # Do not forget to register it to the builders dictionary.

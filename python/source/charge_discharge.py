@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from .PyCap import PropertyTree
 from .stage import MultiStage
@@ -11,6 +11,7 @@ __all__ = ['Charge', 'Discharge', 'CyclicChargeDischarge']
 
 
 class Charge(MultiStage):
+
     def __init__(self, ptree):
         other = PropertyTree()
         other.put_int('cycles', 1)
@@ -18,7 +19,7 @@ class Charge(MultiStage):
         time_step = ptree.get_double('time_step')
         assert time_step > 0.0
         other.put_double('time_step', time_step)
-        ### charge
+        # charge
         # time evolution
         charge_mode = ptree.get_string('charge_mode')
         voltage_finish = ptree.get_bool_with_default_value('charge_voltage_finish',
@@ -32,13 +33,14 @@ class Charge(MultiStage):
             charge_voltage = ptree.get_double('charge_voltage')
             other.put_double('stage_0.voltage', charge_voltage)
             if voltage_finish:
-                raise RuntimeError('voltage finish does not make sense under potentiostatic conditions')
+                raise RuntimeError(
+                    'voltage finish does not make sense under potentiostatic conditions')
         elif charge_mode == 'constant_power':
             charge_power = ptree.get_double('charge_power')
             other.put_double('stage_0.power', charge_power)
             assert charge_power > 0.0
         else:
-            raise RuntimeError("invalid charge mode '"+charge_mode+"'")
+            raise RuntimeError("invalid charge mode '" + charge_mode + "'")
         # end criterion
         other.put_string('stage_0.end_criterion', 'compound')
         other.put_string('stage_0.logical_operator', 'or')
@@ -70,8 +72,10 @@ class Charge(MultiStage):
         other.put_double('stage_1.voltage', 0.0)
         if voltage_finish:
             other.put_double('stage_1.voltage', charge_voltage_limit)
-            charge_voltage_finish_max_time = ptree.get_double('charge_voltage_finish_max_time')
-            charge_voltage_finish_current_limit = ptree.get_double('charge_voltage_finish_current_limit')
+            charge_voltage_finish_max_time = ptree.get_double(
+                'charge_voltage_finish_max_time')
+            charge_voltage_finish_current_limit = ptree.get_double(
+                'charge_voltage_finish_current_limit')
             other.put_string('stage_1.end_criterion', 'compound')
             other.put_string('stage_1.logical_operator', 'or')
             other.put_string('stage_1.criterion_0.end_criterion',
@@ -97,6 +101,7 @@ class Charge(MultiStage):
 
 
 class Discharge(MultiStage):
+
     def __init__(self, ptree):
         other = PropertyTree()
         other.put_int('cycles', 1)
@@ -125,14 +130,16 @@ class Discharge(MultiStage):
             other.put_double('stage_0.load', discharge_load)
             assert discharge_load > 0.0
         else:
-            raise RuntimeError("invalid discharge mode '"+discharge_mode+"'")
+            raise RuntimeError("invalid discharge mode '" +
+                               discharge_mode + "'")
         discharge_stop_at_1 = ptree.get_string('discharge_stop_at_1')
         if discharge_stop_at_1 == 'voltage_less_than':
             other.put_string('stage_0.end_criterion', 'compound')
             other.put_string('stage_0.logical_operator', 'or')
             other.put_string('stage_0.criterion_0.end_criterion',
                              discharge_stop_at_1)
-            discharge_voltage_limit = ptree.get_double('discharge_voltage_limit')
+            discharge_voltage_limit = ptree.get_double(
+                'discharge_voltage_limit')
             other.put_double('stage_0.criterion_0.voltage_limit',
                              discharge_voltage_limit)
         else:
@@ -157,6 +164,7 @@ class Discharge(MultiStage):
 
 
 class CyclicChargeDischarge(MultiStage):
+
     def __init__(self, ptree):
         start_with = ptree.get_string('start_with')
         # TODO

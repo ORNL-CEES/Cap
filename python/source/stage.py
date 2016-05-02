@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from .time_evolution import TimeEvolution
 from .end_criterion import EndCriterion
@@ -12,6 +12,7 @@ __all__ = ['Stage', 'MultiStage']
 
 
 class Stage:
+
     def __init__(self, ptree):
         self.evolve_one_time_step = TimeEvolution.factory(ptree)
         self.end_criterion = EndCriterion.factory(ptree)
@@ -26,7 +27,7 @@ class Stage:
             time = 0.0
         steps = 0
         self.end_criterion.reset(time, device)
-        while not self.end_criterion.check(time+0.01*self.time_step, device):
+        while not self.end_criterion.check(time + 0.01 * self.time_step, device):
             steps += 1
             time += self.time_step
             self.evolve_one_time_step(device, self.time_step)
@@ -37,10 +38,11 @@ class Stage:
 
 
 class MultiStage(Stage):
+
     def __init__(self, ptree):
         self.stages = []
         for stage in range(ptree.get_int('stages')):
-            child = ptree.get_child('stage_'+str(stage))
+            child = ptree.get_child('stage_' + str(stage))
             try:
                 child.get_double('time_step')
             except:

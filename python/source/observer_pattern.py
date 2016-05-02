@@ -3,15 +3,16 @@ from weakref import ref
 
 __all__ = ['Observer', 'Observable', 'Experiment']
 
+
 class Observer(object):
     '''Observer.
-    
+
     An observer provides a representation of an observable, called the subject.
     It may be attached to one or several subjects.
     Subjects are able to notify the observers that have been attached to them
     when some change has occured and an update of their representation is
     necessary.
-    
+
     Examples
     --------
     >>> ptree = PropertyTree()
@@ -32,12 +33,12 @@ class Observer(object):
 
     def __new__(cls, ptree, *args, **kwargs):
         '''Create a new instance of class cls.
-        
+
         Parameters
         ----------
         cls : class
         ptree : PropertyTree
-        
+
         Raises
         ------
         KeyError
@@ -51,9 +52,9 @@ class Observer(object):
 
     def update(self, subject, *args, **kwargs):
         '''Update the representation of the Observable.
-        
+
         Must be overriden in derived classes.
-        
+
         Parameters
         ----------
         subject : Observable
@@ -65,12 +66,11 @@ class Observer(object):
         raise RuntimeError('Method Observer.update(...) must be overloaded')
 
 
-
 class Observable(object):
     '''Observable.
-    
+
     Maintains a list of observers and notifies them when something has changed.
-    
+
     Attributes
     ----------
     _observers : list
@@ -96,12 +96,12 @@ class Observable(object):
 
     def __new__(cls, ptree, *args, **kwargs):
         '''Create a new instance of class cls.
-        
+
         Parameters
         ----------
         cls : class
         ptree : PropertyTree
-        
+
         Raises
         ------
         KeyError
@@ -112,18 +112,19 @@ class Observable(object):
         '''
         t = ptree.get_string('type')
         return Observable._builders[t].__new__(cls, ptree, *args, **kwargs)
+
     def __init__(self):
         self._observers = []
 
     def attach(self, observer):
         '''Attach an observer.
-        
+
         Adds a weak reference to the observer to the list of observers.
-        
+
         Parameters
         ----------
         observer : Observer
-        
+
         Raises
         ------
         RuntimeError
@@ -136,13 +137,13 @@ class Observable(object):
 
     def detach(self, observer):
         '''Detach an observer.
-        
+
         Removes the observer from the list.
-        
+
         Parameters
         ----------
         observer : Observer
-        
+
         Raises
         ------
         RuntimeError
@@ -153,7 +154,7 @@ class Observable(object):
                 self._observers.remove(weak_reference)
                 return
         raise RuntimeError('Observer not attached')
-        
+
     def notify(self, *args, **kwargs):
         '''Notify all registered observers that some change has occured.
         '''
@@ -177,10 +178,12 @@ class Experiment(Observable):
     _extra_data : dict
         Holds other informations such as properties of the device.
     '''
+
     def __init__(self):
         Observable.__init__(self)
         self._data = {}
         self._extra_data = {}
+
     def run(self, device):
         '''Run the experiment on an energy storage device.
 
@@ -189,4 +192,3 @@ class Experiment(Observable):
         device : EnergyStorageDevice
         '''
         raise RuntimeError('Method Experiment.run(...) must be overloaded')
-    

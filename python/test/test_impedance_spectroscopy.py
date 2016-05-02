@@ -2,20 +2,22 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
-                  ECLabAsciiFile, NyquistPlot, BodePlot
+    ECLabAsciiFile, NyquistPlot, BodePlot
 from pycap import retrieve_impedance_spectrum,\
-                  fourier_analysis, initialize_data
+    fourier_analysis, initialize_data
 from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
-                  array, testing, ones, cos, sin
+    array, testing, ones, cos, sin
 from warnings import catch_warnings, simplefilter
 from h5py import File
 from io import open
 import unittest
 
+
 class ImpedanceSpectroscopyTestCase(unittest.TestCase):
+
     def test_fourier_analysis(self):
         ptree = PropertyTree()
         ptree.put_int('steps_per_cycle', 3)
@@ -84,7 +86,7 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         with File('trash.hdf5', 'r') as fin:
             retrieved_data = retrieve_impedance_spectrum(fin)
 
-        print(spectrum_data['impedance']-retrieved_data['impedance'])
+        print(spectrum_data['impedance'] - retrieved_data['impedance'])
         print(retrieved_data)
         self.assertEqual(linalg.norm(spectrum_data['frequency'] -
                                      retrieved_data['frequency'], inf), 0.0)
@@ -117,8 +119,8 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         device_database.put_double('capacitance', C)
         # analytical solutions
         Z = {}
-        Z['SeriesRC'] = lambda f : R+1/(1j*C*2*pi*f)
-        Z['ParallelRC'] = lambda f : R+R_L/(1+1j*R_L*C*2*pi*f)
+        Z['SeriesRC'] = lambda f: R + 1 / (1j * C * 2 * pi * f)
+        Z['ParallelRC'] = lambda f: R + R_L / (1 + 1j * R_L * C * 2 * pi * f)
         for device_type in ['SeriesRC', 'ParallelRC']:
             # create a device
             device_database.put_string('type', device_type)
@@ -132,14 +134,17 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             Z_exact = Z[device_type](f)
             # ensure the error is small
             max_phase_error_in_degree = linalg.norm(
-                angle(Z_computed)*180/pi - angle(Z_exact)*180/pi,
+                angle(Z_computed) * 180 / pi - angle(Z_exact) * 180 / pi,
                 inf)
             max_magniture_error_in_decibel = linalg.norm(
-                20*log10(absolute(Z_exact)) - 20*log10(absolute(Z_computed)),
+                20 * log10(absolute(Z_exact)) - 20 *
+                log10(absolute(Z_computed)),
                 inf)
             print(device_type)
-            print('-- max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
-            print('-- max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
+            print(
+                '-- max_phase_error_in_degree = {0}'.format(max_phase_error_in_degree))
+            print(
+                '-- max_magniture_error_in_decibel = {0}'.format(max_magniture_error_in_decibel))
             self.assertLessEqual(max_phase_error_in_degree, 1)
             self.assertLessEqual(max_magniture_error_in_decibel, 0.2)
 
@@ -147,8 +152,10 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         # define dummy experiment
         # it is quicker than building an actual EIS experiment
         class DummyExperiment(Experiment):
+
             def __new__(cls, *args, **kwargs):
                 return object.__new__(DummyExperiment)
+
             def __init__(self, ptree):
                 Experiment.__init__(self)
         dummy = DummyExperiment(PropertyTree())
@@ -158,8 +165,8 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         f = ones(n, dtype=float)
         Z = ones(n, dtype=complex)
         for i in range(n):
-            f[i] = 10**(i/(n-1))
-            Z[i] = cos(2*pi*i/(n-1)) + 1j * sin(2*pi*i/(n-1))
+            f[i] = 10**(i / (n - 1))
+            Z[i] = cos(2 * pi * i / (n - 1)) + 1j * sin(2 * pi * i / (n - 1))
         dummy._data['frequency'] = f
         dummy._data['impedance'] = Z
         # need a supercapacitor here to make sure method inspect() is kept in
@@ -182,13 +189,14 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             lines = fin.readlines()
             for line in lines:
                 self.assertNotEqual(line.find(b'\r\n'), -1)
-                self.assertNotEqual(line.find(b'\r\n'), len(line)-4)
-            header_lines = int(lines[1].split(b':')[1].lstrip(b'').rstrip(b'\r\n'))
+                self.assertNotEqual(line.find(b'\r\n'), len(line) - 4)
+            header_lines = int(lines[1].split(
+                b':')[1].lstrip(b'').rstrip(b'\r\n'))
             self.assertEqual(
                 header_lines,
                 len(eclab._unformated_headers)
             )
-            self.assertEqual(lines[header_lines-1].find(b'freq/Hz'), 0)
+            self.assertEqual(lines[header_lines - 1].find(b'freq/Hz'), 0)
 
         # check Nyquist plot does not throw
         nyquist = NyquistPlot('nyquist.png')

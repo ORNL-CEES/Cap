@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from operator import le, ge, or_, and_, xor
 
@@ -10,6 +10,7 @@ __all__ = ['EndCriterion']
 
 
 class EndCriterion:
+
     def __init__(self, ptree):
         raise RuntimeError('Use EndCriterion.factory to construct')
 
@@ -51,23 +52,25 @@ class EndCriterion:
         elif type == 'skip':
             return AlwaysSatisfied()
         else:
-            raise RuntimeError("invalid EndCriterion type '"+type+"'")
+            raise RuntimeError("invalid EndCriterion type '" + type + "'")
 
     factory = staticmethod(factory)
 
 
 class TimeLimit(EndCriterion):
+
     def __init__(self, ptree):
         self.duration = ptree.get_double('duration')
 
     def check(self, time, device):
-        return time-self.tick >= self.duration
+        return time - self.tick >= self.duration
 
     def reset(self, time, device):
         self.tick = time
 
 
 class VoltageLimit(EndCriterion):
+
     def __init__(self, ptree, compare):
         self.voltage_limit = ptree.get_double('voltage_limit')
         self.compare = compare
@@ -80,12 +83,13 @@ class VoltageLimit(EndCriterion):
 
 
 class CurrentLimit(EndCriterion):
+
     def __init__(self, ptree, compare):
         self.current_limit = ptree.get_double('current_limit')
         if self.current_limit <= 0.0:
             raise RuntimeError(
                 "CurrentLimit end criterion check for absolute value of the "
-                "current. 'current_limit' (="+str(self.current_limit)+") "
+                "current. 'current_limit' (=" + str(self.current_limit) + ") "
                 "must be greater than zero."
             )
         self.compare = compare
@@ -98,6 +102,7 @@ class CurrentLimit(EndCriterion):
 
 
 class CompoundCriterion(EndCriterion):
+
     def __init__(self, a, b, op):
         self.criterion_0 = a
         self.criterion_1 = b
@@ -114,6 +119,7 @@ class CompoundCriterion(EndCriterion):
 
 
 class NeverSatisfied(EndCriterion):
+
     def __init__(self):
         pass
 
@@ -125,6 +131,7 @@ class NeverSatisfied(EndCriterion):
 
 
 class AlwaysSatisfied(EndCriterion):
+
     def __init__(self):
         pass
 

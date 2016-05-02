@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice
 from mpi4py import MPI
@@ -12,10 +12,11 @@ valid_device_input = [
     "series_rc.info",
     "parallel_rc.info",
     "super_capacitor.info",
-    ]
+]
 
 
 class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
+
     def test_energy_storage_device_factory(self):
         # valid input to buid an energy storage device
         for filename in valid_device_input:
@@ -53,7 +54,7 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
             'cathode_electrode_double_layer_capacitance',
             'cathode_electrode_thickness',
             'geometric_area',
-            ]:
+        ]:
             self.assertTrue(key in data)
         print(data)
 
@@ -65,11 +66,11 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
             device = EnergyStorageDevice(ptree)
             # these are basic sanity check to ensure that the device responds
             # in an appropriate manner when operating conditions are imposed
-            dt = 0.1 # time_step in seconds
-            I = 5e-3 # current in amperes
+            dt = 0.1  # time_step in seconds
+            I = 5e-3  # current in amperes
             device.evolve_one_time_step_constant_current(dt, I)
             self.assertAlmostEqual(device.get_current(), I)
-            U = 1.1 # voltage in volts
+            U = 1.1  # voltage in volts
             device.evolve_one_time_step_constant_voltage(dt, U)
             self.assertAlmostEqual(device.get_voltage(), U)
 

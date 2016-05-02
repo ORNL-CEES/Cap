@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice
 from pycap import Stage, MultiStage
@@ -18,6 +18,7 @@ device = EnergyStorageDevice(ptree, comm)
 
 
 class capStageTestCase(unittest.TestCase):
+
     def test_constant_current_charge_for_given_time(self):
         ptree = PropertyTree()
         ptree.put_string('mode', 'constant_current')

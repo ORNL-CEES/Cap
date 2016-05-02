@@ -4,14 +4,14 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from matplotlib import pyplot
 from numpy import real, imag, log10, absolute, angle, array, append, power,\
-                  sin, pi, sum, isclose, fft, mean, argsort
+    sin, pi, sum, isclose, fft, mean, argsort
 from warnings import warn
 from copy import copy
-from io import open # to be able to use parameter ``encoding`` with Python2.7
+from io import open  # to be able to use parameter ``encoding`` with Python2.7
 from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
 from .observer_pattern import Observer, Observable, Experiment
@@ -24,7 +24,7 @@ __all__ = ['plot_nyquist', 'plot_bode',
 
 
 def _is_power_of_two(x):
-    return (x != 0) and (x & (x-1) == 0)
+    return (x != 0) and (x & (x - 1) == 0)
 
 
 def plot_nyquist(data, figure=None, ls='r-s'):
@@ -49,7 +49,7 @@ def plot_nyquist(data, figure=None, ls='r-s'):
 def plot_bode(data):
     frequency = data['frequency']
     impedance = data['impedance']
-    magnitude = 20*log10(absolute(impedance))
+    magnitude = 20 * log10(absolute(impedance))
     phase = angle(impedance, deg=True)
     label_fontsize = 30
     tick_fontsize = 20
@@ -77,23 +77,24 @@ def run_one_cycle(device, ptree):
     dc_voltage = ptree.get_double('dc_voltage')
     harmonics = array(ptree.get_array_int('harmonics'))
     ac_amplitudes = array(ptree.get_array_double('amplitudes'))
-    phases = array(ptree.get_array_double('phases'))*pi/180
+    phases = array(ptree.get_array_double('phases')) * pi / 180
     steps_per_cycle = ptree.get_int('steps_per_cycle')
     cycles = ptree.get_int('cycles')
-    time_step = 1./(frequency*steps_per_cycle)
+    time_step = 1. / (frequency * steps_per_cycle)
     time = 0.0
     data = initialize_data()
     for cycle in range(cycles):
         for step in range(steps_per_cycle):
             time += time_step
-            excitation_signal = dc_voltage+sum(ac_amplitudes *
-                                               sin(2*pi*harmonics*frequency *
-                                                   time+phases))
+            excitation_signal = dc_voltage + sum(ac_amplitudes *
+                                                 sin(2 * pi * harmonics * frequency *
+                                                     time + phases))
             device.evolve_one_time_step_linear_voltage(time_step,
                                                        excitation_signal)
             report_data(data, time, device)
 
     return data
+
 
 def retrieve_impedance_spectrum(fin):
     path = 'eis_data'
@@ -122,10 +123,10 @@ def fourier_analysis(data, ptree=None):
     n = len(time)  # normalization factor for fft
     assert len(current) == n
     assert len(voltage) == n
-    d = time[1]-time[0]  # inverse of the sampling rate
+    d = time[1] - time[0]  # inverse of the sampling rate
     # check sampling spacing is the same everywhere
-    for i in range(n-1):
-        assert isclose(time[i+1]-time[i], d, atol=1e-10, rtol=1e-10)
+    for i in range(n - 1):
+        assert isclose(time[i + 1] - time[i], d, atol=1e-10, rtol=1e-10)
 
     # truncate signals
     if ptree:
@@ -133,14 +134,14 @@ def fourier_analysis(data, ptree=None):
         cycles = ptree.get_int('cycles')
         ignore_cycles = ptree.get_int('ignore_cycles')
         assert cycles > ignore_cycles
-        assert n == cycles*steps_per_cycle
-        time = time[ignore_cycles*steps_per_cycle:]
-        current = current[ignore_cycles*steps_per_cycle:]
-        voltage = voltage[ignore_cycles*steps_per_cycle:]
+        assert n == cycles * steps_per_cycle
+        time = time[ignore_cycles * steps_per_cycle:]
+        current = current[ignore_cycles * steps_per_cycle:]
+        voltage = voltage[ignore_cycles * steps_per_cycle:]
     else:
-        time = time[int(n/2):]
-        current = current[int(n/2):]
-        voltage = voltage[int(n/2):]
+        time = time[int(n / 2):]
+        current = current[int(n / 2):]
+        voltage = voltage[int(n / 2):]
 
     n = len(time)
     assert len(current) == n
@@ -153,14 +154,14 @@ def fourier_analysis(data, ptree=None):
             RuntimeWarning)
 
     # perform the actual fourrier analaysis
-    fft_current = fft.rfft(current)/n
-    fft_voltage = fft.rfft(voltage)/n
+    fft_current = fft.rfft(current) / n
+    fft_voltage = fft.rfft(voltage) / n
     fft_frequency = fft.rfftfreq(n, d)
 
     # find the excited harmonics
     if ptree:
         harmonics = array(ptree.get_array_int('harmonics'))
-        peak_indices = harmonics*(cycles-ignore_cycles)
+        peak_indices = harmonics * (cycles - ignore_cycles)
     else:
         mx, mn = peakdet(absolute(fft_voltage), mean(absolute(fft_current)))
         peak_indices = int(mx[:, 0])
@@ -168,9 +169,10 @@ def fourier_analysis(data, ptree=None):
         assert peak_indices == mx[:, 0]
 
     frequency = fft_frequency[peak_indices]
-    impedance = fft_voltage[peak_indices]/fft_current[peak_indices]
+    impedance = fft_voltage[peak_indices] / fft_current[peak_indices]
 
     return [frequency, impedance]
+
 
 class NyquistPlot(Observer):
     '''Nyquist plot.
@@ -191,14 +193,17 @@ class NyquistPlot(Observer):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(NyquistPlot)
+
     def __init__(self, filename=None):
         self._figure = pyplot.figure(figsize=(14, 14))
         self._filename = filename
+
     def update(self, subject, *args, **kwargs):
         plot_nyquist(subject._data, figure=self._figure)
         if self._filename is not None:
             pyplot.savefig(self._filename, bbox_inches='tight')
 Observer._builders['NyquistPlot'] = NyquistPlot
+
 
 class BodePlot(Observer):
     '''Bode plot.
@@ -216,11 +221,14 @@ class BodePlot(Observer):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(BodePlot)
+
     def __init__(self, filename=None):
         raise NotImplementedError
+
     def update(self, subject, *args, **kwargs):
         raise NotImplementedError
 Observer._builders['BodePlot'] = BodePlot
+
 
 class ECLabAsciiFile(Observer):
     '''Exports a text format file recognised by EC-Lab software.
@@ -244,39 +252,40 @@ class ECLabAsciiFile(Observer):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(ECLabAsciiFile)
+
     def __init__(self, filename):
         self._filename = filename
         self._encoding = 'latin-1'
         # building the headers
         self._unformated_headers = [
-           u'EC-Lab ASCII FILE\r\n',
-           u'Nb header lines : {header_lines}\r\n',
-           u'\r\n',
-           u'Potentio Electrochemical Impedance Spectroscopy\r\n',
-           u'\r\n',
-           u'Generated using Cap version "{git_commit_hash}"\r\n',
-           u'See {git_remote_url}\r\n',
-           u'\r\n',
-           u'Anode\r\n',
-           u'-----\r\n',
-           u'geometric area           [cm²]    {geometric_area}\r\n',
-           u'thickness                [cm]     {anode_electrode_thickness}\r\n',
-           u'double layer capacitance [µF/cm²] {anode_electrode_double_layer_capacitance}\r\n',
-           u'interfacial surface area [cm²]    {anode_electrode_interfacial_surface_area}\r\n',
-           u'mass active material     [g]      {anode_electrode_mass_of_active_material}\r\n',
-           u'\r\n',
-           u'Cathode\r\n',
-           u'-------\r\n',
-           u'geometric area           [cm²]    {geometric_area}\r\n',
-           u'thickness                [cm]     {cathode_electrode_thickness}\r\n',
-           u'double layer capacitance [µF/cm²] {cathode_electrode_double_layer_capacitance}\r\n',
-           u'interfacial surface area [cm²]    {cathode_electrode_interfacial_surface_area}\r\n',
-           u'mass active material     [g]      {cathode_electrode_mass_of_active_material}\r\n',
-           u'\r\n',
-           u'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
-           u'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
-           u'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
-           u'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
+            u'EC-Lab ASCII FILE\r\n',
+            u'Nb header lines : {header_lines}\r\n',
+            u'\r\n',
+            u'Potentio Electrochemical Impedance Spectroscopy\r\n',
+            u'\r\n',
+            u'Generated using Cap version "{git_commit_hash}"\r\n',
+            u'See {git_remote_url}\r\n',
+            u'\r\n',
+            u'Anode\r\n',
+            u'-----\r\n',
+            u'geometric area           [cm²]    {geometric_area}\r\n',
+            u'thickness                [cm]     {anode_electrode_thickness}\r\n',
+            u'double layer capacitance [µF/cm²] {anode_electrode_double_layer_capacitance}\r\n',
+            u'interfacial surface area [cm²]    {anode_electrode_interfacial_surface_area}\r\n',
+            u'mass active material     [g]      {anode_electrode_mass_of_active_material}\r\n',
+            u'\r\n',
+            u'Cathode\r\n',
+            u'-------\r\n',
+            u'geometric area           [cm²]    {geometric_area}\r\n',
+            u'thickness                [cm]     {cathode_electrode_thickness}\r\n',
+            u'double layer capacitance [µF/cm²] {cathode_electrode_double_layer_capacitance}\r\n',
+            u'interfacial surface area [cm²]    {cathode_electrode_interfacial_surface_area}\r\n',
+            u'mass active material     [g]      {cathode_electrode_mass_of_active_material}\r\n',
+            u'\r\n',
+            u'freq/Hz\tRe(Z)/Ohm\t-Im(Z)/Ohm\t|Z|/Ohm\tPhase(Z)/deg\t'
+            u'time/s\t<Ewe>/V\t<I>/mA\tCs/µF\tCp/µF\t'
+            u'cycle number\tI Range\t|Ewe|/V\t|I|/A\t'
+            u'Re(Y)/Ohm-1\tIm(Y)/Ohm-1\t|Y|/Ohm-1\tPhase(Y)/deg\r\n',
         ]
         # build a template for each line in the results
         self._line_template = ''
@@ -287,8 +296,8 @@ class ECLabAsciiFile(Observer):
         self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
-        m2_to_cm2 = lambda x: 10000*x
-        kg_to_g = lambda x: 1000*x
+        m2_to_cm2 = lambda x: 10000 * x
+        kg_to_g = lambda x: 1000 * x
         with open(self._filename, mode='wb') as fout:
             NaN = 255
             extra_data = subject._extra_data
@@ -301,14 +310,22 @@ class ECLabAsciiFile(Observer):
                 git_commit_hash=pycap.__git_commit_hash__,
                 git_remote_url=pycap.__git_remote_url__,
                 geometric_area=extra_data['geometric_area'],
-                anode_electrode_thickness=extra_data['anode_electrode_thickness'],
-                anode_electrode_double_layer_capacitance=extra_data['anode_electrode_double_layer_capacitance'],
-                anode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['anode_electrode_interfacial_surface_area']),
-                anode_electrode_mass_of_active_material=kg_to_g(extra_data['anode_electrode_mass_of_active_material']),
-                cathode_electrode_thickness=extra_data['cathode_electrode_thickness'],
-                cathode_electrode_double_layer_capacitance=extra_data['cathode_electrode_double_layer_capacitance'],
-                cathode_electrode_interfacial_surface_area=m2_to_cm2(extra_data['cathode_electrode_interfacial_surface_area']),
-                cathode_electrode_mass_of_active_material=kg_to_g(extra_data['cathode_electrode_mass_of_active_material']),
+                anode_electrode_thickness=extra_data[
+                    'anode_electrode_thickness'],
+                anode_electrode_double_layer_capacitance=extra_data[
+                    'anode_electrode_double_layer_capacitance'],
+                anode_electrode_interfacial_surface_area=m2_to_cm2(
+                    extra_data['anode_electrode_interfacial_surface_area']),
+                anode_electrode_mass_of_active_material=kg_to_g(
+                    extra_data['anode_electrode_mass_of_active_material']),
+                cathode_electrode_thickness=extra_data[
+                    'cathode_electrode_thickness'],
+                cathode_electrode_double_layer_capacitance=extra_data[
+                    'cathode_electrode_double_layer_capacitance'],
+                cathode_electrode_interfacial_surface_area=m2_to_cm2(
+                    extra_data['cathode_electrode_interfacial_surface_area']),
+                cathode_electrode_mass_of_active_material=kg_to_g(
+                    extra_data['cathode_electrode_mass_of_active_material']),
             ).split(separator)
 
             # write headers
@@ -344,6 +361,7 @@ class ECLabAsciiFile(Observer):
                 )
                 fout.write(line.encode(self._encoding))
 Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
+
 
 class ElectrochemicalImpedanceSpectroscopy(Experiment):
     '''ElectrochemicalImpedanceSpectroscopy (EIS)
@@ -381,6 +399,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     '''
     def __new__(cls, *args, **kwargs):
         return object.__new__(ElectrochemicalImpedanceSpectroscopy)
+
     def __init__(self, ptree):
         Experiment.__init__(self)
         self._frequency_upper_limit = ptree.get_double('frequency_upper_limit')
@@ -388,11 +407,13 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
         self._steps_per_decade = ptree.get_int('steps_per_decade')
         self._ptree = copy(ptree)
         self.reset()
+
     def reset(self):
         self._data = {
             'frequency': array([], dtype=float),
             'impedance': array([], dtype=complex)
         }
+
     def run(self, device, fout=None):
         self._extra_data = device.inspect()
         frequency = self._frequency_upper_limit
@@ -406,7 +427,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             f, Z = fourier_analysis(data, self._ptree)
             self._data['frequency'] = append(self._data['frequency'], f)
             self._data['impedance'] = append(self._data['impedance'], Z)
-            frequency /= power(10.0, 1.0/self._steps_per_decade)
+            frequency /= power(10.0, 1.0 / self._steps_per_decade)
             self.notify()
 for alias in ['EIS', 'ElectrochemicalImpedanceSpectroscopy']:
     Experiment._builders[alias] = ElectrochemicalImpedanceSpectroscopy

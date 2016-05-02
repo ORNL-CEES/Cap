@@ -2,7 +2,7 @@
 #
 # This file is subject to the Modified BSD License and may not be distributed
 # without copyright and license information. Please refer to the file LICENSE
-# for the text and further information on this license. 
+# for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice, EndCriterion
 from numpy import nan as NaN
@@ -17,8 +17,9 @@ device = EnergyStorageDevice(ptree, comm)
 
 
 class capEndCriterionTestCase(unittest.TestCase):
+
     def test_time_limit(self):
-        ptree=PropertyTree()
+        ptree = PropertyTree()
         ptree.put_string('end_criterion', 'time')
         ptree.put_double('duration', 15)
         time_limit = EndCriterion.factory(ptree)
@@ -157,6 +158,7 @@ class capEndCriterionTestCase(unittest.TestCase):
 
     def test_overload(self):
         class BadCriterion(EndCriterion):
+
             def __init__(self):
                 pass
         bad_criterion = BadCriterion()

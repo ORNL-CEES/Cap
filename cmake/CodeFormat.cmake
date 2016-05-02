@@ -49,7 +49,7 @@ file(COPY
         WORLD_READ WORLD_EXECUTE
 )
 add_test(
-    NAME check_format
+    NAME check_format_cpp
     COMMAND ${CMAKE_BINARY_DIR}/check_format_cpp.sh
 )
 
@@ -62,8 +62,35 @@ else()
 endif()
 add_custom_target(format-python
     ${AUTOPEP8_EXECUTABLE} 
-    --diff ${CMAKE_SOURCE_DIR}/python/source/*.py
-    COMMAND
-    ${AUTOPEP8_EXECUTABLE} 
-    --diff ${CMAKE_SOURCE_DIR}/python/test/*.py
+    --in-place --recursive
+    ${CMAKE_SOURCE_DIR}/python
+)
+file(WRITE
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check_format_python.sh
+    "#!/usr/bin/env bash\n"
+    "\n"
+    "${AUTOPEP8_EXECUTABLE} "
+    "--diff --recursive "
+    "${CMAKE_SOURCE_DIR}/python "
+    "| tee diff\n"
+    "diff=`cat diff`\n"
+    "rm diff\n"
+    "if [ -z \"$diff\" ]; then\n"
+    "    exit 0\n"
+    "else\n"
+    "    exit 1\n"
+    "fi"
+)
+file(COPY
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check_format_python.sh
+    DESTINATION
+        ${CMAKE_BINARY_DIR}
+    FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+)
+add_test(
+    NAME check_format_py
+    COMMAND ${CMAKE_BINARY_DIR}/check_format_python.sh
 )
