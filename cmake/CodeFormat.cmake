@@ -76,6 +76,7 @@ file(WRITE
     "diff=`cat diff`\n"
     "rm diff\n"
     "if [ -z \"$diff\" ]; then\n"
+    "    echo OK\n"
     "    exit 0\n"
     "else\n"
     "    exit 1\n"
