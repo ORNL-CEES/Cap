@@ -28,13 +28,10 @@ void SeriesRC::inspect(EnergyStorageDeviceInspector *inspector)
 
 SeriesRC::SeriesRC(boost::property_tree::ptree const &ptree,
                    boost::mpi::communicator const &comm)
-    : EnergyStorageDevice(comm)
+    : EnergyStorageDevice(comm), R(ptree.get<double>("series_resistance")),
+      C(ptree.get<double>("capacitance")),
+      U_C(ptree.get<double>("initial_voltage", 0.0)), U(U_C), I(0.0)
 {
-  R = ptree.get<double>("series_resistance");
-  C = ptree.get<double>("capacitance");
-  U = ptree.get<double>("initial_voltage", 0.0);
-  U_C = U;
-  I = 0.0;
 }
 
 void SeriesRC::reset(double const capacitor_voltage)
@@ -143,14 +140,14 @@ std::size_t SeriesRC::evolve_one_time_step_constant_power(
 
 ParallelRC::ParallelRC(boost::property_tree::ptree const &ptree,
                        boost::mpi::communicator const &comm)
-    : EnergyStorageDevice(comm)
+    : EnergyStorageDevice(comm),
+      R_series(ptree.get<double>("series_resistance")),
+      R_parallel(ptree.get<double>("parallel_resistance")),
+      C(ptree.get<double>("capacitance")),
+      U_C(ptree.get<double>("initial_voltage", 0.0)),
+      U((R_series + R_parallel) / R_parallel * U_C),
+      I(U / (R_series + R_parallel))
 {
-  R_series = ptree.get<double>("series_resistance");
-  R_parallel = ptree.get<double>("parallel_resistance");
-  C = ptree.get<double>("capacitance");
-  U = ptree.get<double>("initial_voltage", 0.0);
-  U_C = R_parallel / (R_series + R_parallel) * U;
-  I = U / (R_series + R_parallel);
 }
 
 void ParallelRC::reset(double const capacitor_voltage)
