@@ -25,7 +25,8 @@ struct Component
 {
 public:
   Component(MPI_Comm mpi_communicator)
-      : offset(0.), triangulation(mpi_communicator)
+      : offset(0.), box_dimensions(0), repetitions(0),
+        triangulation(mpi_communicator), shift_vector()
   {
   }
 
@@ -33,7 +34,7 @@ public:
             std::vector<unsigned int> const &repetitions,
             MPI_Comm mpi_communicator)
       : offset(0.), box_dimensions(box), repetitions(repetitions),
-        triangulation(mpi_communicator)
+        triangulation(mpi_communicator), shift_vector()
   {
   }
 
@@ -216,7 +217,10 @@ void Geometry<dim>::convert_geometry_database(
 template <int dim>
 Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
                         boost::mpi::communicator mpi_communicator)
-    : _communicator(mpi_communicator)
+    : _communicator(mpi_communicator),
+      _anode_boundary_id(dealii::numbers::invalid_subdomain_id),
+      _cathode_boundary_id(dealii::numbers::invalid_boundary_id),
+      _triangulation(nullptr), _materials(nullptr)
 {
   _triangulation = std::make_shared<dealii::distributed::Triangulation<dim>>(
       mpi_communicator);
@@ -296,7 +300,9 @@ Geometry<dim>::Geometry(
     std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation)
     : _communicator(boost::mpi::communicator(triangulation->get_communicator(),
                                              boost::mpi::comm_duplicate)),
-      _triangulation(triangulation)
+      _anode_boundary_id(dealii::numbers::invalid_boundary_id),
+      _cathode_boundary_id(dealii::numbers::invalid_boundary_id),
+      _triangulation(triangulation), _materials(nullptr)
 {
   fill_materials_map(database);
 }

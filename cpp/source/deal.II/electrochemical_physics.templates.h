@@ -21,7 +21,10 @@ template <int dim>
 ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     std::shared_ptr<PhysicsParameters<dim> const> parameters,
     boost::mpi::communicator mpi_communicator)
-    : Physics<dim>(parameters, mpi_communicator)
+    : Physics<dim>(parameters, mpi_communicator), solid_potential_component(-1),
+      liquid_potential_component(-1),
+      anode_boundary_id(dealii::numbers::invalid_boundary_id),
+      cathode_boundary_id(dealii::numbers::invalid_boundary_id)
 {
   boost::property_tree::ptree const &database = parameters->database;
 

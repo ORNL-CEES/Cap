@@ -25,7 +25,7 @@ class SuperCapacitorInspector : public EnergyStorageDeviceInspector
 {
 public:
   SuperCapacitorInspector() = default;
-  void inspect(EnergyStorageDevice *device);
+  void inspect(EnergyStorageDevice *device) override;
 };
 
 template <int dim>
@@ -135,7 +135,7 @@ private:
   double surface_area;
 
   std::shared_ptr<Geometry<dim>> _geometry;
-  std::shared_ptr<dealii::FESystem<dim>> fe;
+  std::shared_ptr<dealii::FESystem<dim>> _fe;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   std::shared_ptr<dealii::Trilinos::MPI::BlockVector> solution;
 

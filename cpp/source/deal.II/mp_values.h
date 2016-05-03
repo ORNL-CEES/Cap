@@ -22,7 +22,7 @@ class MPValuesParameters
 {
 public:
   MPValuesParameters(std::shared_ptr<boost::property_tree::ptree const> d)
-      : database(d)
+      : database(d), geometry(nullptr)
   {
   }
   virtual ~MPValuesParameters() = default;

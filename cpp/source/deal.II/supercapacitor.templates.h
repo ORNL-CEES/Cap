@@ -56,7 +56,11 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
 template <int dim>
 SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
                                     boost::mpi::communicator const &comm)
-    : EnergyStorageDevice(comm), _ptree(ptree)
+    : EnergyStorageDevice(comm), max_iter(0), verbose_lvl(0), abs_tolerance(0.),
+      rel_tolerance(0.), surface_area(0.), _geometry(nullptr), _fe(nullptr),
+      dof_handler(nullptr), solution(nullptr),
+      electrochemical_physics_params(nullptr), electrochemical_physics(nullptr),
+      post_processor_params(nullptr), post_processor(nullptr), _ptree(ptree)
 {
 
   // get database
@@ -88,9 +92,9 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
       _geometry->get_triangulation();
 
   // distribute degrees of freedom
-  fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
+  _fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
   dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
-  dof_handler->distribute_dofs(*fe);
+  dof_handler->distribute_dofs(*_fe);
 
   // Renumber the degrees of freedom component-wise.
   dealii::DoFRenumbering::component_wise(*dof_handler);
@@ -120,9 +124,9 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   surface_area = 0.;
   dealii::types::boundary_id cathode_boundary_id =
       _geometry->get_cathode_boundary_id();
-  dealii::QGauss<dim - 1> face_quadrature_rule(fe->degree + 1);
+  dealii::QGauss<dim - 1> face_quadrature_rule(_fe->degree + 1);
   unsigned int const n_face_q_points = face_quadrature_rule.size();
-  dealii::FEFaceValues<dim> fe_face_values(*fe, face_quadrature_rule,
+  dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
                                            dealii::update_JxW_values);
   // TODO this can be simplified when using the next version of deal (current is
   // 8.4)

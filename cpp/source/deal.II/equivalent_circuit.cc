@@ -169,7 +169,7 @@ public:
   }
   std::unique_ptr<EnergyStorageDevice>
   build(boost::property_tree::ptree const &ptree,
-        boost::mpi::communicator const &comm)
+        boost::mpi::communicator const &comm) override
   {
     boost::property_tree::ptree other;
     compute_equivalent_circuit(ptree, other);

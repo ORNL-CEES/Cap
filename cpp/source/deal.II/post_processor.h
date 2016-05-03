@@ -27,7 +27,8 @@ public:
   PostprocessorParameters(
       std::shared_ptr<boost::property_tree::ptree const> d,
       std::shared_ptr<dealii::DoFHandler<dim>> const dof_handler)
-      : dof_handler(dof_handler), database(d)
+      : dof_handler(dof_handler), solution(nullptr), mp_values(nullptr),
+        database(d)
   {
     BOOST_ASSERT_MSG(dof_handler != nullptr, "Invalid DoFHandler.");
     BOOST_ASSERT_MSG(database != nullptr, "Invalid database.");

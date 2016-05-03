@@ -15,6 +15,7 @@ namespace cap
 template <int dim, int spacedim>
 MPValues<dim, spacedim>::MPValues(
     MPValuesParameters<dim, spacedim> const &params)
+    : materials()
 {
   std::shared_ptr<boost::property_tree::ptree const> database = params.database;
   std::shared_ptr<Geometry<dim> const> geometry = params.geometry;
@@ -293,7 +294,7 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
 template <int dim, int spacedim>
 NewStuffMPValues<dim, spacedim>::NewStuffMPValues(
     MPValuesParameters<dim, spacedim> const &parameters)
-    : MPValues<dim, spacedim>(parameters)
+    : MPValues<dim, spacedim>(parameters), properties()
 {
 }
 

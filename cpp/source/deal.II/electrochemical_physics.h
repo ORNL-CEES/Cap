@@ -28,7 +28,9 @@ class ElectrochemicalPhysicsParameters : public PhysicsParameters<dim>
 {
 public:
   ElectrochemicalPhysicsParameters(boost::property_tree::ptree const &d)
-      : PhysicsParameters<dim>(d), supercapacitor_state(Uninitialized)
+      : PhysicsParameters<dim>(d), supercapacitor_state(Uninitialized),
+        constant_current_density(0.), constant_voltage(0.),
+        constant_load_density(0.), time_step(0.)
   {
   }
 
