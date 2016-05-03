@@ -16,6 +16,7 @@ namespace cap
 class DefaultInspector : public EnergyStorageDeviceInspector
 {
 public:
+  DefaultInspector();
   void inspect(EnergyStorageDevice *device) override;
   std::map<std::string, double> get_data();
 

@@ -148,12 +148,12 @@ public:
   void reset(double const capacitor_voltage);
 
   // TODO: make these variables private
+  double R_series;
   double R_parallel;
   double C;
   double U_C;
   double U;
   double I;
-  double R_series;
 
 private:
   friend class boost::serialization::access;

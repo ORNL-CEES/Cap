@@ -54,10 +54,11 @@ BOOST_AUTO_TEST_CASE(test_energy_storage_device_builders)
 class ExampleInspector : public cap::EnergyStorageDeviceInspector
 {
 public:
+  ExampleInspector() : _type("Unrecognized") {}
+
   // get the device type and set the voltage to 1.4 volt
   void inspect(cap::EnergyStorageDevice *device)
   {
-    _type = "Unrecognized";
     // use dynamic_cast to find out the actual type
     if (dynamic_cast<cap::SeriesRC *>(device) != nullptr)
       _type = "SeriesRC";
