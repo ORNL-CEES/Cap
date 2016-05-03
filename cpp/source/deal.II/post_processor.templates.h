@@ -23,7 +23,8 @@ Postprocessor<dim>::Postprocessor(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters,
     boost::mpi::communicator mpi_communicator)
     : _communicator(mpi_communicator), dof_handler(parameters->dof_handler),
-      solution(parameters->solution), mp_values(parameters->mp_values)
+      solution(parameters->solution), mp_values(parameters->mp_values),
+      vectors(), values()
 {
   BOOST_ASSERT_MSG(dof_handler != nullptr, "Invalid DoFHandler");
   BOOST_ASSERT_MSG(solution != nullptr, "Invalid solution vector.");
@@ -80,7 +81,10 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
     std::shared_ptr<PostprocessorParameters<dim> const> parameters,
     std::shared_ptr<Geometry<dim> const> geometry,
     boost::mpi::communicator mpi_communicator)
-    : Postprocessor<dim>(parameters, mpi_communicator), _geometry(geometry)
+    : Postprocessor<dim>(parameters, mpi_communicator),
+      debug_material_ids(false), debug_boundary_ids(false),
+      debug_material_properties(), debug_solution_fields(),
+      debug_solution_fluxes(), _geometry(geometry)
 {
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
   this->values["voltage"] = 0.0;

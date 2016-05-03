@@ -57,7 +57,7 @@ public:
   ExampleInspector() : _type("Unrecognized") {}
 
   // get the device type and set the voltage to 1.4 volt
-  void inspect(cap::EnergyStorageDevice *device)
+  void inspect(cap::EnergyStorageDevice *device) override final
   {
     // use dynamic_cast to find out the actual type
     if (dynamic_cast<cap::SeriesRC *>(device) != nullptr)

@@ -20,7 +20,7 @@ public:
 
   std::unique_ptr<EnergyStorageDevice>
   build(boost::property_tree::ptree const &ptree,
-        boost::mpi::communicator const &comm)
+        boost::mpi::communicator const &comm) override
   {
     int const dim = ptree.get<int>("dim");
     if (dim == 2)

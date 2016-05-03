@@ -20,7 +20,10 @@ template <int dim>
 class PhysicsParameters
 {
 public:
-  PhysicsParameters(boost::property_tree::ptree const &d) : database(d) {}
+  PhysicsParameters(boost::property_tree::ptree const &d)
+      : geometry(nullptr), dof_handler(nullptr), mp_values(nullptr), database(d)
+  {
+  }
 
   virtual ~PhysicsParameters() = default;
 
