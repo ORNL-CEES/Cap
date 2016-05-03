@@ -9,6 +9,7 @@
 #define CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_TEMPLATES_H
 
 #include <cap/electrochemical_physics.h>
+#include <cap/types.h>
 #include <boost/assert.hpp>
 #include <deal.II/base/function.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -23,8 +24,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     boost::mpi::communicator mpi_communicator)
     : Physics<dim>(parameters, mpi_communicator), solid_potential_component(-1),
       liquid_potential_component(-1),
-      anode_boundary_id(dealii::numbers::invalid_boundary_id),
-      cathode_boundary_id(dealii::numbers::invalid_boundary_id)
+      anode_boundary_id(type::invalid_boundary_id),
+      cathode_boundary_id(type::invalid_boundary_id)
 {
   boost::property_tree::ptree const &database = parameters->database;
 

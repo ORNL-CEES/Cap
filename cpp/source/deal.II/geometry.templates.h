@@ -6,6 +6,7 @@
  */
 
 #include <cap/geometry.h>
+#include <cap/types.h>
 #include <cap/utils.h>
 #include <deal.II/grid/filtered_iterator.h>
 #include <deal.II/grid/grid_generator.h>
@@ -218,9 +219,9 @@ template <int dim>
 Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
                         boost::mpi::communicator mpi_communicator)
     : _communicator(mpi_communicator),
-      _anode_boundary_id(dealii::numbers::invalid_subdomain_id),
-      _cathode_boundary_id(dealii::numbers::invalid_boundary_id),
-      _triangulation(nullptr), _materials(nullptr)
+      _anode_boundary_id(type::invalid_boundary_id),
+      _cathode_boundary_id(type::invalid_boundary_id), _triangulation(nullptr),
+      _materials(nullptr)
 {
   _triangulation = std::make_shared<dealii::distributed::Triangulation<dim>>(
       mpi_communicator);
@@ -300,8 +301,8 @@ Geometry<dim>::Geometry(
     std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation)
     : _communicator(boost::mpi::communicator(triangulation->get_communicator(),
                                              boost::mpi::comm_duplicate)),
-      _anode_boundary_id(dealii::numbers::invalid_boundary_id),
-      _cathode_boundary_id(dealii::numbers::invalid_boundary_id),
+      _anode_boundary_id(type::invalid_boundary_id),
+      _cathode_boundary_id(type::invalid_boundary_id),
       _triangulation(triangulation), _materials(nullptr)
 {
   fill_materials_map(database);

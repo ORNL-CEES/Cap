@@ -27,4 +27,22 @@ namespace Trilinos = TrilinosWrappers;
 namespace distributed = parallel::distributed;
 }
 
+#ifdef WITH_DEAL_II
+
+#include <deal.II/base/types.h>
+#include <limits>
+
+namespace type
+{
+
+/**
+ * Sometimes dealii::numbers::invalid_boundary_id triggers an overflow warning.
+ * Use a typedef so we don't trigger the warning.
+ */
+static dealii::types::boundary_id const invalid_boundary_id =
+    std::numeric_limits<::dealii::types::boundary_id>::max();
+}
+
+#endif
+
 #endif
