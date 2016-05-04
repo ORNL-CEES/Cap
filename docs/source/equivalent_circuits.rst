@@ -9,8 +9,11 @@ Series RC
 A resistor and a capacitor are connected in series (denoted :math:`\mathrm{ESR}` 
 and :math:`\mathrm{C}` in the figure above).
 
-.. literalinclude:: series_rc.xml
-   :language: xml
+.. code::
+
+    type                SeriesRC
+    series_resistance     5.0e-3 ; [ohm]
+    capacitance           3.0    ; [fahrad]
    
 Above is the database to build a :math:`\mathrm{3\ F}` capacitor in series with a 
 :math:`50\ \mathrm{m\Omega}` resistance.
@@ -43,8 +46,12 @@ Parallel RC
 An extra resistance is placed in parallel of the capacitor. It can be
 instantiated by the following database.
 
-.. literalinclude:: parallel_rc.xml
-   :language: xml
+.. code::
+
+    type                 ParallelRC
+    parallel_resistance      2.5e+6 ; [ohm]
+    series_resistance       50.0e-3 ; [ohm]
+    capacitance              3.0    ; [fahrad]
 
 ``type`` has been changed from ``SeriesRC`` to ``ParallelRC``.
 A :math:`2.5\ \mathrm{M\Omega}` leakage resistance is specified.
