@@ -14,6 +14,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -386,7 +387,13 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
 
 } // end namespace cap
 
-BOOST_AUTO_TEST_CASE(test_ragone_chart_constant_power)
+// Need to test for constant load once it is implemented
+BOOST_DATA_TEST_CASE(
+    test_ragone_chart,
+    boost::unit_test::data::make({"device_parallelrc", "device_seriesrc"}) *
+        boost::unit_test::data::make({"ragone_chart_constant_power",
+                                      "ragone_chart_constant_current"}),
+    device_type, charge_type)
 {
   // parse input file
   std::shared_ptr<boost::property_tree::ptree> input_database =
@@ -397,45 +404,17 @@ BOOST_AUTO_TEST_CASE(test_ragone_chart_constant_power)
   // build an energy storage system
   std::shared_ptr<boost::property_tree::ptree> device_database =
       std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("device"));
+          input_database->get_child(device_type));
   std::shared_ptr<cap::EnergyStorageDevice> device =
       cap::EnergyStorageDevice::build(*device_database,
                                       boost::mpi::communicator());
 
   std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
       std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("ragone_chart_constant_power"));
+          input_database->get_child(charge_type));
 
   std::fstream fout;
-  fout.open("ragone_chart_data3", std::fstream::out);
-
-  cap::scan(device, device_database, ragone_chart_database, fout);
-
-  fout.close();
-}
-
-BOOST_AUTO_TEST_CASE(test_ragone_chart_constant_current)
-{
-  // parse input file
-  std::shared_ptr<boost::property_tree::ptree> input_database =
-      std::make_shared<boost::property_tree::ptree>();
-  boost::property_tree::info_parser::read_info("input_ragone_chart.info",
-                                               *input_database);
-
-  // build an energy storage system
-  std::shared_ptr<boost::property_tree::ptree> device_database =
-      std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("device"));
-  std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(*device_database,
-                                      boost::mpi::communicator());
-
-  std::shared_ptr<boost::property_tree::ptree> ragone_chart_database =
-      std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("ragone_chart_constant_current"));
-
-  std::fstream fout;
-  fout.open("ragone_chart_data4", std::fstream::out);
+  fout.open("ragone_chart_data", std::fstream::out);
 
   cap::scan(device, device_database, ragone_chart_database, fout);
 
