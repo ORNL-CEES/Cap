@@ -4,27 +4,36 @@ Supercapacitors
 ``type`` is set to ``SuperCapacitor``.
 ``dim`` is used to select two- or three-dimensional simulations.
 
-.. code:: xml
+.. code::
 
-    <device>
-        <type>SuperCapacitor</type>
-        <dim>2</dim>
-        <geometry>
+    device {
+        type SuperCapacitor
+        dim 2
+        geometry {
             [...]
-        </geometry>
-        <material_properties>
+        }
+        material_properties {
             [...]
-        </material_properties>
-    </device>
+        }
+    }
 
 
 Geometry
 ^^^^^^^^
 
-.. literalinclude:: super_capacitor.xml
-    :language: xml
-    :start-after: <!-- geometry begin -->
-    :end-before: <!-- geometry end -->
+.. code::
+
+    geometry {
+        type supercapacitor
+
+        anode_collector_thickness    5.0e-4 ; [centimeter]
+        anode_electrode_thickness   50.0e-4 ; [centimeter]
+        separator_thickness         25.0e-4 ; [centimeter]
+        cathode_electrode_thickness 50.0e-4 ; [centimeter]
+        cathode_collector_thickness  5.0e-4 ; [centimeter]
+        geometric_area              25.0e-2 ; [square centimeter]
+        tab_height                   5.0e-4 ; [centimeter]
+    }
 
 ``mesh_file`` give the path to the triangulation. The dimension has to match
 ``dim`` or an exception will be thrown.
@@ -49,17 +58,26 @@ independently from one another. The overall sandwich height and depth (in
 Governing equations
 ^^^^^^^^^^^^^^^^^^^
 
-+------------------------------------+----------------------------------------------------+------------------------------------+
-| collector                          | electrode                                          | separator                          |
-+====================================+====================================================+====================================+
-|                                    |                                                    |                                    |
-|:math:`i_1 = -\sigma \nabla \Phi_1` |:math:`i_1 = -\sigma \nabla \Phi_1`                 |:math:`i_2 = -\kappa \nabla \Phi_2` |
-|                                    |                                                    |                                    |
-|:math:`\nabla \cdot i_1 = 0`        |:math:`i_2 = -\kappa \nabla \Phi_2`                 |:math:`\nabla \cdot i_2 = 0`        |
-|                                    |                                                    |                                    |
-|                                    |:math:`\nabla \cdot i_1 = \nabla \cdot i_2 = a i_n` |                                    |
-|                                    |                                                    |                                    |
-+------------------------------------+----------------------------------------------------+------------------------------------+
+.. |solid_current| replace::
+    :math:`i_1 = -\sigma \nabla \Phi_1`
+
+.. |liquid_current| replace::
+    :math:`i_2 = -\kappa \nabla \Phi_2`
+
+.. |interfacial_current| replace::
+    :math:`-\nabla \cdot i_1 = \nabla \cdot i_2 = a i_n`
+
++------------------------------+-----------------------+------------------------------+
+| collector                    | electrode             | separator                    |
++==============================+=======================+==============================+
+|                              |                       |                              |
+| |solid_current|              | |solid_current|       | |liquid_current|             |
+|                              |                       |                              |
+| :math:`\nabla \cdot i_1 = 0` | |liquid_current|      | :math:`\nabla \cdot i_2 = 0` |
+|                              |                       |                              |
+|                              | |interfacial_current| |                              |
+|                              |                       |                              |
++------------------------------+-----------------------+------------------------------+
 
 
 .. |alias1| replace::
@@ -151,11 +169,63 @@ for Faraday’s constant, the universal gas constant and temperature.
 Material properties
 ^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: super_capacitor.xml
-    :language: xml
-    :start-after: <!-- material_properties begin -->
-    :end-before: <!-- material_properties end -->
+.. code::
 
+    material_properties {
+        anode {
+            type           porous_electrode
+            matrix_phase   electrode_material
+            solution_phase electrolyte
+        }
+        cathode {
+            type           porous_electrode
+            matrix_phase   electrode_material
+            solution_phase electrolyte
+        }
+        separator {
+            type           permeable_membrane
+            matrix_phase   separator_material
+            solution_phase electrolyte
+        }
+        collector {
+            type           current_collector
+            metal_foil     collector_material
+        }
+
+        separator_material {
+            void_volume_fraction             0.6       ;
+            tortuosity_factor                1.29      ;
+            pores_characteristic_dimension   1.5e-7    ; [centimeter]
+            pores_geometry_factor            2.0       ;
+            mass_density                     3.2       ; [gram per cubic centimeter]
+            heat_capacity                    1.2528e3  ; [joule per kilogram kelvin]
+            thermal_conductivity             0.0019e2  ; [watt per meter kelvin]
+        }
+        electrode_material {
+            differential_capacitance         3.134     ; [microfarad per square centimeter]
+            exchange_current_density         7.463e-10 ; [ampere per square centimeter]
+            void_volume_fraction             0.67      ;
+            tortuosity_factor                2.3       ;
+            pores_characteristic_dimension   1.5e-7    ; [centimeter]
+            pores_geometry_factor            2.0       ;
+            mass_density                     2.3       ; [gram per cubic centimeter]
+            electrical_resistivity           1.92      ; [ohm centimeter]
+            heat_capacity                    0.93e3    ; [joule per kilogram kelvin]
+            thermal_conductivity             0.0011e2  ; [watt per meter kelvin]
+        }
+        collector_material {
+            mass_density                     2.7       ; [gram per cubic centimeter]
+            electrical_resistivity          28.2e-7    ; [ohm centimeter]
+            heat_capacity                    2.7e3     ; [joule per kilogram kelvin]
+            thermal_conductivity           237.0       ; [watt per meter kelvin]
+        }
+        electrolyte {
+            mass_density                     1.2       ; [gram per cubic centimeter]
+            electrical_resistivity           1.49e3    ; [ohm centimeter]
+            heat_capacity                    0.0       ; [joule per kilogram kelvin]
+            thermal_conductivity             0.0       ; [watt per meter kelvin]
+        }
+    }
 
 The specific surface area per unit volume :math:`a` is estimated using
 

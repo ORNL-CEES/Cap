@@ -1,5 +1,0 @@
-<device>
-   <type>              SeriesRC </type>
-   <series_resistance>  50.0e-3 </series_resistance> <!-- ohm -->
-   <capacitance>         3.0    </capacitance>       <!-- farad -->
-</device>
