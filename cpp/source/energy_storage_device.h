@@ -128,7 +128,12 @@ private:
     std::ignore = version;
   }
   friend EnergyStorageDeviceBuilder;
-  static std::map<std::string, EnergyStorageDeviceBuilder *> _builders;
+
+  /**
+   * This function encapsulates the _builders static variable. This is done to
+   * ensure that the variable is initialized before it is called.
+   */
+  static std::map<std::string, EnergyStorageDeviceBuilder *> &_builders();
 };
 
 /**

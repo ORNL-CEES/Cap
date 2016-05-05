@@ -17,20 +17,24 @@ EnergyStorageDeviceBuilder::~EnergyStorageDeviceBuilder() = default;
 void EnergyStorageDeviceBuilder::register_energy_storage_device(
     std::string const &type, EnergyStorageDeviceBuilder *builder)
 {
-  EnergyStorageDevice::_builders[type] = builder;
+  EnergyStorageDevice::_builders()[type] = builder;
 }
 
-std::map<std::string, EnergyStorageDeviceBuilder *>
-    EnergyStorageDevice::_builders =
-        std::map<std::string, EnergyStorageDeviceBuilder *>();
+std::map<std::string, EnergyStorageDeviceBuilder *> &
+EnergyStorageDevice::_builders()
+{
+  static std::map<std::string, EnergyStorageDeviceBuilder *> *_builder =
+      new std::map<std::string, EnergyStorageDeviceBuilder *>();
+  return *_builder;
+}
 
 std::unique_ptr<EnergyStorageDevice>
 EnergyStorageDevice::build(boost::property_tree::ptree const &ptree,
                            boost::mpi::communicator const &comm)
 {
   auto const type = ptree.get<std::string>("type");
-  auto const it = _builders.find(type);
-  if (it != _builders.end())
+  auto const it = _builders().find(type);
+  if (it != _builders().end())
     return (it->second)->build(ptree, comm);
   else
     throw std::runtime_error("invalid EnergyStorageDevice type `" + type +
