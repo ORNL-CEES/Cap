@@ -37,7 +37,7 @@ get_discharge_evolve_one_time_step(
       dev->evolve_one_time_step_constant_current(time_step, -discharge_current);
     };
   }
-  else if (discharge_mode.compare("constant_power") == 0)
+  else
   {
     double const discharge_power = database->get<double>("discharge_power");
     return [discharge_power](double const, double const time_step,
@@ -45,19 +45,6 @@ get_discharge_evolve_one_time_step(
     {
       dev->evolve_one_time_step_constant_power(time_step, -discharge_power);
     };
-  }
-  else if (discharge_mode.compare("constant_load") == 0)
-  {
-    double const discharge_load = database->get<double>("discharge_load");
-    return [discharge_load](double const, double const time_step,
-                            std::shared_ptr<cap::EnergyStorageDevice> dev)
-    {
-      dev->evolve_one_time_step_constant_load(time_step, discharge_load);
-    };
-  }
-  else
-  {
-    throw std::runtime_error("invalid discharge mode " + discharge_mode);
   }
 }
 
@@ -124,7 +111,7 @@ get_initialize(std::shared_ptr<boost::property_tree::ptree const> database)
       d->put("discharge_current", discharge_current_lower_limit);
     };
   }
-  else if (discharge_mode.compare("constant_power") == 0)
+  else
   {
     double const discharge_power_lower_limit =
         database->get<double>("discharge_power_lower_limit");
@@ -133,10 +120,6 @@ get_initialize(std::shared_ptr<boost::property_tree::ptree const> database)
     {
       d->put("discharge_power", discharge_power_lower_limit);
     };
-  }
-  else
-  {
-    throw std::runtime_error("invalid discharge mode " + discharge_mode);
   }
 }
 
@@ -156,7 +139,7 @@ get_condition(std::shared_ptr<boost::property_tree::ptree const> database)
       return discharge_current <= discharge_current_upper_limit;
     };
   }
-  else if (discharge_mode.compare("constant_power") == 0)
+  else
   {
     double const discharge_power_upper_limit =
         database->get<double>("discharge_power_upper_limit");
@@ -166,10 +149,6 @@ get_condition(std::shared_ptr<boost::property_tree::ptree const> database)
       double const discharge_power = d->get<double>("discharge_power");
       return discharge_power <= discharge_power_upper_limit;
     };
-  }
-  else
-  {
-    throw std::runtime_error("invalid discharge mode " + discharge_mode);
   }
 }
 
@@ -188,7 +167,7 @@ get_increase(std::shared_ptr<boost::property_tree::ptree const> database)
       d->put("discharge_current", discharge_current);
     };
   }
-  else if (discharge_mode.compare("constant_power") == 0)
+  else
   {
     int const steps_per_decade = database->get<int>("steps_per_decade");
     return [steps_per_decade](std::shared_ptr<boost::property_tree::ptree> d)
@@ -197,10 +176,6 @@ get_increase(std::shared_ptr<boost::property_tree::ptree const> database)
       discharge_power *= std::pow(10.0, 1.0 / steps_per_decade);
       d->put("discharge_power", discharge_power);
     };
-  }
-  else
-  {
-    throw std::runtime_error("invalid discharge mode " + discharge_mode);
   }
 }
 
@@ -243,7 +218,7 @@ get_compute_exact(
         return std::make_tuple(discharge_time, -energy);
       };
     }
-    else if (device_type.compare("ParallelRC") == 0)
+    else
     {
       return [series_resistance, parallel_resistance, capacitance,
               initial_voltage, final_voltage](
@@ -268,12 +243,8 @@ get_compute_exact(
         return std::make_tuple(discharge_time, -energy);
       };
     }
-    else
-    {
-      throw std::runtime_error("invalid device type " + device_type);
-    }
   }
-  else if (discharge_mode.compare("constant_power") == 0)
+  else
   {
     if (device_type.compare("SeriesRC") == 0)
     {
@@ -295,7 +266,7 @@ get_compute_exact(
         return std::make_tuple(discharge_time, energy);
       };
     }
-    else if (device_type.compare("ParallelRC") == 0)
+    else
     {
       return [series_resistance, parallel_resistance, capacitance,
               initial_voltage, final_voltage](
@@ -322,14 +293,6 @@ get_compute_exact(
         return std::make_tuple(discharge_time, energy);
       };
     }
-    else
-    {
-      throw std::runtime_error("invalid device type " + device_type);
-    }
-  }
-  else
-  {
-    throw std::runtime_error("invalide discharge mode " + discharge_mode);
   }
 }
 
@@ -387,7 +350,6 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
 
 } // end namespace cap
 
-// Need to test for constant load once it is implemented
 BOOST_DATA_TEST_CASE(
     test_ragone_chart,
     boost::unit_test::data::make({"device_parallelrc", "device_seriesrc"}) *
