@@ -30,15 +30,7 @@ void write_mesh(std::string const &mesh_file,
   fout.open(mesh_file.c_str(), std::fstream::out);
   std::string const file_extension =
       mesh_file.substr(mesh_file.find_last_of(".") + 1);
-  if (file_extension.compare("vtu") == 0)
-  {
-    mesh_writer.write_vtu(*triangulation, fout);
-  }
-  else
-  {
-    throw std::runtime_error("Bad output format ." + file_extension +
-                             " in mesh file " + mesh_file);
-  }
+  mesh_writer.write_vtu(*triangulation, fout);
   fout.close();
 }
 
