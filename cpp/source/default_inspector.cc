@@ -31,6 +31,7 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
              "anode_electrode_mass_of_active_material",
              "cathode_electrode_interfacial_surface_area",
              "cathode_electrode_mass_of_active_material",
+             "n_dofs"
          })
     {
       post_processor->get(key, value);

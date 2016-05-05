@@ -49,6 +49,7 @@ void Postprocessor<dim>::get(std::string const &key, double &value) const
       this->values.find(key);
   AssertThrow(it != this->values.end(), dealii::StandardExceptions::ExcMessage(
                                             "Key " + key + " doesn't exist"));
+  std::cout<<it->first<<" "<<it->second<<std::endl;
   value = it->second;
 }
 
@@ -97,6 +98,9 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->values["anode_electrode_mass_of_active_material"] = 0.0;
   this->values["cathode_electrode_interfacial_surface_area"] = 0.0;
   this->values["cathode_electrode_mass_of_active_material"] = 0.0;
+  std::cout<<"before "<<dof_handler.n_dofs()<<std::endl;
+  this->values["n_dofs"] = static_cast<double>(dof_handler.n_dofs());
+  std::cout<<"after "<<this->values["n_dofs"]<<std::endl;
 
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
