@@ -97,6 +97,7 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   this->values["anode_electrode_mass_of_active_material"] = 0.0;
   this->values["cathode_electrode_interfacial_surface_area"] = 0.0;
   this->values["cathode_electrode_mass_of_active_material"] = 0.0;
+  this->values["n_dofs"] = static_cast<double>(dof_handler.n_dofs());
 
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
@@ -146,6 +147,9 @@ void SuperCapacitorPostprocessor<dim>::reset(
                 {
                   p.second = 0.0;
                 });
+
+  // Set the number of dofs since it was erased just before.
+  this->values["n_dofs"] = static_cast<double>(dof_handler.n_dofs());
 
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
