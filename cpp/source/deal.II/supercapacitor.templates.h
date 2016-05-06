@@ -346,9 +346,6 @@ void SuperCapacitor<dim>::evolve_one_time_step(
 
   // Update the data in post-processor
   post_processor->reset(post_processor_params);
-  double value(-1.);
-  post_processor->get("n_dofs", value);
-  std::cout<<"here_ "<<value<<std::endl;
 }
 
 template <int dim>
@@ -368,9 +365,6 @@ template <int dim>
 std::shared_ptr<Postprocessor<dim>>
 SuperCapacitor<dim>::get_post_processor() const
 {
-  double value(-1.);
-  post_processor->get("n_dofs", value);
-  std::cout<<"here "<<value<<std::endl;
   return post_processor;
 }
 
