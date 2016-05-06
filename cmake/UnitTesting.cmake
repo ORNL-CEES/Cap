@@ -26,6 +26,15 @@ function(Cap_ADD_BOOST_TEST TEST_NAME)
     endforeach()
 endfunction()
 
+function(Cap_ADD_CPP_EXAMPLE EXAMPLE_NAME)
+    add_executable(${EXAMPLE_NAME}.exe ${CMAKE_CURRENT_SOURCE_DIR}/${EXAMPLE_NAME}.cc)
+    target_link_libraries(${EXAMPLE_NAME}.exe Cap)
+    set_target_properties(${EXAMPLE_NAME}.exe PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+endfunction()
+
 #### Python ##################################################################
 function(Cap_ADD_PYTHON_TEST TEST_NAME)
     add_custom_command(
@@ -51,7 +60,7 @@ function(Cap_ADD_PYTHON_TEST TEST_NAME)
                 COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ${COVERAGE_EXECUTABLE} run --append ${TEST_NAME}.py
             )
         else()
-            ADD_TEST(
+            add_test(
                 NAME ${TEST_NAME}_py_${NPROC}
                 COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NPROC} ${PYTHON_EXECUTABLE} ${TEST_NAME}.py
             )

@@ -1,5 +1,6 @@
 add_subdirectory(source)
 add_subdirectory(test)
+add_subdirectory(example)
 
 include_directories(${Cap_INCLUDE_DIRS})
 add_library(Cap ${Cap_SOURCES})
