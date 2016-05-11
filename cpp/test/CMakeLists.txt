@@ -13,6 +13,7 @@ list(APPEND
     test_resistor_capacitor_circuit
     test_resistor_capacitor_circuit-2
     test_ragone_chart
+    test_timer
     )
 if(ENABLE_DEAL_II)
     list(APPEND

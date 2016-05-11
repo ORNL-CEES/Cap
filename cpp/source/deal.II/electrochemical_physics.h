@@ -9,6 +9,7 @@
 #define CAP_DEAL_II_ELECTROCHEMICAL_PHYSICS_H
 
 #include <cap/physics.h>
+#include <cap/timer.h>
 
 namespace cap
 {
@@ -54,6 +55,8 @@ public:
       std::shared_ptr<PhysicsParameters<dim> const> parameters,
       boost::mpi::communicator mpi_communicator);
 
+  ~ElectrochemicalPhysics();
+
 private:
   void assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters,
                        bool const inhomogeneous_bc);
@@ -62,6 +65,8 @@ private:
   unsigned int liquid_potential_component;
   dealii::types::boundary_id anode_boundary_id;
   dealii::types::boundary_id cathode_boundary_id;
+  Timer _assembly_timer;
+  Timer _setup_timer;
 };
 }
 

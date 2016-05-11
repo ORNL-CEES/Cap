@@ -77,6 +77,7 @@ public:
 
 protected:
   boost::mpi::communicator mpi_communicator;
+  unsigned int verbose_lvl;
   std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
   dealii::IndexSet locally_owned_dofs;
   dealii::IndexSet locally_relevant_dofs;
