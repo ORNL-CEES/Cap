@@ -263,16 +263,6 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       }
   }
 
-  // Add the null space. This wouldn't be necessary if we were using a
-  // hp::DoFHandler object instead of a DoFHandler object but
-  // hp::DoFHandler does not work with MPI.
-  std::vector<dealii::types::global_dof_index> locally_owned_indices;
-  this->locally_owned_dofs.fill_index_vector(locally_owned_indices);
-  double max_value = 0.;
-  for (auto i : locally_owned_indices)
-    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
-      this->system_matrix.add(i, i, max_value);
-
   // We are done fill-in the matrices and the vector. So we can compress
   // everything.
   this->system_matrix.compress(dealii::VectorOperation::add);
