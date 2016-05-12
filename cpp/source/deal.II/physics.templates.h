@@ -18,9 +18,11 @@ namespace cap
 template <int dim>
 Physics<dim>::Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters,
                       boost::mpi::communicator mpi_communicator)
-    : mpi_communicator(mpi_communicator), dof_handler(parameters->dof_handler),
-      locally_owned_dofs(), locally_relevant_dofs(), constraint_matrix(),
-      sparsity_pattern(), system_matrix(), mass_matrix(), system_rhs(),
+    : mpi_communicator(mpi_communicator),
+      verbose_lvl(parameters->database.get("verbosity", 0)),
+      dof_handler(parameters->dof_handler), locally_owned_dofs(),
+      locally_relevant_dofs(), constraint_matrix(), sparsity_pattern(),
+      system_matrix(), mass_matrix(), system_rhs(),
       mp_values(parameters->mp_values)
 {
 }

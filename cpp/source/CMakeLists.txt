@@ -5,6 +5,7 @@ set(Cap_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.h
     ${CMAKE_CURRENT_SOURCE_DIR}/default_inspector.h
     ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/timer.h
 )
 set(Cap_SOURCES
     ${CMAKE_BINARY_DIR}/cpp/source/version.cc
@@ -12,6 +13,7 @@ set(Cap_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/energy_storage_device.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/default_inspector.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/resistor_capacitor.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/timer.cc
 )
 if(ENABLE_DEAL_II)
     add_subdirectory(deal.II)

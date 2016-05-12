@@ -60,11 +60,15 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
       rel_tolerance(0.), surface_area(0.), _geometry(nullptr), _fe(nullptr),
       dof_handler(nullptr), solution(nullptr),
       electrochemical_physics_params(nullptr), electrochemical_physics(nullptr),
-      post_processor_params(nullptr), post_processor(nullptr), _ptree(ptree)
+      post_processor_params(nullptr), post_processor(nullptr), _ptree(ptree),
+      _setup_timer(comm, "SuperCapacitor setup"),
+      _solver_timer(comm, "SuperCapacitor solver")
 {
+  _setup_timer.start();
 
   // get database
   boost::property_tree::ptree const &database = ptree;
+  verbose_lvl = database.get<unsigned int>("verbosity", 0);
 
   // get data tolerance and maximum number of iterations for the CG solver
   boost::property_tree::ptree const &solver_database =
@@ -72,7 +76,6 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   max_iter = solver_database.get<unsigned int>("max_iter", 1000);
   rel_tolerance = solver_database.get<double>("rel_tolerance", 1e-12);
   abs_tolerance = solver_database.get<double>("abs_tolerance", 1e-12);
-  verbose_lvl = solver_database.get<unsigned int>("verbosity", 0);
   // set the number of threads used by deal.II
   unsigned int n_threads = solver_database.get<unsigned int>("n_threads", 1);
   // if 0, let TBB uses all the available threads. This can also be used if one
@@ -163,6 +166,18 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
       post_processor_params, _geometry, this->_communicator);
 
   post_processor->reset(post_processor_params);
+
+  _setup_timer.stop();
+}
+
+template <int dim>
+SuperCapacitor<dim>::~SuperCapacitor()
+{
+  if (verbose_lvl > 0)
+  {
+    _setup_timer.print();
+    _solver_timer.print();
+  }
 }
 
 template <int dim>
@@ -330,22 +345,63 @@ void SuperCapacitor<dim>::evolve_one_time_step(
   mass_matrix.vmult_add(time_dep_rhs, solution->block(0));
 
   // Solve the system
-  dealii::deallog.depth_console(verbose_lvl);
+  _solver_timer.start();
   double tolerance =
       std::max(abs_tolerance, rel_tolerance * system_rhs.l2_norm());
   dealii::SolverControl solver_control(max_iter, tolerance);
   dealii::SolverCG<dealii::Trilinos::MPI::Vector> solver(solver_control);
-  // Temporary preconditioner
-  dealii::Trilinos::PreconditionBlockJacobi preconditioner;
+  // Compute the condition number at the end of the CG iterations.
+  if (verbose_lvl > 1)
+    solver.connect_condition_number_slot(
+        std::bind(&SuperCapacitor<dim>::output_condition_number, this,
+                  std::placeholders::_1),
+        false);
+  // Compute all the eigenvalues at the end of the CG iterations.
+  if (verbose_lvl > 2)
+    solver.connect_eigenvalues_slot(
+        std::bind(&SuperCapacitor<dim>::output_eigenvalues, this,
+                  std::placeholders::_1),
+        false);
+  dealii::Trilinos::PreconditionAMG preconditioner;
+  // Temporary preconditioner. Need to find what parameters work best.
   preconditioner.initialize(system_matrix);
   constraint_matrix.distribute(solution->block(0));
   solver.solve(system_matrix, solution->block(0), time_dep_rhs, preconditioner);
   constraint_matrix.distribute(solution->block(0));
-  // Turn off the verbosity of deal.II
-  dealii::deallog.depth_console(0);
+  if ((verbose_lvl > 0) && (_communicator.rank() == 0))
+  {
+    std::cout << "Initial value: " << solver_control.initial_value()
+              << std::endl;
+    std::cout << "Last value: " << solver_control.last_value() << std::endl;
+    std::cout << "Number of iterations: " << solver_control.last_step()
+              << std::endl
+              << std::endl;
+    ;
+  }
+  _solver_timer.stop();
 
   // Update the data in post-processor
   post_processor->reset(post_processor_params);
+}
+
+template <int dim>
+void SuperCapacitor<dim>::output_condition_number(double condition_number)
+{
+  if (_communicator.rank() == 0)
+    std::cout << "Condition number: " << condition_number << std::endl;
+}
+
+template <int dim>
+void SuperCapacitor<dim>::output_eigenvalues(
+    std::vector<double> const &eigenvalues)
+{
+  if (_communicator.rank() == 0)
+  {
+    std::cout << "Eigenvalues:";
+    for (auto eig : eigenvalues)
+      std::cout << " " << eig;
+    std::cout << std::endl;
+  }
 }
 
 template <int dim>

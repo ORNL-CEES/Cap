@@ -25,8 +25,11 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     : Physics<dim>(parameters, mpi_communicator), solid_potential_component(-1),
       liquid_potential_component(-1),
       anode_boundary_id(type::invalid_boundary_id),
-      cathode_boundary_id(type::invalid_boundary_id)
+      cathode_boundary_id(type::invalid_boundary_id),
+      _assembly_timer(mpi_communicator, "ElectrochemicalPhysics assembly"),
+      _setup_timer(mpi_communicator, "ElectrochemicalPhysics setup")
 {
+  _setup_timer.start();
   boost::property_tree::ptree const &database = parameters->database;
 
   // clang-format off
@@ -99,7 +102,18 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   this->mass_matrix.reinit(this->sparsity_pattern);
   this->system_rhs.reinit(this->locally_owned_dofs, this->mpi_communicator);
 
+  _setup_timer.stop();
   assemble_system(parameters, inhomogeneous_bc);
+}
+
+template <int dim>
+ElectrochemicalPhysics<dim>::~ElectrochemicalPhysics()
+{
+  if (this->verbose_lvl > 0)
+  {
+    _setup_timer.print();
+    _assembly_timer.print();
+  }
 }
 
 template <int dim>
@@ -107,6 +121,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
     std::shared_ptr<PhysicsParameters<dim> const> parameters,
     bool const inhomogeneous_bc)
 {
+  _assembly_timer.start();
   std::shared_ptr<
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
       std::dynamic_pointer_cast<ElectrochemicalPhysicsParameters<dim> const>(
@@ -248,20 +263,13 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       }
   }
 
-  // Add the null space. This wouldn't be necessary if we were using a
-  // hp::DoFHandler object instead of a DoFHandler object but
-  // hp::DoFHandler does not work with MPI.
-  std::vector<dealii::types::global_dof_index> locally_owned_indices;
-  this->locally_owned_dofs.fill_index_vector(locally_owned_indices);
-  for (auto i : locally_owned_indices)
-    if (std::abs(this->system_matrix.diag_element(i)) < 1e-100)
-      this->system_matrix.add(i, i, 1.);
-
   // We are done fill-in the matrices and the vector. So we can compress
   // everything.
   this->system_matrix.compress(dealii::VectorOperation::add);
   this->mass_matrix.compress(dealii::VectorOperation::add);
   this->system_rhs.compress(dealii::VectorOperation::add);
+
+  _assembly_timer.stop();
 }
 }
 

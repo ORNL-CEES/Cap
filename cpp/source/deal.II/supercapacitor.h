@@ -12,6 +12,7 @@
 #include <cap/geometry.h>
 #include <cap/electrochemical_physics.h>
 #include <cap/post_processor.h>
+#include <cap/timer.h>
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/lac/block_vector.h>
 #include <memory>
@@ -34,6 +35,8 @@ class SuperCapacitor : public EnergyStorageDevice
 public:
   SuperCapacitor(boost::property_tree::ptree const &ptree,
                  boost::mpi::communicator const &comm);
+
+  ~SuperCapacitor();
 
   void inspect(EnergyStorageDeviceInspector *inspector) override;
 
@@ -108,6 +111,18 @@ private:
                             bool rebuild);
 
   /**
+   * Output on the screen the condition number of the system of equations being
+   * solved.
+   */
+  void output_condition_number(double condition_number);
+
+  /**
+   * Output on the screen the eigenvalues of the system of equations being
+   * solved.
+   */
+  void output_eigenvalues(std::vector<double> const &eigenvalues);
+
+  /**
    * Maximum number of iterations of the Krylov solver in
    * evolve_one_time_step().
    */
@@ -146,6 +161,8 @@ private:
       post_processor_params;
   std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
   boost::property_tree::ptree const _ptree;
+  Timer _setup_timer;
+  Timer _solver_timer;
 
   template <int dimension>
   friend class SuperCapacitorInspector;
