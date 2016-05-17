@@ -33,6 +33,7 @@ endforeach()
 # Add tests that are run in parallel
 if(ENABLE_DEAL_II)
   Cap_ADD_BOOST_TEST(test_distributed_energy_storage 1 2 4)
+  Cap_ADD_BOOST_TEST(test_supercapacitor_inspector 2)
 endif()
 
 if(ENABLE_GSL)

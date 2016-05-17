@@ -38,19 +38,43 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
       supercapacitor->post_processor->get_vector_keys();
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
       supercapacitor->_geometry->get_triangulation();
+  dealii::DataOut<dim> data_out;
+  data_out.attach_triangulation(*triangulation);
+  // Output the subdomain id
+  dealii::Vector<float> subdomain(triangulation->n_active_cells());
+  dealii::types::subdomain_id const local_subdomain_id =
+      triangulation->locally_owned_subdomain();
+  for (auto &subdom : subdomain)
+    subdom = local_subdomain_id;
+  data_out.add_data_vector(subdomain, "subdomain");
+  // Output the required quantities
   if (!keys.empty())
   {
-    dealii::DataOut<dim> data_out;
-    data_out.attach_triangulation(*triangulation);
     BOOST_FOREACH (std::string const &key, keys)
       data_out.add_data_vector(supercapacitor->post_processor->get(key), key);
-    data_out.build_patches();
-    std::string const filename =
-        "solution-" + dealii::Utilities::int_to_string(i++, 4) + ".vtk";
-    std::ofstream fout(filename.c_str());
-    data_out.write_vtk(fout);
-    fout.close();
   }
+  data_out.build_patches();
+  std::string const filename =
+      "solution-" + dealii::Utilities::int_to_string(i, 4) + "." +
+      dealii::Utilities::int_to_string(local_subdomain_id, 4) + ".vtu";
+  std::ofstream fout(filename.c_str());
+  data_out.write_vtu(fout);
+  fout.close();
+
+  // Create the master record
+  if (supercapacitor->_communicator.rank() == 0)
+  {
+    std::vector<std::string> filenames;
+    for (int j = 0; j < supercapacitor->_communicator.size(); ++j)
+      filenames.push_back("solution-" + dealii::Utilities::int_to_string(i, 4) +
+                          "." + dealii::Utilities::int_to_string(j, 4) +
+                          ".vtu");
+    std::ofstream master_output(
+        ("solution-" + dealii::Utilities::int_to_string(i, 4) + ".pvtu")
+            .c_str());
+    data_out.write_pvtu_record(master_output, filenames);
+  }
+  ++i;
 }
 
 template <int dim>
