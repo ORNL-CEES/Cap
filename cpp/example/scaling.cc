@@ -1,6 +1,7 @@
 #include <cap/energy_storage_device.h>
 #include <cap/mp_values.h>
 #include <cap/default_inspector.h>
+#include <cap/supercapacitor.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/mpi/environment.hpp>
@@ -37,6 +38,9 @@ int main(int argc, char *argv[])
     std::cout << "n dofs: " << data["n_dofs"] << std::endl;
     std::cout << "Elapsed time: " << timer.elapsed() << std::endl;
   }
+
+  cap::SuperCapacitorInspector<2> supercap_inspector;
+  supercap_inspector.inspect(device.get());
 
   return 0;
 }

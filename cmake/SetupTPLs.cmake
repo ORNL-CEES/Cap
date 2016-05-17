@@ -12,6 +12,7 @@ set(Boost_COMPONENTS
     chrono
     timer
     system
+    filesystem
 )
 if(ENABLE_PYTHON)
     set(Boost_COMPONENTS python ${Boost_COMPONENTS})

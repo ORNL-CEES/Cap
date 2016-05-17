@@ -26,6 +26,11 @@ class SuperCapacitorInspector : public EnergyStorageDeviceInspector
 {
 public:
   SuperCapacitorInspector() = default;
+
+  /**
+   * Output the mesh with the suddomain IDs associated to each cells. It can
+   * also be used to output some quantities of interest.
+   */
   void inspect(EnergyStorageDevice *device) override;
 };
 
