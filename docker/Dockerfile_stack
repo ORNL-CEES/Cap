@@ -1,16 +1,17 @@
-FROM ubuntu:15.10
+FROM ubuntu:16.04
 
 ARG NPROC=4
 
 RUN apt-get update && apt-get install -y \
         build-essential \
         gfortran \
-        m4 \
         wget \
         git \
         cmake \
         lcov \
         valgrind \
+        cppcheck \
+        clang-format-3.7 \
         libssl-dev \
         libpng-dev \
         libfreetype6-dev \
@@ -19,7 +20,9 @@ RUN apt-get update && apt-get install -y \
         libbz2-dev \
         libatlas-base-dev \
         zlib1g-dev \
-        openssh-server \
+        libopenmpi-dev \
+        libhdf5-dev \
+        python3.5-dev \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -36,81 +39,21 @@ RUN mkdir -p ${PREFIX} && \
     mkdir build && \
     mkdir install
 
-# install python
-RUN export PYTHON_VERSION=3.5.1 && \
-    export PYTHON_URL=https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
-    export PYTHON_MD5=e9ea6f2623fffcdd871b7b19113fde80 && \
-    export PYTHON_ARCHIVE=${PREFIX}/archive/python-${PYTHON_VERSION}.tar.xz && \
-    export PYTHON_SOURCE_DIR=${PREFIX}/source/python/${PYTHON_VERSION} && \
-    export PYTHON_BUILD_DIR=${PREFIX}/build/python/${PYTHON_VERSION} && \
-    export PYTHON_INSTALL_DIR=/opt/python/${PYTHON_VERSION} && \
-    wget --quiet ${PYTHON_URL} --output-document=${PYTHON_ARCHIVE} && \
-    echo "${PYTHON_MD5} ${PYTHON_ARCHIVE}" | md5sum -c && \
-    mkdir -p ${PYTHON_SOURCE_DIR} && \
-    tar -xf ${PYTHON_ARCHIVE} -C ${PYTHON_SOURCE_DIR} --strip-components=1 && \
-    mkdir -p ${PYTHON_BUILD_DIR} && \
-    cd ${PYTHON_BUILD_DIR} && \
-    ${PYTHON_SOURCE_DIR}/configure \
-        --prefix=${PYTHON_INSTALL_DIR} \
-        --enable-shared \
-        && \
-    make -j${NPROC} install && \
-    rm -rf ${PYTHON_ARCHIVE} && \
-    rm -rf ${PYTHON_BUILD_DIR} && \
-    rm -rf ${PYTHON_SOURCE_DIR}
-
-ENV PYTHON_DIR=/opt/python/3.5.1
-ENV PATH=${PYTHON_DIR}/bin:${PATH}
-ENV LD_LIBRARY_PATH=${PYTHON_DIR}/lib:${LD_LIBRARY_PATH}
-
-RUN ln -s ${PYTHON_DIR}/bin/python3 ${PYTHON_DIR}/bin/python && \
-    ln -s ${PYTHON_DIR}/bin/pip3 ${PYTHON_DIR}/bin/pip && \
-    ln -s ${PYTHON_DIR}/include/python3.5m ${PYTHON_DIR}/include/python3.5 && \
-    ln -s ${PYTHON_DIR}/lib/libpython3.5m.so ${PYTHON_DIR}/lib/libpython3.5.so
-    
-# install openmpi
-RUN export OPENMPI_VERSION=1.10.2 && \
-    export OPENMPI_URL=http://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-${OPENMPI_VERSION}.tar.bz2 && \
-    export OPENMPI_SHA1=03934fc0a2dd0d0d2d0459d714a976eabca938fb && \
-    export OPENMPI_ARCHIVE=${PREFIX}/archive/openmpi-${OPENMPI_VERSION}.tar.bz2 && \
-    export OPENMPI_SOURCE_DIR=${PREFIX}/source/openmpi/${OPENMPI_VERSION} && \
-    export OPENMPI_BUILD_DIR=${PREFIX}/build/openmpi/${OPENMPI_VERSION} && \
-    export OPENMPI_INSTALL_DIR=/opt/openmpi/${OPENMPI_VERSION} && \
-    wget --quiet ${OPENMPI_URL} --output-document=${OPENMPI_ARCHIVE} && \
-    echo "${OPENMPI_SHA1} ${OPENMPI_ARCHIVE}" | sha1sum -c && \
-    mkdir -p ${OPENMPI_SOURCE_DIR} && \
-    tar -xf ${OPENMPI_ARCHIVE} -C ${OPENMPI_SOURCE_DIR} --strip-components=1 && \
-    mkdir -p ${OPENMPI_BUILD_DIR} && cd ${OPENMPI_BUILD_DIR} && \
-    ${OPENMPI_SOURCE_DIR}/configure \
-        --prefix=${OPENMPI_INSTALL_DIR} \
-        --enable-shared \
-        --disable-static \
-        && \
-    make -j${NPROC} all && make install && \
-    rm -rf ${OPENMPI_ARCHIVE} && \
-    rm -rf ${OPENMPI_BUILD_DIR} && \
-    rm -rf ${OPENMPI_SOURCE_DIR}
-
-ENV MPI_DIR=/opt/openmpi/1.10.2
-ENV PATH=${MPI_DIR}/bin:${PATH}
-ENV LD_LIBRARY_PATH=${MPI_DIR}/lib:${LD_LIBRARY_PATH}
-ENV LD_LIBRARY_PATH=${MPI_DIR}/lib/openmpi:${LD_LIBRARY_PATH}
-
 # install boost
-RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.bz2 && \
-    export BOOST_SHA1=7f56ab507d3258610391b47fef6b11635861175a && \
-    export BOOST_ARCHIVE=${PREFIX}/archive/boost_1_60_0.tar.bz2 && \
-    export BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.60.0 && \
-    export BOOST_BUILD_DIR=${PREFIX}/build/boost/1.60.0 && \
-    export BOOST_INSTALL_DIR=/opt/boost/1.60.0 && \
+RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2 && \
+    export BOOST_SHA256=a547bd06c2fd9a71ba1d169d9cf0339da7ebf4753849a8f7d6fdb8feee99b640 && \
+    export BOOST_ARCHIVE=${PREFIX}/archive/boost_1_61_0.tar.bz2 && \
+    export BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.61.0 && \
+    export BOOST_BUILD_DIR=${PREFIX}/build/boost/1.61.0 && \
+    export BOOST_INSTALL_DIR=/opt/boost/1.61.0 && \
     wget --quiet ${BOOST_URL} --output-document=${BOOST_ARCHIVE} && \
-    echo "${BOOST_SHA1} ${BOOST_ARCHIVE}" | sha1sum -c && \
+    echo "${BOOST_SHA256} ${BOOST_ARCHIVE}" | sha256sum -c && \
     mkdir -p ${BOOST_SOURCE_DIR} && \
     tar -xf ${BOOST_ARCHIVE} -C ${BOOST_SOURCE_DIR} --strip-components=1 && \
     cd ${BOOST_SOURCE_DIR} && \
     ./bootstrap.sh \
         --prefix=${BOOST_INSTALL_DIR} \
-        --with-python=${PYTHON_DIR}/bin/python \
+        --with-python=python3.5 \
         && \
     echo "using mpi ;" >> project-config.jam && \
     ./b2 install -j${NPROC} \
@@ -122,68 +65,12 @@ RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.60.0/bo
     rm -rf ${BOOST_BUILD_DIR} && \
     rm -rf ${BOOST_SOURCE_DIR}
 
-ENV BOOST_DIR=/opt/boost/1.60.0
+ENV BOOST_DIR=/opt/boost/1.61.0
 #ENV LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
 
-# install HDF5
-RUN export HDF5_VERSION=1.8.16 && \
-    export HDF5_URL=http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-${HDF5_VERSION}.tar.gz && \
-    export HDF5_MD5=b8ed9a36ae142317f88b0c7ef4b9c618 && \
-    export HDF5_ARCHIVE=${PREFIX}/archive/hdf5-${HDF5_VERSION}.tar.gz && \
-    export HDF5_SOURCE_DIR=${PREFIX}/source/hdf5/${HDF5_VERSION} && \
-    export HDF5_BUILD_DIR=${PREFIX}/build/hdf5/${HDF5_VERSION} && \
-    export HDF5_INSTALL_DIR=/opt/hdf5/${HDF5_VERSION} && \
-    wget --quiet ${HDF5_URL} --output-document=${HDF5_ARCHIVE} && \
-    echo "${HDF5_MD5} ${HDF5_ARCHIVE}" | md5sum -c && \
-    mkdir -p ${HDF5_SOURCE_DIR} && \
-    tar -xf ${HDF5_ARCHIVE} -C ${HDF5_SOURCE_DIR} --strip-components=1 && \
-    mkdir -p ${HDF5_BUILD_DIR} && \
-    cd ${HDF5_BUILD_DIR} && \
-    ${HDF5_SOURCE_DIR}/configure \
-        --prefix=${HDF5_INSTALL_DIR} \
-        --enable-shared \
-        --disable-static \
-        --enable-parallel \
-        && \
-    make -j${NPROC} install && \
-    rm -rf ${HDF5_ARCHIVE} && \
-    rm -rf ${HDF5_BUILD_DIR} && \
-    rm -rf ${HDF5_SOURCE_DIR}
-
-ENV HDF5_DIR=/opt/hdf5/1.8.16
-
-# install NETCDF
-RUN export NETCDF_VERSION=4.4.0 && \
-    export NETCDF_URL=ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-${NETCDF_VERSION}.tar.gz && \
-    export NETCDF_ARCHIVE=${PREFIX}/archive/netcdf-${NETCDF_VERSION}.tar.gz && \
-    export NETCDF_SOURCE_DIR=${PREFIX}/source/netcdf/${NETCDF_VERSION} && \
-    export NETCDF_BUILD_DIR=${PREFIX}/build/netcdf/${NETCDF_VERSION} && \
-    export NETCDF_INSTALL_DIR=/opt/netcdf/${NETCDF_VERSION} && \
-    wget --quiet ${NETCDF_URL} --output-document=${NETCDF_ARCHIVE} && \
-    mkdir -p ${NETCDF_SOURCE_DIR} && \
-    tar -xf ${NETCDF_ARCHIVE} -C ${NETCDF_SOURCE_DIR} --strip-components=1 && \
-    mkdir -p ${NETCDF_BUILD_DIR} && \
-    cd ${NETCDF_BUILD_DIR} && \
-    ${NETCDF_SOURCE_DIR}/configure \
-        --prefix=${NETCDF_INSTALL_DIR} \
-        --enable-netcdf-4 \
-        --enable-shared \
-        --disable-static \
-        CC=${MPI_DIR}/bin/mpicc \
-        CFLAGS="-I${HDF5_DIR}/include" \
-        LDFLAGS="-L${HDF5_DIR}/lib -lhdf5" \
-        && \
-    make -j${NPROC} install && \
-    rm -rf ${NETCDF_ARCHIVE} && \
-    rm -rf ${NETCDF_BUILD_DIR} && \
-    rm -rf ${NETCDF_SOURCE_DIR}
-
-ENV NETCDF_DIR=/opt/netcdf/4.4.0
-
 # install TRILINOS
-RUN apt-get update && apt-get install -y python2.7 && \
-    export TRILINOS_VERSION=12.6.1 && \
-    export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-1.tar.gz && \
+RUN export TRILINOS_VERSION=12.6.3 && \
+    export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-3.tar.gz && \
     export TRILINOS_ARCHIVE=${PREFIX}/archive/trilinos-${TRILINOS_VERSION}.tar.xz && \
     export TRILINOS_SOURCE_DIR=${PREFIX}/source/trilinos/${TRILINOS_VERSION} && \
     export TRILINOS_BUILD_DIR=${PREFIX}/build/trilinos/${TRILINOS_VERSION} && \
@@ -191,14 +78,6 @@ RUN apt-get update && apt-get install -y python2.7 && \
     wget --quiet ${TRILINOS_URL} --output-document=${TRILINOS_ARCHIVE} && \
     mkdir -p ${TRILINOS_SOURCE_DIR} && \
     tar -xf ${TRILINOS_ARCHIVE} -C ${TRILINOS_SOURCE_DIR} --strip-components=1 && \
-    export DTK_URL=https://github.com/ORNL-CEES/DataTransferKit.git && \
-    export DTK_DATA_URL=https://github.com/ORNL-CEES/DTKData.git && \
-    export DTK_SOURCE_DIR=${PREFIX}/source/dtk && \
-    export DTK_DATA_SOURCE_DIR=${PREFIX}/source/dtk-data && \
-    git clone ${DTK_URL} ${DTK_SOURCE_DIR} && \
-    git clone ${DTK_DATA_URL} ${DTK_DATA_SOURCE_DIR} && \
-    ln -s ${DTK_DATA_SOURCE_DIR} ${DTK_SOURCE_DIR}/DTKData && \
-    ln -s ${DTK_SOURCE_DIR} ${TRILINOS_SOURCE_DIR}/DataTransferKit && \
     mkdir -p ${TRILINOS_BUILD_DIR} && \
     cd ${TRILINOS_BUILD_DIR} && \
     cmake \
@@ -210,59 +89,24 @@ RUN apt-get update && apt-get install -y python2.7 && \
         -D MPI_BASE_DIR:PATH=${MPI_DIR} \
         -D TPL_ENABLE_BLAS:BOOL=ON \
         -D TPL_ENABLE_LAPACK:BOOL=ON \
-        -D TPL_ENABLE_Boost:BOOL=ON \
-        -D Boost_INCLUDE_DIRS:PATH=${BOOST_DIR}/include \
-        -D Boost_LIBRARY_DIRS:PATH=${BOOST_DIR}/lib \
-        -D TPL_ENABLE_BoostLib:BOOL=ON \
-        -D BoostLib_INCLUDE_DIRS:PATH=${BOOST_DIR}/include \
-        -D BoostLib_LIBRARY_DIRS:PATH=${BOOST_DIR}/lib \
-        -D TPL_ENABLE_Netcdf:BOOL=ON \
-        -D Netcdf_INCLUDE_DIRS:PATH=${NETCDF_DIR}/include \
-        -D Netcdf_LIBRARY_DIRS:PATH=${NETCDF_DIR}/lib \
-        -D TPL_ENABLE_MOAB:BOOL=OFF \
-        -D TPL_ENABLE_Libmesh:BOOL=OFF \
-        -D Trilinos_ENABLE_CXX11:BOOL=ON \
         -D Trilinos_ASSERT_MISSING_PACKAGES:BOOL=OFF \
         -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
         -D Trilinos_ENABLE_Amesos:BOOL=ON \
-        -D Trilinos_ENABLE_Amesos2:BOOL=ON \
         -D Trilinos_ENABLE_AztecOO:BOOL=ON \
-        -D Trilinos_ENABLE_Belos:BOOL=ON \
         -D Trilinos_ENABLE_Epetra:BOOL=ON \
         -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
         -D Trilinos_ENABLE_Ifpack:BOOL=ON \
-        -D Trilinos_ENABLE_Intrepid:BOOL=ON \
-        -D Trilinos_ENABLE_Kokkos:BOOL=ON \
         -D Trilinos_ENABLE_ML:BOOL=ON \
         -D Trilinos_ENABLE_MueLu:BOOL=ON \
         -D Trilinos_ENABLE_Sacado:BOOL=ON \
-        -D Trilinos_ENABLE_Shards:BOOL=ON \
-        -D Trilinos_ENABLE_Stratimikos:BOOL=OFF \
-        -D Trilinos_ENABLE_STKMesh:BOOL=ON \
-        -D Trilinos_ENABLE_STKIO:BOOL=ON \
-        -D Trilinos_ENABLE_STKUnit_tests:BOOL=ON \
-        -D Trilinos_ENABLE_STKUtil:BOOL=ON \
-        -D Trilinos_ENABLE_STKTopology:BOOL=ON \
-        -D Trilinos_ENABLE_ThyraCore:BOOL=OFF \
-        -D Trilinos_ENABLE_ThyraTpetraAdapters:BOOL=OFF \
         -D Trilinos_ENABLE_Teuchos:BOOL=ON \
-        -D Trilinos_ENABLE_Tpetra:BOOL=ON \
-        -D Trilinos_ENABLE_Xpetra:BOOL=ON \
-        -D Trilinos_ENABLE_SEACASExodus:BOOL=ON \
-        -D Trilinos_ENABLE_SEACASIoss:BOOL=ON \
         ${TRILINOS_SOURCE_DIR} && \
     make -j${NPROC} install && \
     rm -rf ${TRILINOS_ARCHIVE} && \
     rm -rf ${TRILINOS_BUILD_DIR} && \
-    rm -rf ${TRILINOS_SOURCE_DIR} && \
-    apt-get remove -y --purge python2.7 && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* &&\
-    rm -rf ${DTK_SOURCE_DIR} && \
-    rm -rf ${DTK_DATA_SOURCE_DIR}
+    rm -rf ${TRILINOS_SOURCE_DIR}
 
-ENV TRILINOS_DIR=/opt/trilinos/12.6.1
+ENV TRILINOS_DIR=/opt/trilinos/12.6.3
 
 # install p4est
 RUN export P4EST_VERSION=1.1 &&\
@@ -296,9 +140,9 @@ RUN export P4EST_VERSION=1.1 &&\
 ENV P4EST_DIR=/opt/p4est/1.1
 
 # install dealii
-RUN export DEAL_II_VERSION=8.4.0 && \
+RUN export DEAL_II_VERSION=8.4.1 && \
     export DEAL_II_URL=https://github.com/dealii/dealii/releases/download/v${DEAL_II_VERSION}/dealii-${DEAL_II_VERSION}.tar.gz && \
-    export DEAL_II_SHA1=559ef06969da4a35600adee38195f1b8be929721 && \
+    export DEAL_II_SHA1=94c489a5ede6b93497951790fe504fbbe1970819 && \
     export DEAL_II_ARCHIVE=${PREFIX}/archive/dealii-${DEAL_II_VERSION}.tar.gz && \
     export DEAL_II_SOURCE_DIR=${PREFIX}/source/dealii/${DEAL_II_VERSION} && \
     export DEAL_II_BUILD_DIR=${PREFIX}/build/dealii/${DEAL_II_VERSION} && \
@@ -320,22 +164,22 @@ RUN export DEAL_II_VERSION=8.4.0 && \
         -D BOOST_DIR=${BOOST_DIR} \
         -D P4EST_DIR=${P4EST_DIR} \
         -D TRILINOS_DIR=${TRILINOS_DIR} \
-        -D HDF5_DIR=${HDF5_DIR} \
-        -D NETCDF_DIR=${NETCDF_DIR} \
         ${DEAL_II_SOURCE_DIR} && \
     make -j${NPROC} install && \
     rm -rf ${DEAL_II_ARCHIVE} && \
     rm -rf ${DEAL_II_BUILD_DIR} && \
     rm -rf ${DEAL_II_SOURCE_DIR}
 
-ENV DEAL_II_DIR=/opt/dealii/8.4.0
+ENV DEAL_II_DIR=/opt/dealii/8.4.1
 
 ENV LD_LIBRARY_PATH=${LAPACK_DIR}/lib:${LD_LIBRARY_PATH}
 
 # install python requirements using pip
-RUN cd ${PREFIX}/source && \
-    pip install -U pip --no-cache-dir && \
-    pip install --no-cache-dir \
+RUN wget https://bootstrap.pypa.io/get-pip.py && \
+    python3.5 get-pip.py && \
+    rm get-pip.py && \
+    pip3.5 install -U pip --no-cache-dir && \
+    pip3.5 install --no-cache-dir \
         numpy \
         scipy \
         matplotlib \
@@ -345,30 +189,11 @@ RUN cd ${PREFIX}/source && \
         ipyparallel \
         ipywidgets \
         mpi4py \
+        h5py \
         sympy \
         coverage \
         autopep8 \
         docopt
-
-RUN CFLAGS="-I${MPI_DIR}/include -I${HDF5_DIR}/include" \
-    LDFLAGS="-L${HDF5_DIR}/lib" \
-    pip install --no-cache-dir \
-        h5py
-
-# install clang-format but remove Python2.7
-RUN apt-get update && apt-get install -y clang-format-3.7 && \
-    cp /usr/lib/llvm-3.7/bin/clang-format /usr/bin/clang-format && \
-    apt-get remove -y \
-        libpython-stdlib \
-        libpython2.7-minimal \
-        libpython2.7-stdlib \
-        python \
-        python-minimal \
-        python2.7 \
-        python2.7-minimal \
-        && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # install tini
 RUN export TINI_VERSION=0.9.0 && \

@@ -3,10 +3,13 @@
 # number of processes with default value
 : ${NPROC:=8}
 # append the option flag --allow-run-as-root to mpiexec
-mv ${MPI_DIR}/bin/mpiexec ${MPI_DIR}/bin/mpiexec.alias
-echo '#!/usr/bin/env bash' > ${MPI_DIR}/bin/mpiexc
-echo 'mpiexec.alias --allow-run-as-root "$@"' >> ${MPI_DIR}/bin/mpiexec
-chmod +x ${MPI_DIR}/bin/mpiexec
+export DUMMY=/opt/dummy
+mkdir -p ${DUMMY}/bin
+echo '#!/usr/bin/env bash' > ${DUMMY}/bin/mpiexc
+echo '/usr/bin/mpiexec --allow-run-as-root "$@"' >> ${DUMMY}/bin/mpiexec
+chmod +x ${DUMMY}/bin/mpiexec
+export PATH=${DUMMY}/bin:${PATH}
+ln -s /usr/bin/python3.5 ${DUMMY}/bin/python
 # build the code
 rm -rf build
 mkdir build
@@ -19,8 +22,6 @@ cmake \
     -D CMAKE_CXX_COMPILER=mpicxx \
     -D BUILD_SHARED_LIBS=ON \
     -D ENABLE_PYTHON=ON \
-    -D PYTHON_LIBRARY=${PYTHON_DIR}/lib/libpython3.5.so \
-    -D PYTHON_INCLUDE_DIR=${PYTHON_DIR}/include/python3.5 \
     -D BOOST_DIR=${BOOST_DIR} \
     -D ENABLE_DEAL_II=ON \
     -D DEAL_II_DIR=${DEAL_II_DIR} \
