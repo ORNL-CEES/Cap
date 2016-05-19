@@ -10,6 +10,7 @@ echo '/usr/bin/mpiexec --allow-run-as-root "$@"' >> ${DUMMY}/bin/mpiexec
 chmod +x ${DUMMY}/bin/mpiexec
 export PATH=${DUMMY}/bin:${PATH}
 ln -s /usr/bin/python3.5 ${DUMMY}/bin/python
+ln -s /usr/bin/clang-format-3.7 ${DUMMY}/bin/clang-format
 # build the code
 rm -rf build
 mkdir build
