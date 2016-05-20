@@ -88,11 +88,9 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
     dev->get_voltage(voltage);
     return voltage >= charge_stop_at;
   };
-  auto report = [](double const time,
-                   std::shared_ptr<cap::EnergyStorageDevice const> dev,
+  auto report = [](std::shared_ptr<cap::EnergyStorageDevice const> dev,
                    std::vector<double> &data)
   {
-    std::ignore = time;
     double voltage;
     dev->get_voltage(voltage);
     data.push_back(voltage);
@@ -116,7 +114,7 @@ BOOST_DATA_TEST_CASE(test_equivalent_circuit,
     {
       device[type]->evolve_one_time_step_constant_current(time_step,
                                                           charge_current);
-      report(time, device[type], data[type]);
+      report(device[type], data[type]);
     }
     if (charge_done(device["super_capacitor"]) &&
         charge_done(device["equivalent_circuit"]))
