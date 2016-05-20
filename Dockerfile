@@ -1,5 +1,8 @@
 FROM dalg24/cap-stack
 
+# TODO: move to pre-built image
+RUN  ln -sf python3.5 /usr/bin/python
+
 # install cap and run the tests
 RUN cd ${PREFIX}/source && \
     git clone https://github.com/ORNL-CEES/Cap.git cap && \
@@ -11,8 +14,6 @@ RUN cd ${PREFIX}/source && \
         -D CMAKE_BUILD_TYPE=Release \
         -D BUILD_SHARED_LIBS=ON \
         -D ENABLE_PYTHON=ON \
-        -D PYTHON_LIBRARY=${PYTHON_DIR}/lib/libpython3.5.so \
-        -D PYTHON_INCLUDE_DIR=${PYTHON_DIR}/include/python3.5 \
         -D BOOST_DIR=${BOOST_DIR} \
         -D ENABLE_DEAL_II=ON \
         -D DEAL_II_DIR=${DEAL_II_DIR} \
