@@ -19,7 +19,7 @@ namespace cap
 {
 BOOST_AUTO_TEST_CASE(test_timer)
 {
-  unsigned int const tolerance = 10;
+  unsigned int const tolerance = 15;
   Timer timer(boost::mpi::communicator(), "test");
 
   timer.start();
