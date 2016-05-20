@@ -43,7 +43,6 @@ endif()
 
 Cap_COPY_INPUT_FILE(input_ragone_chart.info           cpp/test/data)
 Cap_COPY_INPUT_FILE(input_impedance_spectroscopy.info cpp/test/data)
-Cap_COPY_INPUT_FILE(input_resistor_capacitor.info     cpp/test/data)
 Cap_COPY_INPUT_FILE(series_rc.info                    cpp/test/data)
 Cap_COPY_INPUT_FILE(parallel_rc.info                  cpp/test/data)
 Cap_COPY_INPUT_FILE(super_capacitor.info              cpp/test/data)

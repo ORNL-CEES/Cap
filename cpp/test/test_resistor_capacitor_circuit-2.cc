@@ -13,7 +13,6 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/info_parser.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/cos_pi.hpp>
 #include <boost/test/unit_test.hpp>
@@ -124,11 +123,18 @@ void test(std::shared_ptr<boost::property_tree::ptree> input_database,
 
 BOOST_AUTO_TEST_CASE(test_resistor_capacitor)
 {
-  // parse input file
   std::shared_ptr<boost::property_tree::ptree> input_database =
       std::make_shared<boost::property_tree::ptree>();
-  boost::property_tree::info_parser::read_info("input_resistor_capacitor.info",
-                                               *input_database);
+  input_database->put("device.type", "ParallelRC");
+  input_database->put("device.capacitance", 3.0);
+  input_database->put("device.parallel_resistance", 0.025);
+  input_database->put("device.series_resistance", 5.0);
+  input_database->put("impedance_spectroscopy.frequency", 1.0e-5);
+  input_database->put("impedance_spectroscopy.amplitude", 1.1);
+  input_database->put("impedance_spectroscopy.cycles", 2);
+  input_database->put("impedance_spectroscopy.ignore_cycles", 1);
+  input_database->put("impedance_spectroscopy.steps_per_cycle", 2048);
+  input_database->put("impedance_spectroscopy.tolerance", 0.1);
 
   // build an energy storage system
   std::shared_ptr<boost::property_tree::ptree> device_database =
