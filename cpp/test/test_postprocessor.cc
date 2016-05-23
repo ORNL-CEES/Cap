@@ -25,7 +25,6 @@ BOOST_AUTO_TEST_CASE(test_compute_energy)
   // We need to use a large tolerance because the error increases at each time
   // step.
   double const tolerance = 1e-6;
-  std::fstream fout("data", std::fstream::out);
 
   double const pi = M_PI;
   double const initial_time = 0.0;

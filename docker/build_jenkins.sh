@@ -5,7 +5,7 @@
 # append the option flag --allow-run-as-root to mpiexec
 export DUMMY=/opt/dummy
 mkdir -p ${DUMMY}/bin
-echo '#!/usr/bin/env bash' > ${DUMMY}/bin/mpiexc
+echo '#!/usr/bin/env bash' > ${DUMMY}/bin/mpiexec
 echo '/usr/bin/mpiexec --allow-run-as-root "$@"' >> ${DUMMY}/bin/mpiexec
 chmod +x ${DUMMY}/bin/mpiexec
 export PATH=${DUMMY}/bin:${PATH}

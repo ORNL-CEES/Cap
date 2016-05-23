@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(test_serialization)
       BOOST_CHECK_EQUAL(original_voltage, restored_voltage);
       BOOST_CHECK_EQUAL(original_current, restored_current);
     }
-    catch (boost::archive::archive_exception e)
+    catch (boost::archive::archive_exception &e)
     {
       BOOST_TEST_MESSAGE("unable to serialize the device");
       BOOST_TEST(false);
