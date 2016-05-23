@@ -28,8 +28,6 @@ void write_mesh(std::string const &mesh_file,
   dealii::GridOut mesh_writer;
   std::fstream fout;
   fout.open(mesh_file.c_str(), std::fstream::out);
-  std::string const file_extension =
-      mesh_file.substr(mesh_file.find_last_of(".") + 1);
   mesh_writer.write_vtu(*triangulation, fout);
   fout.close();
 }
