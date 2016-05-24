@@ -13,6 +13,7 @@
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/base/geometry_info.h>
+#include <algorithm>
 #include <fstream>
 #include <tuple>
 
@@ -121,6 +122,25 @@ void merge_components(
   if (component.shift_vector[dim - 1] != 0.)
     component.shift_vector[dim - 1] = 0.;
 }
+}
+
+template <int dim>
+unsigned int Geometry<dim>::compute_cell_weight(
+    typename dealii::Triangulation<dim, dim>::cell_iterator const &cell)
+{
+  // Cells in the anode of the cathode have to deal with two physics instead of
+  // only one in the collectors and the separator. Each cell starts with a
+  // default weight of 1000. This function returns the extra weight on some of
+  // the cells.
+  unsigned int weight = 0;
+  dealii::types::material_id material = cell->material_id();
+  std::vector<dealii::types::material_id> &anode = (*_materials)["anode"];
+  std::vector<dealii::types::material_id> &cathode = (*_materials)["cathode"];
+  if ((std::find(anode.begin(), anode.end(), material) != anode.end()) ||
+      (std::find(cathode.begin(), cathode.end(), material) != cathode.end()))
+    weight = 1000;
+
+  return weight;
 }
 
 template <int dim>
@@ -293,6 +313,12 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
     }
     mesh_generator(*database);
   }
+
+  // We need to do load balancing because cells in the collectors and the
+  // separator don't have both physics.
+  _triangulation->signals.cell_weight.connect(std::bind(
+      &Geometry<dim>::compute_cell_weight, this, std::placeholders::_1));
+  _triangulation->repartition();
 }
 
 template <int dim>

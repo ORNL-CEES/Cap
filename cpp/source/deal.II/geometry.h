@@ -74,6 +74,14 @@ public:
 
 private:
   /**
+   * Compute the weight used to do load balancing. This is necessary because the
+   * physics solved in the collectors, the electrodes, and the separator are
+   * different.
+   */
+  unsigned int compute_cell_weight(
+      typename dealii::Triangulation<dim, dim>::cell_iterator const &cell);
+
+  /**
    * Helper function for the constructor, when the mesh is loaded from a mesh.
    */
   void fill_materials_map(
