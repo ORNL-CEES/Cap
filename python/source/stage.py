@@ -18,7 +18,9 @@ class Stage:
         self.end_criterion = EndCriterion.factory(ptree)
         self.time_step = ptree.get_double('time_step')
 
-    def run(self, device, data={}):
+    def run(self, device, data=None):
+        if data is None:
+            data = {}
         if not data:
             time = 0.0
         elif len(data['time']) > 0:
@@ -51,7 +53,9 @@ class MultiStage(Stage):
             self.stages.append(Stage(child))
         self.cycles = ptree.get_int('cycles')
 
-    def run(self, device, data={}):
+    def run(self, device, data=None):
+        if data is None:
+            data = {}
         steps = 0
         for cycle in range(self.cycles):
             for stage in self.stages:
