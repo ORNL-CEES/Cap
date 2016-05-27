@@ -14,7 +14,7 @@ add_custom_command(
     COMMENT "Copying diff-clang-format.py"
 )
 add_custom_target(
-    diff-clang-format.py ALL
+    diff-clang-format_py ALL
     DEPENDS ${CMAKE_BINARY_DIR}/diff-clang-format.py
 )
 add_custom_target(format-cpp
@@ -25,8 +25,6 @@ add_custom_target(format-cpp
         --config=${CMAKE_SOURCE_DIR}/.clang-format
         --apply-patch
         ${CMAKE_SOURCE_DIR}/cpp
-    DEPENDS
-        ${CMAKE_BINARY_DIR}/diff-clang-format.py
 )
 file(WRITE
     ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check_format_cpp.sh
