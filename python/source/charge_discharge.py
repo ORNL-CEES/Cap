@@ -25,11 +25,11 @@ class Charge(MultiStage):
         voltage_finish = ptree.get_bool_with_default_value('charge_voltage_finish',
                                                            False)
         other.put_string('stage_0.mode', charge_mode)
-        if charge_mode == 'constant_current' or charge_mode == 'galvanostatic':
+        if charge_mode in ['constant_current', 'galvanostatic']:
             charge_current = ptree.get_double('charge_current')
             other.put_double('stage_0.current', charge_current)
             assert charge_current > 0.0
-        elif charge_mode == 'constant_voltage' or charge_mode == 'potentiostatic':
+        elif charge_mode in ['constant_voltage', 'potentiostatic']:
             charge_voltage = ptree.get_double('charge_voltage')
             other.put_double('stage_0.voltage', charge_voltage)
             if voltage_finish:
@@ -112,13 +112,11 @@ class Discharge(MultiStage):
         # discharge
         discharge_mode = ptree.get_string('discharge_mode')
         other.put_string('stage_0.mode', discharge_mode)
-        if discharge_mode == 'constant_current' or\
-                discharge_mode == 'galvanostatic':
+        if discharge_mode in ['constant_current', 'galvanostatic']:
             discharge_current = ptree.get_double('discharge_current')
             other.put_double('stage_0.current', -discharge_current)
             assert discharge_current > 0.0
-        elif discharge_mode == 'constant_voltage' or\
-                discharge_mode == 'potentiostatic':
+        elif discharge_mode in ['constant_voltage', 'potentiostatic']:
             discharge_voltage = ptree.get_double('discharge_voltage')
             other.put_double('stage_0.voltage', discharge_voltage)
         elif discharge_mode == 'constant_power':

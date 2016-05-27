@@ -87,7 +87,7 @@ def run(paths, file_extensions, style, config, patch):
         for root, dirs, files in walk(path):
             for file in files:
                 file_path = root+'/'+file
-                if (any([file.endswith(extension) for extension in file_extensions])):
+                if (any(file.endswith(extension) for extension in file_extensions)):
                     diff = diff_with_formatted_source(file_path, style, patch)
                     if diff:
                         diffs[file_path] = diff

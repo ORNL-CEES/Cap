@@ -15,7 +15,7 @@ class TimeEvolution:
     def factory(ptree):
         mode = ptree.get_string('mode')
 
-        if mode == 'constant_voltage' or mode == 'potentiostatic':
+        if mode in ['constant_voltage', 'potentiostatic']:
             constant_voltage = ptree.get_double('voltage')
 
             def evolve_one_time_step_constant_voltage(device, time_step):
@@ -23,7 +23,7 @@ class TimeEvolution:
                                                              constant_voltage)
             return evolve_one_time_step_constant_voltage
 
-        elif mode == 'constant_current' or mode == 'galvanostatic':
+        elif mode in ['constant_current', 'galvanostatic']:
             constant_current = ptree.get_double('current')
 
             def evolve_one_time_step_constant_current(device, time_step):
