@@ -158,6 +158,7 @@ unsigned int Geometry<dim>::compute_cell_weight(
   if (std::find(collector.begin(), collector.end(), material) !=
       collector.end())
     return weights[internal::WEIGHT_TYPE::collector];
+  return dealii::numbers::invalid_unsigned_int;
 }
 
 template <int dim>
