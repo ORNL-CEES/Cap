@@ -34,12 +34,6 @@ SeriesRC::SeriesRC(boost::property_tree::ptree const &ptree,
 {
 }
 
-void SeriesRC::reset(double const capacitor_voltage)
-{
-  U_C = capacitor_voltage;
-  U = U_C + R * I;
-}
-
 void SeriesRC::evolve_one_time_step_constant_load(double const delta_t,
                                                   double const load)
 {
@@ -148,12 +142,6 @@ ParallelRC::ParallelRC(boost::property_tree::ptree const &ptree,
       U((R_series + R_parallel) / R_parallel * U_C),
       I(U / (R_series + R_parallel))
 {
-}
-
-void ParallelRC::reset(double const capacitor_voltage)
-{
-  U_C = capacitor_voltage;
-  U = R_series * I + U_C;
 }
 
 void ParallelRC::evolve_one_time_step_constant_current(double const delta_t,
