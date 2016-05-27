@@ -14,6 +14,7 @@ collector {
 
 anode {
   divisions 5,2
+  weight 3000
 }
 
 separator {
@@ -22,6 +23,7 @@ separator {
 
 cathode {
   divisions 5,2
+  weight 3000
 }
 
 n_repetitions 0

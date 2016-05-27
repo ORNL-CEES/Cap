@@ -79,7 +79,8 @@ private:
    * different.
    */
   unsigned int compute_cell_weight(
-      typename dealii::Triangulation<dim, dim>::cell_iterator const &cell);
+      typename dealii::Triangulation<dim, dim>::cell_iterator const &cell,
+      std::array<unsigned int, 4> const &weights) const;
 
   /**
    * Helper function for the constructor, when the mesh is loaded from a mesh.

@@ -22,6 +22,14 @@ namespace cap
 
 namespace internal
 {
+enum WEIGHT_TYPE
+{
+  anode,
+  cathode,
+  separator,
+  collector
+};
+
 template <int dim>
 struct Component
 {
@@ -126,21 +134,30 @@ void merge_components(
 
 template <int dim>
 unsigned int Geometry<dim>::compute_cell_weight(
-    typename dealii::Triangulation<dim, dim>::cell_iterator const &cell)
+    typename dealii::Triangulation<dim, dim>::cell_iterator const &cell,
+    std::array<unsigned int, 4> const &weights) const
 {
   // Cells in the anode of the cathode have to deal with two physics instead of
   // only one in the collectors and the separator. Each cell starts with a
   // default weight of 1000. This function returns the extra weight on some of
   // the cells.
-  unsigned int weight = 0;
   dealii::types::material_id material = cell->material_id();
   std::vector<dealii::types::material_id> &anode = (*_materials)["anode"];
   std::vector<dealii::types::material_id> &cathode = (*_materials)["cathode"];
-  if ((std::find(anode.begin(), anode.end(), material) != anode.end()) ||
-      (std::find(cathode.begin(), cathode.end(), material) != cathode.end()))
-    weight = 1000;
-
-  return weight;
+  std::vector<dealii::types::material_id> &separator =
+      (*_materials)["separator"];
+  std::vector<dealii::types::material_id> &collector =
+      (*_materials)["collector"];
+  if (std::find(anode.begin(), anode.end(), material) != anode.end())
+    return weights[internal::WEIGHT_TYPE::anode];
+  if (std::find(cathode.begin(), cathode.end(), material) != cathode.end())
+    return weights[internal::WEIGHT_TYPE::cathode];
+  if (std::find(separator.begin(), separator.end(), material) !=
+      separator.end())
+    return weights[internal::WEIGHT_TYPE::separator];
+  if (std::find(collector.begin(), collector.end(), material) !=
+      collector.end())
+    return weights[internal::WEIGHT_TYPE::collector];
 }
 
 template <int dim>
@@ -316,8 +333,16 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
 
   // We need to do load balancing because cells in the collectors and the
   // separator don't have both physics.
-  _triangulation->signals.cell_weight.connect(std::bind(
-      &Geometry<dim>::compute_cell_weight, this, std::placeholders::_1));
+  std::array<unsigned int, 4> weights;
+  weights[internal::WEIGHT_TYPE::anode] = database->get("anode.weight", 0);
+  weights[internal::WEIGHT_TYPE::cathode] = database->get("cathode.weight", 0);
+  weights[internal::WEIGHT_TYPE::separator] =
+      database->get("separator.weight", 0);
+  weights[internal::WEIGHT_TYPE::collector] =
+      database->get("collector.weight", 0);
+  _triangulation->signals.cell_weight.connect(
+      std::bind(&Geometry<dim>::compute_cell_weight, this,
+                std::placeholders::_1, weights));
   _triangulation->repartition();
 }
 
