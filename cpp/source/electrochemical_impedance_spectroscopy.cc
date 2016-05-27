@@ -68,17 +68,16 @@ compute_signal_to_noise_ratio(std::vector<std::complex<double>> fft_data,
 }
 
 std::function<void(std::shared_ptr<cap::EnergyStorageDevice>, double, double)>
-get_evolve_one_time_step(
-    std::shared_ptr<boost::property_tree::ptree const> database)
+get_evolve_one_time_step(boost::property_tree::ptree const &ptree)
 {
   // clang-format off
-  std::vector<int> const harmonics     = cap::to_vector<int>(database->get<std::string>("harmonics"));
-  std::vector<double> const amplitudes = cap::to_vector<double>(database->get<std::string>("amplitudes"));
-  std::vector<double> const phases     = cap::to_vector<double>(database->get<std::string>("phases"));
+  std::vector<int> const harmonics     = cap::to_vector<int>(ptree.get<std::string>("harmonics"));
+  std::vector<double> const amplitudes = cap::to_vector<double>(ptree.get<std::string>("amplitudes"));
+  std::vector<double> const phases     = cap::to_vector<double>(ptree.get<std::string>("phases"));
   // clang-format on
   BOOST_ASSERT(harmonics.size() == amplitudes.size());
   BOOST_ASSERT(harmonics.size() == phases.size());
-  double const frequency = database->get<double>("frequency");
+  double const frequency = ptree.get<double>("frequency");
   auto compute_ac_excitation_signal = [frequency, harmonics, amplitudes,
                                        phases](double time)
   {
@@ -90,7 +89,7 @@ get_evolve_one_time_step(
     return excitation_signal;
   };
 
-  std::string const mode = database->get<std::string>("mode");
+  std::string const mode = ptree.get<std::string>("mode");
   if (mode.compare("galvanostatic") != 0)
   {
     return [compute_ac_excitation_signal](
@@ -103,7 +102,7 @@ get_evolve_one_time_step(
   }
   else if (mode.compare("potentiostatic") != 0)
   {
-    double const dc_voltage = database->get<double>("dc_voltage");
+    double const dc_voltage = ptree.get<double>("dc_voltage");
     return [dc_voltage, compute_ac_excitation_signal](
         std::shared_ptr<cap::EnergyStorageDevice> device, double time,
         double time_step)
@@ -120,15 +119,15 @@ get_evolve_one_time_step(
 
 std::map<double, std::complex<double>>
 measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
-                  std::shared_ptr<boost::property_tree::ptree const> database)
+                  boost::property_tree::ptree const &ptree)
 {
   std::vector<int> const harmonics =
-      cap::to_vector<int>(database->get<std::string>("harmonics"));
-  double const frequency = database->get<double>("frequency");
-  int const cycles = database->get<int>("cycles");
-  int const ignore_cycles = database->get<int>("ignore_cycles");
-  int const steps_per_cycle = database->get<int>("steps_per_cycle");
-  auto evolve_one_time_step = get_evolve_one_time_step(database);
+      cap::to_vector<int>(ptree.get<std::string>("harmonics"));
+  double const frequency = ptree.get<double>("frequency");
+  int const cycles = ptree.get<int>("cycles");
+  int const ignore_cycles = ptree.get<int>("ignore_cycles");
+  int const steps_per_cycle = ptree.get<int>("steps_per_cycle");
+  auto evolve_one_time_step = get_evolve_one_time_step(ptree);
 
   // apply excitation signal and measure response
   std::vector<double> time(cycles * steps_per_cycle);
@@ -176,6 +175,14 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
   std::vector<double> voltage_signal_to_noise_ratio =
       compute_signal_to_noise_ratio(fft_voltage, excited_harmonics,
                                     unexcited_harmonics);
+  std::cout << "current signal to noise ratio = ";
+  for (auto const &ratio : current_signal_to_noise_ratio)
+    std::cout << ratio << "  ";
+  std::cout << "\n";
+  std::cout << "voltage signal to noise ratio = ";
+  for (auto const &ratio : voltage_signal_to_noise_ratio)
+    std::cout << ratio << "  ";
+  std::cout << "\n";
   // TODO: do we want to assert something or give a warning if ratio is not good
   // enough?
 
@@ -188,23 +195,22 @@ measure_impedance(std::shared_ptr<cap::EnergyStorageDevice> device,
   return impedance;
 }
 
-std::map<double, std::complex<double>> impedance_spectroscopy(
-    std::shared_ptr<cap::EnergyStorageDevice> device,
-    std::shared_ptr<boost::property_tree::ptree const> database)
+std::map<double, std::complex<double>>
+impedance_spectroscopy(std::shared_ptr<cap::EnergyStorageDevice> device,
+                       boost::property_tree::ptree const &database)
 {
   // clang-format off
-  double const frequency_upper_limit = database->get<double>("frequency_upper_limit");
-  double const frequency_lower_limit = database->get<double>("frequency_lower_limit");
-  int const steps_per_decade         = database->get<int>("steps_per_decade");
+  double const frequency_upper_limit = database.get<double>("frequency_upper_limit");
+  double const frequency_lower_limit = database.get<double>("frequency_lower_limit");
+  int const steps_per_decade         = database.get<int>("steps_per_decade");
   // clang-format on
-  std::shared_ptr<boost::property_tree::ptree> tmp_database =
-      std::make_shared<boost::property_tree::ptree>(*database);
+  boost::property_tree::ptree tmp_database(database);
   std::map<double, std::complex<double>> data;
   for (double frequency = frequency_upper_limit;
        frequency >= frequency_lower_limit;
        frequency /= std::pow(10.0, 1.0 / steps_per_decade))
   {
-    tmp_database->put("frequency", frequency);
+    tmp_database.put("frequency", frequency);
     auto const impedance = measure_impedance(device, tmp_database);
     data.insert(impedance.begin(), impedance.end());
   }

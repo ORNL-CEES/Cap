@@ -29,29 +29,28 @@ namespace cap
 {
 
 std::function<std::vector<std::tuple<double, std::complex<double>>>(
-    std::shared_ptr<boost::property_tree::ptree const>)>
-get_compute_exact(
-    std::shared_ptr<boost::property_tree::ptree const> dev_database,
-    std::shared_ptr<boost::property_tree::ptree const> eis_database)
+    boost::property_tree::ptree const &)>
+get_compute_exact(boost::property_tree::ptree const &dev_database,
+                  boost::property_tree::ptree const &eis_database)
 {
-  std::string const device_type = dev_database->get<std::string>("type");
+  std::string const device_type = dev_database.get<std::string>("type");
   double const series_resistance =
-      dev_database->get<double>("series_resistance");
+      dev_database.get<double>("series_resistance");
   double const parallel_resistance =
-      dev_database->get<double>("parallel_resistance");
-  double const capacitance = dev_database->get<double>("capacitance");
+      dev_database.get<double>("parallel_resistance");
+  double const capacitance = dev_database.get<double>("capacitance");
 
   std::vector<int> const harmonics =
-      cap::to_vector<int>(eis_database->get<std::string>("harmonics"));
+      cap::to_vector<int>(eis_database.get<std::string>("harmonics"));
   double const pi = boost::math::constants::pi<double>();
 
   if (device_type.compare("SeriesRC") == 0)
   {
-    return [series_resistance, capacitance, pi, harmonics](
-        std::shared_ptr<boost::property_tree::ptree const> database)
+    return [series_resistance, capacitance, pi,
+            harmonics](boost::property_tree::ptree const &ptree)
     {
       std::vector<std::tuple<double, std::complex<double>>> results;
-      double const frequency = database->get<double>("frequency");
+      double const frequency = ptree.get<double>("frequency");
       for (int k : harmonics)
         results.emplace_back(std::make_tuple(
             k * frequency,
@@ -63,11 +62,11 @@ get_compute_exact(
   }
   else if (device_type.compare("ParallelRC") == 0)
   {
-    return [series_resistance, parallel_resistance, capacitance, pi, harmonics](
-        std::shared_ptr<boost::property_tree::ptree const> database)
+    return [series_resistance, parallel_resistance, capacitance, pi,
+            harmonics](boost::property_tree::ptree const &ptree)
     {
       std::vector<std::tuple<double, std::complex<double>>> results;
-      double const frequency = database->get<double>("frequency");
+      double const frequency = ptree.get<double>("frequency");
       for (int k : harmonics)
         results.emplace_back(std::make_tuple(
             k * frequency, series_resistance +
@@ -85,20 +84,20 @@ get_compute_exact(
 }
 
 void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
-          std::shared_ptr<boost::property_tree::ptree const> dev_database,
-          std::shared_ptr<boost::property_tree::ptree const> eis_database,
+          boost::property_tree::ptree const &dev_database,
+          boost::property_tree::ptree const &eis_database,
           std::ostream &os = std::cout)
 {
   double const frequency_upper_limit =
-      eis_database->get<double>("frequency_upper_limit");
+      eis_database.get<double>("frequency_upper_limit");
   double const frequency_lower_limit =
-      eis_database->get<double>("frequency_lower_limit");
-  int const steps_per_decade = eis_database->get<int>("steps_per_decade");
+      eis_database.get<double>("frequency_lower_limit");
+  int const steps_per_decade = eis_database.get<int>("steps_per_decade");
   double const pi = boost::math::constants::pi<double>();
   std::vector<int> const harmonics =
-      cap::to_vector<int>(eis_database->get<std::string>("harmonics"));
+      cap::to_vector<int>(eis_database.get<std::string>("harmonics"));
   double const percent_tolerance =
-      eis_database->get<double>("percent_tolerance");
+      eis_database.get<double>("percent_tolerance");
 
   auto compute_exact = get_compute_exact(dev_database, eis_database);
 
@@ -107,8 +106,7 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
   double theo_frequency;
   std::complex<double> theo_impedance;
 
-  std::shared_ptr<boost::property_tree::ptree> tmp =
-      std::make_shared<boost::property_tree::ptree>(*eis_database);
+  boost::property_tree::ptree tmp(eis_database);
 
   os << "# impedance Z(f) = R + i X \n";
   os << boost::format("# %22s  %22s  %22s  %22s  %22s  \n") %
@@ -119,7 +117,7 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
        frequency >= frequency_lower_limit;
        frequency /= std::pow(10.0, 1.0 / steps_per_decade))
   {
-    tmp->put("frequency", frequency);
+    tmp.put("frequency", frequency);
     auto expe_results = measure_impedance(dev, tmp);
     auto theo_results = compute_exact(tmp);
     for (std::size_t k = 0; k < harmonics.size(); ++k)
@@ -156,26 +154,23 @@ void scan(std::shared_ptr<cap::EnergyStorageDevice> dev,
 BOOST_AUTO_TEST_CASE(test_impedance_spectroscopy)
 {
   // parse input file
-  std::shared_ptr<boost::property_tree::ptree> input_database =
-      std::make_shared<boost::property_tree::ptree>();
+  boost::property_tree::ptree input_database;
   boost::property_tree::info_parser::read_info(
-      "input_impedance_spectroscopy.info", *input_database);
+      "input_impedance_spectroscopy.info", input_database);
 
   // build an energy storage system
-  std::shared_ptr<boost::property_tree::ptree> device_database =
-      std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("device"));
+  boost::property_tree::ptree device_database =
+      input_database.get_child("device");
   std::shared_ptr<cap::EnergyStorageDevice> device =
-      cap::EnergyStorageDevice::build(*device_database,
+      cap::EnergyStorageDevice::build(device_database,
                                       boost::mpi::communicator());
 
   // measure its impedance
   std::fstream fout;
   fout.open("computed_vs_exact_impedance_spectroscopy_data", std::fstream::out);
 
-  std::shared_ptr<boost::property_tree::ptree> impedance_spectroscopy_database =
-      std::make_shared<boost::property_tree::ptree>(
-          input_database->get_child("impedance_spectroscopy"));
+  boost::property_tree::ptree impedance_spectroscopy_database =
+      input_database.get_child("impedance_spectroscopy");
   cap::scan(device, device_database, impedance_spectroscopy_database, fout);
 
   fout.close();
