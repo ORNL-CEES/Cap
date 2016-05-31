@@ -36,13 +36,7 @@ if(ENABLE_DEAL_II)
   Cap_ADD_BOOST_TEST(test_supercapacitor_inspector 2)
 endif()
 
-if(ENABLE_GSL)
-    Cap_ADD_BOOST_TEST(test_impedance_spectroscopy      )
-    Cap_ADD_BOOST_TEST(test_discrete_fourier_transform  )
-endif()
-
 Cap_COPY_INPUT_FILE(input_ragone_chart.info           cpp/test/data)
-Cap_COPY_INPUT_FILE(input_impedance_spectroscopy.info cpp/test/data)
 Cap_COPY_INPUT_FILE(series_rc.info                    cpp/test/data)
 Cap_COPY_INPUT_FILE(parallel_rc.info                  cpp/test/data)
 Cap_COPY_INPUT_FILE(super_capacitor.info              cpp/test/data)

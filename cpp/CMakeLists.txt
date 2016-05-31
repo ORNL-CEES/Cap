@@ -15,10 +15,6 @@ if(ENABLE_DEAL_II)
     target_include_directories(Cap SYSTEM PUBLIC ${DEAL_II_INCLUDE_DIRS})
     target_link_libraries(Cap PUBLIC ${DEAL_II_LIBRARIES})
 endif()
-if(ENABLE_GSL)
-    target_include_directories(Cap SYSTEM PUBLIC ${GSL_INCLUDE_DIRS})
-    target_link_libraries(Cap PUBLIC ${GSL_LIBRARIES})
-endif()
 set_target_properties(Cap PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON

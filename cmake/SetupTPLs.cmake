@@ -43,12 +43,3 @@ if(ENABLE_DEAL_II)
     find_package(deal.II 8.4 REQUIRED PATHS ${DEAL_II_DIR})
     add_definitions(-DWITH_DEAL_II)
 endif()
-
-#### GNU Scientific Library ##################################################
-if(ENABLE_GSL)
-    if(DEFINED GSL_DIR)
-        set(GSL_ROOT_DIR ${GSL_DIR})
-    endif()
-    find_package(GSL REQUIRED)
-    add_definitions(-DWITH_GSL)
-ENDIF()

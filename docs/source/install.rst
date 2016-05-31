@@ -32,8 +32,6 @@ Cap has a required dependency on C++14.
 +-----------------------------+------------+---------+
 | deal.II with p4est/Trilinos | Optional   | 8.4.0   |
 +-----------------------------+------------+---------+
-| GNU Scientific Library      | Optional   |         |
-+-----------------------------+------------+---------+
 
 Message Passing Interface (MPI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -105,22 +103,6 @@ Then run:
 Please refer to the deal.II documentation to see how to install
 `p4est <https://dealii.org/developer/external-libs/p4est.html>`_ and
 `Trilinos <https://dealii.org/developer/external-libs/trilinos.html>`_.
-
-gsl
-^^^
-The GNU Scientific Library (GSL) is optional.
-It is only required for electrochemical impedance spectroscopy to perform
-fourier analysis. Note that you don't actually need it if you plan on using
-the Python wrappers since the FFT algorithms from NumPy can be leveraged in
-that case.
-
-.. code::
-
-    $ mkdir ${PREFIX}/build/gsl
-    $ cd ${PREFIX}/build/gsl
-    $ ${PREFIX}/source/gsl/configure --prefix=${PREFIX}/install/gsl
-    $ make -j<N> install
-
 
 Install cap from source
 -----------------------
