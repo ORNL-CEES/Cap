@@ -12,7 +12,6 @@ list(APPEND
     test_energy_storage_device
     test_resistor_capacitor_circuit
     test_resistor_capacitor_circuit-2
-    test_ragone_chart
     test_timer
     )
 if(ENABLE_DEAL_II)
@@ -36,7 +35,6 @@ if(ENABLE_DEAL_II)
   Cap_ADD_BOOST_TEST(test_supercapacitor_inspector 2)
 endif()
 
-Cap_COPY_INPUT_FILE(input_ragone_chart.info           cpp/test/data)
 Cap_COPY_INPUT_FILE(series_rc.info                    cpp/test/data)
 Cap_COPY_INPUT_FILE(parallel_rc.info                  cpp/test/data)
 Cap_COPY_INPUT_FILE(super_capacitor.info              cpp/test/data)
