@@ -35,4 +35,11 @@ make -j${NPROC} -i
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
 ctest -j${NPROC} --no-compress-output -T Test
 
-cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 ../cpp 2> cppcheck.xml
+cppcheck \
+    --std=c++11 \
+    --enable=all \
+    --inconclusive \
+    --xml --xml-version=2 \
+    -I ../cpp/source/dummy \
+    -I ../cpp/source/deal.II/dummy \
+    ../cpp 2> cppcheck.xml
