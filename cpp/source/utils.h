@@ -8,10 +8,8 @@
 #ifndef CAP_UTILS_H
 #define CAP_UTILS_H
 
-#include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <vector>
-#include <iterator>
 
 namespace cap
 {

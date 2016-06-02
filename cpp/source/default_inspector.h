@@ -18,7 +18,7 @@ class DefaultInspector : public EnergyStorageDeviceInspector
 public:
   DefaultInspector();
   void inspect(EnergyStorageDevice *device) override;
-  std::map<std::string, double> get_data();
+  std::map<std::string, double> get_data() const;
 
 protected:
   std::map<std::string, double> _data;
