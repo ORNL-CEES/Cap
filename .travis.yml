@@ -12,7 +12,6 @@ language: python
 cache: pip
 
 before_install:
-  - env
   - docker pull dalg24/cap-stack
   - docker run
         --detach --tty
