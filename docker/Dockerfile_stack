@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
         libopenmpi-dev \
         libhdf5-dev \
         python3.5-dev \
+        npm \
+        nodejs \
+        nodejs-legacy \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -193,7 +196,10 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
         sympy \
         coverage \
         autopep8 \
-        docopt
+        docopt \
+        jupyterhub \
+        && \
+    npm install -g configurable-http-proxy && rm -rf ~/.npm
 
 # install tini
 RUN export TINI_VERSION=0.9.0 && \
