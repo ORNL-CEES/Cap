@@ -9,16 +9,20 @@
 
 #include "main.cc"
 
+#include <cap/energy_storage_device.h>
+#include <cap/supercapacitor.h>
 #include <cap/utils.h>
 #include <cap/geometry.h>
 #include <deal.II/grid/grid_out.h>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
 #include <fstream>
 #include <unordered_map>
 
-// Check that a mesh can be loaded, that the areas are computed correctly, and
+// - Check that a mesh can be loaded, that the areas are computed correctly, and
 // check that a mesh can be written.
+// - Check that we can build a 3D geometry.
 
 template <int dim>
 void write_mesh(std::string const &mesh_file,
@@ -102,4 +106,49 @@ BOOST_AUTO_TEST_CASE(test_throw_geometry)
   // For now, both collectors must have the same dimensions.
   BOOST_CHECK_THROW(cap::Geometry<2> geo(params, boost::mpi::communicator()),
                     std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE(test_3d_geometry)
+{
+  boost::property_tree::ptree device_database;
+  boost::property_tree::info_parser::read_info("super_capacitor.info",
+                                               device_database);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("generate_mesh.info",
+                                               geometry_database);
+  std::vector<unsigned int> divisions(3);
+  // Collector
+  divisions[0] = 3;
+  divisions[1] = 3;
+  divisions[2] = 3;
+  geometry_database.put("collector.divisions", cap::to_string(divisions));
+  // Anode
+  divisions[0] = 3;
+  divisions[1] = 3;
+  divisions[2] = 2;
+  geometry_database.put("anode.divisions", cap::to_string(divisions));
+  // Separator
+  divisions[0] = 3;
+  divisions[1] = 3;
+  divisions[2] = 2;
+  geometry_database.put("separator.divisions", cap::to_string(divisions));
+  // Cathode
+  divisions[0] = 3;
+  divisions[1] = 3;
+  divisions[2] = 2;
+  geometry_database.put("cathode.divisions", cap::to_string(divisions));
+
+  device_database.put_child("geometry", geometry_database);
+  device_database.put("dim", 3);
+
+  std::shared_ptr<cap::EnergyStorageDevice> device =
+      cap::EnergyStorageDevice::build(device_database,
+                                      boost::mpi::communicator());
+  std::shared_ptr<cap::SuperCapacitor<3>> supercapacitor =
+      std::static_pointer_cast<cap::SuperCapacitor<3>>(device);
+  std::shared_ptr<cap::Geometry<3>> geometry = supercapacitor->get_geometry();
+  std::shared_ptr<dealii::distributed::Triangulation<3> const> triangulation =
+      geometry->get_triangulation();
+  const unsigned int n_cells = 6912;
+  BOOST_CHECK(n_cells == triangulation->n_active_cells());
 }
