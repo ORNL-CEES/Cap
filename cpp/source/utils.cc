@@ -37,6 +37,7 @@ std::vector<dealii::types::material_id> to_vector(std::string const &s)
 #endif
 
 template std::string to_string(std::vector<int> const &v);
+template std::string to_string(std::vector<unsigned int> const &v);
 template std::string to_string(std::vector<float> const &v);
 template std::string to_string(std::vector<double> const &v);
 template std::string to_string(std::vector<std::string> const &v);

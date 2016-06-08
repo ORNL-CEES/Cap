@@ -241,7 +241,7 @@ void Geometry<dim>::convert_geometry_database(
     std::string const area_str = std::to_string(geometric_area);
     std::string collector_dim(std::to_string(collector_thickness) + ",1," +
                               std::to_string(geometric_area + tab_height));
-    std::string anode_dim(std::to_string(anode_thickness) + "," + area_str);
+    std::string anode_dim(std::to_string(anode_thickness) + ",1," + area_str);
     std::string separator_dim(std::to_string(separator_thickness) + ",1," +
                               area_str);
     std::string cathode_dim(std::to_string(cathode_thickness) + ",1," +
