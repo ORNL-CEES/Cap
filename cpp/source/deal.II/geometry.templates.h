@@ -238,14 +238,16 @@ void Geometry<dim>::convert_geometry_database(
   }
   else
   {
-    std::string const area_str = std::to_string(geometric_area);
-    std::string collector_dim(std::to_string(collector_thickness) + ",1," +
-                              std::to_string(geometric_area + tab_height));
-    std::string anode_dim(std::to_string(anode_thickness) + ",1," + area_str);
-    std::string separator_dim(std::to_string(separator_thickness) + ",1," +
-                              area_str);
-    std::string cathode_dim(std::to_string(cathode_thickness) + ",1," +
-                            area_str);
+    std::string const area_sqrt_str = std::to_string(std::sqrt(geometric_area));
+    std::string collector_dim(
+        std::to_string(collector_thickness) + "," + area_sqrt_str + "," +
+        std::to_string(std::sqrt(geometric_area) + tab_height));
+    std::string anode_dim(std::to_string(anode_thickness) + "," +
+                          area_sqrt_str + ", " + area_sqrt_str);
+    std::string separator_dim(std::to_string(separator_thickness) + "," +
+                              area_sqrt_str + "," + area_sqrt_str);
+    std::string cathode_dim(std::to_string(cathode_thickness) + "," +
+                            area_sqrt_str + "," + area_sqrt_str);
     database->put("collector.dimensions", collector_dim);
     database->put("anode.dimensions", anode_dim);
     database->put("separator.dimensions", separator_dim);
