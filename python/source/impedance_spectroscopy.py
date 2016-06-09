@@ -371,9 +371,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
 
     Attributes
     ----------
-    _frequency_upper_limit : float
-    _frequency_lower_limit : float
-    _steps_per_decade : int
+    _frequencies : numpy.array of float
     _ptree : PropertyTree
     _data : dict
         Stores the frequency as a numpy.array of floating point numbers
@@ -400,11 +398,30 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
     def __new__(cls, *args, **kwargs):
         return object.__new__(ElectrochemicalImpedanceSpectroscopy)
 
-    def __init__(self, ptree):
+    def __init__(self, ptree, frequencies=None):
+        '''
+        Parameters
+        ----------
+        ptree : PropertyTree
+        frequencies : array_like, optional
+            Specify the frequencies. If provided will be used to initialize a
+            numpy.array of float.
+        '''
         Experiment.__init__(self)
-        self._frequency_upper_limit = ptree.get_double('frequency_upper_limit')
-        self._frequency_lower_limit = ptree.get_double('frequency_lower_limit')
-        self._steps_per_decade = ptree.get_int('steps_per_decade')
+        if frequencies is None:
+            frequency_upper_limit = ptree.get_double('frequency_upper_limit')
+            frequency_lower_limit = ptree.get_double('frequency_lower_limit')
+            steps_per_decade = ptree.get_int('steps_per_decade')
+            frequencies = []
+            frequency = frequency_upper_limit
+            # we were having floating point precision issues and the lower bound
+            # was often excluded of the range. so instead of comparing against
+            # it, we relax with one percent of the distance to the next point on
+            # the log scale.
+            while frequency >= frequency_lower_limit * (1 + 0.01 * (1.0 / power(10.0, 1.0 / steps_per_decade) - 1)):
+                frequencies.append(frequency)
+                frequency /= power(10.0, 1.0 / steps_per_decade)
+        self._frequencies = array(frequencies, dtype=float)
         self._ptree = copy(ptree)
         self.reset()
 
@@ -416,8 +433,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
 
     def run(self, device, fout=None):
         self._extra_data = device.inspect()
-        frequency = self._frequency_upper_limit
-        while frequency >= self._frequency_lower_limit:
+        for frequency in self._frequencies:
             self._ptree.put_double('frequency', frequency)
             data = run_one_cycle(device, self._ptree)
             if fout:
@@ -427,7 +443,6 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             f, Z = fourier_analysis(data, self._ptree)
             self._data['frequency'] = append(self._data['frequency'], f)
             self._data['impedance'] = append(self._data['impedance'], Z)
-            frequency /= power(10.0, 1.0 / self._steps_per_decade)
             self.notify()
 for alias in ['EIS', 'ElectrochemicalImpedanceSpectroscopy']:
     Experiment._builders[alias] = ElectrochemicalImpedanceSpectroscopy

@@ -9,7 +9,7 @@ from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
 from pycap import retrieve_impedance_spectrum,\
     fourier_analysis, initialize_data
 from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
-    array, testing, ones, cos, sin
+    array, ones, cos, sin, equal
 from warnings import catch_warnings, simplefilter
 from h5py import File
 from io import open
@@ -51,12 +51,9 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         ptree.put_int('cycles', 2)
         ptree.put_int('ignore_cycles', 0)
         fourier_analysis(data, ptree)
-        try:
-            testing.assert_array_equal(data['time'], dummy)
-            testing.assert_array_equal(data['current'], dummy)
-            testing.assert_array_equal(data['voltage'], dummy)
-        except AssertionError:
-            self.fail('data should not be changed by the fourier analyzis')
+        self.assertTrue(all(equal(data['time'], dummy)))
+        self.assertTrue(all(equal(data['current'], dummy)))
+        self.assertTrue(all(equal(data['voltage'], dummy)))
 
     def test_retrieve_data(self):
         ptree = PropertyTree()
@@ -93,6 +90,27 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
         # not sure why we don't get equality for the impedance
         self.assertLess(linalg.norm(spectrum_data['impedance'] -
                                     retrieved_data['impedance'], inf), 1e-10)
+
+    def test_setup_frequency_range(self):
+        ptree = PropertyTree()
+        ptree.put_string('type', 'ElectrochemicalImpedanceSpectroscopy')
+        # specify the upper and lower bounds of the range
+        # the number of points per decades controls the spacing on the log
+        # scale
+        ptree.put_double('frequency_upper_limit', 1e+2)
+        ptree.put_double('frequency_lower_limit', 1e-1)
+        ptree.put_int('steps_per_decade', 3)
+        eis = Experiment(ptree)
+        print(eis._frequencies)
+        f = eis._frequencies
+        self.assertEqual(len(f), 10)
+        self.assertAlmostEqual(f[0], 1e+2)
+        self.assertAlmostEqual(f[3], 1e+1)
+        self.assertAlmostEqual(f[9], 1e-1)
+        # or directly specify the frequencies
+        frequencies = [3, 2e3, 0.1]
+        eis = Experiment(ptree, frequencies)
+        self.assertTrue(all(equal(frequencies, eis._frequencies)))
 
     def test_verification_with_equivalent_circuit(self):
         R = 50e-3   # ohm
