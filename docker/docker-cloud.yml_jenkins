@@ -1,0 +1,12 @@
+dumb-slave:
+  image: 'dalg24/dumb-slave:latest'
+  privileged: true
+jenkins:
+  image: 'jenkins:latest'
+  links:
+    - dumb-slave
+  ports:
+    - '8080:8080'
+    - '50000:50000'
+  volumes:
+    - '/home/qdi/jenkins:/var/jenkins_home'
