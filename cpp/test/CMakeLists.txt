@@ -23,6 +23,7 @@ if(ENABLE_DEAL_II)
         test_equivalent_circuit
         test_exact_transient_solution
         test_supercapacitor
+        test_three_dim_supercapacitor
         )
 endif()
 foreach(TEST_NAME ${CPP_TESTS})
