@@ -402,7 +402,6 @@ void SuperCapacitor<dim>::evolve_one_time_step(
     std::cout << "Number of iterations: " << solver_control.last_step()
               << std::endl
               << std::endl;
-    ;
   }
   _solver_timer.stop();
 
