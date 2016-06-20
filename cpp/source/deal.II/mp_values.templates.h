@@ -130,7 +130,8 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
   double const pores_characteristic_dimension = to_meters(matrix_phase_database->get<double>("pores_characteristic_dimension"));
   double const pores_geometry_factor          = matrix_phase_database->get<double>("pores_geometry_factor");
   double const mass_density                   = to_kilograms_per_cubic_meter(matrix_phase_database->get<double>("mass_density"));
-  double const electrical_conductivity        = 1.0/to_ohm_meter(matrix_phase_database->get<double>("electrical_resistivity"));
+  double const electrical_resistivity         = to_ohm_meter(matrix_phase_database->get<double>("electrical_resistivity"));
+  double const electrical_conductivity        = (electrical_resistivity>1e300) ? 0. : 1.0/electrical_resistivity;
   double const heat_capacity                  = matrix_phase_database->get<double>("heat_capacity");
   double const thermal_conductivity           = matrix_phase_database->get<double>("thermal_conductivity");
   // clang-format on

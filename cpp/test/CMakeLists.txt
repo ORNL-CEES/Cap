@@ -23,7 +23,6 @@ if(ENABLE_DEAL_II)
         test_equivalent_circuit
         test_exact_transient_solution
         test_supercapacitor
-        test_three_dim_supercapacitor
         )
 endif()
 foreach(TEST_NAME ${CPP_TESTS})
@@ -34,6 +33,7 @@ endforeach()
 if(ENABLE_DEAL_II)
   Cap_ADD_BOOST_TEST(test_distributed_energy_storage 1 2 4)
   Cap_ADD_BOOST_TEST(test_supercapacitor_inspector 2)
+  Cap_ADD_BOOST_TEST(test_three_dim_supercapacitor 1 2 4)
 endif()
 
 Cap_COPY_INPUT_FILE(series_rc.info                    cpp/test/data)
