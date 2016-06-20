@@ -14,7 +14,7 @@ from copy import copy
 from io import open  # to be able to use parameter ``encoding`` with Python2.7
 from .data_helpers import initialize_data, report_data, save_data
 from .peak_detection import peakdet
-from .observer_pattern import Observer, Observable, Experiment
+from .observer_pattern import Observer, Experiment
 import pycap
 
 __all__ = ['plot_nyquist', 'plot_bode',

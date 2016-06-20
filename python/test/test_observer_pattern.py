@@ -33,10 +33,10 @@ class ObserverObservableTestCase(unittest.TestCase):
 
             # Now instantiation works.
             ptree.put_string('type', 'ConcreteClass')
-            o = AbstractClass(ptree)
+            AbstractClass(ptree)
 
             # Also can build directly from derived class.
-            o = ConcreteClass()
+            ConcreteClass()
 
             # Remove from the dictionary.
             del AbstractClass._builders['ConcreteClass']
