@@ -5,10 +5,10 @@
 # for the text and further information on this license.
 
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
-    ECLabAsciiFile, NyquistPlot, BodePlot
+    ECLabAsciiFile, NyquistPlot
 from pycap import retrieve_impedance_spectrum,\
     fourier_analysis, initialize_data
-from numpy import inf, linalg, real, imag, pi, log10, absolute, angle,\
+from numpy import inf, linalg, pi, log10, absolute, angle,\
     array, ones, cos, sin, equal
 from warnings import catch_warnings, simplefilter
 from h5py import File

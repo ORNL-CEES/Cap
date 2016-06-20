@@ -1,4 +1,3 @@
-from .PyCap import PropertyTree
 from weakref import ref
 
 __all__ = ['Observer', 'Observable', 'Experiment']
