@@ -5,7 +5,7 @@
  * for the text and further information on this license.
  */
 
-#define BOOST_TEST_MODULE Three_Dim_Supercapacitor
+#define BOOST_TEST_MODULE Supercapacitor_2d_vs_3d
 
 #include "main.cc"
 
