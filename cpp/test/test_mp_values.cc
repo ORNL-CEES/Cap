@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
 
   std::vector<double> values(1);
-  double const tolerance = 1.e12;
+  double const tolerance = 1e-2;
   mp_values->get_values("density", cell, values);
   BOOST_TEST(values[0] == 1563.);
   mp_values->get_values("solid_electrical_conductivity", cell, values);
@@ -175,5 +175,5 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   mp_values->get_values("density", cell, values);
   BOOST_TEST(values[0] == 2000.);
   mp_values->get_values("solid_electrical_conductivity", cell, values);
-  BOOST_TEST(std::abs(values[0]) < tolerance);
+  BOOST_TEST(std::abs(values[0]) == 0.);
 }

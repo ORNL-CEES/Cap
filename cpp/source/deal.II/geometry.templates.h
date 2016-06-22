@@ -437,17 +437,17 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
   internal::Component<dim> collector_c(collector_a.box_dimensions,
                                        collector_a.repetitions, _communicator);
 
-  // Read the data needed fot the anode
+  // Read the data needed for the anode
   internal::Component<dim> anode(_communicator);
   boost::property_tree::ptree anode_database = database.get_child("anode");
   internal::read_component_database(anode_database, anode);
 
-  // Read the data needed fot the cathode
+  // Read the data needed for the cathode
   internal::Component<dim> cathode(_communicator);
   boost::property_tree::ptree cathode_database = database.get_child("cathode");
   internal::read_component_database(cathode_database, cathode);
 
-  // Read the data needed fot the separator
+  // Read the data needed for the separator
   internal::Component<dim> separator(_communicator);
   boost::property_tree::ptree separator_database =
       database.get_child("separator");
