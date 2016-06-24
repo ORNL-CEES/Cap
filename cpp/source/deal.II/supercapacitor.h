@@ -107,6 +107,16 @@ public:
    */
   boost::property_tree::ptree const *get_property_tree() const;
 
+  /**
+   * Save the current state of energy device in a compressed file.
+   */
+  void save(const std::string &filename) const override;
+
+  /**
+   * Load an energy device from a state saved in a compressed file.
+   */
+  void load(const std::string &filename) override;
+
 private:
   /**
    * Helper function to advance time by @p time_step second.
@@ -126,6 +136,11 @@ private:
    * solved.
    */
   void output_eigenvalues(std::vector<double> const &eigenvalues);
+
+  /**
+   * Helper function for the constructor.
+   */
+  void setup();
 
   /**
    * Maximum number of iterations of the Krylov solver in
