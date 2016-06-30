@@ -138,6 +138,136 @@ void merge_components(
 }
 
 template <int dim>
+Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
+                        boost::mpi::communicator mpi_communicator)
+    : _communicator(mpi_communicator),
+      _anode_boundary_id(type::invalid_boundary_id),
+      _cathode_boundary_id(type::invalid_boundary_id), _triangulation(nullptr),
+      _materials(nullptr)
+{
+  _triangulation = std::make_shared<dealii::distributed::Triangulation<dim>>(
+      mpi_communicator);
+  std::string mesh_type = database->get<std::string>("type");
+  if (mesh_type.compare("restart") == 0)
+  {
+    // Do nothing. The mesh will be loaded when the save function is called.
+  }
+  else
+  {
+    if (mesh_type.compare("file") == 0)
+    {
+      std::string mesh_file = database->get<std::string>("mesh_file");
+      dealii::GridIn<dim> mesh_reader;
+      mesh_reader.attach_triangulation(*_triangulation);
+      std::fstream fin;
+      fin.open(mesh_file.c_str(), std::fstream::in);
+      std::string const file_extension =
+          mesh_file.substr(mesh_file.find_last_of(".") + 1);
+      fill_materials_map(database);
+      boost::property_tree::ptree boundary_database =
+          database->get_child("boundary_values");
+      _anode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
+          "anode_boundary_id");
+      _cathode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
+          "cathode_boundary_id");
+      if (file_extension.compare("ucd") == 0)
+      {
+        mesh_reader.read_ucd(fin);
+      }
+      else if (file_extension.compare("inp") == 0)
+      {
+        mesh_reader.read_abaqus(fin);
+      }
+      else
+      {
+        throw std::runtime_error("Bad mesh file extension ." + file_extension +
+                                 " in mesh file " + mesh_file);
+      }
+      fin.close();
+
+      // If we want to do checkpoint/restart, we need to start from the coarse
+      // mesh.
+      if (database->get("checkpoint", false))
+      {
+        std::string const filename =
+            database->get<std::string>("coarse_mesh_filename");
+        output_coarse_mesh(filename);
+      }
+    }
+    else
+    {
+      fill_materials_map();
+      convert_geometry_database(database);
+
+      // If the mesh type is supercapacitor, we provide a default mesh
+      if (mesh_type.compare("supercapacitor") == 0)
+      {
+        if (dim == 2)
+        {
+          std::string collector_div("1,6");
+          std::string anode_div("10,5");
+          std::string separator_div("5,5");
+          std::string cathode_div("10,5");
+          database->put("collector.divisions", collector_div);
+          database->put("anode.divisions", anode_div);
+          database->put("separator.divisions", separator_div);
+          database->put("cathode.divisions", cathode_div);
+        }
+        else
+        {
+          std::string collector_div("3,3,3");
+          std::string anode_div("5,5,2");
+          std::string separator_div("4,4,2");
+          std::string cathode_div("5,5,2");
+          database->put("collector.divisions", collector_div);
+          database->put("anode.divisions", anode_div);
+          database->put("separator.divisions", separator_div);
+          database->put("cathode.divisions", cathode_div);
+        }
+
+        database->put("n_repetitions", 0);
+        database->put("n_refinements", 1);
+      }
+      mesh_generator(*database);
+    }
+
+    // We need to do load balancing because cells in the collectors and the
+    // separator don't have both physics.
+    repartition(database);
+  }
+}
+
+template <int dim>
+Geometry<dim>::Geometry(
+    std::shared_ptr<boost::property_tree::ptree const> database,
+    std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation)
+    : _communicator(boost::mpi::communicator(triangulation->get_communicator(),
+                                             boost::mpi::comm_duplicate)),
+      _anode_boundary_id(type::invalid_boundary_id),
+      _cathode_boundary_id(type::invalid_boundary_id),
+      _triangulation(triangulation), _materials(nullptr)
+{
+  fill_materials_map(database);
+}
+
+template <int dim>
+void Geometry<dim>::repartition(
+    std::shared_ptr<boost::property_tree::ptree const> database)
+{
+  std::array<unsigned int, 4> weights;
+  weights[internal::WEIGHT_TYPE::anode] = database->get("anode.weight", 0);
+  weights[internal::WEIGHT_TYPE::cathode] = database->get("cathode.weight", 0);
+  weights[internal::WEIGHT_TYPE::separator] =
+      database->get("separator.weight", 0);
+  weights[internal::WEIGHT_TYPE::collector] =
+      database->get("collector.weight", 0);
+  _triangulation->signals.cell_weight.connect(
+      std::bind(&Geometry<dim>::compute_cell_weight, this,
+                std::placeholders::_1, weights));
+  _triangulation->repartition();
+}
+
+template <int dim>
 unsigned int Geometry<dim>::compute_cell_weight(
     typename dealii::Triangulation<dim, dim>::cell_iterator const &cell,
     std::array<unsigned int, 4> const &weights) const
@@ -259,203 +389,6 @@ void Geometry<dim>::convert_geometry_database(
     database->put("cathode.dimensions", cathode_dim);
   }
 }
-
-template <int dim>
-Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
-                        boost::mpi::communicator mpi_communicator)
-    : _communicator(mpi_communicator),
-      _anode_boundary_id(type::invalid_boundary_id),
-      _cathode_boundary_id(type::invalid_boundary_id), _triangulation(nullptr),
-      _materials(nullptr)
-{
-  _triangulation = std::make_shared<dealii::distributed::Triangulation<dim>>(
-      mpi_communicator);
-  std::string mesh_type = database->get<std::string>("type");
-  if (mesh_type.compare("restart") == 0)
-  {
-    // Do nothing. The mesh will be loaded when the save function is called.
-  }
-  else
-  {
-    if (mesh_type.compare("file") == 0)
-    {
-      std::string mesh_file = database->get<std::string>("mesh_file");
-      dealii::GridIn<dim> mesh_reader;
-      mesh_reader.attach_triangulation(*_triangulation);
-      std::fstream fin;
-      fin.open(mesh_file.c_str(), std::fstream::in);
-      std::string const file_extension =
-          mesh_file.substr(mesh_file.find_last_of(".") + 1);
-      fill_materials_map(database);
-      boost::property_tree::ptree boundary_database =
-          database->get_child("boundary_values");
-      _anode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
-          "anode_boundary_id");
-      _cathode_boundary_id = boundary_database.get<dealii::types::boundary_id>(
-          "cathode_boundary_id");
-      if (file_extension.compare("ucd") == 0)
-      {
-        mesh_reader.read_ucd(fin);
-      }
-      else if (file_extension.compare("inp") == 0)
-      {
-        mesh_reader.read_abaqus(fin);
-      }
-      else
-      {
-        throw std::runtime_error("Bad mesh file extension ." + file_extension +
-                                 " in mesh file " + mesh_file);
-      }
-      fin.close();
-
-      // If we want to do checkpoint/restart, we need to start from the coarse
-      // mesh.
-      if (database->get("checkpoint", false))
-      {
-        std::string const filename =
-            database->get<std::string>("coarse_mesh_filename");
-        output_coarse_mesh(filename);
-      }
-    }
-    else
-    {
-      fill_materials_map();
-      convert_geometry_database(database);
-
-      // If the mesh type is supercapacitor, we provide a default mesh
-      if (mesh_type.compare("supercapacitor") == 0)
-      {
-        if (dim == 2)
-        {
-          std::string collector_div("1,6");
-          std::string anode_div("10,5");
-          std::string separator_div("5,5");
-          std::string cathode_div("10,5");
-          database->put("collector.divisions", collector_div);
-          database->put("anode.divisions", anode_div);
-          database->put("separator.divisions", separator_div);
-          database->put("cathode.divisions", cathode_div);
-        }
-        else
-        {
-          std::string collector_div("3,3,3");
-          std::string anode_div("5,5,2");
-          std::string separator_div("4,4,2");
-          std::string cathode_div("5,5,2");
-          database->put("collector.divisions", collector_div);
-          database->put("anode.divisions", anode_div);
-          database->put("separator.divisions", separator_div);
-          database->put("cathode.divisions", cathode_div);
-        }
-
-        database->put("n_repetitions", 0);
-        database->put("n_refinements", 1);
-      }
-      mesh_generator(*database);
-    }
-
-    // We need to do load balancing because cells in the collectors and the
-    // separator don't have both physics.
-    repartition(database);
-  }
-}
-
-template <int dim>
-Geometry<dim>::Geometry(
-    std::shared_ptr<boost::property_tree::ptree const> database,
-    std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation)
-    : _communicator(boost::mpi::communicator(triangulation->get_communicator(),
-                                             boost::mpi::comm_duplicate)),
-      _anode_boundary_id(type::invalid_boundary_id),
-      _cathode_boundary_id(type::invalid_boundary_id),
-      _triangulation(triangulation), _materials(nullptr)
-{
-  fill_materials_map(database);
-}
-
-template <int dim>
-void Geometry<dim>::repartition(
-    std::shared_ptr<boost::property_tree::ptree const> database)
-{
-    std::array<unsigned int, 4> weights;
-    weights[internal::WEIGHT_TYPE::anode] = database->get("anode.weight", 0);
-    weights[internal::WEIGHT_TYPE::cathode] =
-        database->get("cathode.weight", 0);
-    weights[internal::WEIGHT_TYPE::separator] =
-        database->get("separator.weight", 0);
-    weights[internal::WEIGHT_TYPE::collector] =
-        database->get("collector.weight", 0);
-    _triangulation->signals.cell_weight.connect(
-        std::bind(&Geometry<dim>::compute_cell_weight, this,
-                  std::placeholders::_1, weights));
-    _triangulation->repartition();
-}
-
-
-template <int dim>
-void Geometry<dim>::set_boundary_ids(double const collector_top,
-                                     double const collector_bottom)
-{
-  // TODO the code below can be cleaned up when using the next version of
-  // deal.II
-  //(current is 8.4). Only the for loops will be left without the if. Instead we
-  // can use dealii::IteratorFilters::AtBoundary().
-  typedef dealii::FilteredIterator<
-      typename dealii::Triangulation<dim>::cell_iterator> FI;
-
-  // Set the anode boundary id
-  bool const locally_owned = false;
-  std::set<dealii::types::material_id> collector_anode(
-      (*_materials)["collector_anode"].begin(),
-      (*_materials)["collector_anode"].end());
-  FI anode_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_anode,
-                                                           locally_owned)),
-      anode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_anode,
-                                                                locally_owned),
-                     _triangulation->end());
-  anode_cell.set_to_next_positive(_triangulation->begin());
-  double const eps = 1e-6;
-  unsigned int boundary_id_set = 0;
-  for (; anode_cell < anode_end_cell; ++anode_cell)
-    if (anode_cell->at_boundary())
-      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
-           ++i)
-        // Check that the face is on the top of the collector
-        if (std::abs(anode_cell->face(i)->center()[dim - 1] - collector_top) <
-            eps * anode_cell->measure())
-        {
-          anode_cell->face(i)->set_boundary_id(_anode_boundary_id);
-          boundary_id_set = 1;
-        }
-  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
-  BOOST_ASSERT_MSG(boundary_id_set == 1, "Anode boundary id no set.");
-
-  // Set the cathode boundary id
-  std::set<dealii::types::material_id> collector_cathode(
-      (*_materials)["collector_cathode"].begin(),
-      (*_materials)["collector_cathode"].end());
-  FI cathode_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_cathode,
-                                                             locally_owned)),
-      cathode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(
-                           collector_cathode, locally_owned),
-                       _triangulation->end());
-  cathode_cell.set_to_next_positive(_triangulation->begin());
-  boundary_id_set = 0;
-  for (; cathode_cell < cathode_end_cell; ++cathode_cell)
-    if (cathode_cell->at_boundary())
-      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
-           ++i)
-        // Check that the face is on the bottom of the collector
-        if (std::abs(cathode_cell->face(i)->center()[dim - 1] -
-                     collector_bottom) < eps * cathode_cell->measure())
-        {
-          cathode_cell->face(i)->set_boundary_id(_cathode_boundary_id);
-          boundary_id_set = 1;
-        }
-  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
-  BOOST_ASSERT_MSG(boundary_id_set == 1, "Cathode boundary id no set.");
-}
-
 template <int dim>
 void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
 {
@@ -573,6 +506,70 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
   unsigned int const n_refinements =
       database.get<unsigned int>("n_refinements", 0);
   _triangulation->refine_global(n_refinements);
+}
+
+template <int dim>
+void Geometry<dim>::set_boundary_ids(double const collector_top,
+                                     double const collector_bottom)
+{
+  // TODO the code below can be cleaned up when using the next version of
+  // deal.II
+  //(current is 8.4). Only the for loops will be left without the if. Instead we
+  // can use dealii::IteratorFilters::AtBoundary().
+  typedef dealii::FilteredIterator<
+      typename dealii::Triangulation<dim>::cell_iterator> FI;
+
+  // Set the anode boundary id
+  bool const locally_owned = false;
+  std::set<dealii::types::material_id> collector_anode(
+      (*_materials)["collector_anode"].begin(),
+      (*_materials)["collector_anode"].end());
+  FI anode_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_anode,
+                                                           locally_owned)),
+      anode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_anode,
+                                                                locally_owned),
+                     _triangulation->end());
+  anode_cell.set_to_next_positive(_triangulation->begin());
+  double const eps = 1e-6;
+  unsigned int boundary_id_set = 0;
+  for (; anode_cell < anode_end_cell; ++anode_cell)
+    if (anode_cell->at_boundary())
+      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
+           ++i)
+        // Check that the face is on the top of the collector
+        if (std::abs(anode_cell->face(i)->center()[dim - 1] - collector_top) <
+            eps * anode_cell->measure())
+        {
+          anode_cell->face(i)->set_boundary_id(_anode_boundary_id);
+          boundary_id_set = 1;
+        }
+  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
+  BOOST_ASSERT_MSG(boundary_id_set == 1, "Anode boundary id no set.");
+
+  // Set the cathode boundary id
+  std::set<dealii::types::material_id> collector_cathode(
+      (*_materials)["collector_cathode"].begin(),
+      (*_materials)["collector_cathode"].end());
+  FI cathode_cell(dealii::IteratorFilters::MaterialIdEqualTo(collector_cathode,
+                                                             locally_owned)),
+      cathode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(
+                           collector_cathode, locally_owned),
+                       _triangulation->end());
+  cathode_cell.set_to_next_positive(_triangulation->begin());
+  boundary_id_set = 0;
+  for (; cathode_cell < cathode_end_cell; ++cathode_cell)
+    if (cathode_cell->at_boundary())
+      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
+           ++i)
+        // Check that the face is on the bottom of the collector
+        if (std::abs(cathode_cell->face(i)->center()[dim - 1] -
+                     collector_bottom) < eps * cathode_cell->measure())
+        {
+          cathode_cell->face(i)->set_boundary_id(_cathode_boundary_id);
+          boundary_id_set = 1;
+        }
+  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
+  BOOST_ASSERT_MSG(boundary_id_set == 1, "Cathode boundary id no set.");
 }
 
 template <int dim>
