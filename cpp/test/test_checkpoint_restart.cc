@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc)
 BOOST_AUTO_TEST_CASE(test_supercapacitor)
 {
   boost::mpi::communicator comm;
-  std::string filename = "rc_device.z";
+  std::string filename = "device.z";
   boost::property_tree::ptree device_database;
   boost::property_tree::info_parser::read_info("super_capacitor.info",
                                                device_database);
