@@ -454,9 +454,19 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   _geometry->set_cathode_boundary_id(cathode_boundary_id);
   _geometry->set_materials(materials);
 
-  // Load the refinement and the solution
+  // Load the refinement
   _geometry->get_triangulation()->load(filename.c_str());
+  // Do the load balancing. We may want to use different weights after a restart
+  // so the weights are not save.
+  std::shared_ptr<boost::property_tree::ptree> geometry_database =
+      std::make_shared<boost::property_tree::ptree>(
+          _ptree.get_child("geometry"));
+  _geometry->repartition(geometry_database);
+
+  // Setup the SuperCapacitor object.
   setup();
+
+  // Load the solution.
   dealii::distributed::SolutionTransfer<dim, dealii::Trilinos::MPI::BlockVector>
       solution_transfer(*dof_handler);
   solution_transfer.deserialize(*solution);

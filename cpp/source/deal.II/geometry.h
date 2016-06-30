@@ -44,6 +44,11 @@ public:
 
   virtual ~Geometry() = default;
 
+  /**
+   * Read the weights of the cells and repartion the Triangulation.
+   */
+  void repartition(std::shared_ptr<boost::property_tree::ptree const> database);
+
   void set_anode_boundary_id(dealii::types::boundary_id const boundary_id)
   {
     _anode_boundary_id = boundary_id;

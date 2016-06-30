@@ -356,18 +356,7 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
 
     // We need to do load balancing because cells in the collectors and the
     // separator don't have both physics.
-    std::array<unsigned int, 4> weights;
-    weights[internal::WEIGHT_TYPE::anode] = database->get("anode.weight", 0);
-    weights[internal::WEIGHT_TYPE::cathode] =
-        database->get("cathode.weight", 0);
-    weights[internal::WEIGHT_TYPE::separator] =
-        database->get("separator.weight", 0);
-    weights[internal::WEIGHT_TYPE::collector] =
-        database->get("collector.weight", 0);
-    _triangulation->signals.cell_weight.connect(
-        std::bind(&Geometry<dim>::compute_cell_weight, this,
-                  std::placeholders::_1, weights));
-    _triangulation->repartition();
+    repartition(database);
   }
 }
 
@@ -383,6 +372,25 @@ Geometry<dim>::Geometry(
 {
   fill_materials_map(database);
 }
+
+template <int dim>
+void Geometry<dim>::repartition(
+    std::shared_ptr<boost::property_tree::ptree const> database)
+{
+    std::array<unsigned int, 4> weights;
+    weights[internal::WEIGHT_TYPE::anode] = database->get("anode.weight", 0);
+    weights[internal::WEIGHT_TYPE::cathode] =
+        database->get("cathode.weight", 0);
+    weights[internal::WEIGHT_TYPE::separator] =
+        database->get("separator.weight", 0);
+    weights[internal::WEIGHT_TYPE::collector] =
+        database->get("collector.weight", 0);
+    _triangulation->signals.cell_weight.connect(
+        std::bind(&Geometry<dim>::compute_cell_weight, this,
+                  std::placeholders::_1, weights));
+    _triangulation->repartition();
+}
+
 
 template <int dim>
 void Geometry<dim>::set_boundary_ids(double const collector_top,
