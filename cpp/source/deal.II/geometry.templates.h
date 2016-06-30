@@ -588,18 +588,6 @@ void Geometry<dim>::output_coarse_mesh(std::string const &filename)
     // is required) which is request by boost to load a shared_ptr.
     oa << *_triangulation;
 
-    // Because deal.II does not save the boundary IDs in the triangulation. We
-    // save them here. The loop is not over the active cells to include the
-    // artificial cells.
-    // TODO the code below can be cleaned up when using the next version of
-    // deal.II (current is 8.4).
-    for (auto cell : _triangulation->cell_iterators())
-      if (cell->at_boundary())
-        for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
-             ++i)
-          if (cell->face(i)->at_boundary())
-            oa << cell->face(i)->boundary_id();
-
     // Save _anode_boundary_id, _cathode_boundary_id, and _materials.
     oa << _anode_boundary_id;
     oa << _cathode_boundary_id;

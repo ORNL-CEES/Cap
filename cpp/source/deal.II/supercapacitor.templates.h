@@ -443,20 +443,6 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   _geometry->get_triangulation()->clear();
   _geometry->get_triangulation()->copy_triangulation(tmp);
 
-  // Set the boundary IDs on the triangulation.
-  // TODO the code below can be cleaned up when using the next version of
-  // deal.II (current is 8.4).
-  for (auto cell : _geometry->get_triangulation()->cell_iterators())
-    if (cell->at_boundary())
-      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
-           ++i)
-        if (cell->face(i)->at_boundary())
-        {
-          dealii::types::boundary_id boundary_id;
-          ia >> boundary_id;
-          cell->face(i)->set_boundary_id(boundary_id);
-        }
-
   dealii::types::boundary_id anode_boundary_id;
   dealii::types::boundary_id cathode_boundary_id;
   std::shared_ptr<std::unordered_map<
