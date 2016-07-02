@@ -41,107 +41,107 @@ public:
 
   MPValues() = default;
 
-  MPValues(MPValuesParameters<dim, spacedim> const &params);
-
   virtual ~MPValues() = default;
 
   virtual void get_values(std::string const &key,
                           active_cell_iterator const &cell,
-                          std::vector<double> &values) const;
-
-  virtual void
-  get_values(std::string const &key, active_cell_iterator const &cell,
-             std::vector<dealii::Tensor<1, spacedim>> &values) const;
-
-protected:
-  std::unordered_map<dealii::types::material_id, std::shared_ptr<MPValues<dim>>>
-      materials;
+                          std::vector<double> &values) const = 0;
 };
 
-//////////////////////// NEW STUFF ////////////////////////////
 template <int dim, int spacedim = dim>
-class NewStuffMPValues : public MPValues<dim, spacedim>
+class CompositeMat : public MPValues<dim, spacedim>
 {
 public:
-  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
-      active_cell_iterator;
+  using active_cell_iterator =
+      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
 
-  NewStuffMPValues(MPValuesParameters<dim, spacedim> const &parameters);
-
-  // Needed to fix hidding of get_values.
-  using MPValues<dim, spacedim>::get_values;
+  CompositeMat() = default;
 
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   std::vector<double> &values) const override;
 
 protected:
-  std::unordered_map<std::string,
-                     std::function<void(active_cell_iterator const &,
-                                        std::vector<double> &)>> properties;
+  std::unordered_map<dealii::types::material_id,
+                     std::shared_ptr<MPValues<dim, spacedim>>> _materials = {};
 };
 
 template <int dim, int spacedim = dim>
-class PorousElectrodeMPValues : public NewStuffMPValues<dim, spacedim>
+class CompositePro : public MPValues<dim, spacedim>
 {
 public:
-  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
-      active_cell_iterator;
-  PorousElectrodeMPValues(MPValuesParameters<dim, spacedim> const &parameters);
+  using active_cell_iterator =
+      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+
+  CompositePro() = default;
+
+  void get_values(std::string const &key, active_cell_iterator const &cell,
+                  std::vector<double> &values) const override;
+
+protected:
+  std::unordered_map<std::string, std::shared_ptr<MPValues<dim, spacedim>>>
+      _properties = {};
 };
 
 template <int dim, int spacedim = dim>
-class MetalFoilMPValues : public NewStuffMPValues<dim, spacedim>
+class UniformConstantMPValues : public MPValues<dim, spacedim>
 {
 public:
-  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
-      active_cell_iterator;
-  MetalFoilMPValues(MPValuesParameters<dim, spacedim> const &parameters);
+  using active_cell_iterator =
+      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+
+  UniformConstantMPValues(double const &val);
+
+  void get_values(std::string const &key, active_cell_iterator const &cell,
+                  std::vector<double> &values) const override;
+
+protected:
+  // get_values(...) will assign _val to all elements in the vector values.
+  double _val;
 };
 
 template <int dim, int spacedim = dim>
-std::shared_ptr<MPValues<dim>>
-buildMaterial(std::string const &material_name,
-              std::shared_ptr<boost::property_tree::ptree const> database)
+class SuperCapacitorMPValues : public CompositeMat<dim, spacedim>
 {
-  std::shared_ptr<boost::property_tree::ptree> material_database =
-      std::make_shared<boost::property_tree::ptree>(
-          database->get_child(material_name));
-  std::string const type = material_database->get<std::string>("type");
-  if (type.compare("porous_electrode") == 0)
-  {
-    std::shared_ptr<boost::property_tree::ptree> dummy_database =
-        std::make_shared<boost::property_tree::ptree>(*database);
-    dummy_database->put("ugly_hack", material_name);
-    return std::make_shared<PorousElectrodeMPValues<dim>>(
-        MPValuesParameters<dim>(dummy_database));
-  }
-  else if (type.compare("permeable_membrane") == 0)
-  {
-    std::shared_ptr<boost::property_tree::ptree> dummy_database =
-        std::make_shared<boost::property_tree::ptree>(*database);
-    dummy_database->put("ugly_hack", material_name);
-    std::string const matrix_phase =
-        dummy_database->get<std::string>(material_name + "." + "matrix_phase");
-    dummy_database->put(matrix_phase + "." + "differential_capacitance", 0.0);
-    dummy_database->put(matrix_phase + "." + "exchange_current_density", 0.0);
-    dummy_database->put(matrix_phase + "." + "electrical_resistivity",
-                        std::numeric_limits<double>::max());
-    return std::make_shared<PorousElectrodeMPValues<dim>>(
-        MPValuesParameters<dim>(dummy_database));
-  }
-  else if (type.compare("current_collector") == 0)
-  {
-    std::shared_ptr<boost::property_tree::ptree> dummy_database =
-        std::make_shared<boost::property_tree::ptree>(*database);
-    dummy_database->put("ugly_hack", material_name);
-    return std::make_shared<MetalFoilMPValues<dim>>(
-        MPValuesParameters<dim>(dummy_database));
-  }
-  else
-  {
-    throw std::runtime_error("Invalid material type " + type);
-  }
-}
+public:
+  SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const &params);
+  // Use build(...) to create either an homogeneous
+  // (SuperCapacitorMPValues) or an inhomogeneous model
+  // (InhomogeneousSuperCapacitorMPValues)
+  static std::unique_ptr<MPValues<dim, spacedim>>
+  build(MPValuesParameters<dim, spacedim> const &params);
+};
+
+template <int dim, int spacedim = dim>
+class InhomogeneousSuperCapacitorMPValues : public MPValues<dim, spacedim>
+{
+public:
+  using active_cell_iterator =
+      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+
+  InhomogeneousSuperCapacitorMPValues(
+      MPValuesParameters<dim, spacedim> const &params);
+
+  void get_values(std::string const &key, active_cell_iterator const &cell,
+                  std::vector<double> &values) const override;
+
+protected:
+  std::map<dealii::CellId, std::shared_ptr<MPValues<dim, spacedim>>> _map = {};
+};
+
+template <int dim, int spacedim = dim>
+class PorousElectrodeMPValues : public CompositePro<dim, spacedim>
+{
+public:
+  PorousElectrodeMPValues(std::string const &material_name,
+                          MPValuesParameters<dim, spacedim> const &params);
+};
+template <int dim, int spacedim = dim>
+class MetalFoilMPValues : public CompositePro<dim, spacedim>
+{
+public:
+  MetalFoilMPValues(std::string const &material_name,
+                    MPValuesParameters<dim, spacedim> const &params);
+};
 
 } // end namespace cap
 

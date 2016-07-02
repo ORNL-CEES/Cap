@@ -139,7 +139,7 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   MPValuesParameters<dim> params(material_properties_database);
   params.geometry = _geometry;
   std::shared_ptr<MPValues<dim>> mp_values =
-      std::make_shared<MPValues<dim>>(params);
+      SuperCapacitorMPValues<dim>::build(params);
 
   // Initialize the electrochemical physics parameters
   electrochemical_physics_params.reset(
