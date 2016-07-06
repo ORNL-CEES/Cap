@@ -1,4 +1,3 @@
-[![Stories in Ready](https://badge.waffle.io/ORNL-CEES/Cap.png?label=ready&title=Ready)](https://waffle.io/ORNL-CEES/Cap)
 Cap
 ===
 [![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)]()
@@ -9,12 +8,13 @@ To get started, [checkout the documentation](https://cap.readthedocs.org).
 Continuous Integration Status
 -----------------------------
 
-Provider      | Service       | Status
-------------- | ------------- | ------
-Read the Docs | documentation | [![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
-Travis CI     | unit tests    | [![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
-Codecov       | coverage      | [![codecov](https://codecov.io/gh/ORNL-CEES/Cap/branch/master/graph/badge.svg)](https://codecov.io/gh/ORNL-CEES/Cap)
-Slack         | messaging     | [![Slack](https://img.shields.io/badge/Slack-%23cap-ff69b4.svg)](https://ornl-cees.slack.com/archives/cap)
+Provider      | Service            | Status
+------------- | ------------------ | ------
+Read the Docs | documentation      | [![Documentation Status](https://readthedocs.org/projects/cap/badge/?version=latest)](https://readthedocs.org/projects/cap/?badge=latest)
+Travis CI     | unit tests         | [![Build Status](https://travis-ci.org/ORNL-CEES/Cap.svg?branch=master)](https://travis-ci.org/ORNL-CEES/Cap)
+Codecov       | coverage           | [![codecov](https://codecov.io/gh/ORNL-CEES/Cap/branch/master/graph/badge.svg)](https://codecov.io/gh/ORNL-CEES/Cap)
+Slack         | messaging          | [![Slack](https://img.shields.io/badge/Slack-%23cap-ff69b4.svg)](https://ornl-cees.slack.com/archives/cap)
+Waffle        | project management | [![Stories in Ready](https://badge.waffle.io/ORNL-CEES/Cap.png?label=ready&title=Ready)](https://waffle.io/ORNL-CEES/Cap)
 
 
 NEW - Escape dependency hell
