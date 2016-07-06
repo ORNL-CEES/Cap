@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/ORNL-CEES/Cap.png?label=ready&title=Ready)](https://waffle.io/ORNL-CEES/Cap)
 Cap
 ===
 [![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)]()
