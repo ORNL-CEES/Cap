@@ -39,26 +39,34 @@ BOOST_AUTO_TEST_CASE(test_series_rc)
   boost::mpi::communicator comm;
   std::string filename = "rc_device.txt";
   cap::SeriesRC rc_device(initialize_database(), comm);
-  rc_device.U_C = 16.;
-  rc_device.U = rc_device.U_C;
-  rc_device.I = 32.;
+
+  double const charge_current = 5e-3;
+  double const time_step = 1e-2;
+  for (unsigned int i = 0; i < 3; ++i)
+    rc_device.evolve_one_time_step_constant_current(time_step, charge_current);
 
   // Save the current state
   rc_device.save(filename);
 
   // Create a new device
   cap::SeriesRC new_rc_device(initialize_zero_database(), comm);
-  // Load the preivous device
+  // Load the previous device
   new_rc_device.load(filename);
 
   if (comm.rank() == 0)
   {
     // Check the value
-    BOOST_CHECK_EQUAL(rc_device.R, new_rc_device.R);
-    BOOST_CHECK_EQUAL(rc_device.C, new_rc_device.C);
-    BOOST_CHECK_EQUAL(rc_device.U_C, new_rc_device.U_C);
-    BOOST_CHECK_EQUAL(rc_device.U, new_rc_device.U);
-    BOOST_CHECK_EQUAL(rc_device.I, new_rc_device.I);
+    double const tolerance = 1e-6;
+    double current;
+    double new_current;
+    double voltage;
+    double new_voltage;
+    rc_device.get_current(current);
+    new_rc_device.get_current(new_current);
+    rc_device.get_voltage(voltage);
+    new_rc_device.get_voltage(new_voltage);
+    BOOST_CHECK_CLOSE(current, new_current, tolerance);
+    BOOST_CHECK_CLOSE(voltage, new_voltage, tolerance);
 
     // Delete save file
     std::remove(filename.c_str());
@@ -70,9 +78,11 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc)
   boost::mpi::communicator comm;
   std::string filename = "rc_device.txt";
   cap::ParallelRC rc_device(initialize_database(), comm);
-  rc_device.U_C = 16.;
-  rc_device.U = 24.;
-  rc_device.I = 32.;
+
+  double const charge_current = 5e-3;
+  double const time_step = 1e-2;
+  for (unsigned int i = 0; i < 3; ++i)
+    rc_device.evolve_one_time_step_constant_current(time_step, charge_current);
 
   // Save the current state
   rc_device.save(filename);
@@ -85,12 +95,17 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc)
   if (comm.rank() == 0)
   {
     // Check the value
-    BOOST_CHECK_EQUAL(rc_device.R_series, new_rc_device.R_series);
-    BOOST_CHECK_EQUAL(rc_device.R_parallel, new_rc_device.R_parallel);
-    BOOST_CHECK_EQUAL(rc_device.C, new_rc_device.C);
-    BOOST_CHECK_EQUAL(rc_device.U_C, new_rc_device.U_C);
-    BOOST_CHECK_EQUAL(rc_device.U, new_rc_device.U);
-    BOOST_CHECK_EQUAL(rc_device.I, new_rc_device.I);
+    double const tolerance = 1e-6;
+    double current;
+    double new_current;
+    double voltage;
+    double new_voltage;
+    rc_device.get_current(current);
+    new_rc_device.get_current(new_current);
+    rc_device.get_voltage(voltage);
+    new_rc_device.get_voltage(new_voltage);
+    BOOST_CHECK_CLOSE(current, new_current, tolerance);
+    BOOST_CHECK_CLOSE(voltage, new_voltage, tolerance);
 
     // Delete save file
     std::remove(filename.c_str());
