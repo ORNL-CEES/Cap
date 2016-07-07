@@ -39,8 +39,16 @@ int main(int argc, char *argv[])
     std::cout << "Elapsed time: " << timer.elapsed() << std::endl;
   }
 
-  cap::SuperCapacitorInspector<2> supercap_inspector;
-  supercap_inspector.inspect(device.get());
+  if (device_database.get<int>("dim") == 2)
+  {
+    cap::SuperCapacitorInspector<2> supercap_inspector;
+    supercap_inspector.inspect(device.get());
+  }
+  else
+  {
+    cap::SuperCapacitorInspector<3> supercap_inspector;
+    supercap_inspector.inspect(device.get());
+  }
 
   return 0;
 }

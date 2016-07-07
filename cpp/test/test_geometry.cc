@@ -25,9 +25,9 @@
 // - Check that we can build a 3D geometry.
 
 template <int dim>
-void write_mesh(std::string const &mesh_file,
-                std::shared_ptr<dealii::distributed::Triangulation<dim> const>
-                    triangulation)
+void write_mesh(
+    std::string const &mesh_file,
+    std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation)
 {
   dealii::GridOut mesh_writer;
   std::fstream fout;

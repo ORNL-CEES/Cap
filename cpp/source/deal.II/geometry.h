@@ -44,9 +44,24 @@ public:
 
   virtual ~Geometry() = default;
 
+  /**
+   * Read the weights of the cells and repartion the Triangulation.
+   */
+  void repartition(std::shared_ptr<boost::property_tree::ptree const> database);
+
+  void set_anode_boundary_id(dealii::types::boundary_id const boundary_id)
+  {
+    _anode_boundary_id = boundary_id;
+  }
+
   dealii::types::boundary_id get_anode_boundary_id() const
   {
     return _anode_boundary_id;
+  }
+
+  void set_cathode_boundary_id(dealii::types::boundary_id const boundary_id)
+  {
+    _cathode_boundary_id = boundary_id;
   }
 
   dealii::types::boundary_id get_cathode_boundary_id() const
@@ -54,8 +69,7 @@ public:
     return _cathode_boundary_id;
   }
 
-  std::shared_ptr<dealii::distributed::Triangulation<dim> const>
-  get_triangulation() const
+  std::shared_ptr<dealii::distributed::Triangulation<dim>> get_triangulation()
   {
     return _triangulation;
   }
@@ -70,6 +84,13 @@ public:
   get_materials() const
   {
     return _materials;
+  }
+
+  void set_materials(
+      std::shared_ptr<std::unordered_map<
+          std::string, std::vector<dealii::types::material_id>>> materials)
+  {
+    _materials = materials;
   }
 
 private:
@@ -110,6 +131,11 @@ private:
    */
   void set_boundary_ids(double const collector_top,
                         double const collector_bottom);
+
+  /**
+   * Helper function that serialize and save the geometry in @p filename.
+   */
+  void output_coarse_mesh(std::string const &filename);
 
   boost::mpi::communicator _communicator;
   dealii::types::boundary_id _anode_boundary_id;

@@ -13,6 +13,7 @@ set(Boost_COMPONENTS
     timer
     system
     filesystem
+    iostreams
 )
 if(ENABLE_PYTHON)
     set(Boost_COMPONENTS python ${Boost_COMPONENTS})

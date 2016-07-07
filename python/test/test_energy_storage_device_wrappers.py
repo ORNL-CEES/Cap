@@ -7,6 +7,7 @@
 from pycap import PropertyTree, EnergyStorageDevice
 from mpi4py import MPI
 import unittest
+import os
 
 valid_device_input = [
     "series_rc.info",
@@ -73,6 +74,51 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
             U = 1.1  # voltage in volts
             device.evolve_one_time_step_constant_voltage(dt, U)
             self.assertAlmostEqual(device.get_voltage(), U)
+
+    def test_checkpoint_restart(self):
+        # check rc devices
+        for filename in valid_device_input[0:2]:
+            ptree = PropertyTree()
+            ptree.parse_info(filename)
+            device = EnergyStorageDevice(ptree)
+            dt = 0.1  # time_step in seconds
+            I = 5e-3  # current in amperes
+            device.evolve_one_time_step_constant_current(dt, I)
+            device.save('rc_device.txt')
+            new_device = EnergyStorageDevice(ptree)
+            new_device.load('rc_device.txt')
+            self.assertEqual(device.get_voltage(), new_device.get_voltage())
+            self.assertEqual(device.get_current(), new_device.get_current())
+        # check supercapacitor
+        coarse_mesh = 'coarse_mesh.z'
+        device_state = 'device.z'
+        ptree = PropertyTree()
+        ptree.parse_info('super_capacitor.info')
+        # check that forgetting to set checkpoint raises an error during the
+        # restart
+        ptree.put_string('geometry.coarse_mesh_filename', coarse_mesh)
+        device = EnergyStorageDevice(ptree)
+        device.save(device_state)
+        new_ptree = PropertyTree()
+        new_ptree.parse_info('super_capacitor.info')
+        new_ptree.put_string('geometry.type', 'restart')
+        new_ptree.put_string('geometry.coarse_mesh_filename', coarse_mesh)
+        new_device = EnergyStorageDevice(new_ptree)
+        self.assertRaises(RuntimeError, new_device.load, device_state)
+        # Turn on checkpoint
+        ptree.put_bool('geometry.checkpoint', True)
+        device = EnergyStorageDevice(ptree)
+        dt = 0.1  # time_step in seconds
+        I = 5e-3  # current in amperes
+        device.evolve_one_time_step_constant_current(dt, I)
+        device.save(device_state)
+        new_device.load(device_state)
+        self.assertEqual(device.get_voltage(), new_device.get_voltage())
+        self.assertEqual(device.get_current(), new_device.get_current())
+        # clean files
+        os.remove(coarse_mesh)
+        os.remove(device_state)
+
 
 if __name__ == '__main__':
     unittest.main()

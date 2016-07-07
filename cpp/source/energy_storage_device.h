@@ -97,6 +97,16 @@ public:
                                                 double const load) = 0;
 
   /**
+   * Save the current state of the energy storage device in a file.
+   */
+  virtual void save(const std::string &filename) const = 0;
+
+  /**
+   * Load an energy storage device from a state saved in a file.
+   */
+  virtual void load(const std::string &filename) = 0;
+
+  /**
    * Factory function that creates an EnergyStorageDevice object.
    */
   static std::unique_ptr<EnergyStorageDevice>

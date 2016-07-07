@@ -31,6 +31,7 @@ endforeach()
 
 # Add tests that are run in parallel
 if(ENABLE_DEAL_II)
+  Cap_ADD_BOOST_TEST(test_checkpoint_restart 2)
   Cap_ADD_BOOST_TEST(test_distributed_energy_storage 1 2 4)
   Cap_ADD_BOOST_TEST(test_supercapacitor_inspector 2)
   Cap_ADD_BOOST_TEST(test_supercapacitor_2d_vs_3d 1 2 4)

@@ -94,6 +94,24 @@ char const evolve_one_time_step_constant_load_docstring[] =
   "    The load in ohms.                                                    \n"
   ;
 
+char const save_docstring[] =
+  "Save the current state of the energy storage device in a file.           \n"
+  "                                                                         \n"
+  "Parameters                                                               \n"
+  "----------                                                               \n"
+  "filename : string                                                        \n"
+  "    The name of the file where the device will be saved.                 \n"
+  ;
+
+char const load_docstring[] =
+  " Load an energy storage device from a state saved in a file.             \n"
+  "                                                                         \n"
+  "Parameters                                                               \n"
+  "----------                                                               \n"
+  "filename : string                                                        \n"
+  "    The name of the file where the device has been saved.                \n"
+  ;
+
 void export_energy_storage_device()
 {
   boost::python::class_<cap::EnergyStorageDevice,
@@ -150,6 +168,14 @@ void export_energy_storage_device()
     .def("evolve_one_time_step_linear_load",
          &cap::EnergyStorageDevice::evolve_one_time_step_linear_load,
          boost::python::args("self", "time_step", "load") )
+    .def("save",
+         &cap::EnergyStorageDevice::save,
+         save_docstring,
+         boost::python::args("self", "filename"))
+    .def("load",
+         &cap::EnergyStorageDevice::load,
+         load_docstring,
+         boost::python::args("self", "filename"))
 //        .def_pickle(pycap::serializable_class_pickle_support<cap::EnergyStorageDevice>())
         ;
 }
