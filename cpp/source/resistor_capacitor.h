@@ -55,9 +55,9 @@ public:
   void evolve_one_time_step_linear_load(double const delta_t,
                                         double const load) override;
 
-  inline void get_voltage(double &voltage) const override { voltage = U; }
+  void get_voltage(double &voltage) const override { voltage = U; }
 
-  inline void get_current(double &current) const override { current = I; }
+  void get_current(double &current) const override { current = I; }
 
   /**
    * This function advance the time by @p delta_t seconds. The power is
@@ -70,6 +70,16 @@ public:
   std::size_t
   evolve_one_time_step_constant_power(double const delta_t, double const power,
                                       std::string const &method = "NEWTON");
+
+  /**
+   * Save the current state of energy device in a file.
+   */
+  void save(const std::string &filename) const override;
+
+  /**
+   * Load an energy device from a state saved in a file.
+   */
+  void load(const std::string &filename) override;
 
   // TODO: make these variables private
   double R;
@@ -87,6 +97,8 @@ private:
     ar &R &C &U_C &U &I;
     std::ignore = version;
   }
+
+  boost::mpi::communicator _comm;
 };
 
 class ParallelRC : public EnergyStorageDevice
@@ -143,6 +155,16 @@ public:
   evolve_one_time_step_constant_power(double const delta_t, double const power,
                                       std::string const &method = "NEWTON");
 
+  /**
+   * Save the current state of energy device in a file.
+   */
+  void save(const std::string &filename) const override;
+
+  /**
+   * Load an energy device from a state saved in a file.
+   */
+  void load(const std::string &filename) override;
+
   // TODO: make these variables private
   double R_series;
   double R_parallel;
@@ -160,6 +182,8 @@ private:
     ar &R_parallel &C &U_C &U &I &R_series;
     std::ignore = version;
   }
+
+  boost::mpi::communicator _comm;
 };
 
 } // end namespace cap

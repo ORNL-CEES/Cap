@@ -12,6 +12,7 @@
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/multithread_info.h>
 #include <deal.II/fe/fe_q.h>
+#include <deal.II/distributed/solution_transfer.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -19,11 +20,14 @@
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/solver_cg.h>
-#include <boost/format.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/test/floating_point_comparison.hpp>
-#include <tuple>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include <fstream>
 
 namespace cap
@@ -92,18 +96,16 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
 {
   _setup_timer.start();
 
-  // get database
-  boost::property_tree::ptree const &database = ptree;
-  verbose_lvl = database.get<unsigned int>("verbosity", 0);
+  verbose_lvl = _ptree.get("verbosity", 0);
 
   // get data tolerance and maximum number of iterations for the CG solver
   boost::property_tree::ptree const &solver_database =
-      database.get_child("solver");
-  max_iter = solver_database.get<unsigned int>("max_iter", 1000);
-  rel_tolerance = solver_database.get<double>("rel_tolerance", 1e-12);
-  abs_tolerance = solver_database.get<double>("abs_tolerance", 1e-12);
+      _ptree.get_child("solver");
+  max_iter = solver_database.get("max_iter", 1000);
+  rel_tolerance = solver_database.get("rel_tolerance", 1e-12);
+  abs_tolerance = solver_database.get("abs_tolerance", 1e-12);
   // set the number of threads used by deal.II
-  unsigned int n_threads = solver_database.get<unsigned int>("n_threads", 1);
+  unsigned int n_threads = solver_database.get("n_threads", 1);
   // if 0, let TBB uses all the available threads. This can also be used if one
   // wants to use DEAL_II_NUM_THREADS
   if (n_threads == 0)
@@ -114,86 +116,12 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
   // build triangulation
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
-          database.get_child("geometry"));
+          _ptree.get_child("geometry"));
   _geometry = std::make_shared<cap::Geometry<dim>>(geometry_database,
                                                    this->_communicator);
-  std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
-      _geometry->get_triangulation();
-
-  // distribute degrees of freedom
-  _fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
-  dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
-  dof_handler->distribute_dofs(*_fe);
-
-  // Renumber the degrees of freedom component-wise.
-  dealii::DoFRenumbering::component_wise(*dof_handler);
-  unsigned int const n_components =
-      dealii::DoFTools::n_components(*dof_handler);
-  std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
-  dealii::DoFTools::count_dofs_per_component(*dof_handler, dofs_per_component);
-
-  // read material properties
-  std::shared_ptr<boost::property_tree::ptree> material_properties_database =
-      std::make_shared<boost::property_tree::ptree>(
-          database.get_child("material_properties"));
-  MPValuesParameters<dim> params(material_properties_database);
-  params.geometry = _geometry;
-  std::shared_ptr<MPValues<dim>> mp_values =
-      SuperCapacitorMPValuesFactory<dim>::build(params);
-
-  // Initialize the electrochemical physics parameters
-  electrochemical_physics_params.reset(
-      new ElectrochemicalPhysicsParameters<dim>(database));
-  electrochemical_physics_params->geometry = _geometry;
-  electrochemical_physics_params->dof_handler = dof_handler;
-  electrochemical_physics_params->mp_values =
-      std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
-
-  // Compute the surface area. This is neeeded by several evolve_one_time_step_*
-  surface_area = 0.;
-  dealii::types::boundary_id cathode_boundary_id =
-      _geometry->get_cathode_boundary_id();
-  dealii::QGauss<dim - 1> face_quadrature_rule(_fe->degree + 1);
-  unsigned int const n_face_q_points = face_quadrature_rule.size();
-  dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
-                                           dealii::update_JxW_values);
-  // TODO this can be simplified when using the next version of deal (current is
-  // 8.4)
-  for (auto cell : dof_handler->active_cell_iterators())
-    if (cell->is_locally_owned() && cell->at_boundary())
-      for (unsigned int face = 0;
-           face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
-        if ((cell->face(face)->at_boundary()) &&
-            (cell->face(face)->boundary_id() == cathode_boundary_id))
-          for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
-               ++face_q_point)
-          {
-            fe_face_values.reinit(cell, face);
-            surface_area += fe_face_values.JxW(face_q_point);
-          }
-  // Reduce the value computed on each processor.
-  surface_area = dealii::Utilities::MPI::sum(surface_area, this->_communicator);
-
-  // Create the post-processor parameters
-  post_processor_params =
-      std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
-          std::make_shared<boost::property_tree::ptree>(database), dof_handler);
-
-  // Initialize the size solution
-  // Temporary keep using a BlockVector because of PostProcessor.
-  std::vector<dealii::IndexSet> index_set(
-      1, this->dof_handler->locally_owned_dofs());
-  solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
-
-  // Initialize the postprocessor
-  post_processor_params->solution = solution;
-  post_processor_params->mp_values = electrochemical_physics_params->mp_values;
-  post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-      post_processor_params, _geometry, this->_communicator);
-
-  post_processor->reset(post_processor_params);
-
-  _setup_timer.stop();
+  std::string mesh_type = geometry_database->get<std::string>("type");
+  if (mesh_type.compare("restart") != 0)
+    setup();
 }
 
 template <int dim>
@@ -454,6 +382,180 @@ boost::property_tree::ptree const *
 SuperCapacitor<dim>::get_property_tree() const
 {
   return &_ptree;
+}
+
+template <int dim>
+void SuperCapacitor<dim>::save(const std::string &filename) const
+{
+  // This only stores the refinement information and the solution. The
+  // triangulation needs to exist and to be of cells of only the coarsest level,
+  // i.e., the coarsest mesh as possible. The vectors that are serialized need
+  // to be ghosted.
+  unsigned int const n_blocks = solution->n_blocks();
+  dealii::IndexSet locally_owned_dofs = dof_handler->locally_owned_dofs();
+  dealii::IndexSet locally_relevant_dofs;
+  dealii::DoFTools::extract_locally_relevant_dofs(*dof_handler,
+                                                  locally_relevant_dofs);
+  std::vector<dealii::IndexSet> locally_owned_index_sets(n_blocks,
+                                                         locally_owned_dofs);
+  std::vector<dealii::IndexSet> locally_relevant_index_sets(
+      n_blocks, locally_relevant_dofs);
+  dealii::Trilinos::MPI::BlockVector ghosted_solution(
+      locally_owned_index_sets, locally_relevant_index_sets,
+      this->_communicator);
+  ghosted_solution = *solution;
+
+  dealii::distributed::SolutionTransfer<dim, dealii::Trilinos::MPI::BlockVector>
+      solution_transfer(*dof_handler);
+  solution_transfer.prepare_serialization(ghosted_solution);
+  _geometry->get_triangulation()->save(filename.c_str());
+}
+
+template <int dim>
+void SuperCapacitor<dim>::load(const std::string &filename)
+{
+  namespace boost_io = boost::iostreams;
+
+  // Check that the files exist
+  std::string const coarse_mesh_filename =
+      _ptree.get<std::string>("geometry.coarse_mesh_filename");
+  if (boost::filesystem::exists(coarse_mesh_filename) == false)
+    throw std::runtime_error("The file " + coarse_mesh_filename +
+                             " does not exist.");
+  if (boost::filesystem::exists(filename) == false)
+    throw std::runtime_error("The file " + filename + " does not exist.");
+
+  // Open the file
+  std::ifstream is(coarse_mesh_filename, std::ios::binary);
+  if (is.good() == false)
+    throw std::runtime_error("Error while opening the file: " + filename);
+
+  // Load the coarse mesh. Because the p4est objects are not serialized, we
+  // deserialize in a dealii::Triangulation and then use copy_triangulation to
+  // copy the dealii::Triangulation into a
+  // dealii::parallel::distributed::Triangulation.
+  boost_io::filtering_streambuf<boost_io::input> compressed_in;
+  compressed_in.push(boost_io::zlib_decompressor());
+  compressed_in.push(is);
+  boost::archive::binary_iarchive ia(compressed_in);
+  dealii::Triangulation<dim> tmp;
+  ia >> tmp;
+  _geometry->get_triangulation()->clear();
+  _geometry->get_triangulation()->copy_triangulation(tmp);
+
+  dealii::types::boundary_id anode_boundary_id;
+  dealii::types::boundary_id cathode_boundary_id;
+  std::shared_ptr<std::unordered_map<
+      std::string, std::vector<dealii::types::material_id>>> materials;
+  ia >> anode_boundary_id;
+  ia >> cathode_boundary_id;
+  ia >> materials;
+  _geometry->set_anode_boundary_id(anode_boundary_id);
+  _geometry->set_cathode_boundary_id(cathode_boundary_id);
+  _geometry->set_materials(materials);
+
+  // Load the refinement
+  _geometry->get_triangulation()->load(filename.c_str());
+  // Do the load balancing. We may want to use different weights after a restart
+  // so the weights are not save.
+  std::shared_ptr<boost::property_tree::ptree> geometry_database =
+      std::make_shared<boost::property_tree::ptree>(
+          _ptree.get_child("geometry"));
+  _geometry->repartition(geometry_database);
+
+  // Setup the SuperCapacitor object.
+  setup();
+
+  // Load the solution.
+  dealii::distributed::SolutionTransfer<dim, dealii::Trilinos::MPI::BlockVector>
+      solution_transfer(*dof_handler);
+  solution_transfer.deserialize(*solution);
+
+  // Reset the post-processor otherwise if we call get_current/get_voltage just
+  // after a load the value would stay at zero.
+  post_processor->reset(post_processor_params);
+}
+
+template <int dim>
+void SuperCapacitor<dim>::setup()
+{
+  std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
+      _geometry->get_triangulation();
+
+  // distribute degrees of freedom
+  _fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
+  dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
+  dof_handler->distribute_dofs(*_fe);
+
+  // Renumber the degrees of freedom component-wise.
+  dealii::DoFRenumbering::component_wise(*dof_handler);
+  unsigned int const n_components =
+      dealii::DoFTools::n_components(*dof_handler);
+  std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
+  dealii::DoFTools::count_dofs_per_component(*dof_handler, dofs_per_component);
+
+  // read material properties
+  std::shared_ptr<boost::property_tree::ptree> material_properties_database =
+      std::make_shared<boost::property_tree::ptree>(
+          _ptree.get_child("material_properties"));
+  MPValuesParameters<dim> params(material_properties_database);
+  params.geometry = _geometry;
+  std::shared_ptr<MPValues<dim>> mp_values =
+      SuperCapacitorMPValuesFactory<dim>::build(params);
+
+  // Initialize the electrochemical physics parameters
+  electrochemical_physics_params.reset(
+      new ElectrochemicalPhysicsParameters<dim>(_ptree));
+  electrochemical_physics_params->geometry = _geometry;
+  electrochemical_physics_params->dof_handler = dof_handler;
+  electrochemical_physics_params->mp_values =
+      std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
+
+  // Compute the surface area. This is neeeded by several evolve_one_time_step_*
+  surface_area = 0.;
+  dealii::types::boundary_id cathode_boundary_id =
+      _geometry->get_cathode_boundary_id();
+  dealii::QGauss<dim - 1> face_quadrature_rule(_fe->degree + 1);
+  unsigned int const n_face_q_points = face_quadrature_rule.size();
+  dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
+                                           dealii::update_JxW_values);
+  // TODO this can be simplified when using the next version of deal (current is
+  // 8.4)
+  for (auto cell : dof_handler->active_cell_iterators())
+    if (cell->is_locally_owned() && cell->at_boundary())
+      for (unsigned int face = 0;
+           face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
+        if ((cell->face(face)->at_boundary()) &&
+            (cell->face(face)->boundary_id() == cathode_boundary_id))
+          for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
+               ++face_q_point)
+          {
+            fe_face_values.reinit(cell, face);
+            surface_area += fe_face_values.JxW(face_q_point);
+          }
+  // Reduce the value computed on each processor.
+  surface_area = dealii::Utilities::MPI::sum(surface_area, this->_communicator);
+
+  // Create the post-processor parameters
+  post_processor_params =
+      std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
+          std::make_shared<boost::property_tree::ptree>(_ptree), dof_handler);
+
+  // Initialize the size solution
+  // Temporary keep using a BlockVector because of PostProcessor.
+  std::vector<dealii::IndexSet> index_set(
+      1, this->dof_handler->locally_owned_dofs());
+  solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
+
+  // Initialize the postprocessor
+  post_processor_params->solution = solution;
+  post_processor_params->mp_values = electrochemical_physics_params->mp_values;
+  post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
+      post_processor_params, _geometry, this->_communicator);
+
+  post_processor->reset(post_processor_params);
+
+  _setup_timer.stop();
 }
 
 } // end namespace cap

@@ -6,8 +6,11 @@
  */
 
 #include <cap/resistor_capacitor.h>
-#include <boost/format.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <cmath>
+#include <fstream>
 #include <stdexcept>
 
 namespace cap
@@ -30,7 +33,8 @@ SeriesRC::SeriesRC(boost::property_tree::ptree const &ptree,
                    boost::mpi::communicator const &comm)
     : EnergyStorageDevice(comm), R(ptree.get<double>("series_resistance")),
       C(ptree.get<double>("capacitance")),
-      U_C(ptree.get<double>("initial_voltage", 0.0)), U(U_C), I(0.0)
+      U_C(ptree.get<double>("initial_voltage", 0.0)), U(U_C), I(0.0),
+      _comm(comm)
 {
 }
 
@@ -132,6 +136,34 @@ std::size_t SeriesRC::evolve_one_time_step_constant_power(
   return k;
 }
 
+void SeriesRC::save(const std::string &filename) const
+{
+  if (_comm.rank() == 0)
+  {
+    std::ofstream ofs(filename);
+    boost::archive::text_oarchive oa(ofs);
+    oa << *this;
+  }
+}
+
+void SeriesRC::load(const std::string &filename)
+{
+  if (_comm.rank() == 0)
+  {
+    // Check that the file exist
+    if (boost::filesystem::exists(filename) == false)
+      throw std::runtime_error("The file " + filename + " does not exists.");
+
+    std::ifstream ifs(filename);
+    if (ifs.good() == false)
+      throw std::runtime_error("Error while opening file " + filename);
+    boost::archive::text_iarchive ia(ifs);
+    ia >> *this;
+  }
+}
+
+//------------------------------------------------------------------
+
 ParallelRC::ParallelRC(boost::property_tree::ptree const &ptree,
                        boost::mpi::communicator const &comm)
     : EnergyStorageDevice(comm),
@@ -140,7 +172,7 @@ ParallelRC::ParallelRC(boost::property_tree::ptree const &ptree,
       C(ptree.get<double>("capacitance")),
       U_C(ptree.get<double>("initial_voltage", 0.0)),
       U((R_series + R_parallel) / R_parallel * U_C),
-      I(U / (R_series + R_parallel))
+      I(U / (R_series + R_parallel)), _comm(comm)
 {
 }
 
@@ -258,6 +290,32 @@ std::size_t ParallelRC::evolve_one_time_step_constant_power(
   }
   U_C = U - R_series * I;
   return k;
+}
+
+void ParallelRC::save(const std::string &filename) const
+{
+  if (_comm.rank() == 0)
+  {
+    std::ofstream ofs(filename);
+    boost::archive::text_oarchive oa(ofs);
+    oa << *this;
+  }
+}
+
+void ParallelRC::load(const std::string &filename)
+{
+  if (_comm.rank() == 0)
+  {
+    // Check that the file exist
+    if (boost::filesystem::exists(filename) == false)
+      throw std::runtime_error("The file " + filename + " does not exists.");
+
+    std::ifstream ifs(filename);
+    if (ifs.good() == false)
+      throw std::runtime_error("Error while opening file " + filename);
+    boost::archive::text_iarchive ia(ifs);
+    ia >> *this;
+  }
 }
 
 } // end namespace

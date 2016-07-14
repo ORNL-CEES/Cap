@@ -28,7 +28,8 @@ public:
   virtual ~MPValuesParameters() = default;
   // keep public for now
   std::shared_ptr<boost::property_tree::ptree const> database;
-  std::shared_ptr<Geometry<dim> const> geometry;
+  // cannot be const because get_triangulation(...) is not const...
+  std::shared_ptr<Geometry<dim>> geometry;
 };
 
 //////////////////////// MP VALUES ////////////////////////////
