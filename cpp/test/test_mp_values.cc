@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
 {
   boost::mpi::communicator world;
 
-  // Use the standard input for build a SuperCapacitor
+  // Use the standard input to build a SuperCapacitor
   boost::property_tree::ptree ptree;
   boost::property_tree::read_info("super_capacitor.info", ptree);
 
