@@ -15,10 +15,10 @@ namespace cap
 {
 
 //////////////////////// COMPOSITE MAT /////////////////////////////////////////
-template <int dim, int spacedim>
-void CompositeMat<dim, spacedim>::get_values(std::string const &key,
-                                             active_cell_iterator const &cell,
-                                             std::vector<double> &values) const
+template <int dim>
+void CompositeMat<dim>::get_values(std::string const &key,
+                                   active_cell_iterator const &cell,
+                                   std::vector<double> &values) const
 
 {
   dealii::types::material_id const material_id = cell->material_id();
@@ -30,12 +30,11 @@ void CompositeMat<dim, spacedim>::get_values(std::string const &key,
   material->get_values(key, cell, values);
 }
 
-
 //////////////////////// COMPOSITE PRO /////////////////////////////////////////
-template <int dim, int spacedim>
-void CompositePro<dim, spacedim>::get_values(std::string const &key,
-                                             active_cell_iterator const &cell,
-                                             std::vector<double> &values) const
+template <int dim>
+void CompositePro<dim>::get_values(std::string const &key,
+                                   active_cell_iterator const &cell,
+                                   std::vector<double> &values) const
 {
   auto got = _properties.find(key);
   if (got == _properties.end())
@@ -44,26 +43,22 @@ void CompositePro<dim, spacedim>::get_values(std::string const &key,
   property->get_values(key, cell, values);
 }
 
-
 //////////////////////// UNIFORM CONSTANT //////////////////////////////////////
-template <int dim, int spacedim>
-UniformConstantMPValues<dim, spacedim>::UniformConstantMPValues(
-    double const &val)
+template <int dim>
+UniformConstantMPValues<dim>::UniformConstantMPValues(double const &val)
     : _val(val)
 {
 }
 
-
-template <int dim, int spacedim>
-void UniformConstantMPValues<dim, spacedim>::get_values(
-    std::string const &key, active_cell_iterator const &cell,
-    std::vector<double> &values) const
+template <int dim>
+void UniformConstantMPValues<dim>::get_values(std::string const &key,
+                                              active_cell_iterator const &cell,
+                                              std::vector<double> &values) const
 {
   std::ignore = key;
   std::ignore = cell;
   std::fill(values.begin(), values.end(), _val);
 }
-
 
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
 namespace internal
@@ -109,10 +104,10 @@ build_parameter(boost::property_tree::ptree const &parameter_database)
 }
 
 // helper function used to construct homogeneous and inhomogeneous materials
-template <int dim, int spacedim>
-std::unique_ptr<MPValues<dim, spacedim>>
+template <int dim>
+std::unique_ptr<MPValues<dim>>
 build_material_properties(std::string const &material_name,
-                          MPValuesParameters<dim, spacedim> const &params)
+                          MPValuesParameters<dim> const &params)
 {
   boost::property_tree::ptree const &database = *params.database;
   boost::property_tree::ptree const &material_database =
@@ -120,8 +115,8 @@ build_material_properties(std::string const &material_name,
   std::string const type = material_database.get<std::string>("type");
   if (type.compare("porous_electrode") == 0)
   {
-    return std::make_unique<PorousElectrodeMPValues<dim, spacedim>>(
-        material_name, params);
+    return std::make_unique<PorousElectrodeMPValues<dim>>(material_name,
+                                                          params);
   }
   else if (type.compare("permeable_membrane") == 0)
   {
@@ -137,15 +132,14 @@ build_material_properties(std::string const &material_name,
     dummy_database->put(matrix_phase + "." + "exchange_current_density", 0.0);
     dummy_database->put(matrix_phase + "." + "electrical_resistivity",
                         std::numeric_limits<double>::max());
-    MPValuesParameters<dim, spacedim> dummy_params = params;
+    MPValuesParameters<dim> dummy_params = params;
     dummy_params.database = dummy_database;
-    return std::make_unique<PorousElectrodeMPValues<dim, spacedim>>(
-        material_name, dummy_params);
+    return std::make_unique<PorousElectrodeMPValues<dim>>(material_name,
+                                                          dummy_params);
   }
   else if (type.compare("current_collector") == 0)
   {
-    return std::make_unique<MetalFoilMPValues<dim, spacedim>>(material_name,
-                                                              params);
+    return std::make_unique<MetalFoilMPValues<dim>>(material_name, params);
   }
   else
   {
@@ -154,12 +148,10 @@ build_material_properties(std::string const &material_name,
 }
 } // end namespace internal
 
-
 //////////////////////// INHOMOGENEOUS SUPERCAPACITOR //////////////////////////
-template <int dim, int spacedim>
-InhomogeneousSuperCapacitorMPValues<dim, spacedim>::
-    InhomogeneousSuperCapacitorMPValues(
-        MPValuesParameters<dim, spacedim> const &params)
+template <int dim>
+InhomogeneousSuperCapacitorMPValues<dim>::InhomogeneousSuperCapacitorMPValues(
+    MPValuesParameters<dim> const &params)
 {
   boost::property_tree::ptree const &database = *params.database;
   // Build a map material_id -> material_name
@@ -211,7 +203,7 @@ InhomogeneousSuperCapacitorMPValues<dim, spacedim>::
   // changed.
   auto perturbed_database =
       std::make_shared<boost::property_tree::ptree>(*params.database);
-  MPValuesParameters<dim, spacedim> perturbed_params = params;
+  MPValuesParameters<dim> perturbed_params = params;
   perturbed_params.database = perturbed_database;
   // Traverse the triangulation and build material properties with perturbed
   // parameters in each cell.
@@ -234,9 +226,8 @@ InhomogeneousSuperCapacitorMPValues<dim, spacedim>::
   }
 }
 
-
-template <int dim, int spacedim>
-void InhomogeneousSuperCapacitorMPValues<dim, spacedim>::get_values(
+template <int dim>
+void InhomogeneousSuperCapacitorMPValues<dim>::get_values(
     std::string const &key, active_cell_iterator const &cell,
     std::vector<double> &values) const
 {
@@ -247,27 +238,24 @@ void InhomogeneousSuperCapacitorMPValues<dim, spacedim>::get_values(
   property->get_values(key, cell, values);
 }
 
-
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
-template <int dim, int spacedim>
-std::unique_ptr<MPValues<dim, spacedim>>
-SuperCapacitorMPValues<dim, spacedim>::build(
-    MPValuesParameters<dim, spacedim> const &params)
+template <int dim>
+std::unique_ptr<MPValues<dim>>
+SuperCapacitorMPValues<dim>::build(MPValuesParameters<dim> const &params)
 {
   if (!params.database)
     throw std::runtime_error("Missing database in SuperCapacitorMPValues");
   if (!params.geometry)
     throw std::runtime_error("Missing geometry in SuperCapacitorMPValues");
   if ((*params.database).get("inhomogeneous", false))
-    return std::make_unique<InhomogeneousSuperCapacitorMPValues<dim, spacedim>>(
-        params);
+    return std::make_unique<InhomogeneousSuperCapacitorMPValues<dim>>(params);
   else
-    return std::make_unique<SuperCapacitorMPValues<dim, spacedim>>(params);
+    return std::make_unique<SuperCapacitorMPValues<dim>>(params);
 }
 
-template <int dim, int spacedim>
-SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
-    MPValuesParameters<dim, spacedim> const &params)
+template <int dim>
+SuperCapacitorMPValues<dim>::SuperCapacitorMPValues(
+    MPValuesParameters<dim> const &params)
 {
   // Fill the map material_id -> MPValues
   for (auto const &m : *params.geometry->get_materials())
@@ -280,7 +268,7 @@ SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
       continue;
     std::vector<dealii::types::material_id> const &material_ids = m.second;
     // Build the adequate material properties
-    std::shared_ptr<MPValues<dim, spacedim>> properties =
+    std::shared_ptr<MPValues<dim>> properties =
         internal::build_material_properties(material_name, params);
     // Assign it to material ids
     for (auto const &id : material_ids)
@@ -292,7 +280,6 @@ SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
     }
   }
 }
-
 
 //////////////////////// POROUS ELECTRODE //////////////////////////////////////
 // helpers to convert units
@@ -317,11 +304,9 @@ auto to_ohm_meter = [](double const &o_cm)
   return 1e-2 * o_cm;
 };
 
-
-template <int dim, int spacedim>
-PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
-    std::string const &material_name,
-    MPValuesParameters<dim, spacedim> const &parameters)
+template <int dim>
+PorousElectrodeMPValues<dim>::PorousElectrodeMPValues(
+    std::string const &material_name, MPValuesParameters<dim> const &parameters)
 {
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters.database;
@@ -354,16 +339,16 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       pores_characteristic_dimension;
   (this->_properties)
       .emplace("specific_surface_area",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    specific_surface_area_per_unit_volume));
   (this->_properties)
       .emplace("specific_capacitance",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    specific_surface_area_per_unit_volume *
                    differential_capacitance));
   (this->_properties)
       .emplace("solid_electrical_conductivity",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    (1.0 - void_volume_fraction) * electrical_conductivity));
 
   // from the solution_phase datatabase
@@ -379,7 +364,7 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
       solution_phase_database->get<double>("mass_density"));
   (this->_properties)
       .emplace("liquid_electrical_conductivity",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    void_volume_fraction * electrolyte_conductivity /
                    tortuosity_factor));
   // TODO: not sure where to pull this from
@@ -392,7 +377,7 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
   // clang-format on
   (this->_properties)
       .emplace("faradaic_reaction_coefficient",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    specific_surface_area_per_unit_volume *
                    exchange_current_density *
                    (anodic_charge_transfer_coefficient +
@@ -400,27 +385,24 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
                    faraday_constant / (gas_constant * temperature)));
   (this->_properties)
       .emplace("electron_thermal_voltage",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    gas_constant * temperature / faraday_constant));
   std::ignore = heat_capacity;
   std::ignore = thermal_conductivity;
   (this->_properties)
-      .emplace("density",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
-                   void_volume_fraction * electrolyte_mass_density +
-                   (1.0 - void_volume_fraction) * mass_density));
+      .emplace("density", std::make_shared<UniformConstantMPValues<dim>>(
+                              void_volume_fraction * electrolyte_mass_density +
+                              (1.0 - void_volume_fraction) * mass_density));
   (this->_properties)
       .emplace("density_of_active_material",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    (1.0 - void_volume_fraction) * mass_density));
 }
 
-
 //////////////////////// METAL FOIL ////////////////////////////////////////////
-template <int dim, int spacedim>
-MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
-    std::string const &material_name,
-    MPValuesParameters<dim, spacedim> const &parameters)
+template <int dim>
+MetalFoilMPValues<dim>::MetalFoilMPValues(
+    std::string const &material_name, MPValuesParameters<dim> const &parameters)
 {
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters.database;
@@ -441,8 +423,7 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
   double const thermal_conductivity   = metal_foil_database->get<double>("thermal_conductivity");
   // clang-format on
 
-  auto null_property =
-      std::make_shared<UniformConstantMPValues<dim, spacedim>>(0.0);
+  auto null_property = std::make_shared<UniformConstantMPValues<dim>>(0.0);
 
   (this->_properties).emplace("density_of_active_material", null_property);
   (this->_properties).emplace("specific_surface_area", null_property);
@@ -451,12 +432,11 @@ MetalFoilMPValues<dim, spacedim>::MetalFoilMPValues(
   (this->_properties).emplace("liquid_electrical_conductivity", null_property);
   (this->_properties)
       .emplace("solid_electrical_conductivity",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
+               std::make_shared<UniformConstantMPValues<dim>>(
                    1.0 / electrical_resistivity));
   (this->_properties)
       .emplace("density",
-               std::make_shared<UniformConstantMPValues<dim, spacedim>>(
-                   mass_density));
+               std::make_shared<UniformConstantMPValues<dim>>(mass_density));
   std::ignore = heat_capacity;
   std::ignore = thermal_conductivity;
 }

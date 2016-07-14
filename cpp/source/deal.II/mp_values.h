@@ -17,7 +17,7 @@ namespace cap
 {
 
 //////////////////////// MP VALUES PARAMETERS ////////////////////////////
-template <int dim, int spacedim = dim>
+template <int dim>
 class MPValuesParameters
 {
 public:
@@ -32,11 +32,11 @@ public:
 };
 
 //////////////////////// MP VALUES ////////////////////////////
-template <int dim, int spacedim = dim>
+template <int dim>
 class MPValues
 {
 public:
-  typedef typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator
+  typedef typename dealii::DoFHandler<dim>::active_cell_iterator
       active_cell_iterator;
 
   MPValues() = default;
@@ -48,12 +48,12 @@ public:
                           std::vector<double> &values) const = 0;
 };
 
-template <int dim, int spacedim = dim>
-class CompositeMat : public MPValues<dim, spacedim>
+template <int dim>
+class CompositeMat : public MPValues<dim>
 {
 public:
   using active_cell_iterator =
-      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+      typename dealii::DoFHandler<dim>::active_cell_iterator;
 
   CompositeMat() = default;
 
@@ -61,16 +61,16 @@ public:
                   std::vector<double> &values) const override;
 
 protected:
-  std::unordered_map<dealii::types::material_id,
-                     std::shared_ptr<MPValues<dim, spacedim>>> _materials = {};
+  std::unordered_map<dealii::types::material_id, std::shared_ptr<MPValues<dim>>>
+      _materials = {};
 };
 
-template <int dim, int spacedim = dim>
-class CompositePro : public MPValues<dim, spacedim>
+template <int dim>
+class CompositePro : public MPValues<dim>
 {
 public:
   using active_cell_iterator =
-      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+      typename dealii::DoFHandler<dim>::active_cell_iterator;
 
   CompositePro() = default;
 
@@ -78,16 +78,16 @@ public:
                   std::vector<double> &values) const override;
 
 protected:
-  std::unordered_map<std::string, std::shared_ptr<MPValues<dim, spacedim>>>
-      _properties = {};
+  std::unordered_map<std::string, std::shared_ptr<MPValues<dim>>> _properties =
+      {};
 };
 
-template <int dim, int spacedim = dim>
-class UniformConstantMPValues : public MPValues<dim, spacedim>
+template <int dim>
+class UniformConstantMPValues : public MPValues<dim>
 {
 public:
   using active_cell_iterator =
-      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+      typename dealii::DoFHandler<dim>::active_cell_iterator;
 
   UniformConstantMPValues(double const &val);
 
@@ -99,48 +99,48 @@ protected:
   double _val;
 };
 
-template <int dim, int spacedim = dim>
-class SuperCapacitorMPValues : public CompositeMat<dim, spacedim>
+template <int dim>
+class SuperCapacitorMPValues : public CompositeMat<dim>
 {
 public:
-  SuperCapacitorMPValues(MPValuesParameters<dim, spacedim> const &params);
+  SuperCapacitorMPValues(MPValuesParameters<dim> const &params);
   // Use build(...) to create either an homogeneous
   // (SuperCapacitorMPValues) or an inhomogeneous model
   // (InhomogeneousSuperCapacitorMPValues)
-  static std::unique_ptr<MPValues<dim, spacedim>>
-  build(MPValuesParameters<dim, spacedim> const &params);
+  static std::unique_ptr<MPValues<dim>>
+  build(MPValuesParameters<dim> const &params);
 };
 
-template <int dim, int spacedim = dim>
-class InhomogeneousSuperCapacitorMPValues : public MPValues<dim, spacedim>
+template <int dim>
+class InhomogeneousSuperCapacitorMPValues : public MPValues<dim>
 {
 public:
   using active_cell_iterator =
-      typename dealii::DoFHandler<dim, spacedim>::active_cell_iterator;
+      typename dealii::DoFHandler<dim>::active_cell_iterator;
 
-  InhomogeneousSuperCapacitorMPValues(
-      MPValuesParameters<dim, spacedim> const &params);
+  InhomogeneousSuperCapacitorMPValues(MPValuesParameters<dim> const &params);
 
   void get_values(std::string const &key, active_cell_iterator const &cell,
                   std::vector<double> &values) const override;
 
 protected:
-  std::map<dealii::CellId, std::shared_ptr<MPValues<dim, spacedim>>> _map = {};
+  std::map<dealii::CellId, std::shared_ptr<MPValues<dim>>> _map = {};
 };
 
-template <int dim, int spacedim = dim>
-class PorousElectrodeMPValues : public CompositePro<dim, spacedim>
+template <int dim>
+class PorousElectrodeMPValues : public CompositePro<dim>
 {
 public:
   PorousElectrodeMPValues(std::string const &material_name,
-                          MPValuesParameters<dim, spacedim> const &params);
+                          MPValuesParameters<dim> const &params);
 };
-template <int dim, int spacedim = dim>
-class MetalFoilMPValues : public CompositePro<dim, spacedim>
+
+template <int dim>
+class MetalFoilMPValues : public CompositePro<dim>
 {
 public:
   MetalFoilMPValues(std::string const &material_name,
-                    MPValuesParameters<dim, spacedim> const &params);
+                    MPValuesParameters<dim> const &params);
 };
 
 } // end namespace cap
