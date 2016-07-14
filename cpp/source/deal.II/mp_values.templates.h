@@ -72,7 +72,7 @@ build_parameter(boost::property_tree::ptree const &parameter_database)
   if (distribution_type.compare("uniform") == 0)
   {
     auto const range =
-        cap::to_vector<double>(parameter_database.get<std::string>("range"));
+        to_vector<double>(parameter_database.get<std::string>("range"));
     BOOST_ASSERT_MSG(range.size() == 2,
                      "Invalid range for constructing an uniform distribution");
     std::uniform_real_distribution<double> distribution(range[0], range[1]);
