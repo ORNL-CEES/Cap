@@ -29,6 +29,8 @@ void CompositeMat<dim, spacedim>::get_values(std::string const &key,
   auto material = got->second;
   material->get_values(key, cell, values);
 }
+
+
 //////////////////////// COMPOSITE PRO /////////////////////////////////////////
 template <int dim, int spacedim>
 void CompositePro<dim, spacedim>::get_values(std::string const &key,
@@ -41,6 +43,8 @@ void CompositePro<dim, spacedim>::get_values(std::string const &key,
   auto property = got->second;
   property->get_values(key, cell, values);
 }
+
+
 //////////////////////// UNIFORM CONSTANT //////////////////////////////////////
 template <int dim, int spacedim>
 UniformConstantMPValues<dim, spacedim>::UniformConstantMPValues(
@@ -48,6 +52,8 @@ UniformConstantMPValues<dim, spacedim>::UniformConstantMPValues(
     : _val(val)
 {
 }
+
+
 template <int dim, int spacedim>
 void UniformConstantMPValues<dim, spacedim>::get_values(
     std::string const &key, active_cell_iterator const &cell,
@@ -57,9 +63,14 @@ void UniformConstantMPValues<dim, spacedim>::get_values(
   std::ignore = cell;
   std::fill(values.begin(), values.end(), _val);
 }
-//////////////////////// RANDOM DISTRIBUTION ///////////////////////////////////
+
+
+//////////////////////// SUPERCAPACITOR ////////////////////////////////////////
+namespace internal
+{
+// helper function to build parameter distributions
 std::function<double(std::default_random_engine &)>
-_build_parameter(boost::property_tree::ptree const &parameter_database)
+build_parameter(boost::property_tree::ptree const &parameter_database)
 {
   auto const distribution_type =
       parameter_database.get<std::string>("distribution_type");
@@ -100,8 +111,8 @@ _build_parameter(boost::property_tree::ptree const &parameter_database)
 // helper function used to construct homogeneous and inhomogeneous materials
 template <int dim, int spacedim>
 std::unique_ptr<MPValues<dim, spacedim>>
-_build_material_properties(std::string const &material_name,
-                           MPValuesParameters<dim, spacedim> const &params)
+build_material_properties(std::string const &material_name,
+                          MPValuesParameters<dim, spacedim> const &params)
 {
   boost::property_tree::ptree const &database = *params.database;
   boost::property_tree::ptree const &material_database =
@@ -116,7 +127,10 @@ _build_material_properties(std::string const &material_name,
   {
     std::string const matrix_phase =
         database.get<std::string>(material_name + "." + "matrix_phase");
-
+    // There is no separate class for a permeable membrane, we just reuse the
+    // porous electrode one but it expects parameters that do not make sense for
+    // the separator. We make a copy of the original ptree and add the missing
+    // parameters that are required for the electrode.
     auto dummy_database =
         std::make_shared<boost::property_tree::ptree>(*params.database);
     dummy_database->put(matrix_phase + "." + "differential_capacitance", 0.0);
@@ -138,16 +152,15 @@ _build_material_properties(std::string const &material_name,
     throw std::runtime_error("Invalid material type " + type);
   }
 }
+} // end namespace internal
 
+
+//////////////////////// INHOMOGENEOUS SUPERCAPACITOR //////////////////////////
 template <int dim, int spacedim>
 InhomogeneousSuperCapacitorMPValues<dim, spacedim>::
     InhomogeneousSuperCapacitorMPValues(
         MPValuesParameters<dim, spacedim> const &params)
 {
-  // Construct a random number generator and use the MPI rank as a seed.
-  std::default_random_engine generator(
-      params.geometry->get_mpi_communicator().rank());
-
   boost::property_tree::ptree const &database = *params.database;
   // Build a map material_id -> material_name
   std::map<dealii::types::material_id, std::string> material_map;
@@ -188,35 +201,40 @@ InhomogeneousSuperCapacitorMPValues<dim, spacedim>::
     if (!database.get_optional<double>(parameter_path))
       throw std::runtime_error("Parameter path " + parameter_path +
                                " does not exist in the material database");
-    auto ret = parameter_map.emplace(parameter_path,
-                                     _build_parameter(parameter_database));
+    auto ret = parameter_map.emplace(
+        parameter_path, internal::build_parameter(parameter_database));
     if (!ret.second)
       throw std::runtime_error("Parameter " + parameter_path +
                                "  is present multiple times");
   }
-  // traverse the triangulation and build material properties with perturbed
-  // parameters in each cell
-  auto const &triangulation = *params.geometry->get_triangulation();
-  // Make a copy of the material database
-  auto dummy_database =
+  // Make a copy of the material database so that the original database is not
+  // changed.
+  auto perturbed_database =
       std::make_shared<boost::property_tree::ptree>(*params.database);
-  // Use a dummy version of the parameters to build the MPValues that points to
-  // the copy of the database.
-  MPValuesParameters<dim, spacedim> dummy_params = params;
-  dummy_params.database = dummy_database;
+  MPValuesParameters<dim, spacedim> perturbed_params = params;
+  perturbed_params.database = perturbed_database;
+  // Traverse the triangulation and build material properties with perturbed
+  // parameters in each cell.
+  // Construct a random number generator and use the MPI rank as a seed.
+  std::default_random_engine generator(
+      params.geometry->get_mpi_communicator().rank());
+  auto const &triangulation = *params.geometry->get_triangulation();
+
   for (auto cell : triangulation.active_cell_iterators())
   {
     if (cell->is_locally_owned())
     {
       // Perturb the parameters in the copy of the database
       for (auto const &x : parameter_map)
-        dummy_database->put(x.first, x.second(generator));
+        perturbed_database->put(x.first, x.second(generator));
       _map.emplace(cell->id(),
-                   _build_material_properties(material_map[cell->material_id()],
-                                              dummy_params));
+                   internal::build_material_properties(
+                       material_map[cell->material_id()], perturbed_params));
     }
   }
 }
+
+
 template <int dim, int spacedim>
 void InhomogeneousSuperCapacitorMPValues<dim, spacedim>::get_values(
     std::string const &key, active_cell_iterator const &cell,
@@ -228,6 +246,8 @@ void InhomogeneousSuperCapacitorMPValues<dim, spacedim>::get_values(
   auto property = got->second;
   property->get_values(key, cell, values);
 }
+
+
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
 template <int dim, int spacedim>
 std::unique_ptr<MPValues<dim, spacedim>>
@@ -261,7 +281,7 @@ SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
     std::vector<dealii::types::material_id> const &material_ids = m.second;
     // Build the adequate material properties
     std::shared_ptr<MPValues<dim, spacedim>> properties =
-        _build_material_properties(material_name, params);
+        internal::build_material_properties(material_name, params);
     // Assign it to material ids
     for (auto const &id : material_ids)
     {
@@ -272,7 +292,10 @@ SuperCapacitorMPValues<dim, spacedim>::SuperCapacitorMPValues(
     }
   }
 }
+
+
 //////////////////////// POROUS ELECTRODE //////////////////////////////////////
+// helpers to convert units
 auto to_meters = [](double const &cm)
 {
   return 1e-2 * cm;
@@ -293,6 +316,7 @@ auto to_ohm_meter = [](double const &o_cm)
 {
   return 1e-2 * o_cm;
 };
+
 
 template <int dim, int spacedim>
 PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
@@ -390,6 +414,7 @@ PorousElectrodeMPValues<dim, spacedim>::PorousElectrodeMPValues(
                std::make_shared<UniformConstantMPValues<dim, spacedim>>(
                    (1.0 - void_volume_fraction) * mass_density));
 }
+
 
 //////////////////////// METAL FOIL ////////////////////////////////////////////
 template <int dim, int spacedim>
