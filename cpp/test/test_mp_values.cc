@@ -12,28 +12,182 @@
 #include <cap/geometry.h>
 #include <cap/mp_values.h>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/dofs/dof_handler.h>
 
+// demonstrate how unifom constant and composite properties are used
+BOOST_AUTO_TEST_CASE(mp_values)
+{
+  int constexpr dim = 2;
+  std::shared_ptr<cap::MPValues<dim>> mp_values;
+
+  // make a dummy triangulation to get an active cell iterator
+  dealii::Triangulation<dim> triangulation;
+  dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::DoFHandler<dim> dof_handler(triangulation);
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+
+  // create a vector
+  std::vector<double> values;
+  // note that `MPValues::get_values(...)` does not allocate memory
+
+  // build a constant uniform property
+  double const value = 3.14;
+  mp_values = std::make_shared<cap::UniformConstantMPValues<dim>>(value);
+
+  // key property name is ignored for constant uniform property
+  mp_values->get_values("doesnotmatter", cell, values);
+  // vector is still empty
+  BOOST_TEST(values.empty());
+  // now resize it and try again
+  values.resize(3, 0.0);
+  mp_values->get_values("", cell, values);
+  // all constant uniform property do is a `std::fill(...)`
+  for (auto const &v : values)
+    BOOST_TEST(v == value);
+
+  // define a custom composite property
+  class MyCompositeProMPValues : public cap::CompositePro<2>
+  {
+  public:
+    MyCompositeProMPValues()
+    {
+      for (auto const &x : _map)
+        (this->_properties)
+            .emplace(x.first, std::make_shared<cap::UniformConstantMPValues<2>>(
+                                  x.second));
+    }
+    std::map<std::string, double> _map = {{"foo", 1.0}, {"bar", 2.0}};
+  };
+
+  // build it
+  mp_values = std::make_shared<MyCompositeProMPValues>();
+
+  // if the property is not registered in the `this->_properties` map an
+  // exception will be thrown
+  BOOST_CHECK_THROW(mp_values->get_values("notregistered", cell, values),
+                    std::runtime_error);
+
+  // the composite property just redirects the call
+  for (auto const &x :
+       std::dynamic_pointer_cast<MyCompositeProMPValues>(mp_values)->_map)
+  {
+    mp_values->get_values(x.first, cell, values);
+    for (auto const &v : values)
+      BOOST_TEST(v == x.second);
+  }
+
+  // define another custom composite property
+  // this time the map is based on `material_id`s
+  class MyCompositeMatMPValues : public cap::CompositeMat<2>
+  {
+  public:
+    MyCompositeMatMPValues()
+    {
+      for (auto const &x : _map)
+        (this->_materials)
+            .emplace(x.first, std::make_shared<cap::UniformConstantMPValues<2>>(
+                                  x.second));
+    }
+    std::map<dealii::types::material_id, double> _map = {
+        {3, 3.0}, {4, 4.0}, {5, 5.0}};
+  };
+
+  // build it
+  mp_values = std::make_shared<MyCompositeMatMPValues>();
+
+  // if the material is not registered in the `this->_materials` map an
+  // exception will be thrown
+  cell->set_material_id(1);
+  BOOST_CHECK_THROW(mp_values->get_values("willbeignored", cell, values),
+                    std::runtime_error);
+
+  // the composite property just redirects the call
+  for (auto const &x :
+       std::dynamic_pointer_cast<MyCompositeMatMPValues>(mp_values)->_map)
+  {
+    cell->set_material_id(x.first);
+    mp_values->get_values("", cell, values);
+    for (auto const &v : values)
+      BOOST_TEST(v == x.second);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(test_mp_values_throw)
 {
-  std::shared_ptr<boost::property_tree::ptree> empty_database;
-  std::shared_ptr<cap::MPValues<2>> mp_values =
-      std::make_shared<cap::MPValues<2>>(
-          cap::MPValuesParameters<2>(empty_database));
-
-  dealii::Triangulation<2> triangulation;
-  dealii::GridGenerator::hyper_cube(triangulation);
-  dealii::DoFHandler<2> dof_handler(triangulation);
-  dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
-
-  std::vector<double> values;
-  std::vector<dealii::Tensor<1, 2>> vectors;
-  BOOST_CHECK_THROW(mp_values->get_values("key", cell, values),
+  // ensure missing database will not segfault
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(
+                        cap::MPValuesParameters<2>(nullptr)),
                     std::runtime_error);
-  BOOST_CHECK_THROW(mp_values->get_values("key", cell, vectors),
+
+  // same if geometry is missing
+  auto empty_database = std::make_shared<boost::property_tree::ptree>();
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(
+                        cap::MPValuesParameters<2>(empty_database)),
+                    std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
+{
+  boost::mpi::communicator world;
+
+  // Use the standard input to build a SuperCapacitor
+  boost::property_tree::ptree ptree;
+  boost::property_tree::read_info("super_capacitor.info", ptree);
+
+  // Extract the section for the material properties
+  auto database = std::make_shared<boost::property_tree::ptree>(
+      ptree.get_child("material_properties"));
+
+  // Create an standard homogeneous SuperCapacitorMPValues using the build(...)
+  // method which is static.
+  cap::MPValuesParameters<2> params(database);
+  params.geometry = std::make_shared<cap::Geometry<2>>(
+      std::make_shared<boost::property_tree::ptree>(
+          ptree.get_child("geometry")),
+      world);
+  std::shared_ptr<cap::MPValues<2>> mp_values =
+      cap::SuperCapacitorMPValuesFactory<2>::build(params);
+  BOOST_TEST(
+      std::dynamic_pointer_cast<cap::SuperCapacitorMPValues<2>>(mp_values));
+
+  // Now modify the material properties database to create the inhomogeneous
+  // version of the MPValues.
+  database->put("inhomogeneous", true);
+  // NOTE: if parameters == 0, SuperCapacitorMPValues::build(...) still
+  // instancies the map cell_id -> MPValues but the computation should be
+  // identical to the homogeneous case that has a map material_id -> MPValues
+  database->put("parameters", 2);
+  database->put("parameter_0.path", "separator_material.void_volume_fraction");
+  database->put("parameter_0.distribution_type", "uniform");
+  database->put("parameter_0.range", "0.55, 0.65");
+  database->put("parameter_1.path", "electrode_material.void_volume_fraction");
+  database->put("parameter_1.distribution_type", "normal");
+  database->put("parameter_1.mean", "0.67");
+  database->put("parameter_1.standard_deviation", "0.04");
+  mp_values = cap::SuperCapacitorMPValuesFactory<2>::build(params);
+  BOOST_TEST(
+      std::dynamic_pointer_cast<cap::InhomogeneousSuperCapacitorMPValues<2>>(
+          mp_values));
+
+  // Check that an exception is thrown if the same path is registered for
+  // multiple parameters.
+  database->put("parameter_1.path", "separator_material.void_volume_fraction");
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params),
+                    std::runtime_error);
+  // Undo it.
+  database->put("parameter_1.path", "electrode_material.void_volume_fraction");
+  BOOST_CHECK_NO_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params));
+
+  // Check that an exception is thrown the parameter path does not already exist
+  // in the database. It most likely means that it is typo and we want to catch
+  // that.
+  database->put("parameter_0.path", "electrode_material.does_not_exist");
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params),
                     std::runtime_error);
 }
 
@@ -156,7 +310,7 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   cap::MPValuesParameters<2> params(material_properties_database);
   params.geometry = geometry;
   std::shared_ptr<cap::MPValues<2>> mp_values =
-      std::make_shared<cap::MPValues<2>>(params);
+      std::make_shared<cap::SuperCapacitorMPValues<2>>(params);
 
   dealii::DoFHandler<2> dof_handler(*(geometry->get_triangulation()));
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();

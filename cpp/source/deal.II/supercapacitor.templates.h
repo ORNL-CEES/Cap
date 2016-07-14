@@ -500,9 +500,8 @@ void SuperCapacitor<dim>::setup()
           _ptree.get_child("material_properties"));
   MPValuesParameters<dim> params(material_properties_database);
   params.geometry = _geometry;
-  MPValues<dim> tmp(params);
   std::shared_ptr<MPValues<dim>> mp_values =
-      std::make_shared<MPValues<dim>>(params);
+      SuperCapacitorMPValuesFactory<dim>::build(params);
 
   // Initialize the electrochemical physics parameters
   electrochemical_physics_params.reset(
