@@ -100,15 +100,18 @@ protected:
 };
 
 template <int dim>
+class SuperCapacitorMPValuesFactory
+{
+public:
+  static std::unique_ptr<MPValues<dim>>
+  build(MPValuesParameters<dim> const &params);
+};
+
+template <int dim>
 class SuperCapacitorMPValues : public CompositeMat<dim>
 {
 public:
   SuperCapacitorMPValues(MPValuesParameters<dim> const &params);
-  // Use build(...) to create either an homogeneous
-  // (SuperCapacitorMPValues) or an inhomogeneous model
-  // (InhomogeneousSuperCapacitorMPValues)
-  static std::unique_ptr<MPValues<dim>>
-  build(MPValuesParameters<dim> const &params);
 };
 
 template <int dim>

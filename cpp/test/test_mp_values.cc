@@ -120,13 +120,13 @@ BOOST_AUTO_TEST_CASE(mp_values)
 BOOST_AUTO_TEST_CASE(test_mp_values_throw)
 {
   // ensure missing database will not segfault
-  BOOST_CHECK_THROW(cap::SuperCapacitorMPValues<2>::build(
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(
                         cap::MPValuesParameters<2>(nullptr)),
                     std::runtime_error);
 
   // same if geometry is missing
   auto empty_database = std::make_shared<boost::property_tree::ptree>();
-  BOOST_CHECK_THROW(cap::SuperCapacitorMPValues<2>::build(
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(
                         cap::MPValuesParameters<2>(empty_database)),
                     std::runtime_error);
 }
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
           ptree.get_child("geometry")),
       world);
   std::shared_ptr<cap::MPValues<2>> mp_values =
-      cap::SuperCapacitorMPValues<2>::build(params);
+      cap::SuperCapacitorMPValuesFactory<2>::build(params);
   BOOST_TEST(
       std::dynamic_pointer_cast<cap::SuperCapacitorMPValues<2>>(mp_values));
 
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
   database->put("parameter_1.distribution_type", "normal");
   database->put("parameter_1.mean", "0.67");
   database->put("parameter_1.standard_deviation", "0.04");
-  mp_values = cap::SuperCapacitorMPValues<2>::build(params);
+  mp_values = cap::SuperCapacitorMPValuesFactory<2>::build(params);
   BOOST_TEST(
       std::dynamic_pointer_cast<cap::InhomogeneousSuperCapacitorMPValues<2>>(
           mp_values));
@@ -177,17 +177,17 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
   // Check that an exception is thrown if the same path is registered for
   // multiple parameters.
   database->put("parameter_1.path", "separator_material.void_volume_fraction");
-  BOOST_CHECK_THROW(cap::SuperCapacitorMPValues<2>::build(params),
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params),
                     std::runtime_error);
   // Undo it.
   database->put("parameter_1.path", "electrode_material.void_volume_fraction");
-  BOOST_CHECK_NO_THROW(cap::SuperCapacitorMPValues<2>::build(params));
+  BOOST_CHECK_NO_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params));
 
   // Check that an exception is thrown the parameter path does not already exist
   // in the database. It most likely means that it is typo and we want to catch
   // that.
   database->put("parameter_0.path", "electrode_material.does_not_exist");
-  BOOST_CHECK_THROW(cap::SuperCapacitorMPValues<2>::build(params),
+  BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params),
                     std::runtime_error);
 }
 

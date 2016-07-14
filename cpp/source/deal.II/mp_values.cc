@@ -16,6 +16,8 @@ template class SuperCapacitorMPValues<2>;
 template class SuperCapacitorMPValues<3>;
 template class InhomogeneousSuperCapacitorMPValues<2>;
 template class InhomogeneousSuperCapacitorMPValues<3>;
+template class SuperCapacitorMPValuesFactory<2>;
+template class SuperCapacitorMPValuesFactory<3>;
 template class PorousElectrodeMPValues<2>;
 template class PorousElectrodeMPValues<3>;
 template class MetalFoilMPValues<2>;

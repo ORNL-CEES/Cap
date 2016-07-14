@@ -241,7 +241,7 @@ void InhomogeneousSuperCapacitorMPValues<dim>::get_values(
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
 template <int dim>
 std::unique_ptr<MPValues<dim>>
-SuperCapacitorMPValues<dim>::build(MPValuesParameters<dim> const &params)
+SuperCapacitorMPValuesFactory<dim>::build(MPValuesParameters<dim> const &params)
 {
   if (!params.database)
     throw std::runtime_error("Missing database in SuperCapacitorMPValues");
