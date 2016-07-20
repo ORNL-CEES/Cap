@@ -169,6 +169,11 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
   database->put("parameter_1.distribution_type", "normal");
   database->put("parameter_1.mean", "0.67");
   database->put("parameter_1.standard_deviation", "0.04");
+  database->put("parameter_2.path",
+                "electrode_material.pores_characteristic_dimension");
+  database->put("parameter_2.distribution_type", "lognormal");
+  database->put("parameter_2.mean", "1.5e-7");
+  database->put("parameter_2.standard_deviation", "4.5e-7");
   mp_values = cap::SuperCapacitorMPValuesFactory<2>::build(params);
   BOOST_TEST(
       std::dynamic_pointer_cast<cap::InhomogeneousSuperCapacitorMPValues<2>>(
