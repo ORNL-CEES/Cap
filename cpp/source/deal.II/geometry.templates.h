@@ -226,7 +226,12 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
         }
 
         database->put("n_repetitions", 0);
-        database->put("n_refinements", 1);
+        // By default ``n_refinements`` is one but the user is able to refine
+        // further the triangulation if he likes to.
+        int n_refinements = 1;
+        if (auto extra = database->get_optional<int>("n_refinements"))
+          n_refinements += extra.get();
+        database->put("n_refinements", n_refinements);
       }
       mesh_generator(*database);
     }
