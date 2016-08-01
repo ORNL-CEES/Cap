@@ -444,16 +444,14 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   _geometry->get_triangulation()->clear();
   _geometry->get_triangulation()->copy_triangulation(tmp);
 
-  dealii::types::boundary_id anode_boundary_id;
-  dealii::types::boundary_id cathode_boundary_id;
   std::shared_ptr<std::unordered_map<
       std::string, std::set<dealii::types::material_id>>> materials;
-  ia >> anode_boundary_id;
-  ia >> cathode_boundary_id;
+  std::shared_ptr<std::unordered_map<
+      std::string, std::set<dealii::types::boundary_id>>> boundaries;
   ia >> materials;
-  _geometry->set_anode_boundary_id(anode_boundary_id);
-  _geometry->set_cathode_boundary_id(cathode_boundary_id);
+  ia >> boundaries;
   _geometry->set_materials(materials);
+  _geometry->set_boundaries(boundaries);
 
   // Load the refinement
   _geometry->get_triangulation()->load(filename.c_str());
@@ -514,8 +512,7 @@ void SuperCapacitor<dim>::setup()
 
   // Compute the surface area. This is neeeded by several evolve_one_time_step_*
   surface_area = 0.;
-  dealii::types::boundary_id cathode_boundary_id =
-      _geometry->get_cathode_boundary_id();
+  auto const &cathode_boundary_ids = (*_geometry->get_boundaries())["cathode"];
   dealii::QGauss<dim - 1> face_quadrature_rule(_fe->degree + 1);
   unsigned int const n_face_q_points = face_quadrature_rule.size();
   dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
@@ -527,7 +524,7 @@ void SuperCapacitor<dim>::setup()
       for (unsigned int face = 0;
            face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
         if ((cell->face(face)->at_boundary()) &&
-            (cell->face(face)->boundary_id() == cathode_boundary_id))
+            (cathode_boundary_ids.count(cell->face(face)->boundary_id()) > 0))
           for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
                ++face_q_point)
           {

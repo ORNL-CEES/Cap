@@ -50,26 +50,6 @@ public:
    */
   void repartition(std::shared_ptr<boost::property_tree::ptree const> database);
 
-  void set_anode_boundary_id(dealii::types::boundary_id const boundary_id)
-  {
-    _anode_boundary_id = boundary_id;
-  }
-
-  dealii::types::boundary_id get_anode_boundary_id() const
-  {
-    return _anode_boundary_id;
-  }
-
-  void set_cathode_boundary_id(dealii::types::boundary_id const boundary_id)
-  {
-    _cathode_boundary_id = boundary_id;
-  }
-
-  dealii::types::boundary_id get_cathode_boundary_id() const
-  {
-    return _cathode_boundary_id;
-  }
-
   std::shared_ptr<dealii::distributed::Triangulation<dim>> get_triangulation()
   {
     return _triangulation;
@@ -101,6 +81,13 @@ public:
     _materials = materials;
   }
 
+  void set_boundaries(
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::boundary_id>>> boundaries)
+  {
+    _boundaries = boundaries;
+  }
+
 private:
   /**
    * Compute the weight used to do load balancing. This is necessary because the
@@ -114,14 +101,14 @@ private:
   /**
    * Helper function for the constructor, when the mesh is loaded from a mesh.
    */
-  void fill_materials_map(
+  void fill_material_and_boundary_maps(
       std::shared_ptr<boost::property_tree::ptree const> database);
 
   /**
    * Helper function for the constructor, when the mesh is generated from a
    * database.
    */
-  void fill_materials_map();
+  void fill_material_and_boundary_maps();
 
   /**
    * Convert the geometry database to one that can be used to generate a mesh.
@@ -146,8 +133,6 @@ private:
   void output_coarse_mesh(std::string const &filename);
 
   boost::mpi::communicator _communicator;
-  dealii::types::boundary_id _anode_boundary_id;
-  dealii::types::boundary_id _cathode_boundary_id;
   std::shared_ptr<dealii::distributed::Triangulation<dim>> _triangulation;
   std::shared_ptr<std::unordered_map<
       std::string, std::set<dealii::types::material_id>>> _materials;

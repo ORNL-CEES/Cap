@@ -154,10 +154,9 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
 
-  dealii::types::boundary_id const cathode_boundary_id =
-      _geometry->get_cathode_boundary_id();
   // NOTE: cannot be const if we want to use the square brackets operator.
   auto materials = *(_geometry->get_materials());
+  auto boundaries = *(_geometry->get_boundaries());
   // clang-format off
   dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component"));
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
@@ -395,7 +394,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
         {
           if (cell->face(face)->at_boundary())
           {
-            if (cell->face(face)->boundary_id() == cathode_boundary_id)
+            if (boundaries["cathode"].count(cell->face(face)->boundary_id()) >
+                0)
             {
               fe_face_values.reinit(cell, face);
               this->mp_values->get_values(

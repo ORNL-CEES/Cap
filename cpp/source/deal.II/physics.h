@@ -87,6 +87,7 @@ protected:
   dealii::Trilinos::SparseMatrix mass_matrix;
   dealii::Trilinos::MPI::Vector system_rhs;
   std::shared_ptr<MPValues<dim> const> mp_values;
+  std::shared_ptr<Geometry<dim> const> geometry;
 };
 }
 
