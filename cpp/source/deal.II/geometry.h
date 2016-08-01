@@ -15,6 +15,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <unordered_map>
+#include <set>
 
 namespace cap
 {
@@ -80,15 +81,22 @@ public:
   }
 
   std::shared_ptr<
-      std::unordered_map<std::string, std::vector<dealii::types::material_id>>>
+      std::unordered_map<std::string, std::set<dealii::types::material_id>>>
   get_materials() const
   {
     return _materials;
   }
 
+  std::shared_ptr<
+      std::unordered_map<std::string, std::set<dealii::types::boundary_id>>>
+  get_boundaries() const
+  {
+    return _boundaries;
+  }
+
   void set_materials(
       std::shared_ptr<std::unordered_map<
-          std::string, std::vector<dealii::types::material_id>>> materials)
+          std::string, std::set<dealii::types::material_id>>> materials)
   {
     _materials = materials;
   }
@@ -142,7 +150,9 @@ private:
   dealii::types::boundary_id _cathode_boundary_id;
   std::shared_ptr<dealii::distributed::Triangulation<dim>> _triangulation;
   std::shared_ptr<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>> _materials;
+      std::string, std::set<dealii::types::material_id>>> _materials;
+  std::shared_ptr<std::unordered_map<
+      std::string, std::set<dealii::types::boundary_id>>> _boundaries;
 };
 } // end namespace cap
 

@@ -178,7 +178,7 @@ InhomogeneousSuperCapacitorMPValues<dim>::InhomogeneousSuperCapacitorMPValues(
     if (material_name.compare("collector_anode") == 0 ||
         material_name.compare("collector_cathode") == 0)
       continue;
-    std::vector<dealii::types::material_id> const &material_ids = m.second;
+    auto const &material_ids = m.second;
     boost::property_tree::ptree const &material_database =
         database.get_child(material_name);
     std::string const type = material_database.get<std::string>("type");
@@ -280,7 +280,7 @@ SuperCapacitorMPValues<dim>::SuperCapacitorMPValues(
     if (material_name.compare("collector_anode") == 0 ||
         material_name.compare("collector_cathode") == 0)
       continue;
-    std::vector<dealii::types::material_id> const &material_ids = m.second;
+    auto const &material_ids = m.second;
     // Build the adequate material properties
     std::shared_ptr<MPValues<dim>> properties =
         internal::build_material_properties(material_name, params);

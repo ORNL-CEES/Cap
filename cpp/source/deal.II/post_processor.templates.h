@@ -156,13 +156,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
 
   dealii::types::boundary_id const cathode_boundary_id =
       _geometry->get_cathode_boundary_id();
-  std::shared_ptr<
-      std::unordered_map<std::string, std::vector<dealii::types::material_id>>>
-      materials = _geometry->get_materials();
-  dealii::types::material_id const anode_electrode_material_id =
-      (*materials)["anode"][0];
-  dealii::types::material_id const cathode_electrode_material_id =
-      (*materials)["cathode"][0];
+  // NOTE: cannot be const if we want to use the square brackets operator.
+  auto materials = *(_geometry->get_materials());
   // clang-format off
   dealii::FEValuesExtractors::Scalar const solid_potential (database->get<unsigned int>("solid_potential_component"));
   dealii::FEValuesExtractors::Scalar const liquid_potential(database->get<unsigned int>("liquid_potential_component"));
@@ -260,7 +255,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
         this->values["volume"] += fe_values.JxW(q_point);
         this->values["mass"] +=
             density_values[q_point] * fe_values.JxW(q_point);
-        if (cell->material_id() == anode_electrode_material_id)
+        if (materials["anode"].count(cell->material_id()) > 0)
         {
           anode_electrode_potential += (solid_potential_values[q_point] -
                                         liquid_potential_values[q_point]) *
@@ -272,7 +267,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
               density_of_active_material_values[q_point] *
               fe_values.JxW(q_point);
         }
-        else if (cell->material_id() == cathode_electrode_material_id)
+        else if (materials["cathode"].count(cell->material_id()) > 0)
         {
           cathode_electrode_potential += (solid_potential_values[q_point] -
                                           liquid_potential_values[q_point]) *

@@ -18,6 +18,7 @@
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/set.hpp>
 #include <algorithm>
 #include <fstream>
 #include <tuple>
@@ -282,12 +283,10 @@ unsigned int Geometry<dim>::compute_cell_weight(
   // default weight of 1000. This function returns the extra weight on some of
   // the cells.
   dealii::types::material_id material = cell->material_id();
-  std::vector<dealii::types::material_id> &anode = (*_materials)["anode"];
-  std::vector<dealii::types::material_id> &cathode = (*_materials)["cathode"];
-  std::vector<dealii::types::material_id> &separator =
-      (*_materials)["separator"];
-  std::vector<dealii::types::material_id> &collector =
-      (*_materials)["collector"];
+  std::set<dealii::types::material_id> &anode = (*_materials)["anode"];
+  std::set<dealii::types::material_id> &cathode = (*_materials)["cathode"];
+  std::set<dealii::types::material_id> &separator = (*_materials)["separator"];
+  std::set<dealii::types::material_id> &collector = (*_materials)["collector"];
   if (std::find(anode.begin(), anode.end(), material) != anode.end())
     return weights[internal::WEIGHT_TYPE::anode];
   if (std::find(cathode.begin(), cathode.end(), material) != cathode.end())
@@ -306,8 +305,8 @@ void Geometry<dim>::fill_materials_map(
     std::shared_ptr<boost::property_tree::ptree const> database)
 {
   BOOST_ASSERT_MSG(database != nullptr, "The database does not exist.");
-  _materials = std::make_shared<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>>();
+  _materials = std::make_shared<
+      std::unordered_map<std::string, std::set<dealii::types::material_id>>>();
   int const n_materials = database->get<int>("materials");
   for (int m = 0; m < n_materials; ++m)
   {
@@ -318,26 +317,23 @@ void Geometry<dim>::fill_materials_map(
             material_database.get<std::string>("material_id"));
     std::string const material_name =
         material_database.get<std::string>("name");
-    _materials->emplace(material_name, material_ids);
+    _materials->emplace(material_name,
+                        std::set<dealii::types::material_id>(
+                            material_ids.begin(), material_ids.end()));
   }
 }
 
 template <int dim>
 void Geometry<dim>::fill_materials_map()
 {
-  _materials = std::make_shared<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>>();
-  (*_materials)["anode"] = std::vector<dealii::types::material_id>(1, 0);
-  (*_materials)["separator"] = std::vector<dealii::types::material_id>(1, 1);
-  (*_materials)["cathode"] = std::vector<dealii::types::material_id>(1, 2);
-  (*_materials)["collector_anode"] =
-      std::vector<dealii::types::material_id>(1, 3);
-  (*_materials)["collector_cathode"] =
-      std::vector<dealii::types::material_id>(1, 4);
-  std::vector<dealii::types::material_id> coll_material_ids(2);
-  coll_material_ids[0] = 3;
-  coll_material_ids[1] = 4;
-  (*_materials)["collector"] = coll_material_ids;
+  _materials = std::make_shared<
+      std::unordered_map<std::string, std::set<dealii::types::material_id>>>();
+  (*_materials)["anode"] = std::set<dealii::types::material_id>{0};
+  (*_materials)["separator"] = std::set<dealii::types::material_id>{1};
+  (*_materials)["cathode"] = std::set<dealii::types::material_id>{2};
+  (*_materials)["collector_anode"] = std::set<dealii::types::material_id>{3};
+  (*_materials)["collector_cathode"] = std::set<dealii::types::material_id>{4};
+  (*_materials)["collector"] = std::set<dealii::types::material_id>{3, 4};
 }
 
 template <int dim>
@@ -428,19 +424,19 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
       anode.triangulation, anode.repetitions, anode.box_dimensions[0],
       anode.box_dimensions[1]);
   for (auto cell : anode.triangulation.cell_iterators())
-    cell->set_material_id((*_materials)["anode"][0]);
+    cell->set_material_id(*(*_materials)["anode"].begin());
   // Create the triangulation for the cathode.
   dealii::GridGenerator::subdivided_hyper_rectangle(
       cathode.triangulation, cathode.repetitions, cathode.box_dimensions[0],
       cathode.box_dimensions[1]);
   for (auto cell : cathode.triangulation.cell_iterators())
-    cell->set_material_id((*_materials)["cathode"][0]);
+    cell->set_material_id(*(*_materials)["cathode"].begin());
   // Create the triangulation for the seperator.
   dealii::GridGenerator::subdivided_hyper_rectangle(
       separator.triangulation, separator.repetitions,
       separator.box_dimensions[0], separator.box_dimensions[1]);
   for (auto cell : separator.triangulation.cell_iterators())
-    cell->set_material_id((*_materials)["separator"][0]);
+    cell->set_material_id(*(*_materials)["separator"].begin());
 
   // Create the triangulation for first collector.
   double const anode_dim = anode.box_dimensions[1][dim - 1];
@@ -451,7 +447,7 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
       collector_a.triangulation, collector_a.repetitions,
       collector_a.box_dimensions[0], collector_a.box_dimensions[1]);
   for (auto cell : collector_a.triangulation.cell_iterators())
-    cell->set_material_id((*_materials)["collector_anode"][0]);
+    cell->set_material_id(*(*_materials)["collector_anode"].begin());
   double const scale_factor_a = anode_dim / (collector_dim - delta_collector);
   std::function<dealii::Point<dim>(dealii::Point<dim> const &)> transform_a =
       std::bind(&internal::transform_coll_a<dim>, std::placeholders::_1,
@@ -464,7 +460,7 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
       collector_c.triangulation, collector_c.repetitions,
       collector_c.box_dimensions[0], collector_c.box_dimensions[1]);
   for (auto cell : collector_c.triangulation.cell_iterators())
-    cell->set_material_id((*_materials)["collector_cathode"][0]);
+    cell->set_material_id(*(*_materials)["collector_cathode"].begin());
   double const scale_factor_c = anode_dim / (collector_dim - delta_collector);
   std::function<dealii::Point<dim>(dealii::Point<dim> const &)> transform_c =
       std::bind(&internal::transform_coll_c<dim>, std::placeholders::_1,

@@ -28,6 +28,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/set.hpp>
 #include <fstream>
 
 namespace cap
@@ -446,7 +447,7 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   dealii::types::boundary_id anode_boundary_id;
   dealii::types::boundary_id cathode_boundary_id;
   std::shared_ptr<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>> materials;
+      std::string, std::set<dealii::types::material_id>>> materials;
   ia >> anode_boundary_id;
   ia >> cathode_boundary_id;
   ia >> materials;
