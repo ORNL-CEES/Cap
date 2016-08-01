@@ -51,7 +51,7 @@ def diff_with_formatted_source(original_file, style, patch):
         print(cmd)
         print(stderr.decode('utf-8'))
         raise RuntimeError('diff failed')
-    if patch:
+    if patch and stdout:
         rename(formatted_file, original_file)
     else:
         remove(formatted_file)
