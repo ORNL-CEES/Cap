@@ -324,8 +324,6 @@ void Geometry<dim>::fill_material_and_boundary_maps()
           {"anode", std::set<dealii::types::material_id>{0}},
           {"separator", std::set<dealii::types::material_id>{1}},
           {"cathode", std::set<dealii::types::material_id>{2}},
-          {"collector_anode", std::set<dealii::types::material_id>{3}},
-          {"collector_cathode", std::set<dealii::types::material_id>{4}},
           {"collector", std::set<dealii::types::material_id>{3, 4}}});
   _boundaries = std::make_shared<
       std::unordered_map<std::string, std::set<dealii::types::boundary_id>>>(
@@ -446,7 +444,7 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
       collector_a.triangulation, collector_a.repetitions,
       collector_a.box_dimensions[0], collector_a.box_dimensions[1]);
   for (auto cell : collector_a.triangulation.cell_iterators())
-    cell->set_material_id(*(*_materials)["collector_anode"].begin());
+    cell->set_material_id(*(*_materials)["collector"].begin());
   double const scale_factor_a = anode_dim / (collector_dim - delta_collector);
   std::function<dealii::Point<dim>(dealii::Point<dim> const &)> transform_a =
       std::bind(&internal::transform_coll_a<dim>, std::placeholders::_1,
@@ -459,7 +457,7 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
       collector_c.triangulation, collector_c.repetitions,
       collector_c.box_dimensions[0], collector_c.box_dimensions[1]);
   for (auto cell : collector_c.triangulation.cell_iterators())
-    cell->set_material_id(*(*_materials)["collector_cathode"].begin());
+    cell->set_material_id(*std::next((*_materials)["collector"].begin()));
   double const scale_factor_c = anode_dim / (collector_dim - delta_collector);
   std::function<dealii::Point<dim>(dealii::Point<dim> const &)> transform_c =
       std::bind(&internal::transform_coll_c<dim>, std::placeholders::_1,
@@ -528,54 +526,46 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
     return *boundary_ids.begin();
   };
 
-  // Set the anode boundary id
+  // Set the anode and cathode boundary id
   bool const locally_owned = false;
-  FI anode_cell(dealii::IteratorFilters::MaterialIdEqualTo(
-      (*_materials)["collector_anode"], locally_owned)),
-      anode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(
-                         (*_materials)["collector_anode"], locally_owned),
-                     _triangulation->end());
-  anode_cell.set_to_next_positive(_triangulation->begin());
+  FI cell(dealii::IteratorFilters::MaterialIdEqualTo((*_materials)["collector"],
+                                                     locally_owned)),
+      end_cell(dealii::IteratorFilters::MaterialIdEqualTo(
+                   (*_materials)["collector"], locally_owned),
+               _triangulation->end());
+  cell.set_to_next_positive(_triangulation->begin());
   dealii::types::boundary_id const anode_boundary_id = get_boundary_id("anode");
-  double const eps = 1e-6;
-  unsigned int boundary_id_set = 0;
-  for (; anode_cell < anode_end_cell; ++anode_cell)
-    if (anode_cell->at_boundary())
-      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
-           ++i)
-        // Check that the face is on the top of the collector
-        if (std::abs(anode_cell->face(i)->center()[dim - 1] - collector_top) <
-            eps * anode_cell->measure())
-        {
-          anode_cell->face(i)->set_boundary_id(anode_boundary_id);
-          boundary_id_set = 1;
-        }
-  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
-  BOOST_ASSERT_MSG(boundary_id_set == 1, "Anode boundary id no set.");
-
-  // Set the cathode boundary id
-  FI cathode_cell(dealii::IteratorFilters::MaterialIdEqualTo(
-      (*_materials)["collector_cathode"], locally_owned)),
-      cathode_end_cell(dealii::IteratorFilters::MaterialIdEqualTo(
-                           (*_materials)["collector_cathode"], locally_owned),
-                       _triangulation->end());
-  cathode_cell.set_to_next_positive(_triangulation->begin());
   dealii::types::boundary_id const cathode_boundary_id =
       get_boundary_id("cathode");
-  boundary_id_set = 0;
-  for (; cathode_cell < cathode_end_cell; ++cathode_cell)
-    if (cathode_cell->at_boundary())
+  double const eps = 1e-6;
+  unsigned int anode_boundary_id_set = 0;
+  unsigned int cathode_boundary_id_set = 0;
+  for (; cell < end_cell; ++cell)
+    if (cell->at_boundary())
       for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::faces_per_cell;
            ++i)
-        // Check that the face is on the bottom of the collector
-        if (std::abs(cathode_cell->face(i)->center()[dim - 1] -
-                     collector_bottom) < eps * cathode_cell->measure())
+      {
+        // Check whether the face is on the top of the collector
+        if (std::abs(cell->face(i)->center()[dim - 1] - collector_top) <
+            eps * cell->measure())
         {
-          cathode_cell->face(i)->set_boundary_id(cathode_boundary_id);
-          boundary_id_set = 1;
+          cell->face(i)->set_boundary_id(anode_boundary_id);
+          ++anode_boundary_id_set;
         }
-  boundary_id_set = dealii::Utilities::MPI::max(boundary_id_set, _communicator);
-  BOOST_ASSERT_MSG(boundary_id_set == 1, "Cathode boundary id no set.");
+        // Check whether the face is on the bottom of the collector
+        else if (std::abs(cell->face(i)->center()[dim - 1] - collector_bottom) <
+                 eps * cell->measure())
+        {
+          cell->face(i)->set_boundary_id(cathode_boundary_id);
+          ++cathode_boundary_id_set;
+        }
+      }
+  BOOST_ASSERT_MSG(
+      dealii::Utilities::MPI::sum(anode_boundary_id_set, _communicator) > 0,
+      "Anode boundary id no set.");
+  BOOST_ASSERT_MSG(
+      dealii::Utilities::MPI::sum(cathode_boundary_id_set, _communicator) > 0,
+      "Cathode boundary id no set.");
 }
 
 template <int dim>

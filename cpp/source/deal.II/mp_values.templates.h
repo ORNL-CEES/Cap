@@ -173,11 +173,6 @@ InhomogeneousSuperCapacitorMPValues<dim>::InhomogeneousSuperCapacitorMPValues(
   for (auto const &m : *params.geometry->get_materials())
   {
     std::string const &material_name = m.first;
-    // Geometry(...) tags the current collectors with "current_collector" so
-    // we ignore these.
-    if (material_name.compare("collector_anode") == 0 ||
-        material_name.compare("collector_cathode") == 0)
-      continue;
     auto const &material_ids = m.second;
     boost::property_tree::ptree const &material_database =
         database.get_child(material_name);
@@ -275,11 +270,6 @@ SuperCapacitorMPValues<dim>::SuperCapacitorMPValues(
   for (auto const &m : *params.geometry->get_materials())
   {
     std::string const &material_name = m.first;
-    // Geometry(...) tags the current collectors with "current_collector" so
-    // we ignore these.
-    if (material_name.compare("collector_anode") == 0 ||
-        material_name.compare("collector_cathode") == 0)
-      continue;
     auto const &material_ids = m.second;
     // Build the adequate material properties
     std::shared_ptr<MPValues<dim>> properties =
