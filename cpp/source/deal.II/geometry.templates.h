@@ -218,8 +218,8 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
         database->put("n_repetitions", 0);
         // By default ``n_refinements`` is one but the user is able to refine
         // further the triangulation if he likes to.
-        int n_refinements = 1;
-        if (auto extra = database->get_optional<int>("n_refinements"))
+        unsigned int n_refinements = 1;
+        if (auto extra = database->get_optional<unsigned int>("n_refinements"))
           n_refinements += extra.get();
         database->put("n_refinements", n_refinements);
       }
@@ -258,17 +258,15 @@ void Geometry<dim>::repartition()
       typename dealii::Triangulation<dim, dim>::CellStatus const) mutable
       -> unsigned int
   {
+    dealii::types::material_id const cell_material_id = cell->material_id();
     for (auto const &m : *_materials)
     {
-      if (m.second.count(cell->material_id()) > 0)
+      if (m.second.count(cell_material_id) > 0)
         return _weights[m.first];
     }
-    throw std::runtime_error("Cell material id is not listed.");
-    return dealii::numbers::invalid_unsigned_int; // @Bruno: should we throw
-                                                  // or return invalid weight?
-                                                  // It does not seem to throw
-                                                  // (in release mode at least)
-                                                  // and this does unnoticed.
+    throw std::runtime_error("Cell material id" +
+                             std::to_string(cell_material_id) +
+                             " is not listed.");
   };
   _triangulation->signals.cell_weight.connect(compute_cell_weight);
   _triangulation->repartition();
