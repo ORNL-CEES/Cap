@@ -524,8 +524,9 @@ void Geometry<dim>::set_boundary_ids(double const collector_top,
   auto get_boundary_id = [=](std::string const &b)
   {
     auto const &boundary_ids = (*_boundaries)[b];
-    BOOST_ASSERT_MSG(boundary_ids.size() == 1, string + " boundary id must have"
-                                                        "a size of one.");
+    BOOST_ASSERT_MSG(boundary_ids.size() == 1, (b + " boundary id must have"
+                                                    "a size of one.")
+                                                   .c_str());
     return *boundary_ids.begin();
   };
 
