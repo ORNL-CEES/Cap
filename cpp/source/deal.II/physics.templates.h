@@ -23,7 +23,7 @@ Physics<dim>::Physics(std::shared_ptr<PhysicsParameters<dim> const> parameters,
       dof_handler(parameters->dof_handler), locally_owned_dofs(),
       locally_relevant_dofs(), constraint_matrix(), sparsity_pattern(),
       system_matrix(), mass_matrix(), system_rhs(),
-      mp_values(parameters->mp_values)
+      mp_values(parameters->mp_values), geometry(parameters->geometry)
 {
 }
 }

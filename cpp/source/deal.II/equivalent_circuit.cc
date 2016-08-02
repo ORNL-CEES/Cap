@@ -57,14 +57,29 @@ void compute_equivalent_circuit(
       new dealii::distributed::Triangulation<2>(MPI_COMM_WORLD));
   dealii::GridGenerator::hyper_cube(*triangulation);
   dealii::DoFHandler<2> dof_handler(*triangulation);
-  mp_values_params.geometry =
-      std::make_shared<Geometry<2>>(geometry_database, triangulation);
+  mp_values_params.geometry = std::make_shared<Geometry<2>>(
+      triangulation,
+      std::make_shared<std::unordered_map<
+          std::string, std::set<dealii::types::material_id>>>(
+          std::initializer_list<std::pair<
+              std::string const, std::set<dealii::types::material_id>>>{
+              {"anode", std::set<dealii::types::material_id>{1}},
+              {"separator", std::set<dealii::types::material_id>{2}},
+              {"cathode", std::set<dealii::types::material_id>{3}},
+              {"collector", std::set<dealii::types::material_id>{4, 5}}}),
+      std::make_shared<std::unordered_map<
+          std::string, std::set<dealii::types::material_id>>>(
+          std::initializer_list<std::pair<
+              std::string const, std::set<dealii::types::boundary_id>>>{
+              {"anode", std::set<dealii::types::boundary_id>{1}},
+              {"cathode", std::set<dealii::types::boundary_id>{2}}}));
+
   std::shared_ptr<MPValues<2>> mp_values =
       std::make_shared<SuperCapacitorMPValues<2>>(mp_values_params);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
   // electrode
-  cell->set_material_id(input_database.get<dealii::types::material_id>(
-      "geometry.anode_electrode_material_id"));
+  cell->set_material_id(1); // <- matches the anode material_id in the
+                            //    initializer list
   std::vector<double> electrode_solid_electrical_conductivity_values(1);
   std::vector<double> electrode_liquid_electrical_conductivity_values(1);
   mp_values->get_values("solid_electrical_conductivity", cell,
@@ -103,8 +118,8 @@ void compute_equivalent_circuit(
   std::cout << "    width=" << electrode_width << "\n";
   std::cout << "    cross_sectional_area=" << cross_sectional_area << "\n";
   // separator
-  cell->set_material_id(input_database.get<dealii::types::material_id>(
-      "geometry.separator_material_id"));
+  cell->set_material_id(2); // <- matches the separator material_id in the
+                            //    initializer list
   std::vector<double> separator_liquid_electrical_conductivity_values(1);
   mp_values->get_values("liquid_electrical_conductivity", cell,
                         separator_liquid_electrical_conductivity_values);
@@ -118,8 +133,8 @@ void compute_equivalent_circuit(
   std::cout << "    width=" << separator_width << "\n";
   std::cout << "    cross_sectional_area=" << cross_sectional_area << "\n";
   // collector
-  cell->set_material_id(input_database.get<dealii::types::material_id>(
-      "geometry.anode_collector_material_id"));
+  cell->set_material_id(4); // <- matches the collector  material_id in the
+                            //    initializer list
   std::vector<double> collector_solid_electrical_conductivity_values(1);
   mp_values->get_values("solid_electrical_conductivity", cell,
                         collector_solid_electrical_conductivity_values);

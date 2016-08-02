@@ -50,8 +50,11 @@ BOOST_AUTO_TEST_CASE(test_reset_geometry)
   params->put("materials", 1);
   params->put("material_0.name", "all");
   params->put("material_0.material_id", "1,2,3,4,5");
-  params->put("boundary_values.anode_boundary_id", "1");
-  params->put("boundary_values.cathode_boundary_id", "2");
+  params->put("boundaries", 2);
+  params->put("boundary_0.name", "anode");
+  params->put("boundary_0.boundary_id", "1");
+  params->put("boundary_1.name", "cathode");
+  params->put("boundary_1.boundary_id", "2");
 
   cap::Geometry<2> geo(params, boost::mpi::communicator());
   write_mesh("output_test_geometry_0.vtu", geo.get_triangulation());
@@ -151,4 +154,28 @@ BOOST_AUTO_TEST_CASE(test_3d_geometry)
       geometry->get_triangulation();
   const unsigned int n_cells = 6912;
   BOOST_CHECK(n_cells == triangulation->n_active_cells());
+}
+
+BOOST_AUTO_TEST_CASE(test_n_refinements)
+{
+  boost::property_tree::ptree ptree;
+  boost::property_tree::read_info("super_capacitor.info", ptree);
+  auto build_geometry = [](boost::property_tree::ptree &ptree)
+  {
+    return cap::Geometry<2>(std::make_shared<boost::property_tree::ptree>(
+                                ptree.get_child("geometry")),
+                            boost::mpi::communicator());
+  };
+  auto geometry_coarse = build_geometry(ptree);
+  ptree.put("geometry.n_refinements", 1);
+  auto geometry_fine = build_geometry(ptree);
+  ptree.put("geometry.n_refinements", 2);
+  auto geometry_finer = build_geometry(ptree);
+
+  auto n_cells = [](cap::Geometry<2> &geometry)
+  {
+    return geometry.get_triangulation()->n_active_cells();
+  };
+  BOOST_TEST(n_cells(geometry_fine) == 4 * n_cells(geometry_coarse));
+  BOOST_TEST(n_cells(geometry_finer) == 16 * n_cells(geometry_coarse));
 }

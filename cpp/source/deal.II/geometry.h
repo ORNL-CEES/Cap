@@ -15,6 +15,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <unordered_map>
+#include <set>
 
 namespace cap
 {
@@ -39,35 +40,18 @@ public:
    * triangulation. The database is necessary to create the materials map.
    */
   Geometry(
-      std::shared_ptr<boost::property_tree::ptree const> database,
-      std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation);
+      std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation,
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::material_id>>> materials,
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::boundary_id>>> boundaries);
 
   virtual ~Geometry() = default;
 
   /**
    * Read the weights of the cells and repartion the Triangulation.
    */
-  void repartition(std::shared_ptr<boost::property_tree::ptree const> database);
-
-  void set_anode_boundary_id(dealii::types::boundary_id const boundary_id)
-  {
-    _anode_boundary_id = boundary_id;
-  }
-
-  dealii::types::boundary_id get_anode_boundary_id() const
-  {
-    return _anode_boundary_id;
-  }
-
-  void set_cathode_boundary_id(dealii::types::boundary_id const boundary_id)
-  {
-    _cathode_boundary_id = boundary_id;
-  }
-
-  dealii::types::boundary_id get_cathode_boundary_id() const
-  {
-    return _cathode_boundary_id;
-  }
+  void repartition();
 
   std::shared_ptr<dealii::distributed::Triangulation<dim>> get_triangulation()
   {
@@ -80,17 +64,31 @@ public:
   }
 
   std::shared_ptr<
-      std::unordered_map<std::string, std::vector<dealii::types::material_id>>>
+      std::unordered_map<std::string, std::set<dealii::types::material_id>>>
   get_materials() const
   {
     return _materials;
   }
 
+  std::shared_ptr<
+      std::unordered_map<std::string, std::set<dealii::types::boundary_id>>>
+  get_boundaries() const
+  {
+    return _boundaries;
+  }
+
   void set_materials(
       std::shared_ptr<std::unordered_map<
-          std::string, std::vector<dealii::types::material_id>>> materials)
+          std::string, std::set<dealii::types::material_id>>> materials)
   {
     _materials = materials;
+  }
+
+  void set_boundaries(
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::boundary_id>>> boundaries)
+  {
+    _boundaries = boundaries;
   }
 
 private:
@@ -106,14 +104,14 @@ private:
   /**
    * Helper function for the constructor, when the mesh is loaded from a mesh.
    */
-  void fill_materials_map(
+  void fill_material_and_boundary_maps(
       std::shared_ptr<boost::property_tree::ptree const> database);
 
   /**
    * Helper function for the constructor, when the mesh is generated from a
    * database.
    */
-  void fill_materials_map();
+  void fill_material_and_boundary_maps();
 
   /**
    * Convert the geometry database to one that can be used to generate a mesh.
@@ -138,11 +136,12 @@ private:
   void output_coarse_mesh(std::string const &filename);
 
   boost::mpi::communicator _communicator;
-  dealii::types::boundary_id _anode_boundary_id;
-  dealii::types::boundary_id _cathode_boundary_id;
   std::shared_ptr<dealii::distributed::Triangulation<dim>> _triangulation;
   std::shared_ptr<std::unordered_map<
-      std::string, std::vector<dealii::types::material_id>>> _materials;
+      std::string, std::set<dealii::types::material_id>>> _materials;
+  std::shared_ptr<std::unordered_map<
+      std::string, std::set<dealii::types::boundary_id>>> _boundaries;
+  std::unordered_map<std::string, unsigned int> _weights = {};
 };
 } // end namespace cap
 

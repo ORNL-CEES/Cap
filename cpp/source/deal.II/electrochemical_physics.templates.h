@@ -24,8 +24,6 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     boost::mpi::communicator mpi_communicator)
     : Physics<dim>(parameters, mpi_communicator), solid_potential_component(-1),
       liquid_potential_component(-1),
-      anode_boundary_id(type::invalid_boundary_id),
-      cathode_boundary_id(type::invalid_boundary_id),
       _assembly_timer(mpi_communicator, "ElectrochemicalPhysics assembly"),
       _setup_timer(mpi_communicator, "ElectrochemicalPhysics setup")
 {
@@ -37,8 +35,9 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   this->liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
   // clang-format on
 
-  anode_boundary_id = parameters->geometry->get_anode_boundary_id();
-  cathode_boundary_id = parameters->geometry->get_cathode_boundary_id();
+  auto const &anode_boundary_ids = (*this->geometry->get_boundaries())["anode"];
+  auto const &cathode_boundary_ids =
+      (*this->geometry->get_boundaries())["cathode"];
 
   std::shared_ptr<
       ElectrochemicalPhysicsParameters<dim> const> electrochemical_parameters =
@@ -68,7 +67,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   dealii::ComponentMask component_mask(mask);
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
-  dirichlet_boundary_condition[anode_boundary_id] = &homogeneous_bc;
+  for (auto const &boundary_id : anode_boundary_ids)
+    dirichlet_boundary_condition[boundary_id] = &homogeneous_bc;
   std::unique_ptr<dealii::Function<dim>> cathode_dirichlet_bc = nullptr;
   bool inhomogeneous_bc = false;
   if (electrochemical_parameters->supercapacitor_state == ConstantVoltage)
@@ -76,8 +76,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     cathode_dirichlet_bc = std::make_unique<dealii::ConstantFunction<dim>>(
         dealii::ConstantFunction<dim>(
             electrochemical_parameters->constant_voltage, n_components));
-    dirichlet_boundary_condition[cathode_boundary_id] =
-        cathode_dirichlet_bc.get();
+    for (auto const &boundary_id : cathode_boundary_ids)
+      dirichlet_boundary_condition[boundary_id] = cathode_dirichlet_bc.get();
     inhomogeneous_bc = true;
   }
 
@@ -231,6 +231,8 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   // charge).
   if (electrochemical_parameters->supercapacitor_state == ConstantCurrent)
   {
+    auto const &cathode_boundary_ids =
+        (*this->geometry->get_boundaries())["cathode"];
     double const time_step = electrochemical_parameters->time_step;
     double const current_density =
         electrochemical_parameters->constant_current_density;
@@ -247,7 +249,7 @@ void ElectrochemicalPhysics<dim>::assemble_system(
              face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
         {
           if ((cell->face(face)->at_boundary()) &&
-              (cell->face(face)->boundary_id() == cathode_boundary_id))
+              (cathode_boundary_ids.count(cell->face(face)->boundary_id()) > 0))
           {
             fe_face_values.reinit(cell, face);
             for (unsigned int q = 0; q < n_face_q_points; ++q)

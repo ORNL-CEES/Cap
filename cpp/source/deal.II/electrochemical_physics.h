@@ -63,8 +63,6 @@ private:
 
   unsigned int solid_potential_component;
   unsigned int liquid_potential_component;
-  dealii::types::boundary_id anode_boundary_id;
-  dealii::types::boundary_id cathode_boundary_id;
   Timer _assembly_timer;
   Timer _setup_timer;
 };

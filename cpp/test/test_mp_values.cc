@@ -216,7 +216,15 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
 
   boost::property_tree::ptree material_3_database;
   material_3_database.put("name", "collector");
-  material_3_database.put("material_id", 4);
+  material_3_database.put("material_id", "4,5");
+
+  boost::property_tree::ptree boundary_0_database;
+  boundary_0_database.put("name", "anode");
+  boundary_0_database.put("boundary_id", 1);
+
+  boost::property_tree::ptree boundary_1_database;
+  boundary_1_database.put("name", "cathode");
+  boundary_1_database.put("boundary_id", 2);
 
   geometry_database->put("type", "file");
   geometry_database->put("mesh_file", "mesh_2d.ucd");
@@ -228,17 +236,13 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   geometry_database->put("geometric_area", 25.0e-2);
   geometry_database->put("tab_height", 5.0e-4);
   geometry_database->put("materials", 4);
-  geometry_database->put("anode_collector_material_id", 4);
-  geometry_database->put("anode_electrode_material_id", 1);
-  geometry_database->put("separator_material_id", 2);
-  geometry_database->put("cathode_electrode_material_id", 3);
-  geometry_database->put("cathode_collector_material_id", 5);
   geometry_database->put_child("material_0", material_0_database);
   geometry_database->put_child("material_1", material_1_database);
   geometry_database->put_child("material_2", material_2_database);
   geometry_database->put_child("material_3", material_3_database);
-  geometry_database->put("boundary_values.anode_boundary_id", "1");
-  geometry_database->put("boundary_values.cathode_boundary_id", "2");
+  geometry_database->put("boundaries", 2);
+  geometry_database->put_child("boundary_0", boundary_0_database);
+  geometry_database->put_child("boundary_1", boundary_1_database);
 
   std::shared_ptr<cap::Geometry<2>> geometry =
       std::make_shared<cap::Geometry<2>>(geometry_database,
