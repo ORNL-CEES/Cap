@@ -452,7 +452,6 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   ia >> boundaries;
   _geometry->set_materials(materials);
   _geometry->set_boundaries(boundaries);
-  // TODO: fill weight map
 
   // Load the refinement
   _geometry->get_triangulation()->load(filename.c_str());
