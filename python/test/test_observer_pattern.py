@@ -12,7 +12,7 @@ class ObserverObservableTestCase(unittest.TestCase):
             # The PropertyTree must specify what concrete class derived from
             # AbstractClass to instantiate.
             ptree = PropertyTree()
-            self.assertRaises(RuntimeError, AbstractClass, ptree)
+            self.assertRaises(KeyError, AbstractClass, ptree)
 
             # The derived concrete class must be registerd in the dictionary
             # that holds the builders.

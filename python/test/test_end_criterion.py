@@ -102,7 +102,7 @@ class capEndCriterionTestCase(unittest.TestCase):
         ptree.put_string('criterion_1.end_criterion', 'voltage_greater_than')
         ptree.put_double('criterion_1.voltage_limit', 2.0)
         # no default value for now
-        self.assertRaises(RuntimeError, EndCriterion.factory, ptree)
+        self.assertRaises(KeyError, EndCriterion.factory, ptree)
         ptree.put_string('logical_operator', 'bad_operator')
         self.assertRaises(RuntimeError, EndCriterion.factory, ptree)
         ptree.put_string('logical_operator', 'or')
