@@ -2,12 +2,6 @@ type file
 
 mesh_file mesh_2d.ucd
 
-anode_collector_material_id   4
-anode_electrode_material_id   1
-separator_material_id         2
-cathode_electrode_material_id 3
-cathode_collector_material_id 5
-
 anode_collector_thickness    5.0e-4 ; [centimeter]
 anode_electrode_thickness   50.0e-4 ; [centimeter]
 separator_thickness         25.0e-4 ; [centimeter]

@@ -40,15 +40,18 @@ public:
    * triangulation. The database is necessary to create the materials map.
    */
   Geometry(
-      std::shared_ptr<boost::property_tree::ptree const> database,
-      std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation);
+      std::shared_ptr<dealii::distributed::Triangulation<dim>> triangulation,
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::material_id>>> materials,
+      std::shared_ptr<std::unordered_map<
+          std::string, std::set<dealii::types::boundary_id>>> boundaries);
 
   virtual ~Geometry() = default;
 
   /**
    * Read the weights of the cells and repartion the Triangulation.
    */
-  void repartition(std::shared_ptr<boost::property_tree::ptree const> database);
+  void repartition();
 
   std::shared_ptr<dealii::distributed::Triangulation<dim>> get_triangulation()
   {
@@ -138,6 +141,7 @@ private:
       std::string, std::set<dealii::types::material_id>>> _materials;
   std::shared_ptr<std::unordered_map<
       std::string, std::set<dealii::types::boundary_id>>> _boundaries;
+  std::unordered_map<std::string, unsigned int> _weights = {};
 };
 } // end namespace cap
 

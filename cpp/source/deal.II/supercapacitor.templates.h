@@ -452,6 +452,7 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   ia >> boundaries;
   _geometry->set_materials(materials);
   _geometry->set_boundaries(boundaries);
+  // TODO: fill weight map
 
   // Load the refinement
   _geometry->get_triangulation()->load(filename.c_str());
@@ -460,7 +461,7 @@ void SuperCapacitor<dim>::load(const std::string &filename)
   std::shared_ptr<boost::property_tree::ptree> geometry_database =
       std::make_shared<boost::property_tree::ptree>(
           _ptree.get_child("geometry"));
-  _geometry->repartition(geometry_database);
+  _geometry->repartition();
 
   // Setup the SuperCapacitor object.
   setup();
