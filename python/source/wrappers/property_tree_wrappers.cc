@@ -138,4 +138,15 @@ void put_child(boost::property_tree::ptree & ptree, string const & path, boost::
     ptree.put_child(path, child);
 }
 
+void translate(boost::property_tree::ptree_error const & error)
+{
+    if (auto const *e = dynamic_cast<boost::property_tree::ptree_bad_data const*>(&error))
+        PyErr_SetString(PyExc_TypeError, e->what());
+    else if (auto const *e = dynamic_cast<boost::property_tree::ptree_bad_path const*>(&error))
+        PyErr_SetString(PyExc_KeyError, e->what());
+    else
+        PyErr_SetString(PyExc_RuntimeError, "Unexpected error in Boost.PropertyTree!");
+
+}
+
 } // end namespace pycap

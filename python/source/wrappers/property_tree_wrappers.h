@@ -43,6 +43,8 @@ void parse_info(boost::property_tree::ptree & ptree, string const & filename);
 boost::property_tree::ptree get_child(boost::property_tree::ptree & ptree, string const & path);
 void put_child(boost::property_tree::ptree & ptree, string const & path, boost::property_tree::ptree const & child);
 
+void translate(boost::property_tree::ptree_error const & error);
+
 template <typename T>
 struct serializable_class_pickle_support : boost::python::pickle_suite
 {
