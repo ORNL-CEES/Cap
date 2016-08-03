@@ -95,7 +95,7 @@ class Charge(MultiStage):
             charge_rest_time = ptree.get_double('charge_rest_time')
             assert charge_rest_time >= 0.0
             other.put_double('stage_2.duration', charge_rest_time)
-        except RuntimeError:
+        except KeyError:
             other.put_string('stage_2.end_criterion', 'skip')
         MultiStage.__init__(self, other)
 
@@ -147,7 +147,7 @@ class Discharge(MultiStage):
             discharge_stop_at_2 = ptree.get_string('discharge_stop_at_2')
             other.put_string('stage_0.criterion_1.end_criterion',
                              discharge_stop_at_2)
-        except RuntimeError:
+        except KeyError:
             other.put_string('stage_0.criterion_1.end_criterion', 'none')
         # rest at open circuit
         other.put_string('stage_1.mode', 'rest')
@@ -156,7 +156,7 @@ class Discharge(MultiStage):
             discharge_rest_time = ptree.get_double('discharge_rest_time')
             assert discharge_rest_time >= 0.0
             other.put_double('stage_1.duration', discharge_rest_time)
-        except RuntimeError:
+        except KeyError:
             other.put_string('stage_1.end_criterion', 'skip')
         MultiStage.__init__(self, other)
 

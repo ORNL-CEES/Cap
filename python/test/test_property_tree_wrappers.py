@@ -98,10 +98,10 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
     def test_raise_exceptions(self):
         ptree = PropertyTree()
         # property tree will throw if the specified path does not exist
-        self.assertRaises(RuntimeError, ptree.get_int, 'path.does.not.exist')
+        self.assertRaises(KeyError, ptree.get_int, 'path.does.not.exist')
         # or if the translation fails
         ptree.put_string('some.path.to.a.string', 'not a double')
-        self.assertRaises(RuntimeError, ptree.get_double,
+        self.assertRaises(TypeError, ptree.get_double,
                           'some.path.to.a.string')
 
     def test_parsers(self):

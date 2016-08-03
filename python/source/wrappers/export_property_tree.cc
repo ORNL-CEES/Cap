@@ -2,6 +2,7 @@
 #include <boost/python/args.hpp>
 #include <boost/python/class.hpp>
 #include <boost/python/register_ptr_to_python.hpp>
+#include <boost/python/exception_translator.hpp>
 
 namespace pycap
 {
@@ -20,9 +21,9 @@ char const * property_tree_docstring =
   "                                                                       \n"
   "Raises                                                                 \n"
   "------                                                                 \n"
-  "RuntimeError: No such node (<path>)                                    \n"
+  "KeyError: No such node (<path>)                                        \n"
   "    Error indicating that specified <path> does not exist.             \n"
-  "RuntimeError: conversion of data to type \"<type>\" failed             \n"
+  "TypeError: conversion of data to type \"<type>\" failed                \n"
   "    Error indicating that translation from or to <type> has failed.    \n"
   "                                                                       \n"
   ;
@@ -80,6 +81,7 @@ void export_property_tree()
     .def("put_child", &pycap::put_child, "Put the child at the given path, create any missing parents, replace if it already exists.", boost::python::args("self", "path", "PropertyTree") )
     .def_pickle(pycap::serializable_class_pickle_support<boost::property_tree::ptree>())
         ;
+  boost::python::register_exception_translator<boost::property_tree::ptree_error>(&pycap::translate);
   boost::python::register_ptr_to_python<std::shared_ptr<boost::property_tree::ptree>>();
 }
 
