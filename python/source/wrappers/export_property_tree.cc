@@ -21,9 +21,9 @@ char const * property_tree_docstring =
   "                                                                       \n"
   "Raises                                                                 \n"
   "------                                                                 \n"
-  "RuntimeError: No such node (<path>)                                    \n"
+  "KeyError: No such node (<path>)                                        \n"
   "    Error indicating that specified <path> does not exist.             \n"
-  "RuntimeError: conversion of data to type \"<type>\" failed             \n"
+  "TypeError: conversion of data to type \"<type>\" failed                \n"
   "    Error indicating that translation from or to <type> has failed.    \n"
   "                                                                       \n"
   ;
