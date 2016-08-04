@@ -7,6 +7,7 @@
 
 #include <cap/default_inspector.h>
 #include <cap/supercapacitor.h>
+#include <cap/utils.h> // to_vector<>
 
 namespace cap
 {
@@ -44,7 +45,19 @@ extract_data_from_super_capacitor(EnergyStorageDevice *device)
         ptree->get<double>("geometry.anode_electrode_thickness");
     data["cathode_electrode_thickness"] =
         ptree->get<double>("geometry.cathode_electrode_thickness");
-    for (std::string const &electrode : {"anode", "cathode"})
+    // NOTE: by default let us assume that the electrode materials are called
+    // "anode" and "cathode" but allow for the user to change it.
+    // We might want to make a SuperCapacitor specific class derived from
+    // Geometry that would be aware of the material tags assigned to the
+    // electrode/separator/collector regions. In that case we would access the
+    // SuperCapacitor::_geometry here and pull this information.
+    // Nevertheless, this is needed for debug purposes and I am not going to
+    // bother add a test yet. As a reminder there will be this note plus a line
+    // with no coverage...
+    std::vector<std::string> electrode_material_names = {"anode", "cathode"};
+    if (auto names = ptree->get_optional<std::string>("electrodes"))
+      electrode_material_names = to_vector<std::string>(names.get());
+    for (std::string const &electrode : electrode_material_names)
     {
       std::string tmp = ptree->get<std::string>("material_properties." +
                                                 electrode + ".matrix_phase");
