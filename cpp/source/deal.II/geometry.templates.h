@@ -28,6 +28,36 @@ namespace cap
 
 namespace internal
 {
+// Sanity check for the maps material name -> material ids and boundary name ->
+// boundary ids. We construct the union of all sets and an exception is thrown
+// if an id is present multiple times.
+// NOTE: We might consider adding another sanity check that ensures that when we
+// traverse the triangulation, all ids have been listed in the two maps.
+template <typename T>
+void check_no_overlap(std::unordered_map<std::string, std::set<T>> &map)
+{
+  auto compare_elements = [](std::pair<T, std::string> const &kv1,
+                             std::pair<T, std::string> const &kv2) -> bool
+  {
+    return kv1.first < kv2.first;
+  };
+  std::set<std::pair<T, std::string>, decltype(compare_elements)> set_union(
+      compare_elements);
+  for (auto const &x : map)
+  {
+    auto const &tag = x.first;
+    auto const &set = x.second;
+    for (auto const &elem : set)
+    {
+      auto ret = set_union.emplace(std::make_pair(elem, tag));
+      if (!ret.second)
+        throw std::runtime_error(
+            std::to_string(elem) + " is both present in \"" +
+            (*ret.first).second + "\" and \"" + tag + "\"");
+    }
+  }
+}
+
 template <int dim>
 struct Component
 {
@@ -225,6 +255,10 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
       }
       mesh_generator(*database);
     }
+    // Material and boundary map have been filled at this point. Let us check
+    // that they are valid input.
+    internal::check_no_overlap(*_materials);
+    internal::check_no_overlap(*_boundaries);
 
     // We need to do load balancing because cells in the collectors and the
     // separator don't have both physics.
@@ -244,6 +278,8 @@ Geometry<dim>::Geometry(
       _triangulation(triangulation), _materials(materials),
       _boundaries(boundaries)
 {
+  internal::check_no_overlap(*_materials);
+  internal::check_no_overlap(*_boundaries);
 }
 
 template <int dim>
