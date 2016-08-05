@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(test_3d_geometry)
   BOOST_CHECK(n_cells == triangulation->n_active_cells());
 }
 
-BOOST_AUTO_TEST_CASE(test_n_refinements)
+BOOST_AUTO_TEST_CASE(n_refinements)
 {
   boost::property_tree::ptree ptree;
   boost::property_tree::read_info("super_capacitor.info", ptree);
@@ -178,4 +178,37 @@ BOOST_AUTO_TEST_CASE(test_n_refinements)
   };
   BOOST_TEST(n_cells(geometry_fine) == 4 * n_cells(geometry_coarse));
   BOOST_TEST(n_cells(geometry_finer) == 16 * n_cells(geometry_coarse));
+}
+
+BOOST_AUTO_TEST_CASE(check_no_overlap)
+{
+  auto mat = std::make_shared<
+      std::unordered_map<std::string, std::set<dealii::types::material_id>>>(
+      std::initializer_list<
+          std::pair<std::string const, std::set<dealii::types::material_id>>>{
+          {"foo", std::set<dealii::types::material_id>{1, 2}},
+          {"bar", std::set<dealii::types::material_id>{3}}});
+
+  auto bnd = std::make_shared<
+      std::unordered_map<std::string, std::set<dealii::types::boundary_id>>>(
+      std::initializer_list<
+          std::pair<std::string const, std::set<dealii::types::boundary_id>>>{
+          {"aaa", std::set<dealii::types::boundary_id>{1, 2}}});
+
+  boost::mpi::communicator world;
+  auto tria = std::make_shared<dealii::distributed::Triangulation<2>>(world);
+
+  // No overlap
+  BOOST_CHECK_NO_THROW(cap::Geometry<2>(tria, mat, bnd));
+
+  // Material id "3" listed twice
+  mat->emplace("already listed", std::set<dealii::types::material_id>{3, 4});
+  BOOST_CHECK_THROW(cap::Geometry<2>(tria, mat, bnd), std::runtime_error);
+  // Cleanup
+  mat->erase("already listed");
+  BOOST_CHECK_NO_THROW(cap::Geometry<2>(tria, mat, bnd));
+
+  // Boundary id "1" listed twice
+  bnd->emplace("bbb", std::set<dealii::types::boundary_id>{1});
+  BOOST_CHECK_THROW(cap::Geometry<2>(tria, mat, bnd), std::runtime_error);
 }
