@@ -4,14 +4,14 @@ Getting started
 Overview
 --------
 
-`Cap <https://github.com/dalg24/cap>`_ is a library for modelling energy
+`Cap <https://github.com/dalg24/cap>`_ is a library for modeling energy
 storage devices.
 Its core is implemented in C++ but Python wrappers are also available.
 
 Cap provides:
 
 1. energy storage device models
-2. electrochmical measurement techniques
+2. electrochemical measurement techniques
 
 Guidelines for installation are :ref:`available <installation>`.
 Note that it is **not** necessary to build Cap from source to use it.
