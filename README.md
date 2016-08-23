@@ -28,7 +28,7 @@ web browser. PyCap makes it possible to create and manipulate Cap
 without the need to constantly recompile.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/dalg24/cap.svg)](https://hub.docker.com/r/dalg24/cap)
-[![ImageLayers Size](https://img.shields.io/imagelayers/image-size/dalg24/cap-stack/latest.svg)]()
+[![Image Layers](https://images.microbadger.com/badges/image/dalg24/cap.svg)](http://microbadger.com/images/dalg24/cap)
 
 Authors
 -------
