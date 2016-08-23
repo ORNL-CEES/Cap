@@ -39,4 +39,4 @@ if 'PASSWORD' in os.environ:
     del os.environ['PASSWORD']
 
 # enable interactive parallel computing
-c.NotebookApp.server_nbextensions.append('ipyparallel.nbextension')
+c.NotebookApp.nbserver_extensions = {'ipyparallel.nbextension': True}
