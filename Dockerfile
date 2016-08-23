@@ -33,8 +33,8 @@ ENV NB_UID 1000
 
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     mkdir /home/$NB_USER/.jupyter && \
+    mkdir -p -m 700 /home/$NB_USER/.local/share/jupyter && \
     mkdir -p /home/$NB_USER/.ipython/profile_mpi && \
-    mkdir /home/$NB_USER/.local && \
     mkdir /home/$NB_USER/notebooks && \
     chown -R $NB_USER:users /home/$NB_USER
 
@@ -51,4 +51,4 @@ COPY docker/jupyter_notebook_config.py /home/$NB_USER/.jupyter/
 COPY docker/jupyter_nbconvert_config.py /home/$NB_USER/.jupyter/
 COPY docker/ipengine_config.py /home/$NB_USER/.ipython/profile_mpi/
 COPY docker/ipcluster_config.py /home/$NB_USER/.ipython/profile_mpi/
-RUN chown -R $NB_USER:users /home/$NB_USER/.jupyter
+RUN chown -R $NB_USER:users /home/$NB_USER
