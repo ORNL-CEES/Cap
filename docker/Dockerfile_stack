@@ -202,9 +202,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     npm install -g configurable-http-proxy && rm -rf ~/.npm
 
 # install tini
-RUN export TINI_VERSION=0.9.0 && \
-    wget --quiet https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini && \
-#    echo "c6af7d7e95acfe0c840c2e65ed4a80400a7f73bb  tini" | shasum -c && \
-    chmod +x tini && \
-    mv tini /usr/local/bin/
-
+RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.10.0/tini && \
+    echo "1361527f39190a7338a0b434bd8c88ff7233ce7b9a4876f3315c22fce7eca1b0 *tini" | sha256sum -c - && \
+    mv tini /usr/local/bin/tini && \
+    chmod +x /usr/local/bin/tini
