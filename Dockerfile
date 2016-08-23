@@ -51,4 +51,4 @@ COPY docker/jupyter_notebook_config.py /home/$NB_USER/.jupyter/
 COPY docker/jupyter_nbconvert_config.py /home/$NB_USER/.jupyter/
 COPY docker/ipengine_config.py /home/$NB_USER/.ipython/profile_mpi/
 COPY docker/ipcluster_config.py /home/$NB_USER/.ipython/profile_mpi/
-RUN chown -R $NB_USER:users /home/$NB_USER/.jupyter
+RUN chown -R $NB_USER:users /home/$NB_USER
