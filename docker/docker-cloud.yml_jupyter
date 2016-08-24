@@ -1,0 +1,14 @@
+jupyter:
+  command: >
+    start-notebook.sh --NotebookApp.certfile=/etc/letsencrypt/fullchain.pem
+    --NotebookApp.keyfile=/etc/letsencrypt/privkey.pem
+  environment:
+    - PASSWORD=<your password here>
+  image: 'dalg24/cap:latest'
+  ports:
+    - '8888:8888'
+  volumes:
+    - '/home/qdi/letsencrypt/cert/fullchain.pem:/etc/letsencrypt/fullchain.pem:ro'
+    - '/home/qdi/letsencrypt/cert/privkey.pem:/etc/letsencrypt/privkey.pem:ro'
+    - '/home/qdi/notebooks:/notebooks'
+
