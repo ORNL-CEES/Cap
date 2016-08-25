@@ -4,6 +4,12 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license.
 
+
+# Select a non-interactive backend for Matplotlib
+# NOTE: must be done before importing matplotlib.pyplot
+import matplotlib
+matplotlib.use('PS')
+
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
     ECLabAsciiFile, NyquistPlot
 from pycap import retrieve_impedance_spectrum,\
@@ -217,10 +223,8 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
             self.assertEqual(lines[header_lines - 1].find(b'freq/Hz'), 0)
 
         # check Nyquist plot does not throw
-        # TODO: Commenting this out for now to get rid of Tkinter errors "no
-        # $DISPLAY environment variable" or "couldn't connect do display"
-#        nyquist = NyquistPlot('nyquist.png')
-#        nyquist.update(dummy)
+        nyquist = NyquistPlot('nyquist.png')
+        nyquist.update(dummy)
 
         # check Bode plot
         # TODO: BodePlot is not implemented yet
