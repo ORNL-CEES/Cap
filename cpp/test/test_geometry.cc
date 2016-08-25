@@ -14,6 +14,8 @@
 #include <cap/utils.h>
 #include <cap/geometry.h>
 #include <deal.II/grid/grid_out.h>
+#include <deal.II/grid/grid_tools.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
@@ -211,4 +213,45 @@ BOOST_AUTO_TEST_CASE(check_no_overlap)
   // Boundary id "1" listed twice
   bnd->emplace("bbb", std::set<dealii::types::boundary_id>{1});
   BOOST_CHECK_THROW(cap::Geometry<2>(tria, mat, bnd), std::runtime_error);
+}
+
+// Check that repetitions create a connected triangulation
+BOOST_AUTO_TEST_CASE(check_repetitions)
+{
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("generate_mesh.info",
+                                               geometry_database);
+  geometry_database.put("n_repetitions", 5);
+  cap::Geometry<2> geo(
+      std::make_shared<boost::property_tree::ptree>(geometry_database),
+      boost::mpi::communicator());
+
+  // Get a sparsity pattern in which nonzero entries indicate that two cells are
+  // connected via a common face. Then, check that we can traverse the entire
+  // triangulation using cells that share a face.
+  std::shared_ptr<dealii::distributed::Triangulation<2>> tria =
+      geo.get_triangulation();
+  dealii::DynamicSparsityPattern sparsity_pattern;
+  dealii::GridTools::get_face_connectivity_of_cells(*tria, sparsity_pattern);
+
+  std::unordered_set<unsigned int> cells_done;
+  std::unordered_set<unsigned int> cells_to_do;
+  cells_to_do.insert(0);
+  unsigned int const n_cells = tria->n_active_cells();
+  while (cells_to_do.size() != 0)
+  {
+    unsigned int const current_cell = *cells_to_do.begin();
+    for (unsigned int i = 0; i < n_cells; ++i)
+      if (sparsity_pattern.exists(current_cell, i))
+        if (cells_done.count(i) == 0)
+          cells_to_do.insert(i);
+
+    // The current cell may not be the first element anymore
+    std::unordered_set<unsigned int>::iterator cell_it =
+        cells_to_do.find(current_cell);
+    cells_to_do.erase(cell_it);
+    cells_done.insert(current_cell);
+  }
+
+  BOOST_CHECK(cells_done.size() == n_cells);
 }
