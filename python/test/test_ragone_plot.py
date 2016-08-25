@@ -47,8 +47,10 @@ class RagoneAnalysisTestCase(unittest.TestCase):
                                      retrieved_data['energy'], inf), 0.0)
 
         # TODO: probably want to move this into its own test
-        ragoneplot = RagonePlot("ragone.png")
-        ragoneplot.update(ragone)
+        # TODO: Commenting this out for now to get rid of Tkinter errors "no
+        # $DISPLAY environment variable" or "couldn't connect do display"
+#        ragoneplot = RagonePlot("ragone.png")
+#        ragoneplot.update(ragone)
 
         # check reset reinitialize the time step and empty the data
         ragone.reset()
