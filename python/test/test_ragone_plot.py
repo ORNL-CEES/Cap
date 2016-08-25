@@ -4,6 +4,11 @@
 # without copyright and license information. Please refer to the file LICENSE
 # for the text and further information on this license.
 
+# Select a non-interactive backend for Matplotlib
+# NOTE: must be done before importing matplotlib.pyplot
+import matplotlib
+matplotlib.use('PS')
+
 from pycap import PropertyTree, EnergyStorageDevice, Experiment,\
     RagoneAnalysis, RagonePlot
 from pycap import retrieve_performance_data
@@ -47,10 +52,8 @@ class RagoneAnalysisTestCase(unittest.TestCase):
                                      retrieved_data['energy'], inf), 0.0)
 
         # TODO: probably want to move this into its own test
-        # TODO: Commenting this out for now to get rid of Tkinter errors "no
-        # $DISPLAY environment variable" or "couldn't connect do display"
-#        ragoneplot = RagonePlot("ragone.png")
-#        ragoneplot.update(ragone)
+        ragoneplot = RagonePlot("ragone.png")
+        ragoneplot.update(ragone)
 
         # check reset reinitialize the time step and empty the data
         ragone.reset()
