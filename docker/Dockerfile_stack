@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
         libopenmpi-dev \
         libhdf5-dev \
         python3.5-dev \
+        python3-tk \
         npm \
         nodejs \
         nodejs-legacy \
