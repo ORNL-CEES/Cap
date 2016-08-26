@@ -15,6 +15,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
 
 namespace cap
@@ -118,6 +119,22 @@ private:
    */
   void convert_geometry_database(
       std::shared_ptr<boost::property_tree::ptree> database);
+
+  /**
+   * Merge a triangulation that is repeated multiple times with the current
+   * triangulation.
+   */
+  void merge_repetition(dealii::distributed::Triangulation<dim> &repetition,
+                        double offset);
+
+  /**
+   * Compute the length of the triangulation along @dimension. Cells which have
+   * material_id in the set @excluded_materials are skipped.
+   */
+  double compute_length(
+      dealii::distributed::Triangulation<dim> const &triangulation,
+      unsigned int dimension,
+      std::unordered_set<dealii::types::material_id> const &excluded_materials);
 
   /**
    * Create a mesh from a property tree.

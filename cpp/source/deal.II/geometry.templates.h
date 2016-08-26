@@ -21,6 +21,7 @@
 #include <boost/serialization/set.hpp>
 #include <algorithm>
 #include <fstream>
+#include <limits>
 #include <tuple>
 
 namespace cap
@@ -63,21 +64,19 @@ struct Component
 {
 public:
   Component(MPI_Comm mpi_communicator)
-      : offset(0.), box_dimensions(0), repetitions(0),
-        triangulation(mpi_communicator), shift_vector()
+      : box_dimensions(0), repetitions(0), triangulation(mpi_communicator),
+        shift_vector()
   {
   }
 
   Component(std::vector<dealii::Point<dim>> const &box,
             std::vector<unsigned int> const &repetitions,
             MPI_Comm mpi_communicator)
-      : offset(0.), box_dimensions(box), repetitions(repetitions),
+      : box_dimensions(box), repetitions(repetitions),
         triangulation(mpi_communicator), shift_vector()
   {
   }
 
-  // The current offset of the component.
-  double offset;
   std::vector<dealii::Point<dim>> box_dimensions;
   std::vector<unsigned int> repetitions;
   dealii::distributed::Triangulation<dim> triangulation;
@@ -138,25 +137,44 @@ void read_component_database(boost::property_tree::ptree const &database,
 }
 
 template <int dim>
-void merge_components(
-    Component<dim> &component, double const offset,
-    std::shared_ptr<dealii::distributed::Triangulation<dim>> _triangulation)
+void merge_components(Component<dim> &component, double const offset,
+                      dealii::distributed::Triangulation<dim> &triangulation)
 {
-  // Move the component by the necessary, i.e. desired position minus the
-  // current position
-  component.shift_vector[0] = offset - component.offset;
+  // Move the component by the necessary desired
+  component.shift_vector[0] = offset;
   dealii::GridTools::shift(component.shift_vector, component.triangulation);
-  component.offset = offset;
   // Merge the component with the current triangulation
   dealii::distributed::Triangulation<dim> tmp_triangulation(
-      _triangulation->get_communicator());
+      triangulation.get_communicator());
   dealii::GridGenerator::merge_triangulations(
-      *_triangulation, component.triangulation, tmp_triangulation);
-  _triangulation->clear();
-  _triangulation->copy_triangulation(tmp_triangulation);
+      triangulation, component.triangulation, tmp_triangulation);
+  triangulation.clear();
+  triangulation.copy_triangulation(tmp_triangulation);
+  //
   // collector_c only needs to be shifted vertically the first time
   if (component.shift_vector[dim - 1] != 0.)
     component.shift_vector[dim - 1] = 0.;
+
+  // Move the component back to its initial position
+  component.shift_vector[0] = -offset;
+  dealii::GridTools::shift(component.shift_vector, component.triangulation);
+}
+
+template <int dim>
+void build_triangulation(
+    std::vector<internal::Component<dim> *> const &components,
+    dealii::distributed::Triangulation<dim> &triangulation)
+
+{
+  BOOST_ASSERT_MSG(components.size() != 0, "Number of components is zero.");
+  triangulation.clear();
+  triangulation.copy_triangulation(components[0]->triangulation);
+  double offset = components[0]->box_dimensions[1][0];
+  for (unsigned int i = 1; i < components.size(); ++i)
+  {
+    internal::merge_components(*components[i], offset, triangulation);
+    offset += components[i]->box_dimensions[1][0];
+  }
 }
 }
 
@@ -423,6 +441,51 @@ void Geometry<dim>::convert_geometry_database(
     database->put("cathode.dimensions", cathode_dim);
   }
 }
+
+template <int dim>
+void Geometry<dim>::merge_repetition(
+    dealii::distributed::Triangulation<dim> &repetition, double offset)
+{
+  dealii::Tensor<1, dim> shift_vector;
+  shift_vector[0] = offset;
+  dealii::GridTools::shift(shift_vector, repetition);
+  dealii::distributed::Triangulation<dim> tmp_triangulation(
+      _triangulation->get_communicator());
+  dealii::GridGenerator::merge_triangulations(*_triangulation, repetition,
+                                              tmp_triangulation);
+  _triangulation->clear();
+  _triangulation->copy_triangulation(tmp_triangulation);
+}
+
+template <int dim>
+double Geometry<dim>::compute_length(
+    dealii::distributed::Triangulation<dim> const &triangulation,
+    unsigned int dimension,
+    std::unordered_set<dealii::types::material_id> const &excluded_materials)
+{
+  // Since we are working on the coarse mesh, all the processors have the same
+  // mesh and thus there is no need for a reduction or any other communication.
+  double min_pos = std::numeric_limits<double>::max();
+  double max_pos = std::numeric_limits<double>::lowest();
+  for (auto cell : triangulation.active_cell_iterators())
+  {
+    if (excluded_materials.count(cell->material_id()) == 0)
+    {
+      for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell;
+           ++i)
+      {
+        dealii::Point<dim> vertex = cell->vertex(i);
+        if (vertex[dimension] > max_pos)
+          max_pos = vertex[dimension];
+        if (vertex[dimension] < min_pos)
+          min_pos = vertex[dimension];
+      }
+    }
+  }
+
+  return max_pos - min_pos;
+}
+
 template <int dim>
 void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
 {
@@ -502,22 +565,40 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
   dealii::GridTools::transform(transform_c, collector_c.triangulation);
   collector_c.shift_vector[dim - 1] = -(collector_dim - anode_dim);
 
-  std::array<internal::Component<dim> *, 8> components = {
-      &anode,   &separator, &cathode, &collector_c,
-      &cathode, &separator, &anode,   &collector_a};
-  _triangulation->clear();
-  _triangulation->copy_triangulation(collector_a.triangulation);
-  double offset = collector_a.box_dimensions[1][0];
-  unsigned int pos = 0;
+  std::vector<internal::Component<dim> *> components = {
+      &collector_a, &anode, &separator, &cathode, &collector_c};
+  internal::build_triangulation(components, *_triangulation);
+
   unsigned int const n_repetitions = database.get("n_repetitions", 1);
-  for (unsigned int i = 0; i <= n_repetitions; ++i)
+  if (n_repetitions != 0)
   {
-    for (unsigned int j = 0; j < 4; ++j)
+    dealii::distributed::Triangulation<dim> repetition_1(_communicator);
+    dealii::distributed::Triangulation<dim> repetition_2(_communicator);
+    std::vector<internal::Component<dim> *> repetition_1_components = {
+        &cathode, &separator, &anode, &collector_a};
+    std::vector<internal::Component<dim> *> repetition_2_components = {
+        &anode, &separator, &cathode, &collector_c};
+    internal::build_triangulation(repetition_1_components, repetition_1);
+    internal::build_triangulation(repetition_2_components, repetition_2);
+    unsigned int dimension = 0;
+    std::unordered_set<dealii::types::material_id> excluded_materials;
+    double offset =
+        compute_length(*_triangulation, dimension, excluded_materials);
+    double const length_repetition_1 =
+        compute_length(repetition_1, dimension, excluded_materials);
+    double const length_repetition_2 =
+        compute_length(repetition_2, dimension, excluded_materials);
+    for (unsigned int i = 0; i < n_repetitions; ++i)
     {
-      internal::merge_components(*components[pos], offset, _triangulation);
-      offset += components[pos]->box_dimensions[1][0];
-      ++pos;
-      pos = pos % 8;
+      if ((i % 2) == 0)
+        merge_repetition(repetition_1, offset);
+      else
+        merge_repetition(repetition_2, offset);
+
+      if (i == 0)
+        offset += length_repetition_1;
+      else
+        offset = length_repetition_1 + length_repetition_2;
     }
   }
 
