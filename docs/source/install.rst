@@ -191,3 +191,23 @@ Run the configuration script with the extra flag:
     $ ../configure_cap -DENABLE_DOCUMENTATION=ON
 
 Open the file `index.html` in the directory `docs/html`.
+
+
+Install TPLs using spack
+------------------------
+
+Cap and its dependencies can be build using `spack <https://github.com/llnl/spack>`_. 
+After installing spack, you need to install the following packages:
+
+.. code::
+
+    $ spack install boost +graph +icu_support +mpi +python
+    $ spack install trilinos ~hypre ~mumps +boost ^boost+graph+icu_support+mpi+python 
+    $ spack install dealii~arpack~gsl~oce~petsc+trilinos+mpi \
+         ^trilinos~hypre~mumps ^boost+graph+icu_support+mpi+python
+    $ spack install py-mpi4py
+    $ spack install py-matplotlib
+    $ spack install py-h5py
+
+Before compiling Cap, you need to load the following modules: dealii, boost,
+mpi, cmake, python, py-mpi4py, py-matplotlib, py-parsing, py-numpy, and py-h5py.
