@@ -12,12 +12,14 @@ export PATH=${DUMMY}/bin:${PATH}
 ln -s /usr/bin/python3.5 ${DUMMY}/bin/python
 ln -s /usr/bin/clang-format-3.7 ${DUMMY}/bin/clang-format
 # build the code
+cd ${PREFIX}/source/cap
 rm -rf build
 mkdir build
 cd build
 #mkdir ${PREFIX}/build/cap
 #cd ${PREFIX}/build/cap
 cmake \
+    -G "Unix Makefiles" \
     -D CMAKE_BUILD_TYPE=Debug \
     -D CMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Weffc++"\
     -D CMAKE_CXX_COMPILER=mpicxx \
@@ -35,11 +37,11 @@ make -j${NPROC} -i
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
 ctest -j${NPROC} --no-compress-output -T Test
 
-cppcheck \
-    --std=c++11 \
-    --enable=all \
-    --inconclusive \
-    --xml --xml-version=2 \
-    -I ../cpp/source/dummy \
-    -I ../cpp/source/deal.II/dummy \
-    ../cpp 2> cppcheck.xml
+#cppcheck \
+#    --std=c++11 \
+#    --enable=all \
+#    --inconclusive \
+#    --xml --xml-version=2 \
+#    -I ../cpp/source/dummy \
+#    -I ../cpp/source/deal.II/dummy \
+#    ../cpp 2> cppcheck.xml
