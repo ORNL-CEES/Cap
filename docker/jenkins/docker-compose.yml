@@ -1,0 +1,12 @@
+version: '2'
+services:
+  slave:
+    build:
+      context: .
+      dockerfile: Dockerfile_slave
+    restart: always
+    ports:
+      - "2222:22"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/jenkins:/var/jenkins
