@@ -20,6 +20,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     
 # Copy SSH Jenkins credentials
 COPY jenkins_id_rsa.pub /root/.ssh/authorized_keys
+COPY docker-run.py /usr/local/bin/
 
 EXPOSE 22
 VOLUME /var/run/docker.sock
