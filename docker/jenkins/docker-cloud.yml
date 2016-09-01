@@ -9,4 +9,4 @@ jenkins:
     - '/home/qdi/jenkins:/var/jenkins_home'
     - '/home/qdi/letsencrypt/cert/cert.pem:/var/lib/jenkins/cert:ro'
     - '/home/qdi/letsencrypt/cert/privkey-rsa.pem:/var/lib/jenkins/pk:ro'
-
+    - '/home/qdi/.ssl/cathode.ornl.gov:/var/lib/docker/cathode.ornl.gov:ro'
