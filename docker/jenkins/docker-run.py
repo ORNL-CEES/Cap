@@ -7,6 +7,7 @@ Usage:
 
 from docker import Client
 import sys
+import os
 
 # Parse the configuration file that contains a dictionary
 with open(sys.argv[1]) as fin:
