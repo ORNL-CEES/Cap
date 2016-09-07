@@ -1,0 +1,13 @@
+type EIS
+
+frequency_upper_limit  1e+3 ; hertz
+frequency_lower_limit  1e-2 ; hertz
+steps_per_decade          6
+
+cycles                    2
+ignore_cycles             1
+steps_per_cycle         128
+harmonics                 1
+dc_voltage                0 ; volt
+amplitudes             5e-3 ; volt
+phases                    0 ; degree
