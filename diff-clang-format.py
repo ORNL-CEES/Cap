@@ -28,6 +28,8 @@ def diff_with_formatted_source(original_file, style, patch):
         Absolute path to the file to be formatted with clang-format.
     style : str
         Coding style.
+    patch : bool
+        Apply the diff patch to the original source file.
 
     Returns
     -------
@@ -72,7 +74,7 @@ def run(paths, file_extensions, style, config, patch):
     config : str or None
         Style configuration .clang-format file.
     patch : bool
-        Apply the diff patch to the original sources.
+        Apply the diff patch to the original source files.
 
     Returns
     -------

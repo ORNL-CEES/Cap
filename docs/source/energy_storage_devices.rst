@@ -18,7 +18,7 @@ conditions and return the voltage drop across itself and the electrical
 current that flows through it.
 
 The rest of this section describes the energy storage devices that are
-available in `Cap`, namely:
+available in Cap, namely:
 
     - Equivalent circuits
     - Supercapacitors

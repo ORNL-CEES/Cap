@@ -1,6 +1,6 @@
 Cap
 ===
-[![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)]()
+[![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)](https://github.com/ORNL-CEES/Cap/blob/master/LICENSE.md)
 
 Cap is an open-source software library for modeling energy storage devices.
 To get started, [checkout the documentation](https://cap.readthedocs.org).
