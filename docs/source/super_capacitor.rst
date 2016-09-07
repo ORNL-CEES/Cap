@@ -32,15 +32,12 @@ Geometry
         cathode_electrode_thickness 50.0e-4 ; [centimeter]
         cathode_collector_thickness  5.0e-4 ; [centimeter]
         geometric_area              25.0e-2 ; [square centimeter]
-        tab_height                   5.0e-4 ; [centimeter]
     }
 
-``mesh_file`` give the path to the triangulation. The dimension has to match
-``dim`` or an exception will be thrown.
-The width of each layer in the sandwich (anode collector, anode electrode,
+The thickness of each layer in the sandwich (anode collector, anode electrode,
 separator, cathode electrode, cathode current collector) can be adjusted
-independently from one another. The overall sandwich height and depth (in
-3-D) can be changed as well.
+independently from one another. The specified cross-sectional area applies to
+the whole stack.
 
 .. figure:: sandwich.png
     :figwidth: 400px
