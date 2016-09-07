@@ -402,8 +402,9 @@ void Geometry<dim>::convert_geometry_database(
       database->get<double>("separator_thickness") * cm_to_m;
   double cathode_thickness =
       database->get<double>("cathode_electrode_thickness") * cm_to_m;
-  double tab_height = database->get<double>("tab_height") * cm_to_m;
   double geometric_area = database->get<double>("geometric_area") * cm2_to_m2;
+  double tab_height =
+      database->get<double>("tab_height", 0.1 * sqrt(geometric_area)) * cm_to_m;
 
   if (collector_thickness !=
       database->get<double>("cathode_collector_thickness") * cm_to_m)
