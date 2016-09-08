@@ -1,0 +1,87 @@
+type SuperCapacitor
+dim  2
+
+geometry {
+    type supercapacitor
+    
+    anode_collector_thickness    5.0e-4 ; [centimeter]
+    anode_electrode_thickness   50.0e-4 ; [centimeter]
+    separator_thickness         25.0e-4 ; [centimeter]
+    cathode_electrode_thickness 50.0e-4 ; [centimeter]
+    cathode_collector_thickness  5.0e-4 ; [centimeter]
+    geometric_area              25.0e-2 ; [square centimeter]
+    tab_height                   5.0e-4 ; [centimeter]
+}
+
+solid_potential_component  0
+liquid_potential_component 1
+
+material_properties {
+    inhomogeneous true
+    parameters 1
+    parameter_0 {
+        path              electrolyte.electrical_resistivity
+        distribution_type uniform
+        range             1e3,1e4
+    }
+
+    anode {
+        type           porous_electrode
+        matrix_phase   electrode_material
+        solution_phase electrolyte
+    }
+    cathode {
+        type           porous_electrode
+        matrix_phase   electrode_material
+        solution_phase electrolyte
+    }
+    separator {
+        type           permeable_membrane
+        matrix_phase   separator_material
+        solution_phase electrolyte
+    }
+    collector {
+        type           current_collector
+        metal_foil     collector_material
+    }
+
+    separator_material {
+        void_volume_fraction             0.45      ;
+        tortuosity_factor                1.29      ;
+        pores_characteristic_dimension   1.5e-7    ; [centimeter]
+        pores_geometry_factor            2.0       ;
+        mass_density                     3.2       ; [gram per cubic centimeter]
+        heat_capacity                    1.2528e3  ; [joule per kilogram kelvin]
+        thermal_conductivity             0.0019e2  ; [watt per meter kelvin]
+    }
+    electrode_material {
+        differential_capacitance         3.134     ; [microfarad per square centimeter]
+        exchange_current_density         0.0       ; [ampere per square centimeter]
+        void_volume_fraction             0.52      ; 
+        tortuosity_factor                2.3       ; 
+        pores_characteristic_dimension   1.5e-7    ; [centimeter]
+        pores_geometry_factor            2.0       ; 
+        mass_density                     2.3       ; [gram per cubic centimeter]
+        electrical_resistivity           1.92      ; [ohm centimeter]
+        heat_capacity                    0.93e3    ; [joule per kilogram kelvin]
+        thermal_conductivity             0.0011e2  ; [watt per meter kelvin]
+    }
+    collector_material {
+        mass_density                     2.7       ; [gram per cubic centimeter]
+        electrical_resistivity          28.2e-7    ; [ohm centimeter]
+        heat_capacity                    2.7e3     ; [joule per kilogram kelvin]
+        thermal_conductivity           237.0       ; [watt per meter kelvin]
+    }
+    electrolyte {
+        mass_density                     1.2       ; [gram per cubic centimeter]
+        electrical_resistivity           5.5e3    ; [ohm centimeter]
+        heat_capacity                    0.0       ; [joule per kilogram kelvin]
+        thermal_conductivity             0.0       ; [watt per meter kelvin]
+    }
+}
+
+solver {
+    max_iter  2000
+    rel_tolerance 1.0e-14
+    abs_tolerance 1.0e-12
+}
