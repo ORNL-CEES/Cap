@@ -1,9 +1,9 @@
 Cap
 ===
-[![GitHub license](https://img.shields.io/github/license/ORNL-CEES/Cap.svg)](https://github.com/ORNL-CEES/Cap/blob/master/LICENSE.md)
 
 Cap is an open-source software library for modeling energy storage devices.
 To get started, [checkout the documentation](https://cap.readthedocs.org).
+
 
 Continuous Integration Status
 -----------------------------
@@ -29,6 +29,7 @@ without the need to constantly recompile.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/dalg24/cap.svg)](https://hub.docker.com/r/dalg24/cap)
 [![Image Layers](https://images.microbadger.com/badges/image/dalg24/cap.svg)](http://microbadger.com/images/dalg24/cap)
+
 
 Authors
 -------
