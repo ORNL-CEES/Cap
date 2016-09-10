@@ -3,14 +3,14 @@
 # number of processes with default value
 : ${NPROC:=2}
 # append the option flag --allow-run-as-root to mpiexec
-export DUMMY=/opt/dummy
-mkdir -p ${DUMMY}/bin
-echo '#!/usr/bin/env bash' > ${DUMMY}/bin/mpiexc
-echo '/usr/bin/mpiexec --allow-run-as-root "$@"' >> ${DUMMY}/bin/mpiexec
-chmod +x ${DUMMY}/bin/mpiexec
-export PATH=${DUMMY}/bin:${PATH}
-ln -s /usr/bin/python3.5 ${DUMMY}/bin/python
-ln -s /usr/bin/clang-format-3.7 ${DUMMY}/bin/clang-format
+cat > /usr/local/bin/mpiexec <<\EOF
+#!/usr/bin/env bash
+#/usr/bin/mpiexec --allow-run-as-root "$@"
+EOF
+chmod +x /usr/local/bin/mpiexec
+# make a couple aliases
+ln -s /usr/bin/python3.5 /usr/local/bin/python
+ln -s /usr/bin/clang-format-3.7 /usr/local/bin/clang-format
 # build the code
 mkdir ${PREFIX}/build/cap
 cd ${PREFIX}/build/cap
