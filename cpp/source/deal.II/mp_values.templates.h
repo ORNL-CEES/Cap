@@ -100,10 +100,9 @@ build_parameter(boost::property_tree::ptree const &parameter_database)
   }
   else if (distribution_type.compare("lognormal") == 0)
   {
-    auto const mean = parameter_database.get<double>("mean");
-    auto const standard_deviation =
-        parameter_database.get<double>("standard_deviation");
-    std::lognormal_distribution<double> distribution(mean, standard_deviation);
+    auto const location = parameter_database.get<double>("location");
+    auto const scale = parameter_database.get<double>("scale");
+    std::lognormal_distribution<double> distribution(location, scale);
     // ``mutable`` is required to allow the body to modify the distribution
     // because the operator() is non-const.
     return
