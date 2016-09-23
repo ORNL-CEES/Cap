@@ -5,7 +5,7 @@
 # append the option flag --allow-run-as-root to mpiexec
 cat > /usr/local/bin/mpiexec <<\EOF
 #!/usr/bin/env bash
-#/usr/bin/mpiexec --allow-run-as-root "$@"
+/usr/bin/mpiexec --allow-run-as-root "$@"
 EOF
 chmod +x /usr/local/bin/mpiexec
 # make a couple aliases
