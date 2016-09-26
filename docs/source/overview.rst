@@ -37,28 +37,9 @@ It has pycap already installed on it and comes with a few notebooks as example.
 
 ::
 
-    $ docker run -d \
+    $ docker run --rm -it \
           -p 8888:8888 \
           -v $PWD:/notebooks \
           dalg24/cap
 
-Open your web browser and follow ``http://<ip_address>:8888``
-where ``<ip_address>`` is the IP address of the machine with the Docker daemon
-running.
-
-- On OS X, the IP address can be obtained by:
-
-::
-
-    # assuming that you are running docker on the "default" VM
-    $ docker-machine ip default
-    192.168.99.100 # <- this is the machine ip address
-
-In that case you would copy/paste the url http://192.168.99.100:8888 into
-your browser address bar.
-
-- On Linux, you may access the notebook server from the browser using
-  http://localhost:8888. You may have use ``sudo`` to run the ``docker``
-  command. Please refer to the Docker documentation on how to create a
-  ``docker`` group and add your user to it if you want to avoid using
-  ``sudo`` each time.
+Open your web browser and follow ``http://localhost:8888``.
