@@ -255,3 +255,43 @@ BOOST_AUTO_TEST_CASE(check_repetitions)
 
   BOOST_CHECK(cells_done.size() == n_cells);
 }
+
+BOOST_AUTO_TEST_CASE(test_hyper_trapezoid_2d_geometry)
+{
+  boost::property_tree::ptree device_database;
+  boost::property_tree::info_parser::read_info("super_capacitor.info",
+                                               device_database);
+  boost::property_tree::ptree geometry_database;
+  boost::property_tree::info_parser::read_info("generate_mesh.info",
+                                               geometry_database);
+  std::vector<unsigned int> divisions(2);
+  // Collector
+  divisions[0] = 3;
+  divisions[1] = 2;
+  geometry_database.put("collector.divisions", cap::to_string(divisions));
+  // Anode
+  divisions[0] = 1;
+  divisions[1] = 1;
+  geometry_database.put("anode.shape", "hyper_trapezoid_1");
+  geometry_database.put("anode.divisions", cap::to_string(divisions));
+  // Separator
+  geometry_database.put("separator.shape", "hyper_trapezoid_2");
+  geometry_database.put("separator.divisions", cap::to_string(divisions));
+  // Cathode
+  geometry_database.put("cathode.shape", "hyper_trapezoid_3");
+  geometry_database.put("cathode.divisions", cap::to_string(divisions));
+
+  device_database.put_child("geometry", geometry_database);
+
+  std::shared_ptr<cap::EnergyStorageDevice> device =
+      cap::EnergyStorageDevice::build(device_database,
+                                      boost::mpi::communicator());
+  std::shared_ptr<cap::SuperCapacitor<2>> supercapacitor =
+      std::static_pointer_cast<cap::SuperCapacitor<2>>(device);
+  std::shared_ptr<cap::Geometry<2>> geometry = supercapacitor->get_geometry();
+  std::shared_ptr<dealii::distributed::Triangulation<2> const> triangulation =
+      geometry->get_triangulation();
+  const unsigned int n_cells = 240;
+  write_mesh("output_test_geometry_1.vtu", geometry->get_triangulation());
+  BOOST_CHECK(n_cells == triangulation->n_active_cells());
+}

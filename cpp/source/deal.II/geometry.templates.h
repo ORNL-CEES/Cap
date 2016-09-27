@@ -60,29 +60,164 @@ void check_no_overlap(std::unordered_map<std::string, std::set<T>> &map)
 }
 
 template <int dim>
+void build_general_cell(std::vector<dealii::Point<dim>> const vertices,
+                        dealii::distributed::Triangulation<dim> &tria)
+{
+  BOOST_ASSERT_MSG(vertices.size() == std::pow(2, dim),
+                   "Wrong number of vertices.");
+  // First create an hyper_cube and then deform it.
+  dealii::GridGenerator::hyper_cube(tria);
+
+  typename dealii::Triangulation<dim>::active_cell_iterator cell =
+      tria.begin_active();
+  for (unsigned int i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell;
+       ++i)
+  {
+    dealii::Point<dim> &v = cell->vertex(i);
+    v = vertices[i];
+  }
+}
+
+void build_trapezoid_1(dealii::Point<2> const &dimensions, double const edge,
+                       dealii::distributed::Triangulation<2> &tria)
+{
+  std::vector<dealii::Point<2>> vertices(4);
+  vertices[1][0] = dimensions[0];
+  vertices[2][1] = dimensions[1];
+  vertices[3][0] = dimensions[0] + edge;
+  vertices[3][1] = dimensions[1];
+
+  build_general_cell(vertices, tria);
+}
+
+void build_trapezoid_1(dealii::Point<3> const &, double const,
+                       dealii::distributed::Triangulation<3> &)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
+void build_trapezoid_2(dealii::Point<2> const &dimensions, double const edge,
+                       dealii::distributed::Triangulation<2> &tria)
+{
+  std::vector<dealii::Point<2>> vertices(4);
+  vertices[1][0] = dimensions[0] + 2. * edge;
+  vertices[2][0] = edge;
+  vertices[2][1] = dimensions[1];
+  vertices[3][0] = dimensions[0] + edge;
+  vertices[3][1] = dimensions[1];
+
+  build_general_cell(vertices, tria);
+}
+
+void build_trapezoid_2(dealii::Point<3> const &, double const,
+                       dealii::distributed::Triangulation<3> &)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
+void build_trapezoid_3(dealii::Point<2> const &dimensions, double const edge,
+                       dealii::distributed::Triangulation<2> &tria)
+{
+  std::vector<dealii::Point<2>> vertices(4);
+  vertices[0][0] = edge;
+  vertices[1][0] = dimensions[0] + edge;
+  vertices[2][1] = dimensions[1];
+  vertices[3][0] = dimensions[0] + edge;
+  vertices[3][1] = dimensions[1];
+
+  build_general_cell(vertices, tria);
+}
+
+void build_trapezoid_3(dealii::Point<3> const &, double const,
+                       dealii::distributed::Triangulation<3> &)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
+template <int dim>
 struct Component
 {
 public:
   Component(MPI_Comm mpi_communicator)
-      : box_dimensions(0), repetitions(0), triangulation(mpi_communicator),
+      : mpi_communicator(mpi_communicator), shape("hyper_rectangle"),
+        box_dimensions(0), divisions(0), triangulation(mpi_communicator),
         shift_vector()
   {
   }
 
-  Component(std::vector<dealii::Point<dim>> const &box,
-            std::vector<unsigned int> const &repetitions,
+  Component(std::string const &shape,
+            std::vector<dealii::Point<dim>> const &box,
+            std::vector<unsigned int> const &divisions,
             MPI_Comm mpi_communicator)
-      : box_dimensions(box), repetitions(repetitions),
-        triangulation(mpi_communicator), shift_vector()
+      : mpi_communicator(mpi_communicator), shape(shape), box_dimensions(box),
+        divisions(divisions), triangulation(mpi_communicator), shift_vector()
   {
   }
 
+  void build_triangulation();
+
+  static double &hyper_L_side();
+  MPI_Comm mpi_communicator;
+  std::string shape;
+  double offset;
   std::vector<dealii::Point<dim>> box_dimensions;
-  std::vector<unsigned int> repetitions;
+  std::vector<unsigned int> divisions;
   dealii::distributed::Triangulation<dim> triangulation;
   // The last shift that has been applied to the component.
   dealii::Tensor<1, dim> shift_vector;
 };
+
+template <int dim>
+void Component<dim>::build_triangulation()
+{
+  // Triangulation needs to be empty. If it is not, deal.II will throw an
+  // exception.
+  double const edge = 1e-5;
+  if (shape.compare("hyper_rectangle") == 0)
+  {
+    dealii::GridGenerator::subdivided_hyper_rectangle(
+        triangulation, divisions, box_dimensions[0], box_dimensions[1]);
+    offset = box_dimensions[1][0];
+  }
+  else if (shape.compare("hyper_trapezoid_1") == 0)
+  {
+    // Create the following trapezoid:
+    // 2---3
+    // |  /
+    // 0-1
+    build_trapezoid_1(box_dimensions[1], edge, triangulation);
+    offset = box_dimensions[1][0];
+  }
+  else if (shape.compare("hyper_trapezoid_2") == 0)
+  {
+    // Create the following trapezoid:
+    //   2-3
+    //  /   \
+    // 0-----1
+    build_trapezoid_2(box_dimensions[1], edge, triangulation);
+    offset = box_dimensions[1][0] + 1e-5;
+  }
+  else if (shape.compare("hyper_trapezoid_3") == 0)
+  {
+    // Create the following trapezoid:
+    // 2---3
+    //  \  |
+    //   0-1
+    build_trapezoid_3(box_dimensions[1], edge, triangulation);
+    offset = box_dimensions[1][0] + 1e-5;
+  }
+  else
+    throw std::runtime_error(shape +
+                             " triangulation has not been implemented.");
+}
+
+template <int dim>
+double &Component<dim>::hyper_L_side()
+{
+  static double *_hyper_L_side = new double();
+
+  return *_hyper_L_side;
+}
 
 template <int dim>
 dealii::Point<dim> transform_coll_a(dealii::Point<dim> const &in,
@@ -121,9 +256,11 @@ template <int dim>
 void read_component_database(boost::property_tree::ptree const &database,
                              Component<dim> &component)
 {
-  std::vector<unsigned int> repetitions =
+  std::vector<unsigned int> divisions =
       to_vector<unsigned int>(database.get<std::string>("divisions"));
-  component.repetitions = repetitions;
+  component.divisions = divisions;
+
+  component.shape = database.get("shape", "hyper_rectangle");
   // Add the origin points
   component.box_dimensions.push_back(dealii::Point<dim>());
   std::vector<double> box_dimensions =
@@ -150,7 +287,6 @@ void merge_components(Component<dim> &component, double const offset,
       triangulation, component.triangulation, tmp_triangulation);
   triangulation.clear();
   triangulation.copy_triangulation(tmp_triangulation);
-  //
   // collector_c only needs to be shifted vertically the first time
   if (component.shift_vector[dim - 1] != 0.)
     component.shift_vector[dim - 1] = 0.;
@@ -169,11 +305,11 @@ void build_triangulation(
   BOOST_ASSERT_MSG(components.size() != 0, "Number of components is zero.");
   triangulation.clear();
   triangulation.copy_triangulation(components[0]->triangulation);
-  double offset = components[0]->box_dimensions[1][0];
+  double offset = components[0]->offset;
   for (unsigned int i = 1; i < components.size(); ++i)
   {
     internal::merge_components(*components[i], offset, triangulation);
-    offset += components[i]->box_dimensions[1][0];
+    offset += components[i]->offset;
   }
 }
 }
@@ -495,8 +631,9 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
   boost::property_tree::ptree collector_database =
       database.get_child("collector");
   internal::read_component_database(collector_database, collector_a);
-  internal::Component<dim> collector_c(collector_a.box_dimensions,
-                                       collector_a.repetitions, _communicator);
+  internal::Component<dim> collector_c(collector_a.shape,
+                                       collector_a.box_dimensions,
+                                       collector_a.divisions, _communicator);
 
   // Read the data needed for the anode
   internal::Component<dim> anode(_communicator);
@@ -515,34 +652,25 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
   internal::read_component_database(separator_database, separator);
 
   // For now, we assume that the user does not create hanging nodes with the
-  // repetitions
+  // divisions
   // Create the triangulation for the anode.
-  dealii::GridGenerator::subdivided_hyper_rectangle(
-      anode.triangulation, anode.repetitions, anode.box_dimensions[0],
-      anode.box_dimensions[1]);
+  anode.build_triangulation();
   for (auto cell : anode.triangulation.cell_iterators())
     cell->set_material_id(*(*_materials)["anode"].begin());
   // Create the triangulation for the cathode.
-  dealii::GridGenerator::subdivided_hyper_rectangle(
-      cathode.triangulation, cathode.repetitions, cathode.box_dimensions[0],
-      cathode.box_dimensions[1]);
+  cathode.build_triangulation();
   for (auto cell : cathode.triangulation.cell_iterators())
     cell->set_material_id(*(*_materials)["cathode"].begin());
   // Create the triangulation for the seperator.
-  dealii::GridGenerator::subdivided_hyper_rectangle(
-      separator.triangulation, separator.repetitions,
-      separator.box_dimensions[0], separator.box_dimensions[1]);
+  separator.build_triangulation();
   for (auto cell : separator.triangulation.cell_iterators())
     cell->set_material_id(*(*_materials)["separator"].begin());
 
   // Create the triangulation for first collector.
   double const anode_dim = anode.box_dimensions[1][dim - 1];
   double const collector_dim = collector_a.box_dimensions[1][dim - 1];
-  double const delta_collector =
-      collector_dim / collector_a.repetitions[dim - 1];
-  dealii::GridGenerator::subdivided_hyper_rectangle(
-      collector_a.triangulation, collector_a.repetitions,
-      collector_a.box_dimensions[0], collector_a.box_dimensions[1]);
+  double const delta_collector = collector_dim / collector_a.divisions[dim - 1];
+  collector_a.build_triangulation();
   for (auto cell : collector_a.triangulation.cell_iterators())
     cell->set_material_id(*(*_materials)["collector"].begin());
   double const scale_factor_a = anode_dim / (collector_dim - delta_collector);
@@ -553,9 +681,7 @@ void Geometry<dim>::mesh_generator(boost::property_tree::ptree const &database)
 
   // Create the triangulation for the second collector. For now, we assume
   // that collector_a and collector_c have the same mesh.
-  dealii::GridGenerator::subdivided_hyper_rectangle(
-      collector_c.triangulation, collector_c.repetitions,
-      collector_c.box_dimensions[0], collector_c.box_dimensions[1]);
+  collector_c.build_triangulation();
   for (auto cell : collector_c.triangulation.cell_iterators())
     cell->set_material_id(*std::next((*_materials)["collector"].begin()));
   double const scale_factor_c = anode_dim / (collector_dim - delta_collector);
