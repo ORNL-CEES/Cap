@@ -1,4 +1,4 @@
-Cyclic voltammetry is a widely-used electrochemical technique to
+Cyclic Voltammetry (CV) is a widely-used electrochemical technique to
 investigate energy storage devices. It consists in measuring the current
 while varying linearly the voltage back and forth over a given range.
 
@@ -19,20 +19,18 @@ large currents on high-value capacitors.
 
 .. code-block:: python
 
-    from pycap import PropertyTree,EnergyStorageDevice,CyclicVoltammetry
+    from pycap import PropertyTree, CyclicVoltammetry
     
     # setup the experiment
-    ptree=PropertyTree()
-    ptree.put_double('initial_voltage',0)
-    ptree.put_double('final_voltage',0)
-    ptree.put_double('scan_limit_1',2.4)
-    ptree.put_double('scan_limit_2',-0.5)
-    ptree.put_double('scan_rate',100e-3)
-    ptree.put_double('step_size',5e-3)
-    ptree.put_int   ('cycles',2)
-    
-    cv=CyclicVoltammetry(ptree)
-
+    ptree = PropertyTree()
+    ptree.put_double('initial_voltage', 0) # volt
+    ptree.put_double('final_voltage', 0) # volt
+    ptree.put_double('scan_limit_1', 2.4) # volt
+    ptree.put_double('scan_limit_2', -0.5) # volt
+    ptree.put_double('scan_rate', 100e-3) # volt per second
+    ptree.put_double('step_size', 5e-3) # volt
+    ptree.put_int('cycles', 2)
+    cv = CyclicVoltammetry(ptree)
 
 
 Four parameters define the CV sweep range: The scan starts at

@@ -14,6 +14,8 @@ Cyclic voltammetry
 Electrochemical impedance spectroscopy
 --------------------------------------
 
+.. include:: electrochemical_impedance_spectroscopy.rst
+
 Ragone plot
 -----------
 Conceptually, the y-axis describes how much energy is available and the the
