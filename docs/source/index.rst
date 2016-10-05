@@ -16,7 +16,6 @@ Contents:
    energy_storage_devices
    electrochemical_techniques
    examples
-   reference
    faq
    acknowledgments
    appendix
