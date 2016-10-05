@@ -35,3 +35,9 @@ Authors
 -------
 * [Damien Lebrun-Grandie](https://github.com/dalg24)
 * [Bruno Turcksin](https://github.com/rombur)
+
+
+Acknowledgments
+---------------
+Cap has been supported by the Department of Energy (DOE) [DiaMonD
+project](http://dmd.mit.edu).
