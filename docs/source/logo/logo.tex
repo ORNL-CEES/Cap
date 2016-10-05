@@ -1,0 +1,13 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{fontawesome}
+\begin{document}
+\begin{tikzpicture}
+\begin{scope}[rotate=45]
+\draw[rounded corners,line width=0.25mm,top color=white,bottom color=blue!20](0,-0.75) -- (3,-0.75) -- (3,0.75) -- (0,0.75) -- cycle;
+\draw[line width=0.25mm,top color=white,bottom color=blue!20](3,-0.25) -- (3.15,-0.25) -- (3.15,0.15) -- (3,0.15) -- cycle;
+\node[rotate=45] at (1.5,0) {\Huge \faBolt \large \textbf{\textsf{\uppercase{Cap}}}};
+\node[rotate=45] at (2.75,0) {\large \faPlus};
+\end{scope}
+\end{tikzpicture}
+\end{document}
