@@ -1,5 +1,8 @@
 ## C++ format #################################################################
-find_program(CLANG_FORMAT_EXECUTABLE clang-format)
+find_program(CLANG_FORMAT_EXECUTABLE NAMES
+    clang-format-3.7
+    clang-format-mp-3.7
+)
 if(CLANG_FORMAT_EXECUTABLE)
     message("-- Found clang-format: ${CLANG_FORMAT_EXECUTABLE}")
 else()
@@ -21,6 +24,7 @@ add_custom_target(format-cpp
     ${CMAKE_BINARY_DIR}/diff-clang-format.py
         --file-extension='.h'
         --file-extension='.cc'
+        --binary=${CLANG_FORMAT_EXECUTABLE}
         --style=file
         --config=${CMAKE_SOURCE_DIR}/.clang-format
         --apply-patch
@@ -33,6 +37,7 @@ file(WRITE
     "${PYTHON_EXECUTABLE} "
     "${CMAKE_BINARY_DIR}/diff-clang-format.py "
     "--file-extension='.h' --file-extension='.cc' "
+    "--binary=${CLANG_FORMAT_EXECUTABLE} "
     "--style=file "
     "--config=${CMAKE_SOURCE_DIR}/.clang-format "
     "${CMAKE_SOURCE_DIR}/cpp"
