@@ -30,11 +30,11 @@ packages:
 
 .. code::
 
-    $ spack install boost +graph +icu_support +mpi +python
+    $ spack install boost +graph +icu +mpi +python
     $ spack install trilinos ~hypre ~mumps +boost \
-         ^boost+graph+icu_support+mpi+python
+         ^boost+graph+icu+mpi+python
     $ spack install dealii~arpack~gsl~oce~petsc+trilinos+mpi \
-         ^trilinos~hypre~mumps ^boost+graph+icu_support+mpi+python
+         ^trilinos~hypre~mumps ^boost+graph+icu+mpi+python
     $ spack install py-mpi4py
     $ spack install py-matplotlib
     $ spack install py-h5py
