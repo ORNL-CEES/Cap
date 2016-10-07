@@ -11,6 +11,9 @@ endif()
 if(ENABLE_FORMAT)
     include(CodeFormat)
 endif()
+if(ENABLE_COMPLETION)
+    include(CodeCompletion)
+endif()
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
