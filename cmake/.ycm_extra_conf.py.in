@@ -37,7 +37,6 @@ import ycm_core
 flags = [
 '-Wall',
 '-Wextra',
-'-Werror',
 '-pedantic',
 '-Wno-long-long',
 '-Wno-variadic-macros',
