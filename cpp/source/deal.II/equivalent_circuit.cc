@@ -10,6 +10,8 @@
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
+#include <deal.II/fe/fe_nothing.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <iostream>
 
 namespace cap
@@ -77,14 +79,17 @@ void compute_equivalent_circuit(
   std::shared_ptr<MPValues<2>> mp_values =
       std::make_shared<SuperCapacitorMPValues<2>>(mp_values_params);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
+  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(0),
+                                dealii::update_default);
+  fe_values.reinit(cell);
   // electrode
   cell->set_material_id(1); // <- matches the anode material_id in the
                             //    initializer list
   std::vector<double> electrode_solid_electrical_conductivity_values(1);
   std::vector<double> electrode_liquid_electrical_conductivity_values(1);
-  mp_values->get_values("solid_electrical_conductivity", cell,
+  mp_values->get_values("solid_electrical_conductivity", fe_values,
                         electrode_solid_electrical_conductivity_values);
-  mp_values->get_values("liquid_electrical_conductivity", cell,
+  mp_values->get_values("liquid_electrical_conductivity", fe_values,
                         electrode_liquid_electrical_conductivity_values);
   double const electrode_resistivity =
       (1.0 / electrode_solid_electrical_conductivity_values[0] +
@@ -95,13 +100,13 @@ void compute_equivalent_circuit(
   double const electrode_resistance =
       electrode_resistivity * electrode_width / cross_sectional_area;
   std::vector<double> electrode_specific_capacitance_values(1);
-  mp_values->get_values("specific_capacitance", cell,
+  mp_values->get_values("specific_capacitance", fe_values,
                         electrode_specific_capacitance_values);
   double const electrode_capacitance =
       electrode_specific_capacitance_values[0] * electrode_width *
       cross_sectional_area;
   std::vector<double> electrode_exchange_current_density_values(1);
-  mp_values->get_values("faradaic_reaction_coefficient", cell,
+  mp_values->get_values("faradaic_reaction_coefficient", fe_values,
                         electrode_exchange_current_density_values);
   double const electrode_leakage_resistance =
       1.0 / (electrode_exchange_current_density_values[0] * electrode_width *
@@ -121,7 +126,7 @@ void compute_equivalent_circuit(
   cell->set_material_id(2); // <- matches the separator material_id in the
                             //    initializer list
   std::vector<double> separator_liquid_electrical_conductivity_values(1);
-  mp_values->get_values("liquid_electrical_conductivity", cell,
+  mp_values->get_values("liquid_electrical_conductivity", fe_values,
                         separator_liquid_electrical_conductivity_values);
   double const separator_resistivity =
       1.0 / separator_liquid_electrical_conductivity_values[0];
@@ -136,7 +141,7 @@ void compute_equivalent_circuit(
   cell->set_material_id(4); // <- matches the collector  material_id in the
                             //    initializer list
   std::vector<double> collector_solid_electrical_conductivity_values(1);
-  mp_values->get_values("solid_electrical_conductivity", cell,
+  mp_values->get_values("solid_electrical_conductivity", fe_values,
                         collector_solid_electrical_conductivity_values);
   double const collector_resistivity =
       1.0 / collector_solid_electrical_conductivity_values[0];

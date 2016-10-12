@@ -214,14 +214,14 @@ void SuperCapacitorPostprocessor<dim>::reset(
     if (cell->is_locally_owned())
     {
       fe_values.reinit(cell);
-      this->mp_values->get_values("solid_electrical_conductivity", cell,
+      this->mp_values->get_values("solid_electrical_conductivity", fe_values,
                                   solid_electrical_conductivity_values);
-      this->mp_values->get_values("liquid_electrical_conductivity", cell,
+      this->mp_values->get_values("liquid_electrical_conductivity", fe_values,
                                   liquid_electrical_conductivity_values);
-      this->mp_values->get_values("density", cell, density_values);
-      this->mp_values->get_values("density_of_active_material", cell,
+      this->mp_values->get_values("density", fe_values, density_values);
+      this->mp_values->get_values("density_of_active_material", fe_values,
                                   density_of_active_material_values);
-      this->mp_values->get_values("specific_surface_area", cell,
+      this->mp_values->get_values("specific_surface_area", fe_values,
                                   specific_surface_area_values);
       if (*std::max_element(solid_electrical_conductivity_values.begin(),
                             solid_electrical_conductivity_values.end()) >
@@ -291,7 +291,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
            it != this->debug_material_properties.end(); ++it)
       {
         std::vector<double> values(n_q_points);
-        this->mp_values->get_values(*it, cell, values);
+        this->mp_values->get_values(*it, fe_values, values);
         double cell_averaged_value = 0.0;
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
         {
@@ -399,7 +399,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
             {
               fe_face_values.reinit(cell, face);
               this->mp_values->get_values(
-                  "solid_electrical_conductivity", cell,
+                  "solid_electrical_conductivity", fe_values,
                   face_solid_electrical_conductivity_values); // TODO: should
                                                               // take
                                                               // face as an

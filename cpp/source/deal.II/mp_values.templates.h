@@ -17,30 +17,31 @@ namespace cap
 //////////////////////// COMPOSITE MAT /////////////////////////////////////////
 template <int dim>
 void CompositeMat<dim>::get_values(std::string const &key,
-                                   active_cell_iterator const &cell,
+                                   dealii::FEValues<dim> const &fe_values,
                                    std::vector<double> &values) const
 
 {
+  auto cell = fe_values.get_cell();
   dealii::types::material_id const material_id = cell->material_id();
   auto got = _materials.find(material_id);
   if (got == _materials.end())
     throw std::runtime_error("Invalid material id " +
                              std::to_string(material_id));
   auto material = got->second;
-  material->get_values(key, cell, values);
+  material->get_values(key, fe_values, values);
 }
 
 //////////////////////// COMPOSITE PRO /////////////////////////////////////////
 template <int dim>
 void CompositePro<dim>::get_values(std::string const &key,
-                                   active_cell_iterator const &cell,
+                                   dealii::FEValues<dim> const &fe_values,
                                    std::vector<double> &values) const
 {
   auto got = _properties.find(key);
   if (got == _properties.end())
     throw std::runtime_error("Invalid material property " + key);
   auto property = got->second;
-  property->get_values(key, cell, values);
+  property->get_values(key, fe_values, values);
 }
 
 //////////////////////// UNIFORM CONSTANT //////////////////////////////////////
@@ -51,12 +52,12 @@ UniformConstantMPValues<dim>::UniformConstantMPValues(double const &val)
 }
 
 template <int dim>
-void UniformConstantMPValues<dim>::get_values(std::string const &key,
-                                              active_cell_iterator const &cell,
-                                              std::vector<double> &values) const
+void UniformConstantMPValues<dim>::get_values(
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
+    std::vector<double> &values) const
 {
   std::ignore = key;
-  std::ignore = cell;
+  std::ignore = fe_values;
   std::fill(values.begin(), values.end(), _val);
 }
 
@@ -236,14 +237,15 @@ InhomogeneousSuperCapacitorMPValues<dim>::InhomogeneousSuperCapacitorMPValues(
 
 template <int dim>
 void InhomogeneousSuperCapacitorMPValues<dim>::get_values(
-    std::string const &key, active_cell_iterator const &cell,
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
     std::vector<double> &values) const
 {
+  auto cell = fe_values.get_cell();
   auto got = _map.find(cell->id());
   if (got == _map.end())
     throw std::runtime_error("Invalid cell property " + cell->id().to_string());
   auto property = got->second;
-  property->get_values(key, cell, values);
+  property->get_values(key, fe_values, values);
 }
 
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
