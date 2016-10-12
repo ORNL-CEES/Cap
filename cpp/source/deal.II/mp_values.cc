@@ -29,5 +29,7 @@ template class CompositePro<2>;
 template class CompositePro<3>;
 template class UniformConstantMPValues<2>;
 template class UniformConstantMPValues<3>;
+template class FunctionSpaceMPValues<2>;
+template class FunctionSpaceMPValues<3>;
 
 } // end samespace cap

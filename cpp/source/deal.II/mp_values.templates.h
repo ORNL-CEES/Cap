@@ -58,6 +58,9 @@ void UniformConstantMPValues<dim>::get_values(
 {
   std::ignore = key;
   std::ignore = fe_values;
+  BOOST_ASSERT_MSG(fe_values.get_quadrature().size() == values.size(),
+                   "values must be the same size as the quadrature rule"
+                   "in MPValues::get_values()");
   std::fill(values.begin(), values.end(), _val);
 }
 
@@ -444,6 +447,30 @@ MetalFoilMPValues<dim>::MetalFoilMPValues(
                std::make_shared<UniformConstantMPValues<dim>>(mass_density));
   std::ignore = heat_capacity;
   std::ignore = thermal_conductivity;
+}
+
+template <int dim>
+FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
+    std::shared_ptr<dealii::Function<dim>> const &function)
+    : _function(function)
+{
+}
+
+template <int dim>
+void FunctionSpaceMPValues<dim>::get_values(
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
+    std::vector<double> &values) const
+{
+  std::ignore = key;
+  unsigned int n_q_points = fe_values.n_quadrature_points;
+  auto const &points = fe_values.get_quadrature_points();
+  BOOST_ASSERT_MSG(points.size() == values.size(),
+                   "values must be the same size as the quadrature rule"
+                   "in MPValues::get_values()");
+  for (unsigned int q = 0; q < n_q_points; ++q)
+  {
+    values[q] = _function->value(points[q]);
+  }
 }
 
 } // end namespace cap

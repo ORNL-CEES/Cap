@@ -11,6 +11,7 @@
 #include <cap/geometry.h>
 #include <deal.II/grid/cell_id.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/base/function.h>
 #include <boost/property_tree/ptree.hpp>
 
 namespace cap
@@ -89,6 +90,25 @@ public:
 protected:
   // get_values(...) will assign _val to all elements in the vector values.
   double _val;
+};
+
+template <int dim>
+class FunctionSpaceMPValues : public MPValues<dim>
+{
+public:
+  FunctionSpaceMPValues(std::shared_ptr<dealii::Function<dim>> const &function);
+
+  /*!
+    \note
+    Here \p fe_values must be constructed with the flag \c
+    dealii::update_quadrature_points.
+  */
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
+                  std::vector<double> &values) const override;
+
+private:
+  std::shared_ptr<dealii::Function<dim>> const _function;
 };
 
 template <int dim>
