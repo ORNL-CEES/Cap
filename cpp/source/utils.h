@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace cap
 {
@@ -18,6 +19,10 @@ std::vector<T> to_vector(std::string const &s);
 
 template <typename T>
 std::string to_string(std::vector<T> const &v);
+
+template <typename T>
+std::map<std::string, T> to_map(std::string const &s);
+
 } // end namespace cap
 
 #endif // CAP_UTILS_H

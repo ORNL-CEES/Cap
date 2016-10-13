@@ -14,6 +14,18 @@
 namespace cap
 {
 
+namespace internal
+{
+void filter_boolean(std::string &b)
+{
+  boost::algorithm::to_lower(b);
+  if (b.compare("true") == 0)
+    b = "1";
+  else if (b.compare("false") == 0)
+    b = "0";
+}
+}
+
 template <typename T>
 std::vector<T> to_vector(std::string const &s)
 {
@@ -24,13 +36,7 @@ std::vector<T> to_vector(std::string const &s)
   {
     boost::algorithm::trim(item);
     if (std::is_same<bool, T>::value)
-    {
-      boost::algorithm::to_lower(item);
-      if (item.compare("true") == 0)
-        item = "1";
-      else if (item.compare("false") == 0)
-        item = "0";
-    }
+      internal::filter_boolean(item);
     v.push_back(boost::lexical_cast<T>(item));
   }
   return v;
@@ -45,6 +51,27 @@ std::string to_string(std::vector<T> const &v)
     s.append(boost::lexical_cast<std::string>(item) + ",");
   }
   return s;
+}
+
+template <typename T>
+std::map<std::string, T> to_map(std::string const &s)
+{
+  std::map<std::string, T> m;
+  std::vector<std::string> pairs;
+  boost::algorithm::split(pairs, s, boost::algorithm::is_any_of(","));
+  for (auto const &p : pairs)
+  {
+    std::vector<std::string> kv;
+    boost::algorithm::split(kv, p, boost::algorithm::is_any_of("="));
+    if (kv.size() != 2)
+      throw std::runtime_error("invalid key-value pair " + p);
+    for (auto &x : kv)
+      boost::algorithm::trim(x);
+    if (std::is_same<bool, T>::value)
+      internal::filter_boolean(kv[1]);
+    m.emplace(kv[0], boost::lexical_cast<T>(kv[1]));
+  }
+  return m;
 }
 
 } // end namespace cap

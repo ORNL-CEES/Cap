@@ -13,6 +13,11 @@
 namespace cap
 {
 
+template std::map<std::string, int> to_map(std::string const &s);
+template std::map<std::string, double> to_map(std::string const &s);
+template std::map<std::string, std::string> to_map(std::string const &s);
+template std::map<std::string, bool> to_map(std::string const &s);
+
 template std::vector<unsigned int> to_vector(std::string const &s);
 template std::vector<int> to_vector(std::string const &s);
 template std::vector<float> to_vector(std::string const &s);
