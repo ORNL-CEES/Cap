@@ -139,7 +139,8 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   dealii::QGauss<dim> quadrature_rule(fe.degree + 1);
   dealii::FEValues<dim> fe_values(
       fe, quadrature_rule, dealii::update_values | dealii::update_gradients |
-                               dealii::update_JxW_values);
+                               dealii::update_JxW_values |
+                               dealii::update_quadrature_points);
 
   unsigned int const dofs_per_cell = fe.dofs_per_cell;
   unsigned int const n_q_points = quadrature_rule.size();
@@ -238,9 +239,10 @@ void ElectrochemicalPhysics<dim>::assemble_system(
         electrochemical_parameters->constant_current_density;
     dealii::QGauss<dim - 1> face_quadrature_rule(fe.degree + 1);
     unsigned int const n_face_q_points = face_quadrature_rule.size();
-    dealii::FEFaceValues<dim> fe_face_values(fe, face_quadrature_rule,
-                                             dealii::update_values |
-                                                 dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(
+        fe, face_quadrature_rule, dealii::update_values |
+                                      dealii::update_JxW_values |
+                                      dealii::update_quadrature_points);
     for (auto cell : dof_handler.active_cell_iterators())
       if (cell->is_locally_owned() && cell->at_boundary())
       {
