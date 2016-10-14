@@ -14,10 +14,12 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/math/special_functions/cos_pi.hpp>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_nothing.h>
 #include <deal.II/base/quadrature_lib.h>
 
@@ -42,6 +44,54 @@ BOOST_AUTO_TEST_CASE(fe_values)
   cell->set_material_id(255);
   BOOST_TEST(cell->material_id() == 255);
   BOOST_TEST(fe_values.get_cell()->material_id() == 255);
+}
+
+// space varying material property built on top of dealii::Function<dim>
+BOOST_AUTO_TEST_CASE(function_space, *boost::unit_test::tolerance(1e-15))
+{
+  int constexpr dim = 2;
+  std::shared_ptr<cap::MPValues<dim>> mp_values;
+
+  // make a dummy triangulation to get an active cell iterator
+  dealii::Triangulation<dim> triangulation;
+  dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::DoFHandler<dim> dof_handler(triangulation);
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+
+  std::vector<dealii::Point<dim>> points = {{0, 0}, {0, 1}, {0.5, 0.5}, {1, 1}};
+  // NOTE: I tried with dealii::update_default but I got a memory access
+  // violation instead of some deal.II exception as I expected...
+  // I was using deal.II in release mode.
+  dealii::FEValues<dim> fe_values(dealii::FE_Q<dim>(1),
+                                  dealii::Quadrature<dim>(points),
+                                  dealii::update_quadrature_points);
+  fe_values.reinit(cell);
+
+  boost::property_tree::ptree ptree;
+  BOOST_CHECK_THROW(std::make_shared<cap::FunctionSpaceMPValues<dim>>(ptree),
+                    boost::property_tree::ptree_bad_path);
+  ptree.put("expression", "2*x");
+  mp_values = std::make_shared<cap::FunctionSpaceMPValues<2>>(ptree);
+  // in the same way as UniformConstantMPValues, the key is ignored when calling
+  // get_values()
+  auto const key = "key does not matter";
+  std::vector<double> values;
+  values.resize(points.size());
+  mp_values->get_values(key, fe_values, values);
+  for (std::size_t p = 0; p < points.size(); ++p)
+    BOOST_TEST(values[p] == 2 * points[p][0]);
+  //  BOOST_CHECK_THROW(mp_values->get_values(key, fe_values, values),
+  //                    dealii::ExceptionBase);
+
+  ptree.clear();
+  ptree.put("variables", "x0,x1");
+  ptree.put("expression", "cos(pi*x1)");
+  ptree.put("constants", "pi=3.1415926535897932384");
+  mp_values = std::make_shared<cap::FunctionSpaceMPValues<2>>(ptree);
+  mp_values->get_values(key, fe_values, values);
+  for (std::size_t p = 0; p < points.size(); ++p)
+    BOOST_TEST(values[p] == boost::math::cos_pi(points[p][1]));
 }
 
 // demonstrate how unifom constant and composite properties are used
