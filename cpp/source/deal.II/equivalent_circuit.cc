@@ -79,7 +79,7 @@ void compute_equivalent_circuit(
   std::shared_ptr<MPValues<2>> mp_values =
       std::make_shared<SuperCapacitorMPValues<2>>(mp_values_params);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
-  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(0),
+  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(1),
                                 dealii::update_default);
   fe_values.reinit(cell);
   // electrode
