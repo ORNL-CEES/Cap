@@ -97,6 +97,7 @@ class FunctionSpaceMPValues : public MPValues<dim>
 {
 public:
   FunctionSpaceMPValues(std::shared_ptr<dealii::Function<dim>> const &function);
+  FunctionSpaceMPValues(boost::property_tree::ptree const &ptree);
 
   /*!
     \note

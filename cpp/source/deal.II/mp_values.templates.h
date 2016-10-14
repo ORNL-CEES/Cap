@@ -7,6 +7,7 @@
 
 #include <cap/mp_values.h>
 #include <cap/utils.h>
+#include <deal.II/base/function_parser.h>
 #include <random>
 #include <tuple>
 #include <stdexcept>
@@ -454,6 +455,21 @@ FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
     std::shared_ptr<dealii::Function<dim>> const &function)
     : _function(function)
 {
+}
+
+template <int dim>
+FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
+    boost::property_tree::ptree const &ptree)
+    : _function(std::make_shared<dealii::FunctionParser<dim>>())
+{
+  auto const variables =
+      ptree.get<std::string>("variables", dim == 2 ? "x,y" : "x,y,z");
+  auto const expression = ptree.get<std::string>("expression");
+  auto const constants =
+      to_map<double>(ptree.get<std::string>("constants", ""));
+
+  std::dynamic_pointer_cast<dealii::FunctionParser<dim>>(_function)
+      ->initialize(variables, expression, constants);
 }
 
 template <int dim>
