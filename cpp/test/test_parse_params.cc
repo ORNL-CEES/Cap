@@ -123,4 +123,6 @@ BOOST_AUTO_TEST_CASE(to_map)
   BOOST_TEST(!euro["ch"]);
   auto capitals = cap::to_map<std::string>(" belgium=   brussels  ");
   BOOST_TEST(capitals["belgium"].compare("brussels") == 0);
+  auto empty = cap::to_map<std::string>("  ");
+  BOOST_TEST(empty.empty());
 }

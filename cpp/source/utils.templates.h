@@ -8,6 +8,7 @@
 #include <cap/utils.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include <boost/foreach.hpp>
 #include <type_traits>
 
@@ -57,6 +58,9 @@ template <typename T>
 std::map<std::string, T> to_map(std::string const &s)
 {
   std::map<std::string, T> m;
+  // return if the string is all whitespaces
+  if (!boost::regex_search(s, boost::regex("[^\\s]")))
+    return m;
   std::vector<std::string> pairs;
   boost::algorithm::split(pairs, s, boost::algorithm::is_any_of(","));
   for (auto const &p : pairs)
