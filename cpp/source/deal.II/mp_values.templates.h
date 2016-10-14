@@ -406,6 +406,12 @@ PorousElectrodeMPValues<dim>::PorousElectrodeMPValues(
       .emplace("density_of_active_material",
                std::make_shared<UniformConstantMPValues<dim>>(
                    (1.0 - void_volume_fraction) * mass_density));
+
+  auto custom = matrix_phase_database->get_child_optional(
+      "custom_liquid_electrical_conductivity");
+  if (custom)
+    (this->_properties)["liquid_electrical_conductivity"] =
+        std::make_shared<FunctionSpaceMPValues<dim>>(*custom);
 }
 
 //////////////////////// METAL FOIL ////////////////////////////////////////////

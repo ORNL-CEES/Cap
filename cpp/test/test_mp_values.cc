@@ -276,6 +276,58 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
                     std::runtime_error);
 }
 
+BOOST_AUTO_TEST_CASE(custom_liquid_electrical_conductivity)
+{
+  boost::mpi::communicator world;
+
+  // Use the standard input to build a SuperCapacitor
+  boost::property_tree::ptree ptree;
+  boost::property_tree::read_info("super_capacitor.info", ptree);
+
+  // Extract the section for the material properties
+  auto database = std::make_shared<boost::property_tree::ptree>(
+      ptree.get_child("material_properties"));
+
+  // Use expression for the liquid electrical conductivity
+  std::string prefix =
+      "separator_material.custom_liquid_electrical_conductivity.";
+  database->put(prefix + "constants", "pi=3.14");
+  database->put(prefix + "expression", "-pi");
+  prefix = "electrode_material.custom_liquid_electrical_conductivity.";
+  database->put(prefix + "expression", "1.41");
+
+  // Create an standard homogeneous SuperCapacitorMPValues using the build(...)
+  // method which is static.
+  int constexpr dim = 2;
+  cap::MPValuesParameters<dim> params(database);
+  params.geometry = std::make_shared<cap::Geometry<dim>>(
+      std::make_shared<boost::property_tree::ptree>(
+          ptree.get_child("geometry")),
+      world);
+  std::shared_ptr<cap::MPValues<dim>> mp_values =
+      cap::SuperCapacitorMPValuesFactory<dim>::build(params);
+
+  dealii::FEValues<dim> fe_values(dealii::FE_Q<dim>(1), dealii::QGauss<dim>(1),
+                                  dealii::update_quadrature_points);
+
+  dealii::DoFHandler<dim> dof_handler(*params.geometry->get_triangulation());
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+  fe_values.reinit(cell);
+
+  std::vector<double> values(1);
+
+  // NOTE:  The following matches material ids in
+  // Geometry<dim>::fill_material_and_boundary_maps()
+  // set anode material id
+  cell->set_material_id(0);
+  mp_values->get_values("liquid_electrical_conductivity", fe_values, values);
+  BOOST_TEST(values[0] == 1.41);
+  cell->set_material_id(1);
+  mp_values->get_values("liquid_electrical_conductivity", fe_values, values);
+  BOOST_TEST(values[0] == -3.14);
+}
+
 BOOST_AUTO_TEST_CASE(test_mp_values)
 {
   // Fill in the geometry database
