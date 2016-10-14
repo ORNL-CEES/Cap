@@ -113,7 +113,9 @@ BOOST_AUTO_TEST_CASE(mp_values)
 
   // create a vector
   std::vector<double> values;
-  // note that `MPValues::get_values(...)` does not allocate memory
+  // note that `MPValues::get_values(...)` does not allocate memory.
+  // the user is responsible for passing `values` with the right size.
+  values.resize(fe_values.get_quadrature().size());
 
   // build a constant uniform property
   double const value = 3.14;
@@ -121,11 +123,6 @@ BOOST_AUTO_TEST_CASE(mp_values)
 
   // key property name is ignored for constant uniform property
   mp_values->get_values("doesnotmatter", fe_values, values);
-  // vector is still empty
-  BOOST_TEST(values.empty());
-  // now resize it and try again
-  values.resize(3, 0.0);
-  mp_values->get_values("", fe_values, values);
   // all constant uniform property do is a `std::fill(...)`
   for (auto const &v : values)
     BOOST_TEST(v == value);
@@ -455,7 +452,7 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
 
   dealii::DoFHandler<2> dof_handler(*(geometry->get_triangulation()));
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
-  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(0),
+  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(1),
                                 dealii::update_default);
   fe_values.reinit(cell);
 
