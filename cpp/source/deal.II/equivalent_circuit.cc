@@ -10,7 +10,7 @@
 #include <deal.II/base/types.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
-#include <deal.II/fe/fe_nothing.h>
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <iostream>
 
@@ -58,7 +58,9 @@ void compute_equivalent_circuit(
   std::shared_ptr<dealii::distributed::Triangulation<2>> triangulation(
       new dealii::distributed::Triangulation<2>(MPI_COMM_WORLD));
   dealii::GridGenerator::hyper_cube(*triangulation);
+  dealii::FE_Q<2> fe(1);
   dealii::DoFHandler<2> dof_handler(*triangulation);
+  dof_handler.distribute_dofs(fe);
   mp_values_params.geometry = std::make_shared<Geometry<2>>(
       triangulation,
       std::make_shared<std::unordered_map<
@@ -79,7 +81,7 @@ void compute_equivalent_circuit(
   std::shared_ptr<MPValues<2>> mp_values =
       std::make_shared<SuperCapacitorMPValues<2>>(mp_values_params);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
-  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(1),
+  dealii::FEValues<2> fe_values(fe, dealii::QGauss<2>(1),
                                 dealii::update_default);
   fe_values.reinit(cell);
   // electrode

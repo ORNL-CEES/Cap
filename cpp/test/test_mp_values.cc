@@ -20,7 +20,6 @@
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/fe_nothing.h>
 #include <deal.II/base/quadrature_lib.h>
 
 BOOST_AUTO_TEST_CASE(fe_values)
@@ -32,18 +31,19 @@ BOOST_AUTO_TEST_CASE(fe_values)
   int constexpr dim = 3;
   dealii::Triangulation<dim> triangulation;
   dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
   dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<dim>::active_cell_iterator cell =
       dof_handler.begin_active();
-  dealii::FEValues<dim> fe_values(dealii::FE_Nothing<dim>(),
-                                  dealii::QGauss<dim>(0),
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
                                   dealii::update_default);
   fe_values.reinit(cell);
-  BOOST_TEST(cell->material_id() != 255);
-  BOOST_TEST(fe_values.get_cell()->material_id() != 255);
-  cell->set_material_id(255);
-  BOOST_TEST(cell->material_id() == 255);
-  BOOST_TEST(fe_values.get_cell()->material_id() == 255);
+  BOOST_TEST(cell->material_id() != 99);
+  BOOST_TEST(fe_values.get_cell()->material_id() != 99);
+  cell->set_material_id(99);
+  BOOST_TEST(cell->material_id() == 99);
+  BOOST_TEST(fe_values.get_cell()->material_id() == 99);
 }
 
 // space varying material property built on top of dealii::Function<dim>
@@ -55,7 +55,9 @@ BOOST_AUTO_TEST_CASE(function_space, *boost::unit_test::tolerance(1e-15))
   // make a dummy triangulation to get an active cell iterator
   dealii::Triangulation<dim> triangulation;
   dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
   dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<dim>::active_cell_iterator cell =
       dof_handler.begin_active();
 
@@ -63,8 +65,7 @@ BOOST_AUTO_TEST_CASE(function_space, *boost::unit_test::tolerance(1e-15))
   // NOTE: I tried with dealii::update_default but I got a memory access
   // violation instead of some deal.II exception as I expected...
   // I was using deal.II in release mode.
-  dealii::FEValues<dim> fe_values(dealii::FE_Q<dim>(1),
-                                  dealii::Quadrature<dim>(points),
+  dealii::FEValues<dim> fe_values(fe, dealii::Quadrature<dim>(points),
                                   dealii::update_quadrature_points);
   fe_values.reinit(cell);
 
@@ -103,11 +104,12 @@ BOOST_AUTO_TEST_CASE(mp_values)
   // make a dummy triangulation to get an active cell iterator
   dealii::Triangulation<dim> triangulation;
   dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
   dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<dim>::active_cell_iterator cell =
       dof_handler.begin_active();
-  dealii::FEValues<dim> fe_values(dealii::FE_Nothing<dim>(),
-                                  dealii::QGauss<dim>(0),
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
                                   dealii::update_default);
   fe_values.reinit(cell);
 
@@ -304,10 +306,12 @@ BOOST_AUTO_TEST_CASE(custom_liquid_electrical_conductivity)
   std::shared_ptr<cap::MPValues<dim>> mp_values =
       cap::SuperCapacitorMPValuesFactory<dim>::build(params);
 
-  dealii::FEValues<dim> fe_values(dealii::FE_Q<dim>(1), dealii::QGauss<dim>(1),
+  dealii::FE_Q<dim> fe(1);
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
                                   dealii::update_quadrature_points);
 
   dealii::DoFHandler<dim> dof_handler(*params.geometry->get_triangulation());
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<dim>::active_cell_iterator cell =
       dof_handler.begin_active();
   fe_values.reinit(cell);
@@ -450,9 +454,11 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   std::shared_ptr<cap::MPValues<2>> mp_values =
       std::make_shared<cap::SuperCapacitorMPValues<2>>(params);
 
+  dealii::FE_Q<2> fe(1);
   dealii::DoFHandler<2> dof_handler(*(geometry->get_triangulation()));
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
-  dealii::FEValues<2> fe_values(dealii::FE_Nothing<2>(), dealii::QGauss<2>(1),
+  dealii::FEValues<2> fe_values(fe, dealii::QGauss<2>(1),
                                 dealii::update_default);
   fe_values.reinit(cell);
 
