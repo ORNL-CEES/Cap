@@ -14,9 +14,86 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/math/special_functions/cos_pi.hpp>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/dofs/dof_handler.h>
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/base/quadrature_lib.h>
+
+BOOST_AUTO_TEST_CASE(fe_values)
+{
+  // MPValues::get_values has recently changed and takes fe_values instead of
+  // cell.  Here we check that if the cell material_id changes, we do not need
+  // to call fe_values.reinit(cell) again.  This is more intended to make sure
+  // we understand how dealii::FEValues behaves than to actually test anything.
+  int constexpr dim = 3;
+  dealii::Triangulation<dim> triangulation;
+  dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
+  dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
+                                  dealii::update_default);
+  fe_values.reinit(cell);
+  BOOST_TEST(cell->material_id() != 99);
+  BOOST_TEST(fe_values.get_cell()->material_id() != 99);
+  cell->set_material_id(99);
+  BOOST_TEST(cell->material_id() == 99);
+  BOOST_TEST(fe_values.get_cell()->material_id() == 99);
+}
+
+// space varying material property built on top of dealii::Function<dim>
+BOOST_AUTO_TEST_CASE(function_space, *boost::unit_test::tolerance(1e-15))
+{
+  int constexpr dim = 2;
+  std::shared_ptr<cap::MPValues<dim>> mp_values;
+
+  // make a dummy triangulation to get an active cell iterator
+  dealii::Triangulation<dim> triangulation;
+  dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
+  dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+
+  std::vector<dealii::Point<dim>> points = {{0, 0}, {0, 1}, {0.5, 0.5}, {1, 1}};
+  // NOTE: I tried with dealii::update_default but I got a memory access
+  // violation instead of some deal.II exception as I expected...
+  // I was using deal.II in release mode.
+  dealii::FEValues<dim> fe_values(fe, dealii::Quadrature<dim>(points),
+                                  dealii::update_quadrature_points);
+  fe_values.reinit(cell);
+
+  boost::property_tree::ptree ptree;
+  BOOST_CHECK_THROW(std::make_shared<cap::FunctionSpaceMPValues<dim>>(ptree),
+                    boost::property_tree::ptree_bad_path);
+  ptree.put("expression", "2*x");
+  mp_values = std::make_shared<cap::FunctionSpaceMPValues<2>>(ptree);
+  // in the same way as UniformConstantMPValues, the key is ignored when calling
+  // get_values()
+  auto const key = "key does not matter";
+  std::vector<double> values;
+  values.resize(points.size());
+  mp_values->get_values(key, fe_values, values);
+  for (std::size_t p = 0; p < points.size(); ++p)
+    BOOST_TEST(values[p] == 2 * points[p][0]);
+  //  BOOST_CHECK_THROW(mp_values->get_values(key, fe_values, values),
+  //                    dealii::ExceptionBase);
+
+  ptree.clear();
+  ptree.put("variables", "x0,x1");
+  ptree.put("expression", "cos(pi*x1)");
+  ptree.put("constants", "pi=3.1415926535897932384");
+  mp_values = std::make_shared<cap::FunctionSpaceMPValues<2>>(ptree);
+  mp_values->get_values(key, fe_values, values);
+  for (std::size_t p = 0; p < points.size(); ++p)
+    BOOST_TEST(values[p] == boost::math::cos_pi(points[p][1]));
+}
 
 // demonstrate how unifom constant and composite properties are used
 BOOST_AUTO_TEST_CASE(mp_values)
@@ -27,25 +104,27 @@ BOOST_AUTO_TEST_CASE(mp_values)
   // make a dummy triangulation to get an active cell iterator
   dealii::Triangulation<dim> triangulation;
   dealii::GridGenerator::hyper_cube(triangulation);
+  dealii::FE_Q<dim> fe(1);
   dealii::DoFHandler<dim> dof_handler(triangulation);
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<dim>::active_cell_iterator cell =
       dof_handler.begin_active();
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
+                                  dealii::update_default);
+  fe_values.reinit(cell);
 
   // create a vector
   std::vector<double> values;
-  // note that `MPValues::get_values(...)` does not allocate memory
+  // note that `MPValues::get_values(...)` does not allocate memory.
+  // the user is responsible for passing `values` with the right size.
+  values.resize(fe_values.get_quadrature().size());
 
   // build a constant uniform property
   double const value = 3.14;
   mp_values = std::make_shared<cap::UniformConstantMPValues<dim>>(value);
 
   // key property name is ignored for constant uniform property
-  mp_values->get_values("doesnotmatter", cell, values);
-  // vector is still empty
-  BOOST_TEST(values.empty());
-  // now resize it and try again
-  values.resize(3, 0.0);
-  mp_values->get_values("", cell, values);
+  mp_values->get_values("doesnotmatter", fe_values, values);
   // all constant uniform property do is a `std::fill(...)`
   for (auto const &v : values)
     BOOST_TEST(v == value);
@@ -69,14 +148,14 @@ BOOST_AUTO_TEST_CASE(mp_values)
 
   // if the property is not registered in the `this->_properties` map an
   // exception will be thrown
-  BOOST_CHECK_THROW(mp_values->get_values("notregistered", cell, values),
+  BOOST_CHECK_THROW(mp_values->get_values("notregistered", fe_values, values),
                     std::runtime_error);
 
   // the composite property just redirects the call
   for (auto const &x :
        std::dynamic_pointer_cast<MyCompositeProMPValues>(mp_values)->_map)
   {
-    mp_values->get_values(x.first, cell, values);
+    mp_values->get_values(x.first, fe_values, values);
     for (auto const &v : values)
       BOOST_TEST(v == x.second);
   }
@@ -103,7 +182,7 @@ BOOST_AUTO_TEST_CASE(mp_values)
   // if the material is not registered in the `this->_materials` map an
   // exception will be thrown
   cell->set_material_id(1);
-  BOOST_CHECK_THROW(mp_values->get_values("willbeignored", cell, values),
+  BOOST_CHECK_THROW(mp_values->get_values("willbeignored", fe_values, values),
                     std::runtime_error);
 
   // the composite property just redirects the call
@@ -111,7 +190,7 @@ BOOST_AUTO_TEST_CASE(mp_values)
        std::dynamic_pointer_cast<MyCompositeMatMPValues>(mp_values)->_map)
   {
     cell->set_material_id(x.first);
-    mp_values->get_values("", cell, values);
+    mp_values->get_values("", fe_values, values);
     for (auto const &v : values)
       BOOST_TEST(v == x.second);
   }
@@ -194,6 +273,60 @@ BOOST_AUTO_TEST_CASE(test_inhomogenous_mp_values)
   database->put("parameter_0.path", "electrode_material.does_not_exist");
   BOOST_CHECK_THROW(cap::SuperCapacitorMPValuesFactory<2>::build(params),
                     std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE(custom_liquid_electrical_conductivity)
+{
+  boost::mpi::communicator world;
+
+  // Use the standard input to build a SuperCapacitor
+  boost::property_tree::ptree ptree;
+  boost::property_tree::read_info("super_capacitor.info", ptree);
+
+  // Extract the section for the material properties
+  auto database = std::make_shared<boost::property_tree::ptree>(
+      ptree.get_child("material_properties"));
+
+  // Use expression for the liquid electrical conductivity
+  std::string prefix =
+      "separator_material.custom_liquid_electrical_conductivity.";
+  database->put(prefix + "constants", "pi=3.14");
+  database->put(prefix + "expression", "-pi");
+  prefix = "electrode_material.custom_liquid_electrical_conductivity.";
+  database->put(prefix + "expression", "1.41");
+
+  // Create an standard homogeneous SuperCapacitorMPValues using the build(...)
+  // method which is static.
+  int constexpr dim = 2;
+  cap::MPValuesParameters<dim> params(database);
+  params.geometry = std::make_shared<cap::Geometry<dim>>(
+      std::make_shared<boost::property_tree::ptree>(
+          ptree.get_child("geometry")),
+      world);
+  std::shared_ptr<cap::MPValues<dim>> mp_values =
+      cap::SuperCapacitorMPValuesFactory<dim>::build(params);
+
+  dealii::FE_Q<dim> fe(1);
+  dealii::FEValues<dim> fe_values(fe, dealii::QGauss<dim>(1),
+                                  dealii::update_quadrature_points);
+
+  dealii::DoFHandler<dim> dof_handler(*params.geometry->get_triangulation());
+  dof_handler.distribute_dofs(fe);
+  dealii::DoFHandler<dim>::active_cell_iterator cell =
+      dof_handler.begin_active();
+  fe_values.reinit(cell);
+
+  std::vector<double> values(1);
+
+  // NOTE:  The following matches material ids in
+  // Geometry<dim>::fill_material_and_boundary_maps()
+  // set anode material id
+  cell->set_material_id(0);
+  mp_values->get_values("liquid_electrical_conductivity", fe_values, values);
+  BOOST_TEST(values[0] == 1.41);
+  cell->set_material_id(1);
+  mp_values->get_values("liquid_electrical_conductivity", fe_values, values);
+  BOOST_TEST(values[0] == -3.14);
 }
 
 BOOST_AUTO_TEST_CASE(test_mp_values)
@@ -321,22 +454,28 @@ BOOST_AUTO_TEST_CASE(test_mp_values)
   std::shared_ptr<cap::MPValues<2>> mp_values =
       std::make_shared<cap::SuperCapacitorMPValues<2>>(params);
 
+  dealii::FE_Q<2> fe(1);
   dealii::DoFHandler<2> dof_handler(*(geometry->get_triangulation()));
+  dof_handler.distribute_dofs(fe);
   dealii::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active();
+  dealii::FEValues<2> fe_values(fe, dealii::QGauss<2>(1),
+                                dealii::update_default);
+  fe_values.reinit(cell);
 
   std::vector<double> values(1);
   double const tolerance = 1e-2;
-  mp_values->get_values("density", cell, values);
+  mp_values->get_values("density", fe_values, values);
   BOOST_TEST(values[0] == 1563.);
-  mp_values->get_values("solid_electrical_conductivity", cell, values);
+  mp_values->get_values("solid_electrical_conductivity", fe_values, values);
   BOOST_TEST(std::abs(values[0] - 17.1785) < tolerance);
 
   // Move to another material
   for (unsigned int i = 0; i < 300; ++i)
     ++cell;
+  fe_values.reinit(cell);
 
-  mp_values->get_values("density", cell, values);
+  mp_values->get_values("density", fe_values, values);
   BOOST_TEST(values[0] == 2000.);
-  mp_values->get_values("solid_electrical_conductivity", cell, values);
+  mp_values->get_values("solid_electrical_conductivity", fe_values, values);
   BOOST_TEST(std::abs(values[0]) == 0.);
 }

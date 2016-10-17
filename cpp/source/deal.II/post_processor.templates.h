@@ -173,11 +173,13 @@ void SuperCapacitorPostprocessor<dim>::reset(
   dealii::QGauss<dim - 1> face_quadrature_rule(fe.degree + 1);
   dealii::FEValues<dim> fe_values(
       fe, quadrature_rule, dealii::update_values | dealii::update_gradients |
-                               dealii::update_JxW_values);
+                               dealii::update_JxW_values |
+                               dealii::update_quadrature_points);
   dealii::FEFaceValues<dim> fe_face_values(
       fe, face_quadrature_rule,
       dealii::update_values | dealii::update_gradients |
-          dealii::update_JxW_values | dealii::update_normal_vectors);
+          dealii::update_JxW_values | dealii::update_normal_vectors |
+          dealii::update_quadrature_points);
   //    unsigned int const dofs_per_cell   = fe.dofs_per_cell;
   unsigned int const n_q_points = quadrature_rule.size();
   unsigned int const n_face_q_points = face_quadrature_rule.size();
@@ -201,6 +203,10 @@ void SuperCapacitorPostprocessor<dim>::reset(
   std::vector<dealii::Tensor<1, dim>> face_solid_potential_gradients(
       n_face_q_points);
   std::vector<dealii::Tensor<1, dim>> normal_vectors(n_face_q_points);
+  // TODO: MPValues::get_values is not able to take FEFaceValues at this time so
+  // we resize this material property vector from n_face_q_points to n_q_points
+  // as a temporary bug fix.
+  face_solid_electrical_conductivity_values.resize(n_q_points);
 
   dealii::IndexSet locally_relevant_dofs;
   dealii::DoFTools::extract_locally_relevant_dofs(dof_handler,
@@ -214,14 +220,14 @@ void SuperCapacitorPostprocessor<dim>::reset(
     if (cell->is_locally_owned())
     {
       fe_values.reinit(cell);
-      this->mp_values->get_values("solid_electrical_conductivity", cell,
+      this->mp_values->get_values("solid_electrical_conductivity", fe_values,
                                   solid_electrical_conductivity_values);
-      this->mp_values->get_values("liquid_electrical_conductivity", cell,
+      this->mp_values->get_values("liquid_electrical_conductivity", fe_values,
                                   liquid_electrical_conductivity_values);
-      this->mp_values->get_values("density", cell, density_values);
-      this->mp_values->get_values("density_of_active_material", cell,
+      this->mp_values->get_values("density", fe_values, density_values);
+      this->mp_values->get_values("density_of_active_material", fe_values,
                                   density_of_active_material_values);
-      this->mp_values->get_values("specific_surface_area", cell,
+      this->mp_values->get_values("specific_surface_area", fe_values,
                                   specific_surface_area_values);
       if (*std::max_element(solid_electrical_conductivity_values.begin(),
                             solid_electrical_conductivity_values.end()) >
@@ -291,7 +297,7 @@ void SuperCapacitorPostprocessor<dim>::reset(
            it != this->debug_material_properties.end(); ++it)
       {
         std::vector<double> values(n_q_points);
-        this->mp_values->get_values(*it, cell, values);
+        this->mp_values->get_values(*it, fe_values, values);
         double cell_averaged_value = 0.0;
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
         {
@@ -398,12 +404,11 @@ void SuperCapacitorPostprocessor<dim>::reset(
                 0)
             {
               fe_face_values.reinit(cell, face);
+              // TODO:  This is a temporary bug fix.  MPValues should take
+              // fe_face_values instead of fe_values as an argument.
               this->mp_values->get_values(
-                  "solid_electrical_conductivity", cell,
-                  face_solid_electrical_conductivity_values); // TODO: should
-                                                              // take
-                                                              // face as an
-                                                              // argument...
+                  "solid_electrical_conductivity", fe_values,
+                  face_solid_electrical_conductivity_values);
               fe_face_values[solid_potential].get_function_gradients(
                   relevant_solution, face_solid_potential_gradients);
               fe_face_values[solid_potential].get_function_values(

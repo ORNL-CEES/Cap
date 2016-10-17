@@ -139,7 +139,8 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   dealii::QGauss<dim> quadrature_rule(fe.degree + 1);
   dealii::FEValues<dim> fe_values(
       fe, quadrature_rule, dealii::update_values | dealii::update_gradients |
-                               dealii::update_JxW_values);
+                               dealii::update_JxW_values |
+                               dealii::update_quadrature_points);
 
   unsigned int const dofs_per_cell = fe.dofs_per_cell;
   unsigned int const n_q_points = quadrature_rule.size();
@@ -167,10 +168,10 @@ void ElectrochemicalPhysics<dim>::assemble_system(
       fe_values.reinit(cell);
 
       // clang-format off
-      (this->mp_values)->get_values("specific_capacitance",           cell, specific_capacitance_values);
-      (this->mp_values)->get_values("solid_electrical_conductivity",  cell, solid_phase_diffusion_coefficient_values);
-      (this->mp_values)->get_values("liquid_electrical_conductivity", cell, liquid_phase_diffusion_coefficient_values);
-      (this->mp_values)->get_values("faradaic_reaction_coefficient",  cell, faradaic_reaction_coefficient_values);
+      (this->mp_values)->get_values("specific_capacitance",           fe_values, specific_capacitance_values);
+      (this->mp_values)->get_values("solid_electrical_conductivity",  fe_values, solid_phase_diffusion_coefficient_values);
+      (this->mp_values)->get_values("liquid_electrical_conductivity", fe_values, liquid_phase_diffusion_coefficient_values);
+      (this->mp_values)->get_values("faradaic_reaction_coefficient",  fe_values, faradaic_reaction_coefficient_values);
       // clang-format on
 
       // The coefficients are zeros when the physics does not make sense.
@@ -238,9 +239,10 @@ void ElectrochemicalPhysics<dim>::assemble_system(
         electrochemical_parameters->constant_current_density;
     dealii::QGauss<dim - 1> face_quadrature_rule(fe.degree + 1);
     unsigned int const n_face_q_points = face_quadrature_rule.size();
-    dealii::FEFaceValues<dim> fe_face_values(fe, face_quadrature_rule,
-                                             dealii::update_values |
-                                                 dealii::update_JxW_values);
+    dealii::FEFaceValues<dim> fe_face_values(
+        fe, face_quadrature_rule, dealii::update_values |
+                                      dealii::update_JxW_values |
+                                      dealii::update_quadrature_points);
     for (auto cell : dof_handler.active_cell_iterators())
       if (cell->is_locally_owned() && cell->at_boundary())
       {

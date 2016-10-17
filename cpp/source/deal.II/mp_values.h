@@ -9,8 +9,9 @@
 #define CAP_MP_VALUES_H
 
 #include <cap/geometry.h>
-#include <deal.II/grid/tria_iterator.h>
-#include <deal.II/dofs/dof_accessor.h>
+#include <deal.II/grid/cell_id.h>
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/base/function.h>
 #include <boost/property_tree/ptree.hpp>
 
 namespace cap
@@ -37,15 +38,12 @@ template <int dim>
 class MPValues
 {
 public:
-  typedef typename dealii::DoFHandler<dim>::active_cell_iterator
-      active_cell_iterator;
-
   MPValues() = default;
 
   virtual ~MPValues() = default;
 
   virtual void get_values(std::string const &key,
-                          active_cell_iterator const &cell,
+                          dealii::FEValues<dim> const &fe_values,
                           std::vector<double> &values) const = 0;
 };
 
@@ -53,12 +51,10 @@ template <int dim>
 class CompositeMat : public MPValues<dim>
 {
 public:
-  using active_cell_iterator =
-      typename dealii::DoFHandler<dim>::active_cell_iterator;
-
   CompositeMat() = default;
 
-  void get_values(std::string const &key, active_cell_iterator const &cell,
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
                   std::vector<double> &values) const override;
 
 protected:
@@ -70,12 +66,10 @@ template <int dim>
 class CompositePro : public MPValues<dim>
 {
 public:
-  using active_cell_iterator =
-      typename dealii::DoFHandler<dim>::active_cell_iterator;
-
   CompositePro() = default;
 
-  void get_values(std::string const &key, active_cell_iterator const &cell,
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
                   std::vector<double> &values) const override;
 
 protected:
@@ -87,17 +81,37 @@ template <int dim>
 class UniformConstantMPValues : public MPValues<dim>
 {
 public:
-  using active_cell_iterator =
-      typename dealii::DoFHandler<dim>::active_cell_iterator;
-
   UniformConstantMPValues(double const &val);
 
-  void get_values(std::string const &key, active_cell_iterator const &cell,
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
                   std::vector<double> &values) const override;
 
 protected:
   // get_values(...) will assign _val to all elements in the vector values.
   double _val;
+};
+
+template <int dim>
+class FunctionSpaceMPValues : public MPValues<dim>
+{
+public:
+  FunctionSpaceMPValues(
+      std::shared_ptr<dealii::Function<dim> const> const &function);
+
+  FunctionSpaceMPValues(boost::property_tree::ptree const &ptree);
+
+  /*!
+    \note
+    Here \p fe_values must be constructed with the flag \c
+    dealii::update_quadrature_points.
+  */
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
+                  std::vector<double> &values) const override;
+
+private:
+  std::shared_ptr<dealii::Function<dim> const> _function;
 };
 
 template <int dim>
@@ -119,12 +133,10 @@ template <int dim>
 class InhomogeneousSuperCapacitorMPValues : public MPValues<dim>
 {
 public:
-  using active_cell_iterator =
-      typename dealii::DoFHandler<dim>::active_cell_iterator;
-
   InhomogeneousSuperCapacitorMPValues(MPValuesParameters<dim> const &params);
 
-  void get_values(std::string const &key, active_cell_iterator const &cell,
+  void get_values(std::string const &key,
+                  dealii::FEValues<dim> const &fe_values,
                   std::vector<double> &values) const override;
 
 protected:

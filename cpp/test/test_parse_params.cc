@@ -104,3 +104,25 @@ BOOST_AUTO_TEST_CASE(test_parse_params)
                                          precision + 1),
                     0);
 }
+
+BOOST_AUTO_TEST_CASE(to_map)
+{
+  auto cst = cap::to_map<double>(" pi=3.14 ,sqrt2  = 1.41");
+  BOOST_TEST(cst["pi"] == 3.14);
+  BOOST_TEST(cst["sqrt2"] == 1.41);
+  auto dpt = cap::to_map<int>("dordogne=24,gironde=33,isere=38");
+  BOOST_TEST(dpt["dordogne"] == 24);
+  BOOST_TEST(dpt["gironde"] == 33);
+  BOOST_TEST(dpt["isere"] == 38);
+  BOOST_CHECK_THROW(cap::to_map<int>("herault:34"), std::runtime_error);
+  BOOST_CHECK_THROW(cap::to_map<int>("herault=34="), std::runtime_error);
+  auto euro = cap::to_map<bool>(" fr =1, gb=FALSE, de=true, ch=False");
+  BOOST_TEST(euro["fr"]);
+  BOOST_TEST(euro["de"]);
+  BOOST_TEST(!euro["gb"]);
+  BOOST_TEST(!euro["ch"]);
+  auto capitals = cap::to_map<std::string>(" belgium=   brussels  ");
+  BOOST_TEST(capitals["belgium"].compare("brussels") == 0);
+  auto empty = cap::to_map<std::string>("  ");
+  BOOST_TEST(empty.empty());
+}

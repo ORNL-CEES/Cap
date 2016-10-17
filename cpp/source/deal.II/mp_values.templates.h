@@ -7,6 +7,7 @@
 
 #include <cap/mp_values.h>
 #include <cap/utils.h>
+#include <deal.II/base/function_parser.h>
 #include <random>
 #include <tuple>
 #include <stdexcept>
@@ -17,30 +18,31 @@ namespace cap
 //////////////////////// COMPOSITE MAT /////////////////////////////////////////
 template <int dim>
 void CompositeMat<dim>::get_values(std::string const &key,
-                                   active_cell_iterator const &cell,
+                                   dealii::FEValues<dim> const &fe_values,
                                    std::vector<double> &values) const
 
 {
+  auto cell = fe_values.get_cell();
   dealii::types::material_id const material_id = cell->material_id();
   auto got = _materials.find(material_id);
   if (got == _materials.end())
     throw std::runtime_error("Invalid material id " +
                              std::to_string(material_id));
   auto material = got->second;
-  material->get_values(key, cell, values);
+  material->get_values(key, fe_values, values);
 }
 
 //////////////////////// COMPOSITE PRO /////////////////////////////////////////
 template <int dim>
 void CompositePro<dim>::get_values(std::string const &key,
-                                   active_cell_iterator const &cell,
+                                   dealii::FEValues<dim> const &fe_values,
                                    std::vector<double> &values) const
 {
   auto got = _properties.find(key);
   if (got == _properties.end())
     throw std::runtime_error("Invalid material property " + key);
   auto property = got->second;
-  property->get_values(key, cell, values);
+  property->get_values(key, fe_values, values);
 }
 
 //////////////////////// UNIFORM CONSTANT //////////////////////////////////////
@@ -51,12 +53,15 @@ UniformConstantMPValues<dim>::UniformConstantMPValues(double const &val)
 }
 
 template <int dim>
-void UniformConstantMPValues<dim>::get_values(std::string const &key,
-                                              active_cell_iterator const &cell,
-                                              std::vector<double> &values) const
+void UniformConstantMPValues<dim>::get_values(
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
+    std::vector<double> &values) const
 {
   std::ignore = key;
-  std::ignore = cell;
+  std::ignore = fe_values;
+  BOOST_ASSERT_MSG(fe_values.get_quadrature().size() == values.size(),
+                   "values must be the same size as the quadrature rule"
+                   "in MPValues::get_values()");
   std::fill(values.begin(), values.end(), _val);
 }
 
@@ -236,14 +241,15 @@ InhomogeneousSuperCapacitorMPValues<dim>::InhomogeneousSuperCapacitorMPValues(
 
 template <int dim>
 void InhomogeneousSuperCapacitorMPValues<dim>::get_values(
-    std::string const &key, active_cell_iterator const &cell,
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
     std::vector<double> &values) const
 {
+  auto cell = fe_values.get_cell();
   auto got = _map.find(cell->id());
   if (got == _map.end())
     throw std::runtime_error("Invalid cell property " + cell->id().to_string());
   auto property = got->second;
-  property->get_values(key, cell, values);
+  property->get_values(key, fe_values, values);
 }
 
 //////////////////////// SUPERCAPACITOR ////////////////////////////////////////
@@ -400,6 +406,12 @@ PorousElectrodeMPValues<dim>::PorousElectrodeMPValues(
       .emplace("density_of_active_material",
                std::make_shared<UniformConstantMPValues<dim>>(
                    (1.0 - void_volume_fraction) * mass_density));
+
+  auto custom = matrix_phase_database->get_child_optional(
+      "custom_liquid_electrical_conductivity");
+  if (custom)
+    (this->_properties)["liquid_electrical_conductivity"] =
+        std::make_shared<FunctionSpaceMPValues<dim>>(*custom);
 }
 
 //////////////////////// METAL FOIL ////////////////////////////////////////////
@@ -442,6 +454,45 @@ MetalFoilMPValues<dim>::MetalFoilMPValues(
                std::make_shared<UniformConstantMPValues<dim>>(mass_density));
   std::ignore = heat_capacity;
   std::ignore = thermal_conductivity;
+}
+
+template <int dim>
+FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
+    std::shared_ptr<dealii::Function<dim> const> const &function)
+    : _function(function)
+{
+}
+
+template <int dim>
+FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
+    boost::property_tree::ptree const &ptree)
+{
+  auto function = std::make_shared<dealii::FunctionParser<dim>>();
+  auto const variables =
+      ptree.get<std::string>("variables", dim == 2 ? "x,y" : "x,y,z");
+  auto const expression = ptree.get<std::string>("expression");
+  auto const constants =
+      to_map<double>(ptree.get<std::string>("constants", ""));
+
+  function->initialize(variables, expression, constants);
+  _function = function;
+}
+
+template <int dim>
+void FunctionSpaceMPValues<dim>::get_values(
+    std::string const &key, dealii::FEValues<dim> const &fe_values,
+    std::vector<double> &values) const
+{
+  std::ignore = key;
+  unsigned int n_q_points = fe_values.n_quadrature_points;
+  auto const &points = fe_values.get_quadrature_points();
+  BOOST_ASSERT_MSG(points.size() == values.size(),
+                   "values must be the same size as the quadrature rule"
+                   "in MPValues::get_values()");
+  for (unsigned int q = 0; q < n_q_points; ++q)
+  {
+    values[q] = _function->value(points[q]);
+  }
 }
 
 } // end namespace cap
