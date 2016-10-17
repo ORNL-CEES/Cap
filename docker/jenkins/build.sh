@@ -16,22 +16,7 @@ cd ${PREFIX}/source/cap
 rm -rf build
 mkdir build
 cd build
-#mkdir ${PREFIX}/build/cap
-#cd ${PREFIX}/build/cap
-cmake \
-    -G "Unix Makefiles" \
-    -D CMAKE_BUILD_TYPE=Debug \
-    -D CMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Weffc++"\
-    -D CMAKE_CXX_COMPILER=mpicxx \
-    -D BUILD_SHARED_LIBS=ON \
-    -D ENABLE_PYTHON=ON \
-    -D BOOST_DIR=${BOOST_DIR} \
-    -D ENABLE_DEAL_II=ON \
-    -D DEAL_II_DIR=${DEAL_II_DIR} \
-    -D ENABLE_COVERAGE=OFF \
-    -D ENABLE_FORMAT=ON \
-    ..
-#    ${PREFIX}/source/cap
+env CAP_DIR=.. ../scripts/docker_cmake
 make -j${NPROC} -i
 # run unit tests
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}

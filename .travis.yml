@@ -16,11 +16,12 @@ before_install:
         --detach --tty
         --name=test-machine
         --volume ${TRAVIS_BUILD_DIR}:/scratch/source/cap
+        --env CAP_DIR=/scratch/source/cap
         --env TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
         --env CTEST_BUILD_NAME="$(./docker/get_build_info.sh)"
         dalg24/cap-stack
   - docker exec test-machine
-        sh -xe /scratch/source/cap/docker/build_cap.sh
+        sh -xe /scratch/source/cap/docker/travis/build.sh
   - docker cp test-machine:/scratch/build/cap/lcov.info .
   - docker cp test-machine:/scratch/build/cap/coverage.xml .
 
