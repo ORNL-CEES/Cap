@@ -458,7 +458,7 @@ MetalFoilMPValues<dim>::MetalFoilMPValues(
 
 template <int dim>
 FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
-    std::shared_ptr<dealii::Function<dim>> const &function)
+    std::shared_ptr<dealii::Function<dim> const> const &function)
     : _function(function)
 {
 }
@@ -466,16 +466,16 @@ FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
 template <int dim>
 FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
     boost::property_tree::ptree const &ptree)
-    : _function(std::make_shared<dealii::FunctionParser<dim>>())
 {
+  auto function = std::make_shared<dealii::FunctionParser<dim>>();
   auto const variables =
       ptree.get<std::string>("variables", dim == 2 ? "x,y" : "x,y,z");
   auto const expression = ptree.get<std::string>("expression");
   auto const constants =
       to_map<double>(ptree.get<std::string>("constants", ""));
 
-  std::dynamic_pointer_cast<dealii::FunctionParser<dim>>(_function)
-      ->initialize(variables, expression, constants);
+  function->initialize(variables, expression, constants);
+  _function = function;
 }
 
 template <int dim>

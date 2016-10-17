@@ -96,7 +96,9 @@ template <int dim>
 class FunctionSpaceMPValues : public MPValues<dim>
 {
 public:
-  FunctionSpaceMPValues(std::shared_ptr<dealii::Function<dim>> const &function);
+  FunctionSpaceMPValues(
+      std::shared_ptr<dealii::Function<dim> const> const &function);
+
   FunctionSpaceMPValues(boost::property_tree::ptree const &ptree);
 
   /*!
@@ -109,7 +111,7 @@ public:
                   std::vector<double> &values) const override;
 
 private:
-  std::shared_ptr<dealii::Function<dim>> const _function;
+  std::shared_ptr<dealii::Function<dim> const> _function;
 };
 
 template <int dim>
