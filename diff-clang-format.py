@@ -112,7 +112,6 @@ if __name__ == '__main__':
     if diffs:
         if not args['--quiet']:
             for file, diff in diffs.items():
-                print('####', file, '####')
                 print(diff.decode('utf-8'))
         print('{0} file(s) not formatted properly:'.format(len(diffs)))
         for key in diffs.keys():
