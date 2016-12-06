@@ -25,6 +25,12 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
             ptree.parse_info(filename)
             EnergyStorageDevice(ptree)
             EnergyStorageDevice(ptree, comm=MPI.COMM_WORLD)
+        # check 3D supercapacitor
+        ptree = PropertyTree()
+        ptree.parse_info(filename)
+        ptree.put_int('dim', 3)
+        EnergyStorageDevice(ptree)
+        EnergyStorageDevice(ptree, comm=MPI.COMM_WORLD)
         # invalid device will throw an exception
         ptree = PropertyTree()
         ptree.put_string('type', 'InvalidDevice')
@@ -42,7 +48,7 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ptree = PropertyTree()
         ptree.parse_info('super_capacitor.info')
         device = EnergyStorageDevice(ptree, comm=MPI.COMM_WORLD)
-        # method inspect() takes no argument and returns a dictionary
+        # method inspect() takes an optional argument and returns a dictionary
         data = device.inspect()
         self.assertTrue(isinstance(data, dict))
         for key in [
@@ -58,6 +64,20 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ]:
             self.assertTrue(key in data)
         print(data)
+
+    def test_postprocessor_inspect(self):
+        ptree = PropertyTree()
+        ptree.parse_info('series_rc.info')
+        device = EnergyStorageDevice(ptree)
+        self.assertRaises(RuntimeError, device.inspect, 'postprocessor')
+
+        ptree = PropertyTree()
+        ptree.parse_info('super_capacitor.info')
+       # ptree.put_int('dim', 3)
+        device = EnergyStorageDevice(ptree)
+        data = device.inspect('postprocessor')
+        self.assertTrue(isinstance(data, dict))
+        self.assertEqual(len(data), 0)
 
     def test_sanity(self):
         # valid input to buid an energy storage device

@@ -4,6 +4,9 @@
 namespace pycap
 {
 
+// Macro to enable default arguments
+BOOST_PYTHON_FUNCTION_OVERLOADS(inspect_overloads, inspect, 1, 2)
+
 char const energy_storage_device_docstring[] =
   "Wrappers for Cap.EnergyStorageDevice                                     \n"
   "                                                                         \n"
@@ -138,8 +141,8 @@ void export_energy_storage_device()
          boost::python::args("self") )
     .def("get_current", &get_current, get_current_docstring,
          boost::python::args("self") )
-    .def("inspect", &inspect, inspect_docstring,
-         boost::python::args("self") )
+    .def("inspect", &inspect, inspect_overloads(
+        boost::python::args("self", "type"), inspect_docstring))
     .def("evolve_one_time_step_constant_current",
          &cap::EnergyStorageDevice::evolve_one_time_step_constant_current,
          evolve_one_time_step_constant_current_docstring,

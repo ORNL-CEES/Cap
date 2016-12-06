@@ -30,6 +30,7 @@
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/set.hpp>
 #include <fstream>
+#include <typeinfo>
 
 namespace cap
 {
@@ -39,8 +40,12 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
   static int i = 0;
   SuperCapacitor<dim> *supercapacitor =
       dynamic_cast<SuperCapacitor<dim> *>(device);
-  BOOST_ASSERT_MSG(supercapacitor != nullptr,
-                   "There was a problem casting the device pointer.");
+  if (supercapacitor == nullptr)
+  {
+    std::bad_cast exception;
+    throw exception;
+  }
+
   std::vector<std::string> keys =
       supercapacitor->post_processor->get_vector_keys();
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
