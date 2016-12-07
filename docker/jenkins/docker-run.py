@@ -50,8 +50,8 @@ cli.start(container=container.get('Id'))
 # Execute the commands
 for cmd in config['cmd']:
     print('[+] ' + cmd)
-    execute = cli.exec_create(container['Id'], cmd=cmd, stdout=True, stderr=True)
-    for char in cli.exec_start(execute['Id'], tty=True, stream=True):
+    execute = cli.exec_create(container['Id'], cmd=cmd, stdout=True, stderr=True, stdin=False)
+    for char in cli.exec_start(execute['Id'], stream=True):
         sys.stdout.write(char.decode(sys.stdout.encoding))
     status = cli.exec_inspect(execute['Id'])['ExitCode']
     if status != 0:
