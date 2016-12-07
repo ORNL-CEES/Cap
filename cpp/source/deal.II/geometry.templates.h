@@ -190,10 +190,10 @@ void Component<dim>::build_triangulation()
   }
   else if (shape.compare("hyper_trapezoid_2") == 0)
   {
-    // Create the following trapezoid:
-    //   2-3
-    //  /   \
-    // 0-----1
+    /* Create the following trapezoid:
+       2-3
+      /   \
+     0-----1  */
     build_trapezoid_2(box_dimensions[1], edge, triangulation);
     offset = box_dimensions[1][0] + 1e-5;
   }
