@@ -64,14 +64,23 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ptree.parse_info('series_rc.info')
         device = EnergyStorageDevice(ptree)
         self.assertRaises(RuntimeError, device.inspect, 'postprocessor')
+        self.assertRaises(RuntimeError, device.inspect, 'invalid')
 
         ptree = PropertyTree()
         ptree.parse_info('super_capacitor.info')
         ptree.put_int('dim', 3)
         device = EnergyStorageDevice(ptree)
-       # data = device.inspect('postprocessor')
-       # self.assertTrue(isinstance(data, dict))
-       # self.assertEqual(len(data), 0)
+        data = device.inspect('postprocessor')
+        self.assertTrue(isinstance(data, dict))
+        self.assertEqual(len(data), 0)
+        # check that vtu and pvtu files have been created
+        vtu_file = 'solution-0000.0000.vtu'
+        pvtu_file = 'solution-0000.pvtu'
+        self.assertTrue(os.path.isfile(vtu_file))
+        self.assertTrue(os.path.isfile(pvtu_file))
+        # clean files
+        os.remove(vtu_file)
+        os.remove(pvtu_file)
 
     def test_sanity(self):
         # valid input to buid an energy storage device

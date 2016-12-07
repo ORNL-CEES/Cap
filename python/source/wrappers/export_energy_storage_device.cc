@@ -46,7 +46,15 @@ char const get_current_docstring[] =
   ;
 
 char const inspect_docstring[] =
-  "TODO                                                                     \n"
+  "Inspect the state of the device                                          \n"
+  "                                                                         \n"
+  "Parameters                                                               \n"
+  "----------                                                               \n"
+  "type : string                                                            \n"
+  "    Type of inspector used.                                              \n"
+  "    Possible values are:                                                 \n"
+  "        - 'default' (default value)                                      \n"
+  "        - 'postprocessor' (only for supercapacitor)                      \n"
   "                                                                         \n"
   "Returns                                                                  \n"
   "-------                                                                  \n"

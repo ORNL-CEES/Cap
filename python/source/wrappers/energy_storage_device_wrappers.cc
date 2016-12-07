@@ -43,27 +43,32 @@ boost::python::dict inspect(cap::EnergyStorageDevice & dev,
     {
       // SuperCapacitorInspector only works if the underlying dev is a
       // SuperCapacitor. SuperCapacitorInspector is templated on the dimension
-      // but the EnergyStorageDevice is dimension-independent. So we first
-      // instantiate a SuperCapacitorInspector<2> and if the inspect function
-      // throws a std::bad_cast, we try a SuperCapacitorInspector<3>.
-      try 
+      // but the EnergyStorageDevice is dimension-independent. So we first try
+      // with SuperCapacitorInspector<2> and if the inspect function throws then
+      // we try SuperCapacitorInspector<3>.
+      bool success = false;
+      std::vector<std::shared_ptr<cap::EnergyStorageDeviceInspector>> inspectors;
+      inspectors.push_back(std::shared_ptr<cap::EnergyStorageDeviceInspector> (
+          new cap::SuperCapacitorInspector<2>()));
+      inspectors.push_back(std::shared_ptr<cap::EnergyStorageDeviceInspector> (
+          new cap::SuperCapacitorInspector<3>()));
+      for (auto inspector : inspectors)
       {
-        cap::SuperCapacitorInspector<2> inspector;
-        dev.inspect(&inspector);
-      }
-      catch (std::bad_cast const &exception)
-      {
-        try 
+        try
         {
-          cap::SuperCapacitorInspector<3> inspector;
-          dev.inspect(&inspector);
+          dev.inspect(inspector.get());
+          success = true;
+          break;
         }
-        catch (std::bad_cast const &exception)
+        catch (std::bad_cast const &)
         {
-          throw std::runtime_error("The postprocessor inspector can only be used "
-              "with a supercapacitor device");
+          // Do nothing. If inspector was of dim = 2, we will try dim = 3 next.
+          // If dim = 3, we will throw a runtime_error when we leave the loop.
         }
       }
+      if (!success)
+        throw std::runtime_error("The postprocessor inspector can only be used "
+            "with a supercapacitor device");
     }
     else
       throw std::runtime_error("Unknown inspector type");

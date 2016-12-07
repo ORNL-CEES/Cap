@@ -158,6 +158,8 @@ BOOST_AUTO_TEST_CASE(test_3d_geometry)
   BOOST_CHECK(n_cells == triangulation->n_active_cells());
 }
 
+// Test that we can build a default 3D supercapacitor geometry. So just create
+// the geometry and then, check the number of cells.
 BOOST_AUTO_TEST_CASE(test_3d_supercapacitor)
 {
   boost::property_tree::ptree device_database;

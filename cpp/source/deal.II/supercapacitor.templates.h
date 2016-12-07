@@ -40,11 +40,10 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
   static int i = 0;
   SuperCapacitor<dim> *supercapacitor =
       dynamic_cast<SuperCapacitor<dim> *>(device);
+  // dynamic_cast does not throw an exception when using pointer. It just sets
+  // the pointer to nullptr, so we throw the bad_cast exception ourselves.
   if (supercapacitor == nullptr)
-  {
-    std::bad_cast exception;
-    throw exception;
-  }
+    throw std::bad_cast();
 
   std::vector<std::string> keys =
       supercapacitor->post_processor->get_vector_keys();
