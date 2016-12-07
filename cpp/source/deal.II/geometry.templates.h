@@ -190,10 +190,10 @@ void Component<dim>::build_triangulation()
   }
   else if (shape.compare("hyper_trapezoid_2") == 0)
   {
-    // Create the following trapezoid:
-    //   2-3
-    //  /   \
-    // 0-----1
+    /* Create the following trapezoid:
+       2-3
+      /   \
+     0-----1  */
     build_trapezoid_2(box_dimensions[1], edge, triangulation);
     offset = box_dimensions[1][0] + 1e-5;
   }
@@ -389,10 +389,10 @@ Geometry<dim>::Geometry(std::shared_ptr<boost::property_tree::ptree> database,
         }
         else
         {
-          std::string collector_div("3,3,3");
-          std::string anode_div("5,5,2");
+          std::string collector_div("4,4,3");
+          std::string anode_div("4,4,2");
           std::string separator_div("4,4,2");
-          std::string cathode_div("5,5,2");
+          std::string cathode_div("4,4,2");
           database->put("collector.divisions", collector_div);
           database->put("anode.divisions", anode_div);
           database->put("separator.divisions", separator_div);

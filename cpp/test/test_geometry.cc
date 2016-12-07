@@ -158,6 +158,26 @@ BOOST_AUTO_TEST_CASE(test_3d_geometry)
   BOOST_CHECK(n_cells == triangulation->n_active_cells());
 }
 
+BOOST_AUTO_TEST_CASE(test_3d_supercapacitor)
+{
+  boost::property_tree::ptree device_database;
+  boost::property_tree::info_parser::read_info("super_capacitor.info",
+                                               device_database);
+  device_database.put("dim", 3);
+
+  std::shared_ptr<cap::EnergyStorageDevice> device =
+      cap::EnergyStorageDevice::build(device_database,
+                                      boost::mpi::communicator());
+  std::shared_ptr<cap::SuperCapacitor<3>> supercapacitor =
+      std::static_pointer_cast<cap::SuperCapacitor<3>>(device);
+  std::shared_ptr<cap::Geometry<3>> geometry = supercapacitor->get_geometry();
+  std::shared_ptr<dealii::distributed::Triangulation<3> const> triangulation =
+      geometry->get_triangulation();
+  write_mesh("output_test_geometry_2.vtu", geometry->get_triangulation());
+  const unsigned int n_cells = 1536;
+  BOOST_CHECK(n_cells == triangulation->n_active_cells());
+}
+
 BOOST_AUTO_TEST_CASE(n_refinements)
 {
   boost::property_tree::ptree ptree;
