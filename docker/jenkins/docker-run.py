@@ -8,13 +8,18 @@ Usage:
 from docker import Client
 import sys
 import os
+from warnings import warn
 
 # Parse the configuration file that contains a dictionary
 with open(sys.argv[1]) as fin:
     config = eval(fin.read())
 
 # Instantiate the client that will communicate with the Docker daemon
-cli = Client(base_url='unix://var/run/docker.sock')
+params = { 'base_url': 'unix://var/run/docker.sock' }
+key = 'api_calls_timeout_seconds' # optional argument to relax the default 60 seconds timeout for API calls
+if key in config:
+    params['timeout'] = config[key]
+cli = Client(**params)
 
 # Pull the lastest image
 for line in cli.pull(repository=config['image'], tag=config['tag'], stream=True):
@@ -36,13 +41,17 @@ container = cli.create_container(image=config['image'] + ':' + config['tag'],
                                  volumes=volumes,
                                  name=config['name'],
                                  host_config=host_config)
+# Forward warning messages to stderr if any
+if container.get('Warnings') is not None:
+    warn(container.get('Warnings'), RuntimeWarning)
+# Start the container
 cli.start(container=container.get('Id'))
 
 # Execute the commands
 for cmd in config['cmd']:
     print('[+] ' + cmd)
-    execute = cli.exec_create(container['Id'], cmd=cmd, stdout=True, stderr=True)
-    for char in cli.exec_start(execute['Id'], tty=True, stream=True):
+    execute = cli.exec_create(container['Id'], cmd=cmd, stdout=True, stderr=True, stdin=False)
+    for char in cli.exec_start(execute['Id'], stream=True):
         sys.stdout.write(char.decode(sys.stdout.encoding))
     status = cli.exec_inspect(execute['Id'])['ExitCode']
     if status != 0:
