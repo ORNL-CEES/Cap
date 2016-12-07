@@ -15,7 +15,11 @@ with open(sys.argv[1]) as fin:
     config = eval(fin.read())
 
 # Instantiate the client that will communicate with the Docker daemon
-cli = Client(base_url='unix://var/run/docker.sock')
+params = { 'base_url': 'unix://var/run/docker.sock' }
+key = 'api_calls_timeout_seconds' # optional argument to relax the default 60 seconds timeout for API calls
+if key in config:
+    params['timeout'] = config[key]
+cli = Client(**params)
 
 # Pull the lastest image
 for line in cli.pull(repository=config['image'], tag=config['tag'], stream=True):
