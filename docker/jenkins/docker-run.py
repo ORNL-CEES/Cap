@@ -8,6 +8,7 @@ Usage:
 from docker import Client
 import sys
 import os
+from warnings import warn
 
 # Parse the configuration file that contains a dictionary
 with open(sys.argv[1]) as fin:
@@ -36,6 +37,10 @@ container = cli.create_container(image=config['image'] + ':' + config['tag'],
                                  volumes=volumes,
                                  name=config['name'],
                                  host_config=host_config)
+# Forward warning messages to stderr if any
+if container.get('Warnings') is not None:
+    warn(container.get('Warnings'), RuntimeWarning)
+# Start the container
 cli.start(container=container.get('Id'))
 
 # Execute the commands
