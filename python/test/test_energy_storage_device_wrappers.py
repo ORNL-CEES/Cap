@@ -42,7 +42,7 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ptree = PropertyTree()
         ptree.parse_info('super_capacitor.info')
         device = EnergyStorageDevice(ptree, comm=MPI.COMM_WORLD)
-        # method inspect() takes no argument and returns a dictionary
+        # method inspect() takes an optional argument and returns a dictionary
         data = device.inspect()
         self.assertTrue(isinstance(data, dict))
         for key in [
@@ -58,6 +58,35 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ]:
             self.assertTrue(key in data)
         print(data)
+
+    def test_postprocessor_inspect(self):
+        ptree = PropertyTree()
+        ptree.parse_info('series_rc.info')
+        device = EnergyStorageDevice(ptree)
+        self.assertRaises(RuntimeError, device.inspect, 'postprocessor')
+        self.assertRaises(RuntimeError, device.inspect, 'invalid')
+
+        ptree = PropertyTree()
+        ptree.parse_info('super_capacitor.info')
+        ptree.put_int('dim', 3)
+        device = EnergyStorageDevice(ptree)
+        # vtu and pvtu files are created when inspecting the device with the
+        # postprocessor
+        vtu_file = 'solution-0000.0000.vtu'
+        pvtu_file = 'solution-0000.pvtu'
+        # ensure that the files are not present prior to calling inspect
+        self.assertFalse(os.path.isfile(vtu_file))
+        self.assertFalse(os.path.isfile(pvtu_file))
+        # inspect
+        data = device.inspect('postprocessor')
+        self.assertTrue(isinstance(data, dict))
+        self.assertTrue(not data)
+        # check that the files have been created
+        self.assertTrue(os.path.isfile(vtu_file))
+        self.assertTrue(os.path.isfile(pvtu_file))
+        # clean files
+        os.remove(vtu_file)
+        os.remove(pvtu_file)
 
     def test_sanity(self):
         # valid input to buid an energy storage device

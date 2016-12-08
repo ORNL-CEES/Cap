@@ -6,6 +6,7 @@ function(Cap_ADD_BOOST_TEST TEST_NAME)
     target_link_libraries(${TEST_NAME}.exe ${Boost_SYSTEM_LIBRARY})
     target_link_libraries(${TEST_NAME}.exe ${Boost_TIMER_LIBRARY})
     target_link_libraries(${TEST_NAME}.exe ${Boost_CHRONO_LIBRARY})
+    target_link_libraries(${TEST_NAME}.exe ${Boost_REGEX_LIBRARY})
     set_target_properties(${TEST_NAME}.exe PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED ON

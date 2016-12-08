@@ -7,6 +7,7 @@
 
 #include <pycap/energy_storage_device_wrappers.h>
 #include <cap/default_inspector.h>
+#include <cap/supercapacitor.h>
 #include <mpi4py/mpi4py.h>
 
 namespace pycap {
@@ -25,13 +26,53 @@ double get_voltage(cap::EnergyStorageDevice const & dev)
     return voltage;
 }
 
-boost::python::dict inspect(cap::EnergyStorageDevice & dev)
+boost::python::dict inspect(cap::EnergyStorageDevice & dev,
+                            const std::string & type)
 {
-    cap::DefaultInspector inspector;
-    dev.inspect(&inspector);
+    // For now there are only two different inspectors so using if ... else ...
+    // is fine. However, if we add more inspectors we should use a factory.
     boost::python::dict data;
-    for (auto x : inspector.get_data())
+    if (type.compare("default") == 0)
+    {
+      cap::DefaultInspector inspector;
+      dev.inspect(&inspector);
+      for (auto x : inspector.get_data())
         data[x.first] = x.second;
+    }
+    else if (type.compare("postprocessor") == 0)
+    {
+      // SuperCapacitorInspector only works if the underlying dev is a
+      // SuperCapacitor. SuperCapacitorInspector is templated on the dimension
+      // but the EnergyStorageDevice is dimension-independent. So we first try
+      // with SuperCapacitorInspector<2> and if the inspect function throws then
+      // we try SuperCapacitorInspector<3>.
+      bool success = false;
+      std::vector<std::shared_ptr<cap::EnergyStorageDeviceInspector>> inspectors;
+      inspectors.push_back(std::shared_ptr<cap::EnergyStorageDeviceInspector> (
+          new cap::SuperCapacitorInspector<2>()));
+      inspectors.push_back(std::shared_ptr<cap::EnergyStorageDeviceInspector> (
+          new cap::SuperCapacitorInspector<3>()));
+      for (auto inspector : inspectors)
+      {
+        try
+        {
+          dev.inspect(inspector.get());
+          success = true;
+          break;
+        }
+        catch (std::bad_cast const &)
+        {
+          // Do nothing. If inspector was of dim = 2, we will try dim = 3 next.
+          // If dim = 3, we will throw a runtime_error when we leave the loop.
+        }
+      }
+      if (!success)
+        throw std::runtime_error("The postprocessor inspector can only be used "
+            "with a supercapacitor device");
+    }
+    else
+      throw std::runtime_error("Unknown inspector type");
+
     return data;
 }
 

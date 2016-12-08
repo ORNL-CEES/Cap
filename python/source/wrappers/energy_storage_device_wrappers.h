@@ -5,13 +5,15 @@
 #include <boost/python/object.hpp>
 #include <boost/python/wrapper.hpp>
 #include <boost/python/dict.hpp>
+#include <string>
 
 namespace pycap {
 
 double get_current(cap::EnergyStorageDevice const & device);
 double get_voltage(cap::EnergyStorageDevice const & device);
 // TODO: may want const reference here
-boost::python::dict inspect(cap::EnergyStorageDevice & device);
+boost::python::dict inspect(cap::EnergyStorageDevice & device,
+                            const std::string & type = "default");
 
 std::shared_ptr<cap::EnergyStorageDevice>
 build_energy_storage_device(boost::python::object & py_ptree,

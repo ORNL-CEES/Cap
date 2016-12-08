@@ -14,6 +14,7 @@ set(Boost_COMPONENTS
     system
     filesystem
     iostreams
+    regex
 )
 if(ENABLE_PYTHON)
     set(Boost_COMPONENTS python ${Boost_COMPONENTS})

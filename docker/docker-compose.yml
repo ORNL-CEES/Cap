@@ -29,3 +29,4 @@ services:
     # for reference.
     security_opt:
       - seccomp:unconfined
+    network_mode: host
