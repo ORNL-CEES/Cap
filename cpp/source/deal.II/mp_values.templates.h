@@ -466,6 +466,7 @@ FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
 template <int dim>
 FunctionSpaceMPValues<dim>::FunctionSpaceMPValues(
     boost::property_tree::ptree const &ptree)
+    : _function(nullptr)
 {
   auto function = std::make_shared<dealii::FunctionParser<dim>>();
   auto const variables =
