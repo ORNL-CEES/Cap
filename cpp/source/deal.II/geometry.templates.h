@@ -140,8 +140,8 @@ struct Component
 public:
   Component(MPI_Comm mpi_communicator)
       : mpi_communicator(mpi_communicator), shape("hyper_rectangle"),
-        box_dimensions(0), divisions(0), triangulation(mpi_communicator),
-        shift_vector()
+        offset(0.), box_dimensions(0), divisions(0),
+        triangulation(mpi_communicator), shift_vector()
   {
   }
 
@@ -149,10 +149,15 @@ public:
             std::vector<dealii::Point<dim>> const &box,
             std::vector<unsigned int> const &divisions,
             MPI_Comm mpi_communicator)
-      : mpi_communicator(mpi_communicator), shape(shape), box_dimensions(box),
-        divisions(divisions), triangulation(mpi_communicator), shift_vector()
+      : mpi_communicator(mpi_communicator), shape(shape), offset(0.),
+        box_dimensions(box), divisions(divisions),
+        triangulation(mpi_communicator), shift_vector()
   {
   }
+
+  Component(Component<dim> const &) = default;
+
+  Component<dim> &operator=(Component<dim> const &) = default;
 
   void build_triangulation();
 
