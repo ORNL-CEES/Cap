@@ -70,12 +70,18 @@ class capEnergyStorageDeviceWrappersTestCase(unittest.TestCase):
         ptree.parse_info('super_capacitor.info')
         ptree.put_int('dim', 3)
         device = EnergyStorageDevice(ptree)
-        data = device.inspect('postprocessor')
-        self.assertTrue(isinstance(data, dict))
-        self.assertEqual(len(data), 0)
-        # check that vtu and pvtu files have been created
+        # vtu and pvtu files are created when inspecting the device with the
+        # postprocessor
         vtu_file = 'solution-0000.0000.vtu'
         pvtu_file = 'solution-0000.pvtu'
+        # ensure that the files are not present prior to calling inspect
+        self.assertFalse(os.path.isfile(vtu_file))
+        self.assertFalse(os.path.isfile(pvtu_file))
+        # inspect
+        data = device.inspect('postprocessor')
+        self.assertTrue(isinstance(data, dict))
+        self.assertTrue(not data)
+        # check that the files have been created
         self.assertTrue(os.path.isfile(vtu_file))
         self.assertTrue(os.path.isfile(pvtu_file))
         # clean files
