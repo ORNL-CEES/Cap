@@ -15,6 +15,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <cstdio>
+#include <string>
 
 // Check that the inspector can be used to ouput a distributed mesh
 
@@ -41,6 +43,17 @@ BOOST_AUTO_TEST_CASE(test_supercapacitor_inspector)
       BOOST_TEST(boost::filesystem::exists("solution-0000.000" +
                                            std::to_string(i) + ".vtu"));
     BOOST_TEST(boost::filesystem::exists("solution-0000.pvtu"));
+  }
+
+  // Remove the files
+  if (comm.rank() == 0)
+  {
+    for (int i = 0; i < comm.size(); ++i)
+    {
+      std::string filename("solution-0000.000" + std::to_string(i) + ".vtu");
+      std::remove(filename.c_str());
+    }
+    std::remove("solution-0000.pvtu");
   }
 }
 }
