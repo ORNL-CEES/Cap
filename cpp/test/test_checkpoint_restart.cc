@@ -68,8 +68,9 @@ BOOST_AUTO_TEST_CASE(test_series_rc)
     BOOST_CHECK_CLOSE(current, new_current, tolerance);
     BOOST_CHECK_CLOSE(voltage, new_voltage, tolerance);
 
-    // Delete save file
-    std::remove(filename.c_str());
+    // Delete the file that was created and make sure that a zero value is
+    // returned (this denotes that the file was successfully deleted).
+    BOOST_TEST(std::remove(filename.c_str()) == 0);
   }
 }
 
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc)
 
   // Create a new device
   cap::ParallelRC new_rc_device(initialize_zero_database(), comm);
-  // Load the preivous device
+  // Load the previous device
   new_rc_device.load(filename);
 
   if (comm.rank() == 0)
@@ -107,8 +108,8 @@ BOOST_AUTO_TEST_CASE(test_parallel_rc)
     BOOST_CHECK_CLOSE(current, new_current, tolerance);
     BOOST_CHECK_CLOSE(voltage, new_voltage, tolerance);
 
-    // Delete save file
-    std::remove(filename.c_str());
+    // Delete file that was created and check return value error code.
+    BOOST_TEST(std::remove(filename.c_str()) == 0);
   }
 }
 
@@ -169,5 +170,5 @@ BOOST_AUTO_TEST_CASE(test_supercapacitor)
 
   // Delete save file
   if (comm.rank() == 0)
-    std::remove(filename.c_str());
+    BOOST_TEST(std::remove(filename.c_str()) == 0);
 }
