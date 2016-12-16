@@ -226,10 +226,9 @@ template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_load(
     double const time_step, double const load)
 {
-  electrochemical_physics_params->constant_load_density = load * surface_area;
-  // BC not implemented yet
+  std::ignore = time_step;
+  std::ignore = load;
   throw std::runtime_error("This function is not implemented.");
-  evolve_one_time_step(time_step, ConstantLoad, true);
 }
 
 template <int dim>

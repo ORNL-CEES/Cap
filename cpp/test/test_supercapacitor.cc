@@ -52,6 +52,8 @@ void check_sanity(std::shared_ptr<cap::EnergyStorageDevice> dev)
   }
 
   // TODO constant load is not implemented yet
+  BOOST_CHECK_THROW(dev->evolve_one_time_step_constant_load(2.0, 33.0),
+                    std::runtime_error);
   // for (auto imposed_load : { 100.0, 33.0, })
   // {
   //     dev->evolve_one_time_step_constant_load(2.0, imposed_load);

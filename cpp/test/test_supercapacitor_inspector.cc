@@ -51,9 +51,10 @@ BOOST_AUTO_TEST_CASE(test_supercapacitor_inspector)
     for (int i = 0; i < comm.size(); ++i)
     {
       std::string filename("solution-0000.000" + std::to_string(i) + ".vtu");
-      std::remove(filename.c_str());
+      // Delete file and check return value error code.
+      BOOST_TEST(std::remove(filename.c_str()) == 0);
     }
-    std::remove("solution-0000.pvtu");
+    BOOST_TEST(std::remove("solution-0000.pvtu") == 0);
   }
 }
 }

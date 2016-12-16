@@ -8,10 +8,8 @@
 #include <boost/mpi/timer.hpp>
 #include <iostream>
 
-int main(int argc, char *argv[])
+void run_example(boost::mpi::communicator &comm)
 {
-  boost::mpi::environment env(argc, argv);
-  boost::mpi::communicator comm;
   boost::mpi::timer timer;
   if (comm.rank() == 0)
     std::cout << "Number of processors: " << comm.size() << std::endl;
@@ -48,6 +46,41 @@ int main(int argc, char *argv[])
   {
     cap::SuperCapacitorInspector<3> supercap_inspector;
     supercap_inspector.inspect(device.get());
+  }
+}
+
+int main(int argc, char *argv[])
+{
+  try
+  {
+    boost::mpi::environment env(argc, argv);
+    boost::mpi::communicator world;
+    run_example(world);
+  }
+  catch (std::exception &exc)
+  {
+    std::cerr << std::endl
+              << std::endl
+              << "----------------------------------------------------"
+              << std::endl;
+    std::cerr << "Exception on processing: " << std::endl
+              << exc.what() << std::endl
+              << "Aborting!" << std::endl
+              << "----------------------------------------------------"
+              << std::endl;
+    return 1;
+  }
+  catch (...)
+  {
+    std::cerr << std::endl
+              << std::endl
+              << "----------------------------------------------------"
+              << std::endl;
+    std::cerr << "Unknown exception!" << std::endl
+              << "Aborting!" << std::endl
+              << "----------------------------------------------------"
+              << std::endl;
+    return 1;
   }
 
   return 0;
