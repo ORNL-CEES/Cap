@@ -107,6 +107,7 @@ if __name__ == '__main__':
     command = [args['--binary']]
     if style:
       command.append('-style='+style)
+    current_directory = getcwd()
     temporary_directory = mkdtemp()
     if config:
         copy(config, temporary_directory + '/' + '.clang-format')
@@ -117,6 +118,7 @@ if __name__ == '__main__':
         e = exc_info()[0]
         print("<p>Error: %s</p>" % e)
         raise
+    chdir(current_directory)
     rmtree(temporary_directory);
     if diffs:
         if not args['--quiet']:
