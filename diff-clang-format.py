@@ -16,8 +16,10 @@ Option:
 
 from docopt import docopt
 from subprocess import Popen, PIPE
-from os import walk, getcwd, remove, rename
-from shutil import copy
+from os import walk, chdir, getcwd, remove, rename, path
+from sys import exc_info
+from shutil import copy, rmtree
+from tempfile import mkdtemp
 
 def diff_with_formatted_source(original_file, command, patch):
     '''Compute the diff between the C++ source code and its formatted version
@@ -37,7 +39,7 @@ def diff_with_formatted_source(original_file, command, patch):
     bytes
         Output of diff.
     '''
-    formatted_file = getcwd()+'/'+'.tmp'
+    formatted_file = getcwd() + '/' + path.basename(original_file)
     cmd = command[:]
     cmd.append(original_file)
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -105,10 +107,17 @@ if __name__ == '__main__':
     command = [args['--binary']]
     if style:
       command.append('-style='+style)
+    temporary_directory = mkdtemp()
     if config:
-        copy(config, getcwd()+'/'+'.clang-format')
-
-    diffs = run(paths, extensions, command, patch)
+        copy(config, temporary_directory + '/' + '.clang-format')
+    chdir(temporary_directory)
+    try:
+        diffs = run(paths, extensions, command, patch)
+    except:
+        e = exc_info()[0]
+        print("<p>Error: %s</p>" % e)
+        raise
+    rmtree(temporary_directory);
     if diffs:
         if not args['--quiet']:
             for file, diff in diffs.items():
