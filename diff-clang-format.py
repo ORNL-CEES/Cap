@@ -16,9 +16,9 @@ Option:
 
 from docopt import docopt
 from subprocess import Popen, PIPE
-from os import walk, chdir, getcwd, remove, rename, path
+from os import walk, chdir, getcwd, remove, path
 from sys import exc_info
-from shutil import copy, rmtree
+from shutil import copy, rmtree, move
 from tempfile import mkdtemp
 
 def diff_with_formatted_source(original_file, command, patch):
@@ -60,7 +60,7 @@ def diff_with_formatted_source(original_file, command, patch):
         print(stderr.decode('utf-8'))
         raise RuntimeError('diff failed')
     if patch and stdout:
-        rename(formatted_file, original_file)
+        move(formatted_file, original_file)
     else:
         remove(formatted_file)
     return stdout
