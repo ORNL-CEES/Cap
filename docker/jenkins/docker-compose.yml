@@ -1,0 +1,9 @@
+version: '2'
+services:
+  ci:
+    image: dalg24/cap-stack:debug
+    volumes:
+      - ../..:/scratch/source/cap:rw
+    environment:
+      - NPROC=8
+    command: /scratch/source/cap/docker/jenkins/build.sh
