@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # number of processes with default value
 : ${NPROC:=8}
 # append the option flag --allow-run-as-root to mpiexec
