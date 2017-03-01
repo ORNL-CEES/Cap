@@ -14,11 +14,11 @@ chmod +x /usr/local/bin/mpiexec
 ln -s /usr/bin/python3.5 /usr/local/bin/python
 ln -s /usr/bin/clang-format-3.7 /usr/local/bin/clang-format
 # build the code
-cd ${PREFIX}/source/cap
+cd ${CAP_DIR}
 rm -rf build
 mkdir build
 cd build
-env CAP_DIR=.. ../scripts/docker_cmake
+../scripts/docker_cmake
 make -j${NPROC} -i
 # run unit tests
 export LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
