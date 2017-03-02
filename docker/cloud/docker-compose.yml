@@ -1,0 +1,29 @@
+version: '2'
+services:
+  slave:
+    build:
+      context: .
+      dockerfile: Dockerfile_slave
+      # Default values are set in ".env" file but values in the shell take
+      # precedence over them.
+      args:
+        - DOCKER_ENGINE_VERSION=${DOCKER_ENGINE_VERSION}
+        - DOCKER_COMPOSE_VERSION=${DOCKER_COMPOSE_VERSION}
+        - JENKINS_SSH_PUBLIC_KEY=${JENKINS_SSH_PUBLIC_KEY}
+    restart: always
+    ports:
+      # Default value is also in the ".env" file.  It is set to 2222.  Port 22
+      # is most likely already used by the host.
+      - ${ALTERNATE_SSH_PORT}:22
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/var/jenkins
+volumes:
+  # The slave need to have a directory dedicated to Jenkins.  He does not
+  # maintain important data; all job configurations, build logs and artifacts
+  # are stored on the master, so it is fine if we use a temporary volume and
+  # let docker-compose manage it.  It is best not to delete it since the slave
+  # can then cache data, preventing unnecessary downloading of tools and
+  # checking out of source code when build start again.
+  data:
+    driver: local

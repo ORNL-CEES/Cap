@@ -1,12 +1,19 @@
 version: '2'
 services:
-  slave:
-    build:
-      context: .
-      dockerfile: Dockerfile_slave
-    restart: always
-    ports:
-      - "2222:22"
+  ci:
+    image: dalg24/cap-stack:debug
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/jenkins:/var/jenkins
+      # Cannot mount subdirectory jenkins_data/workspace/$JOBNAME in data
+      # volume so have to mount the entire volume and climb up two directories.
+      # NOTE: it is possible to find out what the actual mount point of the
+      # volume that stores Jenkins home directory on the host but it is
+      # probably wiser not to do so.
+      - jenkins_data:$WORKSPACE/../..:rw
+    environment:
+      - NPROC=8
+      - CAP_DIR=$WORKSPACE
+    command: $WORKSPACE/docker/jenkins/build.sh
+volumes:
+  jenkins_data:
+    external:
+      name: $JENKINS_DATA_VOLUME
