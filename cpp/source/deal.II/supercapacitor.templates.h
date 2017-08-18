@@ -18,6 +18,7 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
+#include <deal.II/grid/filtered_iterator.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/solver_cg.h>
 #include <boost/archive/binary_iarchive.hpp>
@@ -520,10 +521,10 @@ void SuperCapacitor<dim>::setup()
   unsigned int const n_face_q_points = face_quadrature_rule.size();
   dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
                                            dealii::update_JxW_values);
-  // TODO this can be simplified when using the next version of deal (current is
-  // 8.4)
-  for (auto cell : dof_handler->active_cell_iterators())
-    if (cell->is_locally_owned() && cell->at_boundary())
+  for (auto cell :
+       dealii::filter_iterators(dof_handler->active_cell_iterators(),
+                                dealii::IteratorFilters::LocallyOwnedCell(),
+                                dealii::IteratorFilters::AtBoundary()))
       for (unsigned int face = 0;
            face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
         if ((cell->face(face)->at_boundary()) &&
