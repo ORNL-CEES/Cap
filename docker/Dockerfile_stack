@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
         libhdf5-dev \
         python3.5-dev \
         python3-tk \
+        pandoc \
         npm \
         nodejs \
         nodejs-legacy \
@@ -44,12 +45,12 @@ RUN mkdir -p ${PREFIX} && \
     mkdir install
 
 # install boost
-RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2 && \
-    export BOOST_SHA256=a547bd06c2fd9a71ba1d169d9cf0339da7ebf4753849a8f7d6fdb8feee99b640 && \
-    export BOOST_ARCHIVE=${PREFIX}/archive/boost_1_61_0.tar.bz2 && \
-    export BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.61.0 && \
-    export BOOST_BUILD_DIR=${PREFIX}/build/boost/1.61.0 && \
-    export BOOST_INSTALL_DIR=/opt/boost/1.61.0 && \
+RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.63.0/boost_1_63_0.tar.bz2 && \
+    export BOOST_SHA256=beae2529f759f6b3bf3f4969a19c2e9d6f0c503edcb2de4a61d1428519fcb3b0 && \
+    export BOOST_ARCHIVE=${PREFIX}/archive/boost_1_63_0.tar.bz2 && \
+    export BOOST_SOURCE_DIR=${PREFIX}/source/boost/1.63.0 && \
+    export BOOST_BUILD_DIR=${PREFIX}/build/boost/1.63.0 && \
+    export BOOST_INSTALL_DIR=/opt/boost/1.63.0 && \
     wget --quiet ${BOOST_URL} --output-document=${BOOST_ARCHIVE} && \
     echo "${BOOST_SHA256} ${BOOST_ARCHIVE}" | sha256sum -c && \
     mkdir -p ${BOOST_SOURCE_DIR} && \
@@ -69,12 +70,12 @@ RUN export BOOST_URL=http://sourceforge.net/projects/boost/files/boost/1.61.0/bo
     rm -rf ${BOOST_BUILD_DIR} && \
     rm -rf ${BOOST_SOURCE_DIR}
 
-ENV BOOST_DIR=/opt/boost/1.61.0
+ENV BOOST_DIR=/opt/boost/1.63.0
 #ENV LD_LIBRARY_PATH=${BOOST_DIR}/lib:${LD_LIBRARY_PATH}
 
 # install TRILINOS
-RUN export TRILINOS_VERSION=12.6.3 && \
-    export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-3.tar.gz && \
+RUN export TRILINOS_VERSION=12.10.1 && \
+    export TRILINOS_URL=https://github.com/trilinos/Trilinos/archive/trilinos-release-12-10-1.tar.gz && \
     export TRILINOS_ARCHIVE=${PREFIX}/archive/trilinos-${TRILINOS_VERSION}.tar.xz && \
     export TRILINOS_SOURCE_DIR=${PREFIX}/source/trilinos/${TRILINOS_VERSION} && \
     export TRILINOS_BUILD_DIR=${PREFIX}/build/trilinos/${TRILINOS_VERSION} && \
@@ -110,7 +111,7 @@ RUN export TRILINOS_VERSION=12.6.3 && \
     rm -rf ${TRILINOS_BUILD_DIR} && \
     rm -rf ${TRILINOS_SOURCE_DIR}
 
-ENV TRILINOS_DIR=/opt/trilinos/12.6.3
+ENV TRILINOS_DIR=/opt/trilinos/12.10.1
 
 # install p4est
 RUN export P4EST_VERSION=1.1 &&\
@@ -144,9 +145,9 @@ RUN export P4EST_VERSION=1.1 &&\
 ENV P4EST_DIR=/opt/p4est/1.1
 
 # install dealii
-RUN export DEAL_II_VERSION=8.4.1 && \
+RUN export DEAL_II_VERSION=8.5.1 && \
     export DEAL_II_URL=https://github.com/dealii/dealii/releases/download/v${DEAL_II_VERSION}/dealii-${DEAL_II_VERSION}.tar.gz && \
-    export DEAL_II_SHA1=94c489a5ede6b93497951790fe504fbbe1970819 && \
+    export DEAL_II_SHA1=fe8e4748c1d9650487fb5145429a58e8509de276 && \
     export DEAL_II_ARCHIVE=${PREFIX}/archive/dealii-${DEAL_II_VERSION}.tar.gz && \
     export DEAL_II_SOURCE_DIR=${PREFIX}/source/dealii/${DEAL_II_VERSION} && \
     export DEAL_II_BUILD_DIR=${PREFIX}/build/dealii/${DEAL_II_VERSION} && \
@@ -174,7 +175,7 @@ RUN export DEAL_II_VERSION=8.4.1 && \
     rm -rf ${DEAL_II_BUILD_DIR} && \
     rm -rf ${DEAL_II_SOURCE_DIR}
 
-ENV DEAL_II_DIR=/opt/dealii/8.4.1
+ENV DEAL_II_DIR=/opt/dealii/8.5.1
 
 ENV LD_LIBRARY_PATH=${LAPACK_DIR}/lib:${LD_LIBRARY_PATH}
 
