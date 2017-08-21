@@ -75,5 +75,6 @@ class capTimeEvolutionTestCase(unittest.TestCase):
         self.assertRaises(TypeError, TimeEvolution)
         self.assertRaises(RuntimeError, TimeEvolution, PropertyTree())
 
+
 if __name__ == '__main__':
     unittest.main()

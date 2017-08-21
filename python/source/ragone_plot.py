@@ -130,6 +130,8 @@ class RagonePlot(Observer):
         plot_ragone(subject._data, figure=self._figure)
         if self._filename is not None:
             pyplot.savefig(self._filename, bbox_inches='tight')
+
+
 Observer._builders['RagonePlot'] = RagonePlot
 
 # TODO: Probably want to make that class more general to do discharges at
@@ -213,4 +215,6 @@ class RagoneAnalysis(Experiment):
                                          discharge_power)
             discharge_power *= power(10.0, 1.0 / self._steps_per_decade)
             self.notify()
+
+
 Experiment._builders['RagoneAnalysis'] = RagoneAnalysis
