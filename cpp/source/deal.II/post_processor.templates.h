@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
@@ -82,9 +82,9 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
     std::shared_ptr<Geometry<dim> const> geometry,
     boost::mpi::communicator mpi_communicator)
     : Postprocessor<dim>(parameters, mpi_communicator),
-      debug_material_ids(false), debug_boundary_ids(false),
-      debug_material_properties(), debug_solution_fields(),
-      debug_solution_fluxes(), _geometry(geometry)
+      _debug_material_ids(false), _debug_boundary_ids(false),
+      _debug_material_properties(), _debug_solution_fields(),
+      _debug_solution_fluxes(), _geometry(geometry)
 {
   dealii::DoFHandler<dim> const &dof_handler = *(this->dof_handler);
   this->values["voltage"] = 0.0;
@@ -102,34 +102,34 @@ SuperCapacitorPostprocessor<dim>::SuperCapacitorPostprocessor(
   std::shared_ptr<boost::property_tree::ptree const> database =
       parameters->database;
 
-  this->debug_material_properties = cap::to_vector<std::string>(
+  this->_debug_material_properties = cap::to_vector<std::string>(
       database->get("debug.material_properties", ""));
-  this->debug_solution_fields =
+  this->_debug_solution_fields =
       cap::to_vector<std::string>(database->get("debug.solution_fields", ""));
-  this->debug_solution_fluxes =
+  this->_debug_solution_fluxes =
       cap::to_vector<std::string>(database->get("debug.solution_fluxes", ""));
-  this->debug_boundary_ids = database->get("debug.boundary_ids", false);
-  this->debug_material_ids = database->get("debug.material_ids", false);
+  this->_debug_boundary_ids = database->get("debug.boundary_ids", false);
+  this->_debug_material_ids = database->get("debug.material_ids", false);
 
   // n_active_cells is the total number of locally owned cells. This includes
   // the ghost cells and the artificial cells. They are filtered out by DataOut.
   unsigned int const n_active_cells =
       dof_handler.get_triangulation().n_active_cells();
-  if (this->debug_material_ids)
+  if (this->_debug_material_ids)
     this->vectors["material_id"] = dealii::Vector<double>(n_active_cells);
-  if (this->debug_boundary_ids)
+  if (this->_debug_boundary_ids)
     throw dealii::StandardExceptions::ExcMessage("not implemented yet");
   for (std::vector<std::string>::const_iterator it =
-           this->debug_material_properties.begin();
-       it != this->debug_material_properties.end(); ++it)
+           this->_debug_material_properties.begin();
+       it != this->_debug_material_properties.end(); ++it)
     this->vectors[*it] = dealii::Vector<double>(n_active_cells);
   for (std::vector<std::string>::const_iterator it =
-           this->debug_solution_fields.begin();
-       it != this->debug_solution_fields.end(); ++it)
+           this->_debug_solution_fields.begin();
+       it != this->_debug_solution_fields.end(); ++it)
     this->vectors[*it] = dealii::Vector<double>(n_active_cells);
   for (std::vector<std::string>::const_iterator it =
-           this->debug_solution_fluxes.begin();
-       it != this->debug_solution_fluxes.end(); ++it)
+           this->_debug_solution_fluxes.begin();
+       it != this->_debug_solution_fluxes.end(); ++it)
     for (int d = 0; d < dim; ++d)
       this->vectors[(*it) + "_" + std::to_string(d)] =
           dealii::Vector<double>(n_active_cells);
@@ -289,12 +289,12 @@ void SuperCapacitorPostprocessor<dim>::reset(
           // do nothing
         }
       } // end for quadrature point
-      if (this->debug_material_ids)
+      if (this->_debug_material_ids)
         this->vectors["material_id"][cell->active_cell_index()] =
             static_cast<double>(cell->material_id());
       for (std::vector<std::string>::const_iterator it =
-               this->debug_material_properties.begin();
-           it != this->debug_material_properties.end(); ++it)
+               this->_debug_material_properties.begin();
+           it != this->_debug_material_properties.end(); ++it)
       {
         std::vector<double> values(n_q_points);
         this->mp_values->get_values(*it, fe_values, values);
@@ -307,8 +307,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
         this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
       }
       for (std::vector<std::string>::const_iterator it =
-               this->debug_solution_fields.begin();
-           it != this->debug_solution_fields.end(); ++it)
+               this->_debug_solution_fields.begin();
+           it != this->_debug_solution_fields.end(); ++it)
       {
         std::vector<double> values(n_q_points);
         if (it->compare("solid_potential") == 0)
@@ -351,8 +351,8 @@ void SuperCapacitorPostprocessor<dim>::reset(
         this->vectors[*it][cell->active_cell_index()] = cell_averaged_value;
       }
       for (std::vector<std::string>::const_iterator it =
-               this->debug_solution_fluxes.begin();
-           it != this->debug_solution_fluxes.end(); ++it)
+               this->_debug_solution_fluxes.begin();
+           it != this->_debug_solution_fluxes.end(); ++it)
       {
         std::vector<dealii::Tensor<1, dim>> values(n_q_points);
         if (it->compare("solid_current_density") == 0)

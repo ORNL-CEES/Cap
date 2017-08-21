@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
@@ -61,8 +61,8 @@ private:
   void assemble_system(std::shared_ptr<PhysicsParameters<dim> const> parameters,
                        bool const inhomogeneous_bc);
 
-  unsigned int solid_potential_component;
-  unsigned int liquid_potential_component;
+  unsigned int _solid_potential_component;
+  unsigned int _liquid_potential_component;
   Timer _assembly_timer;
   Timer _setup_timer;
 };

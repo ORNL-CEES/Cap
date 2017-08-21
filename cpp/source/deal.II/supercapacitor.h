@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
@@ -146,40 +146,40 @@ private:
    * Maximum number of iterations of the Krylov solver in
    * evolve_one_time_step().
    */
-  unsigned int max_iter;
+  unsigned int _max_iter;
   /**
    * Verbosity level of the Krylov solver in evolve_one_time_step().
    */
-  unsigned int verbose_lvl;
+  unsigned int _verbose_lvl;
   /**
    * Absolute tolerance of the Krylov solver in evolve_one_time_step(). The
    * tolerance used by the Krylov solver is the maximum of the relative and the
    * absolute tolerance.
    */
-  double abs_tolerance;
+  double _abs_tolerance;
   /**
    * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
    * tolerance is @p rel_tolerance \f$ \times ||b||_{2}\f$. The tolerance used
    * by the Krylov solver is the maximum of the relative and the absolute
    * tolerance.
    */
-  double rel_tolerance;
+  double _rel_tolerance;
   /**
    * Area of the cathode.
    */
-  double surface_area;
+  double _surface_area;
 
   std::shared_ptr<Geometry<dim>> _geometry;
   std::shared_ptr<dealii::FESystem<dim>> _fe;
-  std::shared_ptr<dealii::DoFHandler<dim>> dof_handler;
-  std::shared_ptr<dealii::Trilinos::MPI::BlockVector> solution;
+  std::shared_ptr<dealii::DoFHandler<dim>> _dof_handler;
+  std::shared_ptr<dealii::Trilinos::MPI::BlockVector> _solution;
 
   std::shared_ptr<ElectrochemicalPhysicsParameters<dim>>
-      electrochemical_physics_params;
-  std::shared_ptr<ElectrochemicalPhysics<dim>> electrochemical_physics;
+      _electrochemical_physics_params;
+  std::shared_ptr<ElectrochemicalPhysics<dim>> _electrochemical_physics;
   std::shared_ptr<SuperCapacitorPostprocessorParameters<dim>>
-      post_processor_params;
-  std::shared_ptr<SuperCapacitorPostprocessor<dim>> post_processor;
+      _post_processor_params;
+  std::shared_ptr<SuperCapacitorPostprocessor<dim>> _post_processor;
   boost::property_tree::ptree const _ptree;
   Timer _setup_timer;
   Timer _solver_timer;
