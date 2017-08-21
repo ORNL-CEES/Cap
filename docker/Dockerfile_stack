@@ -1,6 +1,7 @@
 FROM ubuntu:16.04
 
 ARG NPROC=4
+ARG BUILD_TYPE=Release
 
 RUN apt-get update && apt-get install -y \
         build-essential \
@@ -160,7 +161,7 @@ RUN export DEAL_II_VERSION=8.5.1 && \
     cd ${DEAL_II_BUILD_DIR} && \
     cmake \
         -D CMAKE_INSTALL_PREFIX=${DEAL_II_INSTALL_DIR} \
-        -D CMAKE_BUILD_TYPE=Release \
+        -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D DEAL_II_WITH_MPI=ON \
         -D DEAL_II_WITH_CXX11=ON \
         -D CMAKE_Fortran_COMPILER=mpifort \
