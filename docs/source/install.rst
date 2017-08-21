@@ -21,7 +21,7 @@ Third-party libraries
 +-----------------------------+------------+---------+
 | Boost                       | Required   | 1.59.0  |
 +-----------------------------+------------+---------+
-| deal.II with p4est/Trilinos | Optional   | 8.4.0   |
+| deal.II with p4est/Trilinos | Optional   | 8.5.0   |
 +-----------------------------+------------+---------+
 
 Cap and its dependencies may be built using `spack
