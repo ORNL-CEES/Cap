@@ -167,5 +167,6 @@ class capEndCriterionTestCase(unittest.TestCase):
         self.assertRaises(NotImplementedError, bad_criterion.check, NaN,
                           device)
 
+
 if __name__ == '__main__':
     unittest.main()

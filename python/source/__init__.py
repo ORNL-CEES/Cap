@@ -40,4 +40,5 @@ def build(self, ptree, comm=MPI.COMM_SELF):
     """
     return EnergyStorageDevice.build(self, ptree, comm)
 
+
 EnergyStorageDevice.__init__ = build

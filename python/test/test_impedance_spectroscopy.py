@@ -231,5 +231,6 @@ class ImpedanceSpectroscopyTestCase(unittest.TestCase):
 #        bode = BodePlot('bode.png')
 #        bode.update(dummy)
 
+
 if __name__ == '__main__':
     unittest.main()

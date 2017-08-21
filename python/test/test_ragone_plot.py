@@ -114,5 +114,6 @@ class RagoneAnalysisTestCase(unittest.TestCase):
                 inf)
             self.assertLess(max_percent_error, 0.1)
 
+
 if __name__ == '__main__':
     unittest.main()

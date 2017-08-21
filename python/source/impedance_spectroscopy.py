@@ -202,6 +202,8 @@ class NyquistPlot(Observer):
         plot_nyquist(subject._data, figure=self._figure)
         if self._filename is not None:
             pyplot.savefig(self._filename, bbox_inches='tight')
+
+
 Observer._builders['NyquistPlot'] = NyquistPlot
 
 
@@ -227,6 +229,8 @@ class BodePlot(Observer):
 
     def update(self, subject, *args, **kwargs):
         raise NotImplementedError
+
+
 Observer._builders['BodePlot'] = BodePlot
 
 
@@ -296,8 +300,9 @@ class ECLabAsciiFile(Observer):
         self._line_template += '\r\n'
 
     def update(self, subject, *args, **kwargs):
-        m2_to_cm2 = lambda x: 10000 * x
-        kg_to_g = lambda x: 1000 * x
+        def m2_to_cm2(x): return 10000 * x
+
+        def kg_to_g(x): return 1000 * x
         with open(self._filename, mode='wb') as fout:
             NaN = 255
             extra_data = subject._extra_data
@@ -360,6 +365,8 @@ class ECLabAsciiFile(Observer):
                     format_spec='.7e'
                 )
                 fout.write(line.encode(self._encoding))
+
+
 Observer._builders['ECLabAsciiFile'] = ECLabAsciiFile
 
 
@@ -444,5 +451,7 @@ class ElectrochemicalImpedanceSpectroscopy(Experiment):
             self._data['frequency'] = append(self._data['frequency'], f)
             self._data['impedance'] = append(self._data['impedance'], Z)
             self.notify()
+
+
 for alias in ['EIS', 'ElectrochemicalImpedanceSpectroscopy']:
     Experiment._builders[alias] = ElectrochemicalImpedanceSpectroscopy

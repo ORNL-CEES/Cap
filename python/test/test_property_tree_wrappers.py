@@ -136,5 +136,6 @@ class boostPropertyTreePythonWrappersTestCase(unittest.TestCase):
         self.assertFalse(ptree.get_bool('foo.bar'))
         remove(json_file)
 
+
 if __name__ == '__main__':
     unittest.main()

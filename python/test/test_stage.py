@@ -70,5 +70,6 @@ class capStageTestCase(unittest.TestCase):
         self.assertAlmostEqual(data['voltage'][0], data['voltage'][1])
         self.assertAlmostEqual(data['current'][3], 0.0)
 
+
 if __name__ == '__main__':
     unittest.main()
