@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE

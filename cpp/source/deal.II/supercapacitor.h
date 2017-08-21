@@ -28,7 +28,7 @@ public:
   SuperCapacitorInspector() = default;
 
   /**
-   * Output the mesh with the suddomain IDs associated to each cells. It can
+   * Output the mesh with the subdomain IDs associated to each cells. It can
    * also be used to output some quantities of interest.
    */
   void inspect(EnergyStorageDevice *device) override;
@@ -159,7 +159,7 @@ private:
   double abs_tolerance;
   /**
    * Relative tolerance of the Krylov solver in evolve_one_time_step(), i.e. the
-   * tolerance is @p rel_toleracne \f$ \times ||b||_{2}\f$. The tolerance used
+   * tolerance is @p rel_tolerance \f$ \times ||b||_{2}\f$. The tolerance used
    * by the Krylov solver is the maximum of the relative and the absolute
    * tolerance.
    */
