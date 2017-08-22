@@ -23,7 +23,6 @@
 #include <deal.II/lac/solver_cg.h>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -62,7 +61,7 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
   // Output the required quantities
   if (!keys.empty())
   {
-    BOOST_FOREACH (std::string const &key, keys)
+    for (std::string const &key : keys)
       data_out.add_data_vector(supercapacitor->_post_processor->get(key), key);
   }
   data_out.build_patches();

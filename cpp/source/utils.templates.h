@@ -9,7 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
-#include <boost/foreach.hpp>
 #include <type_traits>
 
 namespace cap
@@ -47,7 +46,7 @@ template <typename T>
 std::string to_string(std::vector<T> const &v)
 {
   std::string s;
-  BOOST_FOREACH (T const &item, v)
+  for (T const &item : v)
   {
     s.append(boost::lexical_cast<std::string>(item) + ",");
   }
