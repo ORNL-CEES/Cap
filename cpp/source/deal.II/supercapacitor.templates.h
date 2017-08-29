@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
@@ -18,11 +18,11 @@
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/data_out.h>
+#include <deal.II/grid/filtered_iterator.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/solver_cg.h>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -46,7 +46,7 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
     throw std::bad_cast();
 
   std::vector<std::string> keys =
-      supercapacitor->post_processor->get_vector_keys();
+      supercapacitor->_post_processor->get_vector_keys();
   std::shared_ptr<dealii::distributed::Triangulation<dim> const> triangulation =
       supercapacitor->_geometry->get_triangulation();
   dealii::DataOut<dim> data_out;
@@ -61,8 +61,8 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
   // Output the required quantities
   if (!keys.empty())
   {
-    BOOST_FOREACH (std::string const &key, keys)
-      data_out.add_data_vector(supercapacitor->post_processor->get(key), key);
+    for (std::string const &key : keys)
+      data_out.add_data_vector(supercapacitor->_post_processor->get(key), key);
   }
   data_out.build_patches();
   std::string const filename =
@@ -91,24 +91,25 @@ void SuperCapacitorInspector<dim>::inspect(EnergyStorageDevice *device)
 template <int dim>
 SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
                                     boost::mpi::communicator const &comm)
-    : EnergyStorageDevice(comm), max_iter(0), verbose_lvl(0), abs_tolerance(0.),
-      rel_tolerance(0.), surface_area(0.), _geometry(nullptr), _fe(nullptr),
-      dof_handler(nullptr), solution(nullptr),
-      electrochemical_physics_params(nullptr), electrochemical_physics(nullptr),
-      post_processor_params(nullptr), post_processor(nullptr), _ptree(ptree),
+    : EnergyStorageDevice(comm), _max_iter(0), _verbose_lvl(0),
+      _abs_tolerance(0.), _rel_tolerance(0.), _surface_area(0.),
+      _geometry(nullptr), _fe(nullptr), _dof_handler(nullptr),
+      _solution(nullptr), _electrochemical_physics_params(nullptr),
+      _electrochemical_physics(nullptr), _post_processor_params(nullptr),
+      _post_processor(nullptr), _ptree(ptree),
       _setup_timer(comm, "SuperCapacitor setup"),
       _solver_timer(comm, "SuperCapacitor solver")
 {
   _setup_timer.start();
 
-  verbose_lvl = _ptree.get("verbosity", 0);
+  _verbose_lvl = _ptree.get("verbosity", 0);
 
   // get data tolerance and maximum number of iterations for the CG solver
   boost::property_tree::ptree const &solver_database =
       _ptree.get_child("solver");
-  max_iter = solver_database.get("max_iter", 1000);
-  rel_tolerance = solver_database.get("rel_tolerance", 1e-12);
-  abs_tolerance = solver_database.get("abs_tolerance", 1e-12);
+  _max_iter = solver_database.get("max_iter", 1000);
+  _rel_tolerance = solver_database.get("rel_tolerance", 1e-12);
+  _abs_tolerance = solver_database.get("abs_tolerance", 1e-12);
   // set the number of threads used by deal.II
   unsigned int n_threads = solver_database.get("n_threads", 1);
   // if 0, let TBB uses all the available threads. This can also be used if one
@@ -132,7 +133,7 @@ SuperCapacitor<dim>::SuperCapacitor(boost::property_tree::ptree const &ptree,
 template <int dim>
 SuperCapacitor<dim>::~SuperCapacitor()
 {
-  if (verbose_lvl > 0)
+  if (_verbose_lvl > 0)
   {
     _setup_timer.print();
     _solver_timer.print();
@@ -148,28 +149,28 @@ void SuperCapacitor<dim>::inspect(EnergyStorageDeviceInspector *inspector)
 template <int dim>
 void SuperCapacitor<dim>::get_voltage(double &voltage) const
 {
-  post_processor->get("voltage", voltage);
+  _post_processor->get("voltage", voltage);
 }
 
 template <int dim>
 void SuperCapacitor<dim>::get_current(double &current) const
 {
-  post_processor->get("current", current);
+  _post_processor->get("current", current);
 }
 
 template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_current(
     double const time_step, double const current)
 {
-  BOOST_ASSERT_MSG(surface_area > 0.,
+  BOOST_ASSERT_MSG(_surface_area > 0.,
                    "The surface area should be greater than zero.");
-  double const constant_current_density = current / surface_area;
+  double const constant_current_density = current / _surface_area;
   bool const rebuild =
-      (electrochemical_physics_params->constant_current_density ==
+      (_electrochemical_physics_params->constant_current_density ==
        constant_current_density)
           ? false
           : true;
-  electrochemical_physics_params->constant_current_density =
+  _electrochemical_physics_params->constant_current_density =
       constant_current_density;
   evolve_one_time_step(time_step, ConstantCurrent, rebuild);
 }
@@ -179,9 +180,9 @@ void SuperCapacitor<dim>::evolve_one_time_step_constant_voltage(
     double const time_step, double const voltage)
 {
   bool const rebuild =
-      (electrochemical_physics_params->constant_voltage == voltage) ? false
-                                                                    : true;
-  electrochemical_physics_params->constant_voltage = voltage;
+      (_electrochemical_physics_params->constant_voltage == voltage) ? false
+                                                                     : true;
+  _electrochemical_physics_params->constant_voltage = voltage;
   evolve_one_time_step(time_step, ConstantVoltage, rebuild);
 }
 
@@ -189,9 +190,9 @@ template <int dim>
 void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
     double const time_step, double const power)
 {
-  BOOST_ASSERT_MSG(surface_area > 0.,
+  BOOST_ASSERT_MSG(_surface_area > 0.,
                    "The surface area should be greater than zero.");
-  dealii::Trilinos::MPI::Vector old_solution(solution->block(0));
+  dealii::Trilinos::MPI::Vector old_solution(_solution->block(0));
   // The tolerance and the maximum number of iterations are for the picard
   // iterations done below. This is not related to the Krylov solver in
   // evolve_one_time_step.
@@ -203,20 +204,20 @@ void SuperCapacitor<dim>::evolve_one_time_step_constant_power(
   for (int k = 0; k < max_iterations; ++k)
   {
     current = power / voltage;
-    double const constant_current_density = current / surface_area;
+    double const constant_current_density = current / _surface_area;
     bool const rebuild =
-        (electrochemical_physics_params->constant_current_density ==
+        (_electrochemical_physics_params->constant_current_density ==
          constant_current_density)
             ? false
             : true;
-    electrochemical_physics_params->constant_current_density =
+    _electrochemical_physics_params->constant_current_density =
         constant_current_density;
     evolve_one_time_step(time_step, ConstantCurrent, rebuild);
     get_voltage(voltage);
     if (std::abs(power - voltage * current) / std::abs(power) <
         percent_tolerance)
       return;
-    solution->block(0) = old_solution;
+    _solution->block(0) = old_solution;
   }
   throw std::runtime_error("fixed point iteration did not converge in " +
                            std::to_string(max_iterations) + " iterations");
@@ -270,52 +271,54 @@ void SuperCapacitor<dim>::evolve_one_time_step(
 {
   // The first time evolve_one_time_step is called, the solution and the
   // post-processor need to be iniatialized.
-  if (electrochemical_physics_params->supercapacitor_state == Uninitialized)
+  if (_electrochemical_physics_params->supercapacitor_state == Uninitialized)
   {
-    electrochemical_physics_params->time_step = time_step;
-    electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
-    electrochemical_physics.reset(new ElectrochemicalPhysics<dim>(
-        electrochemical_physics_params, this->_communicator));
+    _electrochemical_physics_params->time_step = time_step;
+    _electrochemical_physics_params->supercapacitor_state =
+        supercapacitor_state;
+    _electrochemical_physics.reset(new ElectrochemicalPhysics<dim>(
+        _electrochemical_physics_params, this->_communicator));
   }
   // Rebuild the system if necessary
   else if ((rebuild == true) ||
-           (std::abs(time_step / electrochemical_physics_params->time_step -
+           (std::abs(time_step / _electrochemical_physics_params->time_step -
                      1.0) > 1e-14) ||
            (supercapacitor_state !=
-            electrochemical_physics_params->supercapacitor_state))
+            _electrochemical_physics_params->supercapacitor_state))
   {
-    electrochemical_physics_params->time_step = time_step;
-    electrochemical_physics_params->supercapacitor_state = supercapacitor_state;
-    electrochemical_physics.reset(new ElectrochemicalPhysics<dim>(
-        electrochemical_physics_params, this->_communicator));
+    _electrochemical_physics_params->time_step = time_step;
+    _electrochemical_physics_params->supercapacitor_state =
+        supercapacitor_state;
+    _electrochemical_physics.reset(new ElectrochemicalPhysics<dim>(
+        _electrochemical_physics_params, this->_communicator));
   }
 
   // Get the system from the ElectrochemicalPhysiscs object.
   dealii::Trilinos::SparseMatrix const &system_matrix =
-      electrochemical_physics->get_system_matrix();
+      _electrochemical_physics->get_system_matrix();
   dealii::Trilinos::SparseMatrix const &mass_matrix =
-      electrochemical_physics->get_mass_matrix();
+      _electrochemical_physics->get_mass_matrix();
   dealii::ConstraintMatrix const &constraint_matrix =
-      electrochemical_physics->get_constraint_matrix();
+      _electrochemical_physics->get_constraint_matrix();
   dealii::Trilinos::MPI::Vector const &system_rhs =
-      electrochemical_physics->get_system_rhs();
+      _electrochemical_physics->get_system_rhs();
   dealii::Trilinos::MPI::Vector time_dep_rhs = system_rhs;
-  mass_matrix.vmult_add(time_dep_rhs, solution->block(0));
+  mass_matrix.vmult_add(time_dep_rhs, _solution->block(0));
 
   // Solve the system
   _solver_timer.start();
   double tolerance =
-      std::max(abs_tolerance, rel_tolerance * system_rhs.l2_norm());
-  dealii::SolverControl solver_control(max_iter, tolerance);
+      std::max(_abs_tolerance, _rel_tolerance * system_rhs.l2_norm());
+  dealii::SolverControl solver_control(_max_iter, tolerance);
   dealii::SolverCG<dealii::Trilinos::MPI::Vector> solver(solver_control);
   // Compute the condition number at the end of the CG iterations.
-  if (verbose_lvl > 1)
+  if (_verbose_lvl > 1)
     solver.connect_condition_number_slot(
         std::bind(&SuperCapacitor<dim>::output_condition_number, this,
                   std::placeholders::_1),
         false);
   // Compute all the eigenvalues at the end of the CG iterations.
-  if (verbose_lvl > 2)
+  if (_verbose_lvl > 2)
     solver.connect_eigenvalues_slot(
         std::bind(&SuperCapacitor<dim>::output_eigenvalues, this,
                   std::placeholders::_1),
@@ -323,10 +326,11 @@ void SuperCapacitor<dim>::evolve_one_time_step(
   dealii::Trilinos::PreconditionAMG preconditioner;
   // Temporary preconditioner. Need to find what parameters work best.
   preconditioner.initialize(system_matrix);
-  constraint_matrix.distribute(solution->block(0));
-  solver.solve(system_matrix, solution->block(0), time_dep_rhs, preconditioner);
-  constraint_matrix.distribute(solution->block(0));
-  if ((verbose_lvl > 0) && (_communicator.rank() == 0))
+  constraint_matrix.distribute(_solution->block(0));
+  solver.solve(system_matrix, _solution->block(0), time_dep_rhs,
+               preconditioner);
+  constraint_matrix.distribute(_solution->block(0));
+  if ((_verbose_lvl > 0) && (_communicator.rank() == 0))
   {
     std::cout << "Initial value: " << solver_control.initial_value()
               << std::endl;
@@ -338,7 +342,7 @@ void SuperCapacitor<dim>::evolve_one_time_step(
   _solver_timer.stop();
 
   // Update the data in post-processor
-  post_processor->reset(post_processor_params);
+  _post_processor->reset(_post_processor_params);
 }
 
 template <int dim>
@@ -371,14 +375,14 @@ template <int dim>
 std::shared_ptr<PostprocessorParameters<dim>>
 SuperCapacitor<dim>::get_post_processor_parameters() const
 {
-  return post_processor_params;
+  return _post_processor_params;
 }
 
 template <int dim>
 std::shared_ptr<Postprocessor<dim>>
 SuperCapacitor<dim>::get_post_processor() const
 {
-  return post_processor;
+  return _post_processor;
 }
 
 template <int dim>
@@ -395,10 +399,10 @@ void SuperCapacitor<dim>::save(const std::string &filename) const
   // triangulation needs to exist and to be of cells of only the coarsest level,
   // i.e., the coarsest mesh as possible. The vectors that are serialized need
   // to be ghosted.
-  unsigned int const n_blocks = solution->n_blocks();
-  dealii::IndexSet locally_owned_dofs = dof_handler->locally_owned_dofs();
+  unsigned int const n_blocks = _solution->n_blocks();
+  dealii::IndexSet locally_owned_dofs = _dof_handler->locally_owned_dofs();
   dealii::IndexSet locally_relevant_dofs;
-  dealii::DoFTools::extract_locally_relevant_dofs(*dof_handler,
+  dealii::DoFTools::extract_locally_relevant_dofs(*_dof_handler,
                                                   locally_relevant_dofs);
   std::vector<dealii::IndexSet> locally_owned_index_sets(n_blocks,
                                                          locally_owned_dofs);
@@ -407,10 +411,10 @@ void SuperCapacitor<dim>::save(const std::string &filename) const
   dealii::Trilinos::MPI::BlockVector ghosted_solution(
       locally_owned_index_sets, locally_relevant_index_sets,
       this->_communicator);
-  ghosted_solution = *solution;
+  ghosted_solution = *_solution;
 
   dealii::distributed::SolutionTransfer<dim, dealii::Trilinos::MPI::BlockVector>
-      solution_transfer(*dof_handler);
+      solution_transfer(*_dof_handler);
   solution_transfer.prepare_serialization(ghosted_solution);
   _geometry->get_triangulation()->save(filename.c_str());
 }
@@ -470,12 +474,12 @@ void SuperCapacitor<dim>::load(const std::string &filename)
 
   // Load the solution.
   dealii::distributed::SolutionTransfer<dim, dealii::Trilinos::MPI::BlockVector>
-      solution_transfer(*dof_handler);
-  solution_transfer.deserialize(*solution);
+      solution_transfer(*_dof_handler);
+  solution_transfer.deserialize(*_solution);
 
   // Reset the post-processor otherwise if we call get_current/get_voltage just
   // after a load the value would stay at zero.
-  post_processor->reset(post_processor_params);
+  _post_processor->reset(_post_processor_params);
 }
 
 template <int dim>
@@ -486,15 +490,15 @@ void SuperCapacitor<dim>::setup()
 
   // distribute degrees of freedom
   _fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
-  dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
-  dof_handler->distribute_dofs(*_fe);
+  _dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
+  _dof_handler->distribute_dofs(*_fe);
 
   // Renumber the degrees of freedom component-wise.
-  dealii::DoFRenumbering::component_wise(*dof_handler);
+  dealii::DoFRenumbering::component_wise(*_dof_handler);
   unsigned int const n_components =
-      dealii::DoFTools::n_components(*dof_handler);
+      dealii::DoFTools::n_components(*_dof_handler);
   std::vector<dealii::types::global_dof_index> dofs_per_component(n_components);
-  dealii::DoFTools::count_dofs_per_component(*dof_handler, dofs_per_component);
+  dealii::DoFTools::count_dofs_per_component(*_dof_handler, dofs_per_component);
 
   // read material properties
   std::shared_ptr<boost::property_tree::ptree> material_properties_database =
@@ -506,55 +510,57 @@ void SuperCapacitor<dim>::setup()
       SuperCapacitorMPValuesFactory<dim>::build(params);
 
   // Initialize the electrochemical physics parameters
-  electrochemical_physics_params.reset(
+  _electrochemical_physics_params.reset(
       new ElectrochemicalPhysicsParameters<dim>(_ptree));
-  electrochemical_physics_params->geometry = _geometry;
-  electrochemical_physics_params->dof_handler = dof_handler;
-  electrochemical_physics_params->mp_values =
+  _electrochemical_physics_params->geometry = _geometry;
+  _electrochemical_physics_params->dof_handler = _dof_handler;
+  _electrochemical_physics_params->mp_values =
       std::dynamic_pointer_cast<MPValues<dim> const>(mp_values);
 
   // Compute the surface area. This is neeeded by several evolve_one_time_step_*
-  surface_area = 0.;
+  _surface_area = 0.;
   auto const &cathode_boundary_ids = (*_geometry->get_boundaries())["cathode"];
   dealii::QGauss<dim - 1> face_quadrature_rule(_fe->degree + 1);
   unsigned int const n_face_q_points = face_quadrature_rule.size();
   dealii::FEFaceValues<dim> fe_face_values(*_fe, face_quadrature_rule,
                                            dealii::update_JxW_values);
-  // TODO this can be simplified when using the next version of deal (current is
-  // 8.4)
-  for (auto cell : dof_handler->active_cell_iterators())
-    if (cell->is_locally_owned() && cell->at_boundary())
-      for (unsigned int face = 0;
-           face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
-        if ((cell->face(face)->at_boundary()) &&
-            (cathode_boundary_ids.count(cell->face(face)->boundary_id()) > 0))
-          for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
-               ++face_q_point)
-          {
-            fe_face_values.reinit(cell, face);
-            surface_area += fe_face_values.JxW(face_q_point);
-          }
+  for (auto cell :
+       dealii::filter_iterators(_dof_handler->active_cell_iterators(),
+                                dealii::IteratorFilters::LocallyOwnedCell(),
+                                dealii::IteratorFilters::AtBoundary()))
+    for (unsigned int face = 0;
+         face < dealii::GeometryInfo<dim>::faces_per_cell; ++face)
+      if ((cell->face(face)->at_boundary()) &&
+          (cathode_boundary_ids.count(cell->face(face)->boundary_id()) > 0))
+        for (unsigned int face_q_point = 0; face_q_point < n_face_q_points;
+             ++face_q_point)
+        {
+          fe_face_values.reinit(cell, face);
+          _surface_area += fe_face_values.JxW(face_q_point);
+        }
   // Reduce the value computed on each processor.
-  surface_area = dealii::Utilities::MPI::sum(surface_area, this->_communicator);
+  _surface_area =
+      dealii::Utilities::MPI::sum(_surface_area, this->_communicator);
 
   // Create the post-processor parameters
-  post_processor_params =
+  _post_processor_params =
       std::make_shared<SuperCapacitorPostprocessorParameters<dim>>(
-          std::make_shared<boost::property_tree::ptree>(_ptree), dof_handler);
+          std::make_shared<boost::property_tree::ptree>(_ptree), _dof_handler);
 
   // Initialize the size solution
   // Temporary keep using a BlockVector because of PostProcessor.
   std::vector<dealii::IndexSet> index_set(
-      1, this->dof_handler->locally_owned_dofs());
-  solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
+      1, this->_dof_handler->locally_owned_dofs());
+  _solution.reset(new dealii::Trilinos::MPI::BlockVector(index_set));
 
   // Initialize the postprocessor
-  post_processor_params->solution = solution;
-  post_processor_params->mp_values = electrochemical_physics_params->mp_values;
-  post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
-      post_processor_params, _geometry, this->_communicator);
+  _post_processor_params->solution = _solution;
+  _post_processor_params->mp_values =
+      _electrochemical_physics_params->mp_values;
+  _post_processor = std::make_shared<SuperCapacitorPostprocessor<dim>>(
+      _post_processor_params, _geometry, this->_communicator);
 
-  post_processor->reset(post_processor_params);
+  _post_processor->reset(_post_processor_params);
 
   _setup_timer.stop();
 }

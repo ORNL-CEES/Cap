@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, the Cap authors.
+/* Copyright (c) 2016 - 2017, the Cap authors.
  *
  * This file is subject to the Modified BSD License and may not be distributed
  * without copyright and license information. Please refer to the file LICENSE
@@ -22,8 +22,8 @@ template <int dim>
 ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
     std::shared_ptr<PhysicsParameters<dim> const> parameters,
     boost::mpi::communicator mpi_communicator)
-    : Physics<dim>(parameters, mpi_communicator), solid_potential_component(-1),
-      liquid_potential_component(-1),
+    : Physics<dim>(parameters, mpi_communicator),
+      _solid_potential_component(-1), _liquid_potential_component(-1),
       _assembly_timer(mpi_communicator, "ElectrochemicalPhysics assembly"),
       _setup_timer(mpi_communicator, "ElectrochemicalPhysics setup")
 {
@@ -31,8 +31,8 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   boost::property_tree::ptree const &database = parameters->database;
 
   // clang-format off
-  this->solid_potential_component  = database.get<unsigned int>("solid_potential_component");
-  this->liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
+  this->_solid_potential_component  = database.get<unsigned int>("solid_potential_component");
+  this->_liquid_potential_component = database.get<unsigned int>("liquid_potential_component");
   // clang-format on
 
   auto const &anode_boundary_ids = (*this->geometry->get_boundaries())["anode"];
@@ -63,7 +63,7 @@ ElectrochemicalPhysics<dim>::ElectrochemicalPhysics(
   unsigned int const n_components =
       dealii::DoFTools::n_components(*(this->dof_handler));
   std::vector<bool> mask(n_components, false);
-  mask[this->solid_potential_component] = true;
+  mask[this->_solid_potential_component] = true;
   dealii::ComponentMask component_mask(mask);
   typename dealii::FunctionMap<dim>::type dirichlet_boundary_condition;
   dealii::ZeroFunction<dim> homogeneous_bc(n_components);
@@ -133,9 +133,9 @@ void ElectrochemicalPhysics<dim>::assemble_system(
   dealii::FiniteElement<dim> const &fe = dof_handler.get_fe();
 
   dealii::FEValuesExtractors::Scalar const solid_potential(
-      this->solid_potential_component);
+      this->_solid_potential_component);
   dealii::FEValuesExtractors::Scalar const liquid_potential(
-      this->liquid_potential_component);
+      this->_liquid_potential_component);
   dealii::QGauss<dim> quadrature_rule(fe.degree + 1);
   dealii::FEValues<dim> fe_values(
       fe, quadrature_rule, dealii::update_values | dealii::update_gradients |
