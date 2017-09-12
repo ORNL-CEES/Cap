@@ -489,7 +489,9 @@ void SuperCapacitor<dim>::setup()
       _geometry->get_triangulation();
 
   // distribute degrees of freedom
-  _fe = std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(1), 2);
+  unsigned int const fe_degree = _ptree.get("solver.fe_degree", 1);
+  _fe =
+      std::make_shared<dealii::FESystem<dim>>(dealii::FE_Q<dim>(fe_degree), 2);
   _dof_handler = std::make_shared<dealii::DoFHandler<dim>>(*triangulation);
   _dof_handler->distribute_dofs(*_fe);
 
